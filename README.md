@@ -1,7 +1,9 @@
 # 2048 game
 This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatform implementation.
 
-The latest Android build is available [here](https://github.com/andstatus/game2048/issues/1).
+Download: 
+* The latest Android build is available [here](https://github.com/andstatus/game2048/issues/1)
+* Windows X64 zipped executable is [here](https://github.com/andstatus/game2048/issues/2) 
 
 The project started from [RezMike/2048 KorGe tutorial project](https://github.com/RezMike/2048#readme), 
 but it's not a clone of that repository: it's a rewrite aiming at becoming a (board) game template
