@@ -28,10 +28,20 @@ val bestScore = ObservableProperty(0)
 
 private var history: History by Delegates.notNull()
 
-suspend fun main() = Korge(width = 480, height = 640, title = "2048", bgcolor = RGBA(253, 247, 240)) {
+private val appBarTopIndent = 30.0
+private var buttonSize = 0.0
+private val buttonPadding = 18.0
+
+suspend fun main() = Korge(width = 480, height = 680, title = "2048", bgcolor = RGBA(253, 247, 240)) {
     font = resourcesVfs["clear_sans.fnt"].readBitmapFont()
+    cellSize = stage.views.virtualWidth * 1.0 / (board.width + 1)
+    buttonSize = cellSize * 0.8
+    fieldSize = 50 + board.width * cellSize
+    leftIndent = (stage.views.virtualWidth - fieldSize) / 2
+    topIndent = appBarTopIndent + buttonSize + buttonPadding + buttonSize + buttonPadding
 
     setupStorage()
+    setupAppBar(this)
     setupStaticViews(this)
     setupControls(this)
 
@@ -49,12 +59,41 @@ private fun Stage.setupStorage() {
     }
 }
 
-private suspend fun setupStaticViews(stage: Stage) {
-    cellSize = stage.views.virtualWidth * 1.0 / (board.width + 1)
-    fieldSize = 50 + board.width * cellSize
-    leftIndent = (stage.views.virtualWidth - fieldSize) / 2
-    topIndent = 150.0
+private suspend fun setupAppBar(stage: Stage) {
+    val bgLogo = stage.roundRect(cellSize, cellSize, 5.0, color = RGBA(237, 196, 3)) {
+        position(leftIndent, appBarTopIndent)
+    }
+    stage.text("2048", cellSize * 0.5, Colors.WHITE, font).centerOn(bgLogo)
 
+    val restartBlock = stage.container {
+        val background = roundRect(buttonSize, buttonSize, 5.0, color = RGBA(185, 174, 160))
+        image(resourcesVfs["restart.png"].readBitmap()) {
+            size(buttonSize * 0.8, buttonSize * 0.8)
+            centerOn(background)
+        }
+        positionX(leftIndent + fieldSize - buttonSize)
+        alignTopToTopOf(bgLogo)
+        onClick {
+            restart()
+            computersMove(stage)
+        }
+    }
+
+    stage.container {
+        val background = roundRect(buttonSize, buttonSize, 5, color = RGBA(185, 174, 160))
+        image(resourcesVfs["undo.png"].readBitmap()) {
+            size(buttonSize * 0.6, buttonSize * 0.6)
+            centerOn(background)
+        }
+        alignTopToTopOf(restartBlock)
+        alignRightToLeftOf(restartBlock, buttonPadding)
+        onClick {
+            restoreState(stage, history.undo())
+        }
+    }
+}
+
+private suspend fun setupStaticViews(stage: Stage) {
     val bgField = stage.roundRect(fieldSize, fieldSize, 5.0, color = Colors["#b9aea0"]) {
         position(leftIndent, topIndent)
     }
@@ -69,14 +108,9 @@ private suspend fun setupStaticViews(stage: Stage) {
         }
     }
 
-    val bgLogo = stage.roundRect(cellSize, cellSize, 5.0, color = RGBA(237, 196, 3)) {
-        position(leftIndent, 30.0)
-    }
-    stage.text("2048", cellSize * 0.5, Colors.WHITE, font).centerOn(bgLogo)
-
-    val bgBest = stage.roundRect(cellSize * 1.5, cellSize * 0.8, 5.0, color = Colors["#bbae9e"]) {
+    val bgBest = stage.roundRect(cellSize * 1.5, buttonSize, 5.0, color = Colors["#bbae9e"]) {
         alignRightToRightOf(bgField)
-        alignTopToTopOf(bgLogo)
+        positionY(appBarTopIndent + buttonSize + buttonPadding)
     }
     stage.text("BEST", cellSize * 0.25, RGBA(239, 226, 210), font) {
         centerXOn(bgBest)
@@ -92,8 +126,8 @@ private suspend fun setupStaticViews(stage: Stage) {
         }
     }
 
-    val bgScore = stage.roundRect(cellSize * 1.5, cellSize * 0.8, 5.0, color = Colors["#bbae9e"]) {
-        alignRightToLeftOf(bgBest, 24.0)
+    val bgScore = stage.roundRect(cellSize * 1.5, buttonSize, 5.0, color = Colors["#bbae9e"]) {
+        alignRightToLeftOf(bgBest, buttonPadding)
         alignTopToTopOf(bgBest)
     }
     stage.text("SCORE", cellSize * 0.25, RGBA(239, 226, 210), font) {
@@ -107,34 +141,6 @@ private suspend fun setupStaticViews(stage: Stage) {
         alignTopToTopOf(bgScore, 12.0)
         score {
             text = it.toString()
-        }
-    }
-
-    val btnSize = cellSize * 0.3
-    val restartBlock = stage.container {
-        val background = roundRect(btnSize, btnSize, 5.0, color = RGBA(185, 174, 160))
-        image(resourcesVfs["restart.png"].readBitmap()) {
-            size(btnSize * 0.8, btnSize * 0.8)
-            centerOn(background)
-        }
-        alignTopToBottomOf(bgBest, 5.0)
-        alignRightToRightOf(bgField)
-        onClick {
-            restart()
-            computersMove(stage)
-        }
-    }
-
-    stage.container {
-        val background = roundRect(btnSize, btnSize, 5, color = RGBA(185, 174, 160))
-        image(resourcesVfs["undo.png"].readBitmap()) {
-            size(btnSize * 0.6, btnSize * 0.6)
-            centerOn(background)
-        }
-        alignTopToTopOf(restartBlock)
-        alignRightToLeftOf(restartBlock, 5.0)
-        onClick {
-            restoreState(stage, history.undo())
         }
     }
 }

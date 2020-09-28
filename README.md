@@ -1,6 +1,8 @@
 # 2048 game
 This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatform implementation.
 
+The latest Android build is available [here](https://github.com/andstatus/game2048/issues/1).
+
 The project started from [RezMike/2048 KorGe tutorial project](https://github.com/RezMike/2048#readme), 
 but it's not a clone of that repository: it's a rewrite aiming at becoming a (board) game template
 that is easy to modify, to extend and to play with using [Kotlin](https://kotlinlang.org/) programming language
@@ -8,10 +10,14 @@ and [KorGe game engine](https://korge.org/).
 
 Following this goal, the source code has been structured and cleaned. We're trying to use 
 board games terminology (e.g. [Glossary of chess](https://en.wikipedia.org/wiki/Glossary_of_chess))
-in order ease understanding of implementation logic.   
+in order to ease understanding of implementation logic.   
 
 If you found the project useful, please 
 [donate to the 2048 game development](http://andstatus.org/donate.html) via its lead developer.
+
+<p>
+<img alt="Main screen of Game2048" src="doc/screenshots/game2048.png" height="400" />
+</p>
 
 # How to run the project
 
