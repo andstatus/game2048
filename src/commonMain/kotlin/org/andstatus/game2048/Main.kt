@@ -1,5 +1,8 @@
 package org.andstatus.game2048
 
+import com.soywiz.klock.DateTime
+import com.soywiz.klogger.Console
+import com.soywiz.klogger.log
 import com.soywiz.korev.Key
 import com.soywiz.korge.Korge
 import com.soywiz.korge.html.Html
@@ -50,12 +53,22 @@ suspend fun main() = Korge(width = 480, height = 680, title = "2048", bgcolor = 
 
 private fun Stage.setupStorage() {
     val storage = NativeStorage(views)
-    history = History(storage.getOrNull("history")) { storage["history"] = it.toString() }
+    val keyOpened = "opened"
+    val keyBest = "best"
+    val keyHistory = "history"
+
+    Console.log("Storage: $storage" +
+            (storage.getOrNull(keyOpened)?.let { "\n last opened: " + it } ?: "\n storage is new") +
+            (storage.getOrNull(keyBest)?.let { "\n best score: " + it } ?: "")
+    )
+    storage[keyOpened] = DateTime.now().toString()
+
+    history = History(storage.getOrNull(keyHistory)) { storage[keyHistory] = it.toString() }
     score.observe {
         if (it > bestScore.value) bestScore.update(it)
     }
     bestScore.observe {
-        storage["best"] = it.toString()
+        storage[keyBest] = it.toString()
     }
 }
 
