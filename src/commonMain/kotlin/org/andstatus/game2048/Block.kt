@@ -8,7 +8,7 @@ class Block(val piece: Piece) : Container() {
     init {
         graphics {
             fill(piece.color) {
-                roundRect(0.0, 0.0, cellSize, cellSize, 5.0)
+                roundRect(0.0, 0.0, cellSize, cellSize, buttonRadius)
             }
             text(piece.text, piece.textSize(cellSize), piece.textColor(), font).apply {
                 centerBetween(0.0, 0.0, cellSize, cellSize)
