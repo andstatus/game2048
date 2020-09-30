@@ -40,9 +40,10 @@ private var boardControls: Container by Delegates.notNull()
 
 suspend fun main() = Korge(width = 480, height = 680, title = "2048", bgcolor = Colors["#fdf7f0"]) {
     font = resourcesVfs["clear_sans.fnt"].readBitmapFont()
-    cellSize = stage.views.virtualWidth * 1.0 / (board.width + 1)
+    val allCellMargins = cellMargin * (board.width + 1)
+    cellSize = (stage.views.virtualWidth - allCellMargins - 2 * buttonPadding) / board.width
     buttonSize = cellSize * 0.8
-    boardWidth = cellSize * board.width + cellMargin * (board.width + 1)
+    boardWidth = cellSize * board.width + allCellMargins
     leftIndent = (stage.views.virtualWidth - boardWidth) / 2
     topIndent = appBarTopIndent + buttonSize + buttonPadding + buttonSize + buttonPadding
 
