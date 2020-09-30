@@ -95,16 +95,18 @@ private suspend fun setupAppBar(stage: Stage) {
         }
     }
 
-    stage.container {
-        val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
-        image(resourcesVfs["undo.png"].readBitmap()) {
-            size(buttonSize * 0.6, buttonSize * 0.6)
-            centerOn(background)
-        }
-        alignTopToTopOf(restartBlock)
-        alignRightToLeftOf(restartBlock, buttonPadding)
-        onClick {
-            restoreState(stage, history.undo())
+    if (allowUndo) {
+        stage.container {
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
+            image(resourcesVfs["undo.png"].readBitmap()) {
+                size(buttonSize * 0.6, buttonSize * 0.6)
+                centerOn(background)
+            }
+            alignTopToTopOf(restartBlock)
+            alignRightToLeftOf(restartBlock, buttonPadding)
+            onClick {
+                restoreState(stage, history.undo())
+            }
         }
     }
 }

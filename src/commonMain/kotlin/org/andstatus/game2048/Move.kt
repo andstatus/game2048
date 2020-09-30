@@ -10,10 +10,6 @@ import com.soywiz.korio.concurrent.atomic.KorAtomicBoolean
 import com.soywiz.korma.interpolation.Easing
 import kotlin.random.Random
 
-// Game options. Default values are for original game,
-// see https://en.wikipedia.org/wiki/2048_(video_game)
-const val allowResultingTileToMerge = false  // The resulting tile cannot merge with another tile again in the same move
-
 class Move(val first: Block, val second: Block?, val destination: Square)
 
 private val moveIsInProgress = KorAtomicBoolean(false)
@@ -38,14 +34,18 @@ fun moveBlocksTo(stage: Stage, direction: Direction) {
         }
     } else {
         val (newBoard, moves) = moveBlocksOnTheBoard(board, direction)
-        board = newBoard
-        animateMoves(stage, moves) {
-            val points = moves.fold(0) { acc, move ->
-                acc + (move.second?.piece?.value ?: 0)
-            }
-            score.update(score.value + points)
-            computersMove(stage)
+        if (moves.isEmpty() && !allowUsersMoveWithoutBlockMoves) {
             moveIsInProgress.value = false
+        } else {
+            board = newBoard
+            animateMoves(stage, moves) {
+                val points = moves.fold(0) { acc, move ->
+                    acc + (move.second?.piece?.value ?: 0)
+                }
+                score.update(score.value + points)
+                computersMove(stage)
+                moveIsInProgress.value = false
+            }
         }
     }
 }
