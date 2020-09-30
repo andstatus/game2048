@@ -31,22 +31,23 @@ val bestScore = ObservableProperty(0)
 
 private var history: History by Delegates.notNull()
 
-private val appBarTopIndent = 30.0
-private var buttonSize = 0.0
-private val buttonPadding = 18.0
+private const val appBarTopIndent = 30.0
+private const val buttonPadding = 18.0
+private var buttonSize : Double = 0.0
+private var boardControls: Container by Delegates.notNull()
 
-suspend fun main() = Korge(width = 480, height = 680, title = "2048", bgcolor = RGBA(253, 247, 240)) {
+suspend fun main() = Korge(width = 480, height = 680, title = "2048", bgcolor = Colors["#fdf7f0"]) {
     font = resourcesVfs["clear_sans.fnt"].readBitmapFont()
     cellSize = stage.views.virtualWidth * 1.0 / (board.width + 1)
     buttonSize = cellSize * 0.8
-    fieldSize = 50 + board.width * cellSize
-    leftIndent = (stage.views.virtualWidth - fieldSize) / 2
+    boardWidth = 50 + board.width * cellSize
+    leftIndent = (stage.views.virtualWidth - boardWidth) / 2
     topIndent = appBarTopIndent + buttonSize + buttonPadding + buttonSize + buttonPadding
 
     setupStorage()
     setupAppBar(this)
     setupStaticViews(this)
-    setupControls(this)
+    boardControls = setupControls(this)
 
     history.currentElement?.let { restoreState(this, it) } ?: computersMove(this)
 }
@@ -58,8 +59,8 @@ private fun Stage.setupStorage() {
     val keyHistory = "history"
 
     Console.log("Storage: $storage" +
-            (storage.getOrNull(keyOpened)?.let { "\n last opened: " + it } ?: "\n storage is new") +
-            (storage.getOrNull(keyBest)?.let { "\n best score: " + it } ?: "")
+            (storage.getOrNull(keyOpened)?.let { "\n last opened: $it" } ?: "\n storage is new") +
+            (storage.getOrNull(keyBest)?.let { "\n best score: $it" } ?: "")
     )
     storage[keyOpened] = DateTime.now().toString()
 
@@ -84,7 +85,7 @@ private suspend fun setupAppBar(stage: Stage) {
             size(buttonSize * 0.8, buttonSize * 0.8)
             centerOn(background)
         }
-        positionX(leftIndent + fieldSize - buttonSize)
+        positionX(leftIndent + boardWidth - buttonSize)
         alignTopToTopOf(bgLogo)
         onClick {
             restart()
@@ -93,7 +94,7 @@ private suspend fun setupAppBar(stage: Stage) {
     }
 
     stage.container {
-        val background = roundRect(buttonSize, buttonSize, 5, color = RGBA(185, 174, 160))
+        val background = roundRect(buttonSize, buttonSize, 5.0, color = RGBA(185, 174, 160))
         image(resourcesVfs["undo.png"].readBitmap()) {
             size(buttonSize * 0.6, buttonSize * 0.6)
             centerOn(background)
@@ -106,24 +107,9 @@ private suspend fun setupAppBar(stage: Stage) {
     }
 }
 
-private suspend fun setupStaticViews(stage: Stage) {
-    val bgField = stage.roundRect(fieldSize, fieldSize, 5.0, color = Colors["#b9aea0"]) {
-        position(leftIndent, topIndent)
-    }
-    stage.graphics {
-        position(leftIndent, topIndent)
-        fill(Colors["#cec0b2"]) {
-            for (x in 0 until board.width) {
-                for (y in 0 until board.height) {
-                    roundRect(10 + (10 + cellSize) * x, 10 + (10 + cellSize) * y, cellSize, cellSize, 5.0)
-                }
-            }
-        }
-    }
-
+private fun setupStaticViews(stage: Stage) {
     val bgBest = stage.roundRect(cellSize * 1.5, buttonSize, 5.0, color = Colors["#bbae9e"]) {
-        alignRightToRightOf(bgField)
-        positionY(appBarTopIndent + buttonSize + buttonPadding)
+        position(leftIndent + boardWidth - cellSize * 1.5, appBarTopIndent + buttonSize + buttonPadding)
     }
     stage.text("BEST", cellSize * 0.25, RGBA(239, 226, 210), font) {
         centerXOn(bgBest)
@@ -156,10 +142,27 @@ private suspend fun setupStaticViews(stage: Stage) {
             text = it.toString()
         }
     }
+
+    stage.roundRect(boardWidth, boardWidth, 5.0, color = Colors["#b9aea0"]) {
+        position(leftIndent, topIndent)
+    }
+    stage.graphics {
+        position(leftIndent, topIndent)
+        fill(Colors["#cec0b2"]) {
+            for (x in 0 until board.width) {
+                for (y in 0 until board.height) {
+                    roundRect(10 + (10 + cellSize) * x, 10 + (10 + cellSize) * y, cellSize, cellSize, 5.0)
+                }
+            }
+        }
+    }
 }
 
-private fun setupControls(stage: Stage) {
-    stage.onSwipe(20.0) {
+private fun setupControls(stage: Stage): Container {
+    val boardView = SolidRect(boardWidth, boardWidth, Colors.TRANSPARENT_WHITE)
+            .addTo(stage).position(leftIndent, topIndent)
+
+    boardView.onSwipe(20.0) {
         when (it.direction) {
             SwipeDirection.LEFT -> moveBlocksTo(stage, Direction.LEFT)
             SwipeDirection.RIGHT -> moveBlocksTo(stage, Direction.RIGHT)
@@ -168,7 +171,7 @@ private fun setupControls(stage: Stage) {
         }
     }
 
-    stage.onKeyDown {
+    boardView.onKeyDown {
         when (it.key) {
             Key.LEFT -> moveBlocksTo(stage, Direction.LEFT)
             Key.RIGHT -> moveBlocksTo(stage, Direction.RIGHT)
@@ -177,11 +180,19 @@ private fun setupControls(stage: Stage) {
             else -> Unit
         }
     }
+
+    return boardView
+}
+
+private fun restoreControls(stage: Stage) {
+    // Ensure the view is on top to receive onSwipe events
+    boardControls.addTo(stage)
 }
 
 fun computersMove(stage: Stage) {
     placeRandomBlock(stage)
     history.add(board.save(), score.value)
+    restoreControls(stage)
 }
 
 fun restoreState(stage: Stage, history: History.Element) {
@@ -190,6 +201,7 @@ fun restoreState(stage: Stage, history: History.Element) {
     newBoard.load(stage, history.pieceIds)
     score.update(history.score)
     board = newBoard
+    restoreControls(stage)
 }
 
 fun restart() {
@@ -217,15 +229,15 @@ fun showGameOver(stage: Stage, onRestart: () -> Unit) {
 
         graphics {
             fill(Colors.WHITE, 0.2) {
-                roundRect(0, 0, fieldSize, fieldSize, 5, 5)
+                roundRect(0.0, 0.0, boardWidth, boardWidth, 5.0, 5.0)
             }
         }
         text("Game Over", 60.0, Colors.BLACK, font) {
-            centerBetween(0, 0, fieldSize, fieldSize)
+            centerBetween(0.0, 0.0, boardWidth, boardWidth)
             y -= 60
         }
-        uiText("Try again", 120, 35, skin) {
-            centerBetween(0, 0, fieldSize, fieldSize)
+        uiText("Try again", 120.0, 35.0, skin) {
+            centerBetween(0.0, 0.0, boardWidth, boardWidth)
             y += 20
             onClick { restart() }
         }

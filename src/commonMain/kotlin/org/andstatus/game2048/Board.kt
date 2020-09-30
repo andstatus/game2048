@@ -8,7 +8,7 @@ class PlacedBlock(val block: Block, val square: Square)
 
 class Board(val width: Int = 4, val height: Int = 4,
             private val array: Array<Block?> = Array(width * height) { null }) {
-    val size = width * height
+    private val size = width * height
     var gameOver: Container? = null
 
     fun firstSquareToIterate(direction: Direction) = when (direction) {

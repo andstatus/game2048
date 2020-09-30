@@ -5,7 +5,7 @@ import kotlin.properties.Delegates
 
 var font: BitmapFont by Delegates.notNull()
 
-var fieldSize: Double = 0.0
+var boardWidth: Double = 0.0
 var cellSize: Double = 0.0
 var leftIndent: Double = 0.0
 var topIndent: Double = 0.0

@@ -12,7 +12,7 @@ import kotlin.random.Random
 
 // Game options. Default values are for original game,
 // see https://en.wikipedia.org/wiki/2048_(video_game)
-val allowResultingTileToMerge = false  // The resulting tile cannot merge with another tile again in the same move
+const val allowResultingTileToMerge = false  // The resulting tile cannot merge with another tile again in the same move
 
 class Move(val first: Block, val second: Block?, val destination: Square)
 
@@ -28,11 +28,13 @@ fun placeRandomBlock(stage: Stage) {
 }
 
 fun moveBlocksTo(stage: Stage, direction: Direction) {
-    if (!moveIsInProgress.compareAndSet(false, true)) return
+    if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
     if (board.noMoreMoves()) {
         showGameOver(stage) {
             restart()
+            computersMove(stage)
+            moveIsInProgress.value = false
         }
     } else {
         val (newBoard, moves) = moveBlocksOnTheBoard(board, direction)
@@ -42,10 +44,10 @@ fun moveBlocksTo(stage: Stage, direction: Direction) {
                 acc + (move.second?.piece?.value ?: 0)
             }
             score.update(score.value + points)
+            computersMove(stage)
+            moveIsInProgress.value = false
         }
     }
-    computersMove(stage)
-    moveIsInProgress.value = false
 }
 
 private fun moveBlocksOnTheBoard(prevBoard: Board, moveDirection: Direction): Pair<Board, List<Move>> {
