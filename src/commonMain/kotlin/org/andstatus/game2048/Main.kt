@@ -33,6 +33,7 @@ private var history: History by Delegates.notNull()
 
 private const val appBarTopIndent = 30.0
 private const val buttonPadding = 18.0
+private val bgColor = Colors["#b9aea0"]
 const val buttonRadius = 5.0
 private var buttonSize : Double = 0.0
 private var boardControls: Container by Delegates.notNull()
@@ -81,7 +82,7 @@ private suspend fun setupAppBar(stage: Stage) {
     stage.text("2048", cellSize * 0.5, Colors.WHITE, font).centerOn(bgLogo)
 
     val restartBlock = stage.container {
-        val background = roundRect(buttonSize, buttonSize, buttonRadius, color = RGBA(185, 174, 160))
+        val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
         image(resourcesVfs["restart.png"].readBitmap()) {
             size(buttonSize * 0.8, buttonSize * 0.8)
             centerOn(background)
@@ -95,7 +96,7 @@ private suspend fun setupAppBar(stage: Stage) {
     }
 
     stage.container {
-        val background = roundRect(buttonSize, buttonSize, buttonRadius, color = RGBA(185, 174, 160))
+        val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
         image(resourcesVfs["undo.png"].readBitmap()) {
             size(buttonSize * 0.6, buttonSize * 0.6)
             centerOn(background)
@@ -109,7 +110,7 @@ private suspend fun setupAppBar(stage: Stage) {
 }
 
 private fun setupStaticViews(stage: Stage) {
-    val bgBest = stage.roundRect(cellSize * 1.5, buttonSize, buttonRadius, color = Colors["#bbae9e"]) {
+    val bgBest = stage.roundRect(cellSize * 1.5, buttonSize, buttonRadius, color = bgColor) {
         position(leftIndent + boardWidth - cellSize * 1.5, appBarTopIndent + buttonSize + buttonPadding)
     }
     stage.text("BEST", cellSize * 0.25, RGBA(239, 226, 210), font) {
@@ -126,7 +127,7 @@ private fun setupStaticViews(stage: Stage) {
         }
     }
 
-    val bgScore = stage.roundRect(cellSize * 1.5, buttonSize, buttonRadius, color = Colors["#bbae9e"]) {
+    val bgScore = stage.roundRect(cellSize * 1.5, buttonSize, buttonRadius, color = bgColor) {
         alignRightToLeftOf(bgBest, buttonPadding)
         alignTopToTopOf(bgBest)
     }
@@ -144,7 +145,7 @@ private fun setupStaticViews(stage: Stage) {
         }
     }
 
-    stage.roundRect(boardWidth, boardWidth, buttonRadius, color = Colors["#b9aea0"]) {
+    stage.roundRect(boardWidth, boardWidth, buttonRadius, color = bgColor) {
         position(leftIndent, topIndent)
     }
     stage.graphics {
