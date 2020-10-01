@@ -34,7 +34,7 @@ fun moveBlocksTo(stage: Stage, direction: Direction) {
         }
     } else {
         val (newBoard, moves) = moveBlocksOnTheBoard(board, direction)
-        if (moves.isEmpty() && !allowUsersMoveWithoutBlockMoves) {
+        if (moves.isEmpty() && !settings.allowUsersMoveWithoutBlockMoves) {
             moveIsInProgress.value = false
         } else {
             board = newBoard
@@ -67,7 +67,7 @@ private fun moveBlocksOnTheBoard(prevBoard: Board, moveDirection: Direction): Pa
                 board[square] = Block(found.block.piece.next())
                 board[next.square] = null
                 moves += Move(found.block, next.block, square)
-                if (!allowResultingTileToMerge) {
+                if (!settings.allowResultingTileToMerge) {
                     square = square.nextToIterate(direction, board)
                 }
             } else {

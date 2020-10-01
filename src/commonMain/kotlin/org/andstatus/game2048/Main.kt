@@ -67,6 +67,7 @@ private fun Stage.setupStorage() {
     )
     storage[keyOpened] = DateTime.now().toString()
 
+    loadSettings(storage)
     history = History(storage.getOrNull(keyHistory)) { storage[keyHistory] = it.toString() }
     score.observe {
         if (it > bestScore.value) bestScore.update(it)
@@ -96,7 +97,7 @@ private suspend fun setupAppBar(stage: Stage) {
         }
     }
 
-    if (allowUndo) {
+    if (settings.allowUndo) {
         stage.container {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
             image(resourcesVfs["undo.png"].readBitmap()) {
