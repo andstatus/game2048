@@ -109,7 +109,7 @@ private suspend fun setupAppBar(stage: Stage) {
         position(nextXPosition, appBarTopIndent)
         nextXPosition -= buttonSize + buttonPadding
         onClick {
-            restoreState(stage, history.redo())
+            history.redo()?.let { restoreState(stage, it) }
         }
     }
 
@@ -122,7 +122,7 @@ private suspend fun setupAppBar(stage: Stage) {
         position(nextXPosition, appBarTopIndent)
         nextXPosition -= buttonSize + buttonPadding
         onClick {
-            restoreState(stage, history.undo())
+            history.undo()?.let { restoreState(stage, it) }
         }
     }
 

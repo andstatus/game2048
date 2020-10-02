@@ -1,6 +1,10 @@
 package org.andstatus.game2048
 
+import com.soywiz.klogger.Console
+import com.soywiz.klogger.log
+
 class History(from: String?, private val onUpdate: (History) -> Unit) {
+    var historyIndex = -1
 
     data class Element(val pieceIds: IntArray, val score: Int) {
         override fun equals(other: Any?): Boolean {
@@ -23,47 +27,65 @@ class History(from: String?, private val onUpdate: (History) -> Unit) {
     }
 
     private val elements = mutableListOf<Element>()
-    val currentElement: Element? get() = if (elements.isEmpty()) null else elements.last()
+    val currentElement: Element?
+        get() = when {
+            elements.isEmpty() -> null
+            historyIndex < 0 -> elements.last()
+            else -> elements[historyIndex]
+        }
 
     init {
         from?.split(';')?.forEach {
-            val element = elementFromString(it)
-            elements.add(element)
+            elementFromString(it)?.let{
+                elements.add(it)
+            }
         }
     }
 
-    private fun elementFromString(string: String): Element {
+    private fun elementFromString(string: String): Element? {
+        if (string.isEmpty()) {
+            Console.log("elementFromString: String is empty")
+            return null
+        }
         val numbers = string.split(',').map { it.toInt() }
-        if (numbers.size != 17) throw IllegalArgumentException("Incorrect history")
+        if (numbers.size != 17) {
+            Console.log("elementFromString: Invalid history '$string'")
+            return null
+        }
         return Element(IntArray(16) { numbers[it] }, numbers[16])
     }
 
     fun add(pieceIds: IntArray, score: Int) {
         val element = Element(pieceIds, score)
-        if (elements.isEmpty() || currentElement != element) {
-            elements.add(element)
-            onUpdate(this)
+        while (historyIndex >= 0 && (historyIndex < elements.size - 1)) {
+            elements.removeAt(elements.size - 1)
         }
+        historyIndex = -1
+
+        if (elements.isEmpty() || elements.last() != element) {
+            elements.add(element)
+        }
+        onUpdate(this)
     }
 
     fun canUndo(): Boolean {
-        return settings.allowUndo && elements.size > 1  // TODO
+        return settings.allowUndo && elements.size > 1 && historyIndex != 0
     }
 
-    fun undo(): Element {
-        if (elements.size > 1) {
-            elements.removeAt(elements.size - 1)
-            onUpdate(this)
+    fun undo(): Element? {
+        if (canUndo()) {
+            if (historyIndex < 0) historyIndex = elements.size - 2 else historyIndex--
         }
-        return elements.last()
+        return currentElement
     }
 
     fun canRedo(): Boolean {
-        return elements.size > 3 // TODO
+        return historyIndex >= 0 && historyIndex < elements.size - 1
     }
 
-    fun redo(): Element {
-        TODO("Not yet implemented")
+    fun redo(): Element? {
+        if (canRedo()) historyIndex++
+        return currentElement
     }
 
     fun clear() {
