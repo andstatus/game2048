@@ -77,39 +77,69 @@ private fun Stage.setupStorage() {
     }
 }
 
+var undoButton: Container by Delegates.notNull()
+var redoButton: Container by Delegates.notNull()
 private suspend fun setupAppBar(stage: Stage) {
     val bgLogo = stage.roundRect(cellSize, cellSize, buttonRadius, color = RGBA(237, 196, 3)) {
         position(leftIndent, appBarTopIndent)
     }
     stage.text("2048", cellSize * 0.5, Colors.WHITE, font).centerOn(bgLogo)
 
-    val restartBlock = stage.container {
+    var nextXPosition = leftIndent + boardWidth - buttonSize
+    stage.container {
         val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
         image(resourcesVfs["restart.png"].readBitmap()) {
             size(buttonSize * 0.8, buttonSize * 0.8)
             centerOn(background)
         }
-        positionX(leftIndent + boardWidth - buttonSize)
-        alignTopToTopOf(bgLogo)
+        position(nextXPosition, appBarTopIndent)
+        nextXPosition -= buttonSize + buttonPadding
         onClick {
             restart()
             computersMove(stage)
         }
     }
 
-    if (settings.allowUndo) {
-        stage.container {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
-            image(resourcesVfs["undo.png"].readBitmap()) {
-                size(buttonSize * 0.6, buttonSize * 0.6)
-                centerOn(background)
-            }
-            alignTopToTopOf(restartBlock)
-            alignRightToLeftOf(restartBlock, buttonPadding)
-            onClick {
-                restoreState(stage, history.undo())
-            }
+    redoButton = Container().apply {
+        val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
+        image(resourcesVfs["redo.png"].readBitmap()) {
+            size(buttonSize * 0.6, buttonSize * 0.6)
+            centerOn(background)
         }
+        position(nextXPosition, appBarTopIndent)
+        nextXPosition -= buttonSize + buttonPadding
+        onClick {
+            restoreState(stage, history.redo())
+        }
+    }
+
+    undoButton = Container().apply {
+        val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
+        image(resourcesVfs["undo.png"].readBitmap()) {
+            size(buttonSize * 0.6, buttonSize * 0.6)
+            centerOn(background)
+        }
+        position(nextXPosition, appBarTopIndent)
+        nextXPosition -= buttonSize + buttonPadding
+        onClick {
+            restoreState(stage, history.undo())
+        }
+    }
+
+    showAppBar(stage)
+}
+
+private fun showAppBar(stage: Stage) {
+    if (history.canRedo()) {
+        redoButton.addTo(stage)
+    } else {
+        redoButton.removeFromParent()
+    }
+
+    if (history.canUndo()) {
+        undoButton.addTo(stage)
+    } else {
+        undoButton.removeFromParent()
     }
 }
 
@@ -192,6 +222,7 @@ private fun setupControls(stage: Stage): Container {
 }
 
 private fun restoreControls(stage: Stage) {
+    showAppBar(stage)
     // Ensure the view is on top to receive onSwipe events
     boardControls.addTo(stage)
 }

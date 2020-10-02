@@ -46,12 +46,24 @@ class History(from: String?, private val onUpdate: (History) -> Unit) {
         }
     }
 
+    fun canUndo(): Boolean {
+        return settings.allowUndo && elements.size > 1  // TODO
+    }
+
     fun undo(): Element {
         if (elements.size > 1) {
             elements.removeAt(elements.size - 1)
             onUpdate(this)
         }
         return elements.last()
+    }
+
+    fun canRedo(): Boolean {
+        return elements.size > 3 // TODO
+    }
+
+    fun redo(): Element {
+        TODO("Not yet implemented")
     }
 
     fun clear() {

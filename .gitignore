@@ -3,4 +3,5 @@
 /build
 *.iml
 *.storage
+*.json
 local.properties
