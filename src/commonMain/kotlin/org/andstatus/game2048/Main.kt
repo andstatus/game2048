@@ -31,8 +31,8 @@ val bestScore = ObservableProperty(0)
 
 private var history: History by Delegates.notNull()
 
-private const val appBarTopIndent = 30.0
 private const val buttonPadding = 18.0
+private const val appBarTopIndent = buttonPadding
 private val bgColor = Colors["#b9aea0"]
 const val buttonRadius = 5.0
 private var buttonSize : Double = 0.0
@@ -77,13 +77,13 @@ private fun Stage.setupStorage() {
     }
 }
 
-var undoButton: Container by Delegates.notNull()
-var redoButton: Container by Delegates.notNull()
+private var undoButton: Container by Delegates.notNull()
+private var redoButton: Container by Delegates.notNull()
 private suspend fun setupAppBar(stage: Stage) {
-    val bgLogo = stage.roundRect(cellSize, cellSize, buttonRadius, color = RGBA(237, 196, 3)) {
+    val bgLogo = stage.roundRect(buttonSize, buttonSize, buttonRadius, color = RGBA(237, 196, 3)) {
         position(leftIndent, appBarTopIndent)
     }
-    stage.text("2048", cellSize * 0.5, Colors.WHITE, font).centerOn(bgLogo)
+    stage.text("2048", cellSize * 0.4, Colors.WHITE, font).centerOn(bgLogo)
 
     var nextXPosition = leftIndent + boardWidth - buttonSize
     stage.container {
