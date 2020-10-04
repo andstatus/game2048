@@ -21,6 +21,10 @@ If you found the project useful, please
 <img alt="Main screen of Game2048" src="doc/screenshots/game2048.png" height="400" />
 </p>
 
+## Additional features of Game2048 that are not present in the original game
+
+* Unlimited Undo and Redo.
+
 # How to run the project
 
 The implementation uses the [KorGe template project](https://github.com/korlibs/korge-hello-world#readme).
