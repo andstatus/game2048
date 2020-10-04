@@ -1,15 +1,12 @@
 package org.andstatus.game2048
 
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Stage
 import kotlin.random.Random
 
-class PlacedBlock(val block: Block, val square: Square)
+class PlacedPiece(val piece: Piece, val square: Square)
 
-class Board(val width: Int = 4, val height: Int = 4,
-            private val array: Array<Block?> = Array(width * height) { null }) {
+class Board(val width: Int = settings.boardWidth, val height: Int = settings.boardHeight,
+            private val array: Array<Piece?> = Array(width * height) { null }) {
     private val size = width * height
-    var gameOver: Container? = null
 
     fun firstSquareToIterate(direction: Direction) = when (direction) {
         Direction.LEFT, Direction.UP -> Square(width - 1, height - 1)
@@ -17,7 +14,7 @@ class Board(val width: Int = 4, val height: Int = 4,
     }
 
     fun getRandomFreeSquare(): Square? =
-        count { it == null }.let {
+        (size - count { true }).let {
             if (it == 0) null else findFreeSquare(Random.nextInt(it))
         }
 
@@ -32,11 +29,24 @@ class Board(val width: Int = 4, val height: Int = 4,
         return null
     }
 
-    private inline fun count(predicate: (Block?) -> Boolean): Int =
-            fold(0) { acc, b -> if (predicate(b)) acc + 1 else acc }
+    fun pieces(): List<PlacedPiece> = fold(ArrayList(0)) { list, placedPiece ->
+        list.apply { add(placedPiece) }
+    }
 
-    private inline fun <R> fold(initial: R, operation: (R, Block?) -> R): R =
-            array.fold(initial) { acc1, b -> operation(acc1, b) }
+    private inline fun <R> fold(initial: R, operation: (R, PlacedPiece) -> R): R {
+        var acc: R = initial
+        array.forEachIndexed { ind, nullableBlock ->
+            ind.toSquare()?.let { square ->
+                nullableBlock?.let { piece ->
+                    acc = operation(acc, PlacedPiece(piece, square))
+                }
+            }
+        }
+        return acc
+    }
+
+    private inline fun count(predicate: (PlacedPiece) -> Boolean): Int =
+        fold(0) { acc, p: PlacedPiece -> if(predicate(p)) acc + 1 else acc }
 
     private fun Int.toSquare(): Square? {
         if (this < 0 || this >= size) return null
@@ -48,31 +58,31 @@ class Board(val width: Int = 4, val height: Int = 4,
         array.forEachIndexed { ind, nullableBlock ->
             ind.toSquare()?.let { square ->
                 nullableBlock?.let { block ->
-                    if (PlacedBlock(block, square).hasMove()) return false
+                    if (PlacedPiece(block, square).hasMove()) return false
                 }
             }
         }
         return true
     }
 
-    private fun PlacedBlock.hasMove(): Boolean {
+    private fun PlacedPiece.hasMove(): Boolean {
         return hasMoveInThe(Direction.LEFT) ||
                 hasMoveInThe(Direction.RIGHT) ||
                 hasMoveInThe(Direction.UP) ||
                 hasMoveInThe(Direction.DOWN)
     }
 
-    private fun PlacedBlock.hasMoveInThe(direction: Direction): Boolean {
+    private fun PlacedPiece.hasMoveInThe(direction: Direction): Boolean {
         return square.nextInThe(direction, this@Board)
                 ?.let { square ->
-                    get(square)?.let {it.piece == block.piece} ?: true
+                    get(square)?.let {it == piece} ?: true
                 }
                 ?: false
     }
 
-    operator fun get(square: Square): Block? = square.toInd()?.let { array[it] }
+    operator fun get(square: Square): Piece? = square.toInd()?.let { array[it] }
 
-    operator fun set(square: Square, value: Block?) {
+    operator fun set(square: Square, value: Piece?) {
         square.toInd()?.let { array[it] = value }
     }
 
@@ -82,24 +92,17 @@ class Board(val width: Int = 4, val height: Int = 4,
         else x + y * width
     }
 
-    fun save() = IntArray(size) { array[it]?.piece?.id ?: 0 }
+    fun save() = IntArray(size) { array[it]?.id ?: 0 }
 
-    fun load(stage: Stage, ids: IntArray) {
+    fun load(ids: IntArray) {
         ids.forEachIndexed { ind, id ->
             ind.toSquare()?.let { square ->
                 id.toPiece()?.let { piece ->
-                    set(square, Block(piece).addTo(stage, square))
+                    set(square, piece)
                 }
             }
         }
     }
 
-    fun removeFromParent() {
-        gameOver?.removeFromParent()
-        array.forEach { block -> block?.removeFromParent() }
-    }
-
-    fun copy() = Board(width, height, array.copyOf()).apply {
-        gameOver = this@Board.gameOver
-    }
+    fun copy() = Board(width, height, array.copyOf())
 }

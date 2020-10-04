@@ -35,12 +35,12 @@ data class Square(val x: Int, val y: Int) {
             }
 
     /** Starting from the square, search for a block in the direction */
-    fun nextPlacedBlockInThe(direction: Direction, board: Board): PlacedBlock? {
+    fun nextPlacedPieceInThe(direction: Direction, board: Board): PlacedPiece? {
         when (direction) {
-            Direction.LEFT -> for (x1 in x downTo 0) board[Square(x1, y)]?.let { return PlacedBlock(it, Square(x1, y)) }
-            Direction.RIGHT -> for (x1 in x until board.width) board[Square(x1, y)]?.let { return PlacedBlock(it, Square(x1, y)) }
-            Direction.UP -> for (y1 in y downTo 0) board[Square(x, y1)]?.let { return PlacedBlock(it, Square(x, y1)) }
-            Direction.DOWN -> for (y1 in y until board.height) board[Square(x, y1)]?.let { return PlacedBlock(it, Square(x, y1)) }
+            Direction.LEFT -> for (x1 in x downTo 0) board[Square(x1, y)]?.let { return PlacedPiece(it, Square(x1, y)) }
+            Direction.RIGHT -> for (x1 in x until board.width) board[Square(x1, y)]?.let { return PlacedPiece(it, Square(x1, y)) }
+            Direction.UP -> for (y1 in y downTo 0) board[Square(x, y1)]?.let { return PlacedPiece(it, Square(x, y1)) }
+            Direction.DOWN -> for (y1 in y until board.height) board[Square(x, y1)]?.let { return PlacedPiece(it, Square(x, y1)) }
         }
         return null
     }

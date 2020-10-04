@@ -25,12 +25,6 @@ import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.vector.roundRect
 import kotlin.properties.Delegates
 
-var board = Board()
-val score = ObservableProperty(0)
-val bestScore = ObservableProperty(0)
-
-private var history: History by Delegates.notNull()
-
 private const val buttonPadding = 18.0
 private const val appBarTopIndent = buttonPadding
 private val bgColor = Colors["#b9aea0"]
@@ -38,16 +32,26 @@ const val buttonRadius = 5.0
 private var buttonSize : Double = 0.0
 private var boardControls: Container by Delegates.notNull()
 
+var presenter: Presenter by Delegates.notNull()
+var board: Board by Delegates.notNull()
+val score = ObservableProperty(0)
+val bestScore = ObservableProperty(0)
+
+private var history: History by Delegates.notNull()
+
 suspend fun main() = Korge(width = 480, height = 680, title = "2048", bgcolor = Colors["#fdf7f0"]) {
+    loadState(this)
+
     font = resourcesVfs["clear_sans.fnt"].readBitmapFont()
-    val allCellMargins = cellMargin * (board.width + 1)
-    cellSize = (stage.views.virtualWidth - allCellMargins - 2 * buttonPadding) / board.width
+    val allCellMargins = cellMargin * (settings.boardWidth + 1)
+    cellSize = (stage.views.virtualWidth - allCellMargins - 2 * buttonPadding) / settings.boardWidth
     buttonSize = cellSize * 0.8
-    boardWidth = cellSize * board.width + allCellMargins
+    boardWidth = cellSize * settings.boardWidth + allCellMargins
     leftIndent = (stage.views.virtualWidth - boardWidth) / 2
     topIndent = appBarTopIndent + buttonSize + buttonPadding + buttonSize + buttonPadding
 
-    setupStorage()
+    board = Board()
+    presenter = Presenter(this)
     setupAppBar(this)
     setupStaticViews(this)
     boardControls = setupControls(this)
@@ -55,8 +59,8 @@ suspend fun main() = Korge(width = 480, height = 680, title = "2048", bgcolor = 
     history.currentElement?.let { restoreState(this, it) } ?: computersMove(this)
 }
 
-private fun Stage.setupStorage() {
-    val storage = NativeStorage(views)
+private fun loadState(stage: Stage) {
+    val storage = NativeStorage(stage.views)
     val keyOpened = "opened"
     val keyBest = "best"
     val keyHistory = "history"
@@ -68,6 +72,7 @@ private fun Stage.setupStorage() {
     storage[keyOpened] = DateTime.now().toString()
 
     loadSettings(storage)
+    bestScore.update(storage.getOrNull(keyBest)?.toInt() ?: 0)
     history = History(storage.getOrNull(keyHistory)) { storage[keyHistory] = it.toString() }
     score.observe {
         if (it > bestScore.value) bestScore.update(it)
@@ -185,8 +190,8 @@ private fun setupStaticViews(stage: Stage) {
     stage.graphics {
         position(leftIndent, topIndent)
         fill(Colors["#cec0b2"]) {
-            for (x in 0 until board.width) {
-                for (y in 0 until board.height) {
+            for (x in 0 until settings.boardWidth) {
+                for (y in 0 until settings.boardHeight) {
                     roundRect(cellMargin + (cellMargin + cellSize) * x, cellMargin + (cellMargin + cellSize) * y,
                             cellSize, cellSize, buttonRadius)
                 }
@@ -201,19 +206,19 @@ private fun setupControls(stage: Stage): Container {
 
     boardView.onSwipe(20.0) {
         when (it.direction) {
-            SwipeDirection.LEFT -> moveBlocksTo(stage, Direction.LEFT)
-            SwipeDirection.RIGHT -> moveBlocksTo(stage, Direction.RIGHT)
-            SwipeDirection.TOP -> moveBlocksTo(stage, Direction.UP)
-            SwipeDirection.BOTTOM -> moveBlocksTo(stage, Direction.DOWN)
+            SwipeDirection.LEFT -> presenter.moveBlocksTo(Direction.LEFT)
+            SwipeDirection.RIGHT -> presenter.moveBlocksTo(Direction.RIGHT)
+            SwipeDirection.TOP -> presenter.moveBlocksTo(Direction.UP)
+            SwipeDirection.BOTTOM -> presenter.moveBlocksTo(Direction.DOWN)
         }
     }
 
     boardView.onKeyDown {
         when (it.key) {
-            Key.LEFT -> moveBlocksTo(stage, Direction.LEFT)
-            Key.RIGHT -> moveBlocksTo(stage, Direction.RIGHT)
-            Key.UP -> moveBlocksTo(stage, Direction.UP)
-            Key.DOWN -> moveBlocksTo(stage, Direction.DOWN)
+            Key.LEFT -> presenter.moveBlocksTo(Direction.LEFT)
+            Key.RIGHT -> presenter.moveBlocksTo(Direction.RIGHT)
+            Key.UP -> presenter.moveBlocksTo(Direction.UP)
+            Key.DOWN -> presenter.moveBlocksTo(Direction.DOWN)
             else -> Unit
         }
     }
@@ -228,22 +233,23 @@ private fun restoreControls(stage: Stage) {
 }
 
 fun computersMove(stage: Stage) {
-    placeRandomBlock(stage)
+    presenter.placeRandomBlock()
     history.add(board.save(), score.value)
     restoreControls(stage)
 }
 
 fun restoreState(stage: Stage, history: History.Element) {
-    board.removeFromParent()
+    presenter.boardViews.removeFromParent()
     val newBoard = Board()
-    newBoard.load(stage, history.pieceIds)
+    newBoard.load(history.pieceIds)
+    presenter.boardViews.load(newBoard)
     score.update(history.score)
     board = newBoard
     restoreControls(stage)
 }
 
 fun restart() {
-    board.removeFromParent()
+    presenter.boardViews.removeFromParent()
     board = Board()
     score.update(0)
     history.clear()
@@ -286,6 +292,6 @@ fun showGameOver(stage: Stage, onRestart: () -> Unit) {
             }
         }
     }
-    board = board.apply { gameOver?.removeFromParent() }
+    presenter.boardViews = presenter.boardViews.apply { gameOver?.removeFromParent() }
             .copy().apply { gameOver = newGameOver }
 }

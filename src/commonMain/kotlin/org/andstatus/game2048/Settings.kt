@@ -18,6 +18,8 @@ class Settings {
     var allowResultingTileToMerge = false
     var allowUsersMoveWithoutBlockMoves = false
     var allowUndo = true  // Default == false
+    var boardWidth = 4
+    var boardHeight = boardWidth
 
     fun save(storage: NativeStorage) {
         storage.setBoolean(keyAllowResultingTileToMerge, allowResultingTileToMerge)
