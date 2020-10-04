@@ -21,8 +21,17 @@ class BoardViews(val stage: Stage, val width: Int = 4, val height: Int = 4,
     }
 
     fun load(board: Board) {
+        removeFromParent()
+        clear()
         board.pieces().forEach {
             set(it.square, Block(it.piece).addTo(stage, it.square))
+        }
+    }
+
+    private fun clear() {
+        gameOver = null
+        array.forEachIndexed { index, block ->
+            array[index] = null
         }
     }
 

@@ -8,46 +8,44 @@ import com.soywiz.korge.view.Stage
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.concurrent.atomic.KorAtomicBoolean
 import com.soywiz.korma.interpolation.Easing
-import kotlin.random.Random
 
-class Presenter(val stage: Stage) {
+class Presenter(private val stage: Stage) {
+    private val model = Model()
     private val moveIsInProgress = KorAtomicBoolean(false)
-    var boardViews = BoardViews(stage, settings.boardWidth, settings.boardHeight)
+    private var boardViews = BoardViews(stage, settings.boardWidth, settings.boardHeight)
 
-    fun placeRandomBlock() {
-        val newBoard = board.copy()
-        val square = newBoard.getRandomFreeSquare() ?: return
+    fun firstMove() = model.firstMove().present()
 
-        val piece = if (Random.nextDouble() < 0.9) Piece.N2 else Piece.N4
-        newBoard[square] = piece
-        boardViews[square] = Block(piece).addTo(stage, square)
-        board = newBoard
-    }
+    fun canUndo(): Boolean = model.canUndo()
+
+    fun canRedo(): Boolean = model.canRedo()
+
+    fun undo() = model.undo().present()
+
+    fun redo() = model.redo().present()
+
+    fun restart() = model.restart().present()
 
     fun moveBlocksTo(direction: Direction) {
+        if (model.noMoreMoves()) {
+            val newGameOver = showGameOver(stage) {
+                restart()
+                moveIsInProgress.value = false
+            }
+            boardViews = presenter.boardViews.apply { gameOver?.removeFromParent() }
+                    .copy().apply { gameOver = newGameOver }
+        } else {
+            model.moveBlocksOnTheBoard(direction).present()
+        }
+    }
+
+    fun List<Move>.present() {
+        if (isEmpty()) return
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
-        if (board.noMoreMoves()) {
-            showGameOver(stage) {
-                restart()
-                computersMove(stage)
-                moveIsInProgress.value = false
-            }
-        } else {
-            val (newBoard, moves) = moveBlocksOnTheBoard(board, direction)
-            if (moves.isEmpty() && !settings.allowUsersMoveWithoutBlockMoves) {
-                moveIsInProgress.value = false
-            } else {
-                board = newBoard
-                animateMoves(stage, moves) {
-                    val points = moves.fold(0) { acc, move ->
-                        acc + (move.second?.piece?.value ?: 0)
-                    }
-                    score.update(score.value + points)
-                    computersMove(stage)
-                    moveIsInProgress.value = false
-                }
-            }
+        animateMoves(stage, this) {
+            restoreControls(stage)
+            moveIsInProgress.value = false
         }
     }
 
@@ -55,23 +53,35 @@ class Presenter(val stage: Stage) {
         stage.animateSequence {
             parallel {
                 moves.forEach { move ->
-                    val firstBlock = boardViews.get(move.first.square)
-                    if (move.second == null) {
-                        firstBlock?.move(this, move.first.square, move.destination)
-                    } else {
-                        val secondBlock = boardViews.get(move.second.square)
-                        sequence {
-                            parallel {
-                                firstBlock?.move(this, move.first.square, move.destination)
-                                secondBlock?.move(this, move.second.square, move.destination)
-                            }
-                            block {
-                                firstBlock?.removeFromParent()
-                                secondBlock?.removeFromParent()
-                                board[move.destination]?.let { boardViews.addBlock(PlacedPiece(it, move.destination)) }
-                            }
-                            sequenceLazy {
-                                boardViews[move.destination]?.let { animateResultingBlock(this, it) }
+                    when(move) {
+                        is MovePlace -> {
+                            boardViews[move.first.square] = Block(move.first.piece).addTo(stage, move.first.square)
+                        }
+                        is MoveLoad -> {
+                            boardViews.load(move.board)
+                            score.update(move.points)
+                            restoreControls(stage)
+                        }
+                        is MoveOne -> {
+                            val firstBlock = boardViews.get(move.first.square)
+                            firstBlock?.move(this, move.first.square, move.destination)
+                        }
+                        is MoveMerge -> {
+                            val firstBlock = boardViews.get(move.first.square)
+                            val secondBlock = boardViews.get(move.second.square)
+                            sequence {
+                                parallel {
+                                    firstBlock?.move(this, move.first.square, move.merged.square)
+                                    secondBlock?.move(this, move.second.square, move.merged.square)
+                                }
+                                block {
+                                    firstBlock?.removeFromParent()
+                                    secondBlock?.removeFromParent()
+                                    boardViews.addBlock(move.merged)
+                                }
+                                sequenceLazy {
+                                    boardViews[move.merged.square]?.let { animateResultingBlock(this, it) }
+                                }
                             }
                         }
                     }

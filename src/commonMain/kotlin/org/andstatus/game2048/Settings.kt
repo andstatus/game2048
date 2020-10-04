@@ -13,7 +13,7 @@ private const val keyAllowResultingTileToMerge = "allowResultingTileToMerge"
 private const val keyAllowUsersMoveWithoutBlockMoves = "allowUsersMoveWithoutBlockMoves"
 private const val keyAllowUndo = "allowUndo"
 
-class Settings {
+class Settings(val storage: NativeStorage) {
     // false: The resulting tile cannot merge with another tile again in the same move
     var allowResultingTileToMerge = false
     var allowUsersMoveWithoutBlockMoves = false
@@ -34,7 +34,7 @@ class Settings {
 }
 
 fun loadSettings(storage: NativeStorage) {
-    settings = Settings().apply {
+    settings = Settings(storage).apply {
         storage.getOrNull(keyAllowResultingTileToMerge)?.let{
             allowResultingTileToMerge = it.toBoolean()
         } ?: run {

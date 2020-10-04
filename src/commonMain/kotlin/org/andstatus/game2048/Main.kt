@@ -33,14 +33,11 @@ private var buttonSize : Double = 0.0
 private var boardControls: Container by Delegates.notNull()
 
 var presenter: Presenter by Delegates.notNull()
-var board: Board by Delegates.notNull()
 val score = ObservableProperty(0)
 val bestScore = ObservableProperty(0)
 
-private var history: History by Delegates.notNull()
-
 suspend fun main() = Korge(width = 480, height = 680, title = "2048", bgcolor = Colors["#fdf7f0"]) {
-    loadState(this)
+    loadSettings(this)
 
     font = resourcesVfs["clear_sans.fnt"].readBitmapFont()
     val allCellMargins = cellMargin * (settings.boardWidth + 1)
@@ -50,20 +47,18 @@ suspend fun main() = Korge(width = 480, height = 680, title = "2048", bgcolor = 
     leftIndent = (stage.views.virtualWidth - boardWidth) / 2
     topIndent = appBarTopIndent + buttonSize + buttonPadding + buttonSize + buttonPadding
 
-    board = Board()
     presenter = Presenter(this)
     setupAppBar(this)
     setupStaticViews(this)
     boardControls = setupControls(this)
 
-    history.currentElement?.let { restoreState(this, it) } ?: computersMove(this)
+    presenter.firstMove()
 }
 
-private fun loadState(stage: Stage) {
+private fun loadSettings(stage: Stage) {
     val storage = NativeStorage(stage.views)
     val keyOpened = "opened"
     val keyBest = "best"
-    val keyHistory = "history"
 
     Console.log("Storage: $storage" +
             (storage.getOrNull(keyOpened)?.let { "\n last opened: $it" } ?: "\n storage is new") +
@@ -73,7 +68,6 @@ private fun loadState(stage: Stage) {
 
     loadSettings(storage)
     bestScore.update(storage.getOrNull(keyBest)?.toInt() ?: 0)
-    history = History(storage.getOrNull(keyHistory)) { storage[keyHistory] = it.toString() }
     score.observe {
         if (it > bestScore.value) bestScore.update(it)
     }
@@ -100,8 +94,7 @@ private suspend fun setupAppBar(stage: Stage) {
         position(nextXPosition, appBarTopIndent)
         nextXPosition -= buttonSize + buttonPadding
         onClick {
-            restart()
-            computersMove(stage)
+            presenter.restart()
         }
     }
 
@@ -114,7 +107,7 @@ private suspend fun setupAppBar(stage: Stage) {
         position(nextXPosition, appBarTopIndent)
         nextXPosition -= buttonSize + buttonPadding
         onClick {
-            history.redo()?.let { restoreState(stage, it) }
+            presenter.redo()
         }
     }
 
@@ -127,7 +120,7 @@ private suspend fun setupAppBar(stage: Stage) {
         position(nextXPosition, appBarTopIndent)
         nextXPosition -= buttonSize + buttonPadding
         onClick {
-            history.undo()?.let { restoreState(stage, it) }
+            presenter.undo()
         }
     }
 
@@ -135,13 +128,13 @@ private suspend fun setupAppBar(stage: Stage) {
 }
 
 private fun showAppBar(stage: Stage) {
-    if (history.canRedo()) {
+    if (presenter.canRedo()) {
         redoButton.addTo(stage)
     } else {
         redoButton.removeFromParent()
     }
 
-    if (history.canUndo()) {
+    if (presenter.canUndo()) {
         undoButton.addTo(stage)
     } else {
         undoButton.removeFromParent()
@@ -226,72 +219,45 @@ private fun setupControls(stage: Stage): Container {
     return boardView
 }
 
-private fun restoreControls(stage: Stage) {
+fun restoreControls(stage: Stage) {
     showAppBar(stage)
     // Ensure the view is on top to receive onSwipe events
     boardControls.addTo(stage)
 }
 
-fun computersMove(stage: Stage) {
-    presenter.placeRandomBlock()
-    history.add(board.save(), score.value)
-    restoreControls(stage)
-}
+fun showGameOver(stage: Stage, onRestart: () -> Unit): Container = stage.container {
+    val format = TextFormat(RGBA(0, 0, 0), 40, Html.FontFace.Bitmap(font))
+    val skin = TextSkin(
+            normal = format,
+            over = format.copy(RGBA(90, 90, 90)),
+            down = format.copy(RGBA(120, 120, 120))
+    )
 
-fun restoreState(stage: Stage, history: History.Element) {
-    presenter.boardViews.removeFromParent()
-    val newBoard = Board()
-    newBoard.load(history.pieceIds)
-    presenter.boardViews.load(newBoard)
-    score.update(history.score)
-    board = newBoard
-    restoreControls(stage)
-}
+    fun restart() {
+        removeFromParent()
+        onRestart()
+    }
 
-fun restart() {
-    presenter.boardViews.removeFromParent()
-    board = Board()
-    score.update(0)
-    history.clear()
-}
+    position(leftIndent, topIndent)
 
-fun showGameOver(stage: Stage, onRestart: () -> Unit) {
-    val newGameOver = stage.container {
-        val format = TextFormat(RGBA(0, 0, 0), 40, Html.FontFace.Bitmap(font))
-        val skin = TextSkin(
-                normal = format,
-                over = format.copy(RGBA(90, 90, 90)),
-                down = format.copy(RGBA(120, 120, 120))
-        )
-
-        fun restart() {
-            removeFromParent()
-            onRestart()
-        }
-
-        position(leftIndent, topIndent)
-
-        graphics {
-            fill(Colors.WHITE, 0.2) {
-                roundRect(0.0, 0.0, boardWidth, boardWidth, buttonRadius)
-            }
-        }
-        text("Game Over", 60.0, Colors.BLACK, font) {
-            centerBetween(0.0, 0.0, boardWidth, boardWidth)
-            y -= 60
-        }
-        uiText("Try again", 120.0, 35.0, skin) {
-            centerBetween(0.0, 0.0, boardWidth, boardWidth)
-            y += 20
-            onClick { restart() }
-        }
-        onKeyDown {
-            when (it.key) {
-                Key.ENTER, Key.SPACE -> restart()
-                else -> Unit
-            }
+    graphics {
+        fill(Colors.WHITE, 0.2) {
+            roundRect(0.0, 0.0, boardWidth, boardWidth, buttonRadius)
         }
     }
-    presenter.boardViews = presenter.boardViews.apply { gameOver?.removeFromParent() }
-            .copy().apply { gameOver = newGameOver }
+    text("Game Over", 60.0, Colors.BLACK, font) {
+        centerBetween(0.0, 0.0, boardWidth, boardWidth)
+        y -= 60
+    }
+    uiText("Try again", 120.0, 35.0, skin) {
+        centerBetween(0.0, 0.0, boardWidth, boardWidth)
+        y += 20
+        onClick { restart() }
+    }
+    onKeyDown {
+        when (it.key) {
+            Key.ENTER, Key.SPACE -> restart()
+            else -> Unit
+        }
+    }
 }
