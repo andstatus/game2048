@@ -19,7 +19,6 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.async.ObservableProperty
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.vector.roundRect
@@ -32,12 +31,10 @@ const val buttonRadius = 5.0
 private var buttonSize : Double = 0.0
 private var boardControls: Container by Delegates.notNull()
 
-var presenter: Presenter by Delegates.notNull()
-val score = ObservableProperty(0)
-val bestScore = ObservableProperty(0)
+private var presenter: Presenter by Delegates.notNull()
 
 suspend fun main() = Korge(width = 480, height = 680, title = "2048", bgcolor = Colors["#fdf7f0"]) {
-    loadSettings(this)
+    loadSettings(getStorage(this))
 
     font = resourcesVfs["clear_sans.fnt"].readBitmapFont()
     val allCellMargins = cellMargin * (settings.boardWidth + 1)
@@ -55,25 +52,14 @@ suspend fun main() = Korge(width = 480, height = 680, title = "2048", bgcolor = 
     presenter.firstMove()
 }
 
-private fun loadSettings(stage: Stage) {
+private fun getStorage(stage: Stage): NativeStorage {
     val storage = NativeStorage(stage.views)
     val keyOpened = "opened"
-    val keyBest = "best"
 
     Console.log("Storage: $storage" +
-            (storage.getOrNull(keyOpened)?.let { "\n last opened: $it" } ?: "\n storage is new") +
-            (storage.getOrNull(keyBest)?.let { "\n best score: $it" } ?: "")
-    )
+            (storage.getOrNull(keyOpened)?.let { "\n last opened: $it" } ?: "\n storage is new"))
     storage[keyOpened] = DateTime.now().toString()
-
-    loadSettings(storage)
-    bestScore.update(storage.getOrNull(keyBest)?.toInt() ?: 0)
-    score.observe {
-        if (it > bestScore.value) bestScore.update(it)
-    }
-    bestScore.observe {
-        storage[keyBest] = it.toString()
-    }
+    return storage
 }
 
 private var undoButton: Container by Delegates.notNull()
@@ -149,12 +135,12 @@ private fun setupStaticViews(stage: Stage) {
         centerXOn(bgBest)
         alignTopToTopOf(bgBest, buttonRadius)
     }
-    stage.text(bestScore.value.toString(), cellSize * 0.5, Colors.WHITE, font) {
+    stage.text("", cellSize * 0.5, Colors.WHITE, font) {
         setTextBounds(Rectangle(0.0, 0.0, bgBest.width, cellSize - 24.0))
         format = format.copy(align = Html.Alignment.MIDDLE_CENTER)
         alignTopToTopOf(bgBest, 12.0)
         centerXOn(bgBest)
-        bestScore {
+        presenter.bestScore {
             text = it.toString()
         }
     }
@@ -167,12 +153,12 @@ private fun setupStaticViews(stage: Stage) {
         centerXOn(bgScore)
         alignTopToTopOf(bgScore, buttonRadius)
     }
-    stage.text(score.value.toString(), cellSize * 0.5, Colors.WHITE, font) {
+    stage.text("", cellSize * 0.5, Colors.WHITE, font) {
         setTextBounds(Rectangle(0.0, 0.0, bgScore.width, cellSize - 24.0))
         format = format.copy(align = Html.Alignment.MIDDLE_CENTER)
         centerXOn(bgScore)
         alignTopToTopOf(bgScore, 12.0)
-        score {
+        presenter.score {
             text = it.toString()
         }
     }

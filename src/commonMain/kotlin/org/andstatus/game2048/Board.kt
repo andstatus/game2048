@@ -7,6 +7,7 @@ class PlacedPiece(val piece: Piece, val square: Square)
 class Board(val width: Int = settings.boardWidth, val height: Int = settings.boardHeight,
             private val array: Array<Piece?> = Array(width * height) { null }) {
     private val size = width * height
+    var score: Int = 0
 
     fun firstSquareToIterate(direction: Direction) = when (direction) {
         Direction.LEFT, Direction.UP -> Square(width - 1, height - 1)
@@ -94,15 +95,23 @@ class Board(val width: Int = settings.boardWidth, val height: Int = settings.boa
 
     fun save() = IntArray(size) { array[it]?.id ?: 0 }
 
-    fun load(ids: IntArray) {
-        ids.forEachIndexed { ind, id ->
-            ind.toSquare()?.let { square ->
-                id.toPiece()?.let { piece ->
-                    set(square, piece)
-                }
-            }
-        }
+    fun copy() = Board(width, height, array.copyOf()).apply {
+        score = this@Board.score
     }
 
-    fun copy() = Board(width, height, array.copyOf())
+    companion object {
+
+        fun load(element: History.Element): Board =
+                Board().apply {
+                    score = element.score
+                    element.pieceIds.forEachIndexed { ind, id ->
+                        ind.toSquare()?.let { square ->
+                            id.toPiece()?.let { piece ->
+                                set(square, piece)
+                            }
+                        }
+                    }
+                }
+
+    }
 }

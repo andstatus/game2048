@@ -5,6 +5,7 @@ import com.soywiz.korge.animate.Animator
 import com.soywiz.korge.animate.animateSequence
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.view.Stage
+import com.soywiz.korio.async.ObservableProperty
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.concurrent.atomic.KorAtomicBoolean
 import com.soywiz.korma.interpolation.Easing
@@ -12,6 +13,8 @@ import com.soywiz.korma.interpolation.Easing
 class Presenter(private val stage: Stage) {
     private val model = Model()
     private val moveIsInProgress = KorAtomicBoolean(false)
+    val score = ObservableProperty(-1)
+    val bestScore = ObservableProperty(-1)
     private var boardViews = BoardViews(stage, settings.boardWidth, settings.boardHeight)
 
     fun firstMove() = model.firstMove().present()
@@ -32,10 +35,12 @@ class Presenter(private val stage: Stage) {
                 restart()
                 moveIsInProgress.value = false
             }
-            boardViews = presenter.boardViews.apply { gameOver?.removeFromParent() }
-                    .copy().apply { gameOver = newGameOver }
+            boardViews = boardViews
+                    .apply { gameOver?.removeFromParent() }
+                    .copy()
+                    .apply { gameOver = newGameOver }
         } else {
-            model.moveBlocksOnTheBoard(direction).present()
+            model.moveBlocksTo(direction).present()
         }
     }
 
@@ -44,6 +49,12 @@ class Presenter(private val stage: Stage) {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
         animateMoves(stage, this) {
+            if (score.value != model.score) {
+                score.update(model.score)
+            }
+            if (bestScore.value != model.bestScore) {
+                bestScore.update(model.bestScore)
+            }
             restoreControls(stage)
             moveIsInProgress.value = false
         }
@@ -59,7 +70,6 @@ class Presenter(private val stage: Stage) {
                         }
                         is MoveLoad -> {
                             boardViews.load(move.board)
-                            score.update(move.points)
                             restoreControls(stage)
                         }
                         is MoveOne -> {

@@ -9,6 +9,6 @@ class MoveMerge(val first: PlacedPiece, val second: PlacedPiece, val merged: Pla
     override fun points() = first.piece.value
 }
 class MovePlace(val first: PlacedPiece) : Move()
-class MoveLoad(val board: Board, val points: Int) : Move() {
-    override fun points() = points
+class MoveLoad(val board: Board) : Move() {
+    override fun points() = board.score
 }

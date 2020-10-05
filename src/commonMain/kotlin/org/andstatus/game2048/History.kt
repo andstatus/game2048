@@ -3,10 +3,32 @@ package org.andstatus.game2048
 import com.soywiz.klogger.Console
 import com.soywiz.klogger.log
 
-class History(from: String?, private val onUpdate: (History) -> Unit) {
+class History() {
+    private val keyBest = "best"
+    private val keyHistory = "history"
+    var bestScore: Int = 0
     var historyIndex = -1
+    private val elements = mutableListOf<Element>()
+
+    init {
+        bestScore = settings.storage.getOrNull(keyBest)?.toInt() ?: 0
+        Console.log("Best score: ${bestScore}")
+        settings.storage.getOrNull(keyHistory)?.split(';')?.forEach {
+            elementFromString(it)?.let{
+                elements.add(it)
+            }
+        }
+    }
+
+    private fun onUpdate() {
+        settings.storage[keyBest] = bestScore.toString()
+        settings.storage[keyHistory] = save()
+    }
 
     data class Element(val pieceIds: IntArray, val score: Int) {
+
+        constructor(board: Board) : this(board.save(), board.score)
+
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
@@ -26,21 +48,12 @@ class History(from: String?, private val onUpdate: (History) -> Unit) {
         }
     }
 
-    private val elements = mutableListOf<Element>()
     val currentElement: Element?
         get() = when {
             elements.isEmpty() -> null
             historyIndex < 0 -> elements.last()
             else -> elements[historyIndex]
         }
-
-    init {
-        from?.split(';')?.forEach {
-            elementFromString(it)?.let{
-                elements.add(it)
-            }
-        }
-    }
 
     private fun elementFromString(string: String): Element? {
         if (string.isEmpty()) {
@@ -55,8 +68,8 @@ class History(from: String?, private val onUpdate: (History) -> Unit) {
         return Element(IntArray(16) { numbers[it] }, numbers[16])
     }
 
-    fun add(pieceIds: IntArray, score: Int) {
-        val element = Element(pieceIds, score)
+    fun add(board: Board) {
+        val element = Element(board)
         while (historyIndex >= 0 && (historyIndex < elements.size - 1)) {
             elements.removeAt(elements.size - 1)
         }
@@ -65,7 +78,7 @@ class History(from: String?, private val onUpdate: (History) -> Unit) {
         if (elements.isEmpty() || elements.last() != element) {
             elements.add(element)
         }
-        onUpdate(this)
+        onUpdate()
     }
 
     fun canUndo(): Boolean {
@@ -90,10 +103,10 @@ class History(from: String?, private val onUpdate: (History) -> Unit) {
 
     fun clear() {
         elements.clear()
-        onUpdate(this)
+        onUpdate()
     }
 
-    override fun toString(): String {
+    fun save(): String {
         return elements.joinToString(";") {
             it.pieceIds.joinToString(",") + "," + it.score
         }
