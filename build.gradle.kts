@@ -21,4 +21,8 @@ korge {
     name = "2048"
     icon = file("src/commonMain/resources/korge.png")
     jvmMainClassName = "org.andstatus.game2048.MainKt"
+
+    androidMinSdk = 24
+    androidCompileSdk = 29
+    androidTargetSdk = 29
 }
