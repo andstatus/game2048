@@ -1,13 +1,20 @@
 package org.andstatus.game2048
 
+import com.soywiz.klock.DateFormat
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.DateTimeTz
 import kotlin.random.Random
 
-class PlacedPiece(val piece: Piece, val square: Square)
+private const val keyPieces = "pieces"
+private const val keyScore = "score"
+private const val keyTime = "time"
 
-class Board(val width: Int = settings.boardWidth, val height: Int = settings.boardHeight,
-            private val array: Array<Piece?> = Array(width * height) { null }) {
+class Board(val width: Int = settings.boardWidth,
+            val height: Int = settings.boardHeight,
+            private val array: Array<Piece?> = Array(width * height) { null },
+            var score: Int = 0,
+            val time: DateTimeTz = DateTimeTz.nowLocal()) {
     private val size = width * height
-    var score: Int = 0
 
     fun firstSquareToIterate(direction: Direction) = when (direction) {
         Direction.LEFT, Direction.UP -> Square(width - 1, height - 1)
@@ -95,15 +102,18 @@ class Board(val width: Int = settings.boardWidth, val height: Int = settings.boa
 
     fun save() = IntArray(size) { array[it]?.id ?: 0 }
 
-    fun copy() = Board(width, height, array.copyOf()).apply {
-        score = this@Board.score
-    }
+    fun toJson(): Map<String, Any> = mapOf(
+            keyPieces to array.map { it?.id ?: 0 },
+            keyScore to score,
+            keyTime to time.format(DateFormat.FORMAT2)
+    )
+
+    fun copy() = Board(width, height, array.copyOf(), score, time)
 
     companion object {
 
         fun load(element: History.Element): Board =
-                Board().apply {
-                    score = element.score
+                Board(score = element.score).apply {
                     element.pieceIds.forEachIndexed { ind, id ->
                         ind.toSquare()?.let { square ->
                             id.toPiece()?.let { piece ->
@@ -112,6 +122,17 @@ class Board(val width: Int = settings.boardWidth, val height: Int = settings.boa
                         }
                     }
                 }
+
+        fun fromJson(json: Any): Board? {
+            val aMap: Map<String, Any> = json.asJsonMap()
+            val pieces: Array<Piece?>? = aMap[keyPieces]?.asJsonArray()
+                    ?.map { Piece.fromId(it as Int) }?.toTypedArray()
+            val score: Int? = aMap[keyScore] as Int?
+            val time: DateTimeTz? = aMap[keyTime]?.let { DateTime.parse(it as String)}
+            return if (pieces != null && score != null && time != null)
+                Board(settings.boardWidth, settings.boardHeight, pieces, score, time)
+            else null
+        }
 
     }
 }

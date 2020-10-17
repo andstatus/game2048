@@ -24,6 +24,9 @@ enum class Piece(val value: Int) {
 
     fun next() = values()[(ordinal + 1) % values().size]
 
+    companion object {
+        fun fromId(value: Int): Piece? = values().find { it.id == value}
+    }
 }
 
 fun Int.toPiece(): Piece? = Piece.values().find { it.id == this}

@@ -1,5 +1,8 @@
 package org.andstatus.game2048
 
+private const val keyX = "x"
+private const val keyY = "y"
+
 data class Square(val x: Int, val y: Int) {
 
     fun nextToIterate(direction: Direction, board: Board): Square? =
@@ -45,4 +48,21 @@ data class Square(val x: Int, val y: Int) {
         return null
     }
 
+    fun toJson(): Map<String, Int> = mapOf(
+            keyX to x,
+            keyY to y
+    )
+
+    companion object {
+        fun fromJson(json: Any): Square? {
+            val aMap: Map<String, Any> = json.asJsonMap()
+            val x = aMap[keyX] as Int?
+            val y = aMap[keyY] as Int?
+            return if (x != null && x >= 0 && x < settings.boardWidth &&
+                    y != null && y >= 0 && y < settings.boardHeight)
+                Square(x, y)
+            else
+                null;
+        }
+    }
 }

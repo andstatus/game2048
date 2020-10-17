@@ -1,14 +1,21 @@
 package org.andstatus.game2048
 
+import com.soywiz.klock.DateTimeTz
 import com.soywiz.klogger.Console
 import com.soywiz.klogger.log
 
 class History() {
     private val keyBest = "best"
     private val keyHistory = "history"
+    private val keyCurrentGame = "current"
+
+    // 1. Info on previous games
     var bestScore: Int = 0
+
+    // 2. This game, see for inspiration https://en.wikipedia.org/wiki/Portable_Game_Notation
     var historyIndex = -1
     private val elements = mutableListOf<Element>()
+    var currentGame: GameRecord
 
     init {
         bestScore = settings.storage.getOrNull(keyBest)?.toInt() ?: 0
@@ -18,11 +25,15 @@ class History() {
                 elements.add(it)
             }
         }
+        currentGame = settings.storage.getOrNull(keyCurrentGame)
+                ?.let { GameRecord.fromJson(it)}
+                ?: GameRecord(DateTimeTz.nowLocal(), emptyList(), Board())
     }
 
     private fun onUpdate() {
         settings.storage[keyBest] = bestScore.toString()
         settings.storage[keyHistory] = save()
+        settings.storage[keyCurrentGame] = currentGame.toJson()
     }
 
     data class Element(val pieceIds: IntArray, val score: Int) {
@@ -66,6 +77,11 @@ class History() {
             return null
         }
         return Element(IntArray(16) { numbers[it] }, numbers[16])
+    }
+
+    fun add(playersMove: PlayersMove, board: Board) {
+        currentGame = GameRecord(currentGame.start, currentGame.playersMoves + playersMove, board)
+        onUpdate()
     }
 
     fun add(board: Board) {

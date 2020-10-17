@@ -48,10 +48,18 @@ class Model {
 
     fun redo() = history.redo()?.let { restoreState(it) } ?: emptyList()
 
-    fun moveBlocksTo(moveDirection: Direction): List<Move> {
+    fun usersMove(playersMoveEnum: PlayersMoveEnum): List<Move> {
+        val playersMove = calcMove(playersMoveEnum)
+        val newBoard = playMove(board, playersMove)
+        history.add(playersMove, newBoard)
+        board = history.currentGame.finalBoard
+        return playersMove.moves
+    }
+
+    fun calcMove(playersMoveEnum: PlayersMoveEnum): PlayersMove {
         val board = this.board.copy()
         val moves = mutableListOf<Move>()
-        val direction = moveDirection.reverse()
+        val direction = playersMoveEnum.reverseDirection()
         var square: Square? = board.firstSquareToIterate(direction)
         while (square != null) {
             val found = square.nextPlacedPieceInThe(direction, board)
@@ -87,7 +95,32 @@ class Model {
         if (moves.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) {
             moves += placeRandomBlock()
         }
-        return moves
+        return PlayersMove.usersMove(playersMoveEnum, moves)
+    }
+
+    fun playMove(oldBoard: Board, playersMove: PlayersMove): Board {
+        var board = oldBoard.copy()
+        for (move in playersMove.moves) {
+            when(move) {
+                is MovePlace -> {
+                    board[move.first.square] = move.first.piece
+                }
+                is MoveLoad -> {
+                    board = move.board
+                }
+                is MoveOne -> {
+                    board[move.first.square] = null
+                    board[move.destination] = move.first.piece
+                }
+                is MoveMerge -> {
+                    board[move.first.square] = null
+                    board[move.second.square] = null
+                    board[move.merged.square] = move.merged.piece
+                }
+            }
+            board.score += move.points()
+        }
+        return board
     }
 
     fun noMoreMoves() = board.noMoreMoves()

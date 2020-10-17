@@ -29,7 +29,7 @@ class Presenter(private val stage: Stage) {
 
     fun restart() = model.restart().present()
 
-    fun moveBlocksTo(direction: Direction) {
+    fun usersMove(playersMoveEnum: PlayersMoveEnum) {
         if (model.noMoreMoves()) {
             val newGameOver = showGameOver(stage) {
                 restart()
@@ -40,7 +40,7 @@ class Presenter(private val stage: Stage) {
                     .copy()
                     .apply { gameOver = newGameOver }
         } else {
-            model.moveBlocksTo(direction).present()
+            model.usersMove(playersMoveEnum).present()
         }
     }
 
