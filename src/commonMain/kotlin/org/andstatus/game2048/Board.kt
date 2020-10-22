@@ -11,7 +11,7 @@ private const val keyTime = "time"
 
 class Board(val width: Int = settings.boardWidth,
             val height: Int = settings.boardHeight,
-            private val array: Array<Piece?> = Array(width * height) { null },
+            val array: Array<Piece?> = Array(width * height) { null },
             var score: Int = 0,
             val time: DateTimeTz = DateTimeTz.nowLocal()) {
     private val size = width * height
@@ -105,23 +105,18 @@ class Board(val width: Int = settings.boardWidth,
     fun toJson(): Map<String, Any> = mapOf(
             keyPieces to array.map { it?.id ?: 0 },
             keyScore to score,
-            keyTime to time.format(DateFormat.FORMAT2)
+            keyTime to time.format(DateFormat.FORMAT1)
     )
+
+    override fun toString(): String = "pieces:" + array.mapIndexed { ind, piece ->
+        ind.toString() + ":" + (piece ?: "-")
+    } + ", score:$score, time:${time.format(DateFormat.FORMAT1)}"
 
     fun copy() = Board(width, height, array.copyOf(), score, time)
 
-    companion object {
+    fun isEmpty(): Boolean = score == 0 && array.find { it != null } == null
 
-        fun load(element: History.Element): Board =
-                Board(score = element.score).apply {
-                    element.pieceIds.forEachIndexed { ind, id ->
-                        ind.toSquare()?.let { square ->
-                            id.toPiece()?.let { piece ->
-                                set(square, piece)
-                            }
-                        }
-                    }
-                }
+    companion object {
 
         fun fromJson(json: Any): Board? {
             val aMap: Map<String, Any> = json.asJsonMap()

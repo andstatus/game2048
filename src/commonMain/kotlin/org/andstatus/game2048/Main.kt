@@ -34,10 +34,10 @@ private var boardControls: Container by Delegates.notNull()
 var presenter: Presenter by Delegates.notNull()
 
 suspend fun main() = Korge(width = 480, height = 680, title = "2048", bgcolor = Colors["#fdf7f0"]) {
-    gameEntry(this)
+    appEntry(this)
 }
 
-suspend fun gameEntry(stage: Stage) {
+suspend fun appEntry(stage: Stage, animateViews: Boolean = true) {
     loadSettings(getStorage(stage))
 
     font = resourcesVfs["clear_sans.fnt"].readBitmapFont()
@@ -48,12 +48,12 @@ suspend fun gameEntry(stage: Stage) {
     leftIndent = (stage.views.virtualWidth - boardWidth) / 2
     topIndent = appBarTopIndent + buttonSize + buttonPadding + buttonSize + buttonPadding
 
-    presenter = Presenter(stage)
+    presenter = Presenter(stage, animateViews)
     setupAppBar(stage)
     setupStaticViews(stage)
     boardControls = setupControls(stage)
 
-    presenter.firstMove()
+    presenter.onAppEntry()
 }
 
 private fun getStorage(stage: Stage): NativeStorage {
@@ -189,19 +189,19 @@ private fun setupControls(stage: Stage): Container {
 
     boardView.onSwipe(20.0) {
         when (it.direction) {
-            SwipeDirection.LEFT -> presenter.usersMove(PlayersMoveEnum.LEFT)
-            SwipeDirection.RIGHT -> presenter.usersMove(PlayersMoveEnum.RIGHT)
-            SwipeDirection.TOP -> presenter.usersMove(PlayersMoveEnum.UP)
-            SwipeDirection.BOTTOM -> presenter.usersMove(PlayersMoveEnum.DOWN)
+            SwipeDirection.LEFT -> presenter.usersMove(PlayerMoveEnum.LEFT)
+            SwipeDirection.RIGHT -> presenter.usersMove(PlayerMoveEnum.RIGHT)
+            SwipeDirection.TOP -> presenter.usersMove(PlayerMoveEnum.UP)
+            SwipeDirection.BOTTOM -> presenter.usersMove(PlayerMoveEnum.DOWN)
         }
     }
 
     boardView.onKeyDown {
         when (it.key) {
-            Key.LEFT -> presenter.usersMove(PlayersMoveEnum.LEFT)
-            Key.RIGHT -> presenter.usersMove(PlayersMoveEnum.RIGHT)
-            Key.UP -> presenter.usersMove(PlayersMoveEnum.UP)
-            Key.DOWN -> presenter.usersMove(PlayersMoveEnum.DOWN)
+            Key.LEFT -> presenter.usersMove(PlayerMoveEnum.LEFT)
+            Key.RIGHT -> presenter.usersMove(PlayerMoveEnum.RIGHT)
+            Key.UP -> presenter.usersMove(PlayerMoveEnum.UP)
+            Key.DOWN -> presenter.usersMove(PlayerMoveEnum.DOWN)
             else -> Unit
         }
     }

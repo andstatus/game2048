@@ -10,14 +10,18 @@ import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.concurrent.atomic.KorAtomicBoolean
 import com.soywiz.korma.interpolation.Easing
 
-class Presenter(private val stage: Stage) {
-    private val model = Model()
+class Presenter(private val stage: Stage, private val animateViews: Boolean) {
+    val model = Model()
     private val moveIsInProgress = KorAtomicBoolean(false)
     val score = ObservableProperty(-1)
     val bestScore = ObservableProperty(-1)
-    private var boardViews = BoardViews(stage, settings.boardWidth, settings.boardHeight)
+    var boardViews = BoardViews(stage, settings.boardWidth, settings.boardHeight)
 
-    fun firstMove() = model.firstMove().present()
+    fun onAppEntry() = model.onAppEntry().present()
+
+    fun computerMove() = model.computerMove().present()
+
+    fun computerMove(placedPiece: PlacedPiece) = model.computerMove(placedPiece).present()
 
     fun canUndo(): Boolean = model.canUndo()
 
@@ -27,9 +31,11 @@ class Presenter(private val stage: Stage) {
 
     fun redo() = model.redo().present()
 
+    fun composerMove(board: Board) = model.composerMove(board).present()
+
     fun restart() = model.restart().present()
 
-    fun usersMove(playersMoveEnum: PlayersMoveEnum) {
+    fun usersMove(playerMoveEnum: PlayerMoveEnum) {
         if (model.noMoreMoves()) {
             val newGameOver = showGameOver(stage) {
                 restart()
@@ -40,15 +46,18 @@ class Presenter(private val stage: Stage) {
                     .copy()
                     .apply { gameOver = newGameOver }
         } else {
-            model.usersMove(playersMoveEnum).present()
+            model.userMove(playerMoveEnum).also{
+                if (it.isNotEmpty()) {
+                    it.appendAll(model.computerMove()).present()
+                }
+            }
         }
     }
 
-    fun List<Move>.present() {
-        if (isEmpty()) return
+    private fun List<PlayerMove>.present() {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
-        animateMoves(stage, this) {
+        presentMoves(this, 0) {
             if (score.value != model.score) {
                 score.update(model.score)
             }
@@ -60,10 +69,20 @@ class Presenter(private val stage: Stage) {
         }
     }
 
-    private fun animateMoves(stage: Stage, moves: List<Move>, onEnd: () -> Unit) = stage.launchImmediately {
+    private fun presentMoves(playerMoves: List<PlayerMove>, index: Int, onEnd: () -> Unit) {
+        if (index < playerMoves.size) {
+            presentMove(stage, playerMoves[index]) {
+                presentMoves(playerMoves, index + 1, onEnd)
+            }
+        } else {
+            onEnd()
+        }
+    }
+
+    private fun presentMove(stage: Stage, playerMove: PlayerMove, onEnd: () -> Unit) = stage.launchImmediately {
         stage.animateSequence {
             parallel {
-                moves.forEach { move ->
+                playerMove.moves.forEach { move ->
                     when(move) {
                         is MovePlace -> {
                             boardViews[move.first.square] = Block(move.first.piece).addTo(stage, move.first.square)
@@ -73,12 +92,12 @@ class Presenter(private val stage: Stage) {
                             restoreControls(stage)
                         }
                         is MoveOne -> {
-                            val firstBlock = boardViews.get(move.first.square)
+                            val firstBlock = boardViews[move.first.square]
                             firstBlock?.move(this, move.first.square, move.destination)
                         }
                         is MoveMerge -> {
-                            val firstBlock = boardViews.get(move.first.square)
-                            val secondBlock = boardViews.get(move.second.square)
+                            val firstBlock = boardViews[move.first.square]
+                            val secondBlock = boardViews[move.second.square]
                             sequence {
                                 parallel {
                                     firstBlock?.move(this, move.first.square, move.merged.square)
@@ -90,7 +109,8 @@ class Presenter(private val stage: Stage) {
                                     boardViews.addBlock(move.merged)
                                 }
                                 sequenceLazy {
-                                    boardViews[move.merged.square]?.let { animateResultingBlock(this, it) }
+                                    if (animateViews) boardViews[move.merged.square]
+                                            ?.let { animateResultingBlock(this, it) }
                                 }
                             }
                         }
@@ -104,7 +124,7 @@ class Presenter(private val stage: Stage) {
     }
 
     private fun Block.move(animator: Animator, from: Square, to: Square) {
-        animator.apply {
+        if (animateViews) animator.apply {
             this@move.moveTo(to.positionX(), to.positionY(), 0.15.seconds, Easing.LINEAR)
         }
         boardViews[from] = null

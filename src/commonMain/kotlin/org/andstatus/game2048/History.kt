@@ -6,25 +6,18 @@ import com.soywiz.klogger.log
 
 class History() {
     private val keyBest = "best"
-    private val keyHistory = "history"
     private val keyCurrentGame = "current"
 
     // 1. Info on previous games
     var bestScore: Int = 0
 
-    // 2. This game, see for inspiration https://en.wikipedia.org/wiki/Portable_Game_Notation
+    // 2. This game, see for the inspiration https://en.wikipedia.org/wiki/Portable_Game_Notation
     var historyIndex = -1
-    private val elements = mutableListOf<Element>()
     var currentGame: GameRecord
 
     init {
         bestScore = settings.storage.getOrNull(keyBest)?.toInt() ?: 0
         Console.log("Best score: ${bestScore}")
-        settings.storage.getOrNull(keyHistory)?.split(';')?.forEach {
-            elementFromString(it)?.let{
-                elements.add(it)
-            }
-        }
         currentGame = settings.storage.getOrNull(keyCurrentGame)
                 ?.let { GameRecord.fromJson(it)}
                 ?: GameRecord(DateTimeTz.nowLocal(), emptyList(), Board())
@@ -32,99 +25,41 @@ class History() {
 
     private fun onUpdate() {
         settings.storage[keyBest] = bestScore.toString()
-        settings.storage[keyHistory] = save()
         settings.storage[keyCurrentGame] = currentGame.toJson()
     }
 
-    data class Element(val pieceIds: IntArray, val score: Int) {
-
-        constructor(board: Board) : this(board.save(), board.score)
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
-
-            other as Element
-
-            if (!pieceIds.contentEquals(other.pieceIds)) return false
-            if (score != other.score) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = pieceIds.contentHashCode()
-            result = 31 * result + score
-            return result
-        }
-    }
-
-    val currentElement: Element?
+    val currentPlayerMove: PlayerMove?
         get() = when {
-            elements.isEmpty() -> null
-            historyIndex < 0 -> elements.last()
-            else -> elements[historyIndex]
+            historyIndex < 0 || historyIndex >= currentGame.playerMoves.size ->
+                PlayerMove.composerMove(currentGame.finalBoard)
+            else -> currentGame.playerMoves[historyIndex]
         }
 
-    private fun elementFromString(string: String): Element? {
-        if (string.isEmpty()) {
-            Console.log("elementFromString: String is empty")
-            return null
-        }
-        val numbers = string.split(',').map { it.toInt() }
-        if (numbers.size != 17) {
-            Console.log("elementFromString: Invalid history '$string'")
-            return null
-        }
-        return Element(IntArray(16) { numbers[it] }, numbers[16])
-    }
-
-    fun add(playersMove: PlayersMove, board: Board) {
-        currentGame = GameRecord(currentGame.start, currentGame.playersMoves + playersMove, board)
-        onUpdate()
-    }
-
-    fun add(board: Board) {
-        val element = Element(board)
-        while (historyIndex >= 0 && (historyIndex < elements.size - 1)) {
-            elements.removeAt(elements.size - 1)
-        }
-        historyIndex = -1
-
-        if (elements.isEmpty() || elements.last() != element) {
-            elements.add(element)
+    fun add(playerMove: PlayerMove, board: Board) {
+        currentGame = when (playerMove.playerMoveEnum ) {
+            PlayerMoveEnum.LOAD -> GameRecord(DateTimeTz.nowLocal(), emptyList(), board)
+            else -> GameRecord(currentGame.start, currentGame.playerMoves + playerMove, board)
         }
         onUpdate()
     }
 
     fun canUndo(): Boolean {
-        return settings.allowUndo && elements.size > 1 && historyIndex != 0
+        return settings.allowUndo && currentGame.playerMoves.size > 1 && historyIndex != 0
     }
 
-    fun undo(): Element? {
+    fun undo(): PlayerMove? {
         if (canUndo()) {
-            if (historyIndex < 0) historyIndex = elements.size - 2 else historyIndex--
+            if (historyIndex < 0) historyIndex = currentGame.playerMoves.size - 2 else historyIndex--
         }
-        return currentElement
+        return currentPlayerMove
     }
 
     fun canRedo(): Boolean {
-        return historyIndex >= 0 && historyIndex < elements.size - 1
+        return historyIndex >= 0 && historyIndex < currentGame.playerMoves.size - 1
     }
 
-    fun redo(): Element? {
+    fun redo(): PlayerMove? {
         if (canRedo()) historyIndex++
-        return currentElement
-    }
-
-    fun clear() {
-        elements.clear()
-        onUpdate()
-    }
-
-    fun save(): String {
-        return elements.joinToString(";") {
-            it.pieceIds.joinToString(",") + "," + it.score
-        }
+        return currentPlayerMove
     }
 }

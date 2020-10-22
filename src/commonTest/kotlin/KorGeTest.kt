@@ -9,7 +9,7 @@ import com.soywiz.korma.geom.Rectangle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class MyTest : ViewsForTesting() {
+class KorGeTest : ViewsForTesting() {
 	@Test
 	fun test() = viewsTest {
 		val log = arrayListOf<String>()

@@ -4,7 +4,7 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Stage
 
 class BoardViews(val stage: Stage, val width: Int = 4, val height: Int = 4,
-            private val array: Array<Block?> = Array(width * height) { null }) {
+            val array: Array<Block?> = Array(width * height) { null }) {
     private val size = width * height
     var gameOver: Container? = null
 
