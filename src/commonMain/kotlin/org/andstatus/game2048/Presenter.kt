@@ -1,6 +1,8 @@
 package org.andstatus.game2048
 
 import com.soywiz.klock.seconds
+import com.soywiz.klogger.Console
+import com.soywiz.klogger.log
 import com.soywiz.korge.animate.Animator
 import com.soywiz.korge.animate.animateSequence
 import com.soywiz.korge.tween.get
@@ -27,59 +29,52 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
 
     fun canRedo(): Boolean = model.canRedo()
 
-    fun undo() = model.undo().present()
+    fun undo() = model.undo().appendAll(model.undo()).presentReversed()
 
-    fun redo() = model.redo().present()
+    fun redo() = model.redo().appendAll(model.redo()).present()
 
     fun composerMove(board: Board) = model.composerMove(board).present()
 
     fun restart() = model.restart().present()
 
-    fun usersMove(playerMoveEnum: PlayerMoveEnum) {
+    fun userMove(playerMoveEnum: PlayerMoveEnum) {
+        if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
+
         if (model.noMoreMoves()) {
-            val newGameOver = showGameOver(stage) {
-                restart()
-                moveIsInProgress.value = false
-            }
             boardViews = boardViews
                     .apply { gameOver?.removeFromParent() }
                     .copy()
-                    .apply { gameOver = newGameOver }
+                    .apply { gameOver = showGameOver(stage) }
+            onPresentEnd()
         } else {
-            model.userMove(playerMoveEnum).also{
-                if (it.isNotEmpty()) {
-                    it.appendAll(model.computerMove()).present()
-                }
-            }
+            model.userMove(playerMoveEnum).let{
+                if (it.isEmpty()) it else it.appendAll(model.computerMove())
+            }.present()
         }
     }
 
-    private fun List<PlayerMove>.present() {
-        if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
-
-        presentMoves(this, 0) {
-            if (score.value != model.score) {
-                score.update(model.score)
-            }
-            if (bestScore.value != model.bestScore) {
-                bestScore.update(model.bestScore)
-            }
-            restoreControls(stage)
-            moveIsInProgress.value = false
-        }
-    }
-
-    private fun presentMoves(playerMoves: List<PlayerMove>, index: Int, onEnd: () -> Unit) {
-        if (index < playerMoves.size) {
-            presentMove(stage, playerMoves[index]) {
-                presentMoves(playerMoves, index + 1, onEnd)
+    private fun List<PlayerMove>.present(index: Int = 0) {
+        if (index < size) {
+            present(stage, this[index]) {
+                present(index + 1)
             }
         } else {
-            onEnd()
+            onPresentEnd()
         }
     }
 
-    private fun presentMove(stage: Stage, playerMove: PlayerMove, onEnd: () -> Unit) = stage.launchImmediately {
+    private fun onPresentEnd() {
+        if (score.value != model.score) {
+            score.update(model.score)
+        }
+        if (bestScore.value != model.bestScore) {
+            bestScore.update(model.bestScore)
+        }
+        restoreControls(stage)
+        moveIsInProgress.value = false
+    }
+
+    private fun present(stage: Stage, playerMove: PlayerMove, onEnd: () -> Unit) = stage.launchImmediately {
         stage.animateSequence {
             parallel {
                 playerMove.moves.forEach { move ->
@@ -111,6 +106,68 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
                                 sequenceLazy {
                                     if (animateViews) boardViews[move.merged.square]
                                             ?.let { animateResultingBlock(this, it) }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            block {
+                onEnd()
+            }
+        }
+    }
+
+    private fun List<PlayerMove>.presentReversed(index: Int = 0) {
+        if (index < size) {
+            presentReversed(stage, this[index]) {
+                presentReversed(index + 1)
+            }
+        } else {
+            onPresentEnd()
+        }
+    }
+
+    private fun presentReversed(stage: Stage, playerMove: PlayerMove, onEnd: () -> Unit) = stage.launchImmediately {
+        stage.animateSequence {
+            parallel {
+                playerMove.moves.asReversed().forEach { move ->
+                    when(move) {
+                        is MovePlace -> {
+                            val firstBlock = boardViews[move.first.square]
+                            if (firstBlock == null) {
+                                Console.log("No Block at destination during undo: $move")
+                            }
+                            boardViews[move.first.square]?.removeFromParent()
+                            boardViews[move.first.square] = null
+                        }
+                        is MoveLoad -> {
+                            boardViews.load(move.board)
+                            restoreControls(stage)
+                        }
+                        is MoveOne -> {
+                            val firstBlock = boardViews[move.destination]
+                            if (firstBlock == null) {
+                                Console.log("No Block at destination during undo: $move")
+                            }
+                            firstBlock?.move(this, move.destination, move.first.square)
+                        }
+                        is MoveMerge -> {
+                            val destination = move.merged.square
+                            val effectiveBlock = boardViews[destination]
+                            sequence {
+                                if (effectiveBlock == null) {
+                                    Console.log("No Block at destination during undo: $move")
+                                }
+                                block {
+                                    effectiveBlock?.removeFromParent()
+                                    boardViews[destination] = null
+                                }
+                                parallel {
+                                    val secondBlock = boardViews.addBlock(PlacedPiece(move.second.piece, destination))
+                                    val firstBlock = boardViews.addBlock(PlacedPiece(move.first.piece, destination))
+                                    secondBlock.move(this, destination, move.second.square)
+                                    firstBlock.move(this, destination, move.first.square)
                                 }
                             }
                         }

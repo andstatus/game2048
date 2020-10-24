@@ -189,19 +189,19 @@ private fun setupControls(stage: Stage): Container {
 
     boardView.onSwipe(20.0) {
         when (it.direction) {
-            SwipeDirection.LEFT -> presenter.usersMove(PlayerMoveEnum.LEFT)
-            SwipeDirection.RIGHT -> presenter.usersMove(PlayerMoveEnum.RIGHT)
-            SwipeDirection.TOP -> presenter.usersMove(PlayerMoveEnum.UP)
-            SwipeDirection.BOTTOM -> presenter.usersMove(PlayerMoveEnum.DOWN)
+            SwipeDirection.LEFT -> presenter.userMove(PlayerMoveEnum.LEFT)
+            SwipeDirection.RIGHT -> presenter.userMove(PlayerMoveEnum.RIGHT)
+            SwipeDirection.TOP -> presenter.userMove(PlayerMoveEnum.UP)
+            SwipeDirection.BOTTOM -> presenter.userMove(PlayerMoveEnum.DOWN)
         }
     }
 
     boardView.onKeyDown {
         when (it.key) {
-            Key.LEFT -> presenter.usersMove(PlayerMoveEnum.LEFT)
-            Key.RIGHT -> presenter.usersMove(PlayerMoveEnum.RIGHT)
-            Key.UP -> presenter.usersMove(PlayerMoveEnum.UP)
-            Key.DOWN -> presenter.usersMove(PlayerMoveEnum.DOWN)
+            Key.LEFT -> presenter.userMove(PlayerMoveEnum.LEFT)
+            Key.RIGHT -> presenter.userMove(PlayerMoveEnum.RIGHT)
+            Key.UP -> presenter.userMove(PlayerMoveEnum.UP)
+            Key.DOWN -> presenter.userMove(PlayerMoveEnum.DOWN)
             else -> Unit
         }
     }
@@ -215,7 +215,7 @@ fun restoreControls(stage: Stage) {
     boardControls.addTo(stage)
 }
 
-fun showGameOver(stage: Stage, onRestart: () -> Unit): Container = stage.container {
+fun showGameOver(stage: Stage): Container = stage.container {
     val format = TextFormat(RGBA(0, 0, 0), 40, Html.FontFace.Bitmap(font))
     val skin = TextSkin(
             normal = format,
@@ -223,9 +223,9 @@ fun showGameOver(stage: Stage, onRestart: () -> Unit): Container = stage.contain
             down = format.copy(RGBA(120, 120, 120))
     )
 
-    fun restart() {
+    fun removeMe() {
         removeFromParent()
-        onRestart()
+        presenter.restart()
     }
 
     position(leftIndent, topIndent)
@@ -242,11 +242,11 @@ fun showGameOver(stage: Stage, onRestart: () -> Unit): Container = stage.contain
     uiText("Try again", 120.0, 35.0, skin) {
         centerBetween(0.0, 0.0, boardWidth, boardWidth)
         y += 20
-        onClick { restart() }
+        onClick { removeMe() }
     }
     onKeyDown {
         when (it.key) {
-            Key.ENTER, Key.SPACE -> restart()
+            Key.ENTER, Key.SPACE -> removeMe()
             else -> Unit
         }
     }

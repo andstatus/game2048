@@ -16,7 +16,7 @@ class Model {
             composerMove(history.currentGame.finalBoard)
     }
 
-    fun composerMove(board: Board) = listOf(PlayerMove.composerMove(board)).playMoves()
+    fun composerMove(board: Board) = listOf(PlayerMove.composerMove(board)).play()
 
     fun restart(): List<PlayerMove> {
         return composerMove(Board()).appendAll(computerMove())
@@ -30,16 +30,16 @@ class Model {
         return history.canRedo()
     }
 
-    fun undo(): List<PlayerMove> = history.undo()?.let { listOf(it).playMoves() } ?: emptyList()
+    fun undo(): List<PlayerMove> = history.undo()?.let { listOf(it).playReversed() } ?: emptyList()
 
-    fun redo(): List<PlayerMove> = history.redo()?.let { listOf(it).playMoves() } ?: emptyList()
+    fun redo(): List<PlayerMove> = history.redo()?.let { listOf(it).play(true) } ?: emptyList()
 
     fun computerMove(): List<PlayerMove> {
         return calcPlacedRandomBlock()?.let { computerMove(it) } ?: emptyList()
     }
 
     fun computerMove(placedPiece: PlacedPiece): List<PlayerMove> {
-        return placedPiece.let { listOf(PlayerMove.computerMove(it)).playMoves() }
+        return placedPiece.let { listOf(PlayerMove.computerMove(it)).play() }
     }
 
     fun calcPlacedRandomBlock(): PlacedPiece?  =
@@ -51,7 +51,7 @@ class Model {
     fun userMove(playerMoveEnum: PlayerMoveEnum): List<PlayerMove> {
         return calcMove(playerMoveEnum).let {
             if (it.moves.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) {
-                listOf(it).playMoves()
+                listOf(it).play()
             } else {
                 emptyList()
             }
@@ -91,18 +91,18 @@ class Model {
         return PlayerMove.userMove(playerMoveEnum, moves)
     }
 
-    private fun List<PlayerMove>.playMoves(): List<PlayerMove> {
-        forEach {
-            val newBoard = playMove(it, board)
-            history.add(it, newBoard)
-            board = newBoard
+    private fun List<PlayerMove>.play(isRedo: Boolean = false): List<PlayerMove> {
+        forEach { playerMove ->
+            board = play(playerMove, board).also { newBoard ->
+                if (!isRedo) history.add(playerMove, newBoard)
+            }
         }
         return this
     }
 
-    fun playMove(playerMove: PlayerMove, oldBoard: Board): Board {
+    private fun play(playerMove: PlayerMove, oldBoard: Board): Board {
         var board = oldBoard.copy()
-        for (move in playerMove.moves) {
+        playerMove.moves.forEach { move ->
             board.score += move.points()
             when(move) {
                 is MovePlace -> {
@@ -119,6 +119,36 @@ class Model {
                     board[move.first.square] = null
                     board[move.second.square] = null
                     board[move.merged.square] = move.merged.piece
+                }
+            }
+        }
+        return board
+    }
+
+    private fun List<PlayerMove>.playReversed(): List<PlayerMove> {
+        asReversed().forEach { board = playReversed(it, board) }
+        return this
+    }
+
+    private fun playReversed(playerMove: PlayerMove, oldBoard: Board): Board {
+        var board = oldBoard.copy()
+        playerMove.moves.asReversed().forEach { move ->
+            board.score -= move.points()
+            when(move) {
+                is MovePlace -> {
+                    board[move.first.square] = null
+                }
+                is MoveLoad -> {
+                    board = move.board
+                }
+                is MoveOne -> {
+                    board[move.destination] = null
+                    board[move.first.square] = move.first.piece
+                }
+                is MoveMerge -> {
+                    board[move.merged.square] = null
+                    board[move.second.square] = move.second.piece
+                    board[move.first.square] = move.first.piece
                 }
             }
         }

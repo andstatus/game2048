@@ -38,28 +38,50 @@ class History() {
     fun add(playerMove: PlayerMove, board: Board) {
         currentGame = when (playerMove.playerMoveEnum ) {
             PlayerMoveEnum.LOAD -> GameRecord(DateTimeTz.nowLocal(), emptyList(), board)
-            else -> GameRecord(currentGame.start, currentGame.playerMoves + playerMove, board)
+            else -> {
+                val playerMoves = when {
+                    historyIndex < 0 -> {
+                        currentGame.playerMoves
+                    }
+                    historyIndex == 0 -> {
+                        emptyList()
+                    }
+                    else -> {
+                        currentGame.playerMoves.take(historyIndex)
+                    }
+                }
+                GameRecord(currentGame.start, playerMoves + playerMove, board)
+            }
         }
         onUpdate()
     }
 
     fun canUndo(): Boolean {
-        return settings.allowUndo && currentGame.playerMoves.size > 1 && historyIndex != 0
+        return settings.allowUndo && currentGame.playerMoves.isNotEmpty() && historyIndex != 0
     }
 
     fun undo(): PlayerMove? {
         if (canUndo()) {
-            if (historyIndex < 0) historyIndex = currentGame.playerMoves.size - 2 else historyIndex--
+            if (historyIndex < 0) historyIndex = currentGame.playerMoves.size - 1 else historyIndex--
+            return currentPlayerMove
         }
-        return currentPlayerMove
+        return null
     }
 
     fun canRedo(): Boolean {
-        return historyIndex >= 0 && historyIndex < currentGame.playerMoves.size - 1
+        return historyIndex >= 0 && historyIndex < currentGame.playerMoves.size
     }
 
     fun redo(): PlayerMove? {
-        if (canRedo()) historyIndex++
-        return currentPlayerMove
+        if (canRedo()) {
+            return currentPlayerMove.also {
+                if (historyIndex < currentGame.playerMoves.size - 1)
+                    historyIndex++
+                else {
+                    historyIndex = -1
+                }
+            }
+        }
+        return null
     }
 }
