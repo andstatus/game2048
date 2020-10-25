@@ -30,6 +30,7 @@ sealed class Move(val moveEnum: MoveEnum) {
                 keyMoveEnum to moveEnum.id,
                 keyBoard to board.toJson()
         )
+        is MoveDelay -> emptyMap()
     }
 
     companion object {
@@ -68,6 +69,7 @@ sealed class Move(val moveEnum: MoveEnum) {
                     else
                         null;
                 }
+                MoveEnum.DELAY -> null
                 null -> null
             }
         }
@@ -82,3 +84,4 @@ data class MovePlace(val first: PlacedPiece) : Move(MoveEnum.PLACE)
 data class MoveLoad(val board: Board) : Move(MoveEnum.LOAD) {
     override fun points() = board.score
 }
+data class MoveDelay(val delayMs: Int) : Move(MoveEnum.DELAY)

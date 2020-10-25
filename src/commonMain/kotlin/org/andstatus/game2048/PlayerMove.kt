@@ -22,6 +22,9 @@ data class PlayerMove(val player: PlayerEnum, val playerMoveEnum: PlayerMoveEnum
         fun userMove(playerMoveEnum: PlayerMoveEnum, moves: List<Move>) =
                 PlayerMove(PlayerEnum.USER, playerMoveEnum, moves)
 
+        fun delay(delayMs: Int = 500) =
+                PlayerMove(PlayerEnum.COMPOSER, PlayerMoveEnum.DELAY, listOf(MoveDelay(delayMs)))
+
         fun fromJson(json: Any): PlayerMove? {
             val aMap: Map<String, Any> = json as Map<String, Any>
             val player = aMap[keyPlayerEnum]?.let { PlayerEnum.fromId(it.toString()) }

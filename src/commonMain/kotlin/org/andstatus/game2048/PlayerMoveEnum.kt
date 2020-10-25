@@ -6,7 +6,8 @@ enum class PlayerMoveEnum(val id: String) {
     UP("up"),
     DOWN("down"),
     PLACE("place"),
-    LOAD("load");
+    LOAD("load"),
+    DELAY("delay");
 
     fun reverseDirection(): Direction = when(this) {
         LEFT -> Direction.RIGHT

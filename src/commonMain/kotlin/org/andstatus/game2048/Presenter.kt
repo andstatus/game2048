@@ -1,5 +1,6 @@
 package org.andstatus.game2048
 
+import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
 import com.soywiz.klogger.Console
 import com.soywiz.klogger.log
@@ -29,9 +30,9 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
 
     fun canRedo(): Boolean = model.canRedo()
 
-    fun undo() = model.undo().appendAll(model.undo()).presentReversed()
+    fun undo() = (model.undo() + listOf(PlayerMove.delay()) + model.undo()).presentReversed()
 
-    fun redo() = model.redo().appendAll(model.redo()).present()
+    fun redo() = (model.redo() + listOf(PlayerMove.delay()) + model.redo()).present()
 
     fun composerMove(board: Board) = model.composerMove(board).present()
 
@@ -79,34 +80,32 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
             parallel {
                 playerMove.moves.forEach { move ->
                     when(move) {
-                        is MovePlace -> {
-                            boardViews[move.first.square] = Block(move.first.piece).addTo(stage, move.first.square)
-                        }
-                        is MoveLoad -> {
-                            boardViews.load(move.board)
-                            restoreControls(stage)
-                        }
-                        is MoveOne -> {
-                            val firstBlock = boardViews[move.first.square]
-                            firstBlock?.move(this, move.first.square, move.destination)
-                        }
+                        is MovePlace -> boardViews.addBlock(move.first)
+                        is MoveLoad -> boardViews.load(move.board)
+                        is MoveOne -> boardViews[move.first]?.move(this, move.destination)
                         is MoveMerge -> {
-                            val firstBlock = boardViews[move.first.square]
-                            val secondBlock = boardViews[move.second.square]
+                            val firstBlock = boardViews[move.first]
+                            val secondBlock = boardViews[move.second]
                             sequence {
                                 parallel {
-                                    firstBlock?.move(this, move.first.square, move.merged.square)
-                                    secondBlock?.move(this, move.second.square, move.merged.square)
+                                    firstBlock?.move(this, move.merged.square)
+                                    secondBlock?.move(this, move.merged.square)
                                 }
                                 block {
-                                    firstBlock?.removeFromParent()
-                                    secondBlock?.removeFromParent()
+                                    firstBlock?.remove()
+                                    secondBlock?.remove()
                                     boardViews.addBlock(move.merged)
                                 }
                                 sequenceLazy {
-                                    if (animateViews) boardViews[move.merged.square]
+                                    if (animateViews) boardViews[move.merged]
                                             ?.let { animateResultingBlock(this, it) }
                                 }
+                            }
+                        }
+                        is MoveDelay -> if (animateViews) {
+                            boardViews.blocks.lastOrNull()?.also {
+                                it.block.moveTo(it.square.positionX(), it.square.positionY(),
+                                        move.delayMs.milliseconds, Easing.LINEAR)
                             }
                         }
                     }
@@ -133,42 +132,33 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
             parallel {
                 playerMove.moves.asReversed().forEach { move ->
                     when(move) {
-                        is MovePlace -> {
-                            val firstBlock = boardViews[move.first.square]
-                            if (firstBlock == null) {
-                                Console.log("No Block at destination during undo: $move")
-                            }
-                            boardViews[move.first.square]?.removeFromParent()
-                            boardViews[move.first.square] = null
-                        }
-                        is MoveLoad -> {
-                            boardViews.load(move.board)
-                            restoreControls(stage)
-                        }
-                        is MoveOne -> {
-                            val firstBlock = boardViews[move.destination]
-                            if (firstBlock == null) {
-                                Console.log("No Block at destination during undo: $move")
-                            }
-                            firstBlock?.move(this, move.destination, move.first.square)
-                        }
+                        is MovePlace -> boardViews[move.first]
+                                ?.remove()
+                                ?: Console.log("No Block at destination during undo: $move")
+                        is MoveLoad -> boardViews.load(move.board)
+                        is MoveOne -> boardViews[PlacedPiece(move.first.piece, move.destination)]
+                                ?.move(this, move.first.square)
+                                ?: Console.log("No Block at destination during undo: $move")
                         is MoveMerge -> {
                             val destination = move.merged.square
-                            val effectiveBlock = boardViews[destination]
+                            val effectiveBlock = boardViews[move.merged]
                             sequence {
-                                if (effectiveBlock == null) {
-                                    Console.log("No Block at destination during undo: $move")
-                                }
                                 block {
-                                    effectiveBlock?.removeFromParent()
-                                    boardViews[destination] = null
+                                    effectiveBlock?.remove()
+                                            ?: Console.log("No Block at destination during undo: $move")
                                 }
                                 parallel {
                                     val secondBlock = boardViews.addBlock(PlacedPiece(move.second.piece, destination))
                                     val firstBlock = boardViews.addBlock(PlacedPiece(move.first.piece, destination))
-                                    secondBlock.move(this, destination, move.second.square)
-                                    firstBlock.move(this, destination, move.first.square)
+                                    secondBlock.move(this, move.second.square)
+                                    firstBlock.move(this, move.first.square)
                                 }
+                            }
+                        }
+                        is MoveDelay -> if (animateViews) {
+                            boardViews.blocks.lastOrNull()?.also {
+                                it.block.moveTo(it.square.positionX(), it.square.positionY(),
+                                        move.delayMs.milliseconds, Easing.LINEAR)
                             }
                         }
                     }
@@ -180,12 +170,15 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
         }
     }
 
-    private fun Block.move(animator: Animator, from: Square, to: Square) {
+    private fun Block.move(animator: Animator, to: Square) {
         if (animateViews) animator.apply {
             this@move.moveTo(to.positionX(), to.positionY(), 0.15.seconds, Easing.LINEAR)
         }
-        boardViews[from] = null
-        boardViews[to] = this
+        boardViews[PlacedPiece(piece, to)] = this
+    }
+
+    private fun Block.remove() {
+        boardViews.removeBlock(this)
     }
 
     private fun animateResultingBlock(animator: Animator, block: Block) {
