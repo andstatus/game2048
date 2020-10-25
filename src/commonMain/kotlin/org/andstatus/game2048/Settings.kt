@@ -1,6 +1,7 @@
 package org.andstatus.game2048
 
 import com.soywiz.korge.service.storage.NativeStorage
+import com.soywiz.korge.view.Stage
 import kotlin.properties.Delegates
 
 // Game options / tweaks. Default values are for original game,
@@ -33,7 +34,8 @@ class Settings(val storage: NativeStorage) {
     }
 }
 
-fun loadSettings(storage: NativeStorage) {
+fun loadSettings(stage: Stage) {
+    val storage = getStorage(stage)
     settings = Settings(storage).apply {
         storage.getOrNull(keyAllowResultingTileToMerge)?.let{
             allowResultingTileToMerge = it.toBoolean()

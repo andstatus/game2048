@@ -67,7 +67,7 @@ class Board(val width: Int = settings.boardWidth,
             ind.toSquare()?.let { square ->
                 nullableBlock?.let { block ->
                     if (PlacedPiece(block, square).hasMove()) return false
-                }
+                } ?: return false
             }
         }
         return true

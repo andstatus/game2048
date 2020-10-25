@@ -26,23 +26,14 @@ data class PlayerMove(val player: PlayerEnum, val playerMoveEnum: PlayerMoveEnum
                 PlayerMove(PlayerEnum.COMPOSER, PlayerMoveEnum.DELAY, listOf(MoveDelay(delayMs)))
 
         fun fromJson(json: Any): PlayerMove? {
-            val aMap: Map<String, Any> = json as Map<String, Any>
+            val aMap: Map<String, Any> = json.asJsonMap()
             val player = aMap[keyPlayerEnum]?.let { PlayerEnum.fromId(it.toString()) }
             val playersMoveEnum = aMap[keyPlayersMoveEnum]?.let { PlayerMoveEnum.fromId(it.toString())}
             val moves: List<Move>? = aMap[keyMoves]?.asJsonArray()?.mapNotNull { Move.fromJson(it) }
             return if (player != null && playersMoveEnum != null && moves != null)
                 PlayerMove(player, playersMoveEnum, moves)
             else
-                null;
+                null
         }
     }
-}
-
-fun List<PlayerMove>.appendAll(playerMoves: List<PlayerMove>): List<PlayerMove> {
-    if (playerMoves.isEmpty()) return this
-    if (this.isEmpty()) return playerMoves
-
-    val newList = ArrayList(this)
-    newList.addAll(playerMoves)
-    return newList
 }

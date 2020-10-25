@@ -30,9 +30,17 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
 
     fun canRedo(): Boolean = model.canRedo()
 
-    fun undo() = (model.undo() + listOf(PlayerMove.delay()) + model.undo()).presentReversed()
+    fun undo() {
+        if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
-    fun redo() = (model.redo() + listOf(PlayerMove.delay()) + model.redo()).present()
+        (model.undo() + listOf(PlayerMove.delay()) + model.undo()).presentReversed()
+    }
+
+    fun redo() {
+        if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
+
+        (model.redo() + listOf(PlayerMove.delay()) + model.redo()).present()
+    }
 
     fun composerMove(board: Board) = model.composerMove(board).present()
 
@@ -49,7 +57,7 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
             onPresentEnd()
         } else {
             model.userMove(playerMoveEnum).let{
-                if (it.isEmpty()) it else it.appendAll(model.computerMove())
+                if (it.isEmpty()) it else it + model.computerMove()
             }.present()
         }
     }

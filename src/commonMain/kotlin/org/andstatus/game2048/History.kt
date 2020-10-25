@@ -23,9 +23,10 @@ class History() {
                 ?: GameRecord(DateTimeTz.nowLocal(), emptyList(), Board())
     }
 
-    private fun onUpdate() {
+    fun onUpdate(): History {
         settings.storage[keyBest] = bestScore.toString()
         settings.storage[keyCurrentGame] = currentGame.toJson()
+        return this
     }
 
     val currentPlayerMove: PlayerMove?
@@ -37,7 +38,10 @@ class History() {
 
     fun add(playerMove: PlayerMove, board: Board) {
         currentGame = when (playerMove.playerMoveEnum ) {
-            PlayerMoveEnum.LOAD -> GameRecord(DateTimeTz.nowLocal(), emptyList(), board)
+            PlayerMoveEnum.LOAD -> {
+                historyIndex = -1
+                GameRecord(DateTimeTz.nowLocal(), emptyList(), board)
+            }
             else -> {
                 val playerMoves = when {
                     historyIndex < 0 -> {
@@ -56,9 +60,10 @@ class History() {
         onUpdate()
     }
 
-    fun canUndo(): Boolean {
-        return settings.allowUndo && currentGame.playerMoves.isNotEmpty() && historyIndex != 0
-    }
+    fun canUndo(): Boolean = settings.allowUndo &&
+            historyIndex != 0 && historyIndex != 1 &&
+            currentGame.playerMoves.size > 1 &&
+            currentGame.playerMoves.lastOrNull()?.player == PlayerEnum.COMPUTER
 
     fun undo(): PlayerMove? {
         if (canUndo()) {

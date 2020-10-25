@@ -38,7 +38,7 @@ suspend fun main() = Korge(width = 480, height = 680, title = "2048", bgcolor = 
 }
 
 suspend fun appEntry(stage: Stage, animateViews: Boolean = true) {
-    loadSettings(getStorage(stage))
+    loadSettings(stage)
 
     font = resourcesVfs["clear_sans.fnt"].readBitmapFont()
     val allCellMargins = cellMargin * (settings.boardWidth + 1)
@@ -56,7 +56,7 @@ suspend fun appEntry(stage: Stage, animateViews: Boolean = true) {
     presenter.onAppEntry()
 }
 
-private fun getStorage(stage: Stage): NativeStorage {
+fun getStorage(stage: Stage): NativeStorage {
     val storage = NativeStorage(stage.views)
     val keyOpened = "opened"
 

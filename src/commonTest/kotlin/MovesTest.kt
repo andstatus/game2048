@@ -1,4 +1,3 @@
-import com.soywiz.klock.DateTimeTz
 import com.soywiz.korge.tests.ViewsForTesting
 import org.andstatus.game2048.*
 import kotlin.test.Test
@@ -6,47 +5,13 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class GameStartTest : ViewsForTesting(log = true) {
+class MovesTest : ViewsForTesting(log = true) {
 
     @Test
-    fun test() = viewsTest {
+    fun movesTest() = viewsTest {
         appEntry(this, animateViews = false)
-        assertEquals(4, settings.boardWidth, "Settings are not initialized")
 
-        persistGameRecordTest()
-        restartTest()
         mergeTest()
-    }
-
-    private fun persistGameRecordTest() {
-        val square = Square(1, 2)
-        val movePlace = MovePlace(PlacedPiece(Piece.N2, square))
-        val playersMove = PlayerMove(PlayerEnum.COMPUTER, PlayerMoveEnum.PLACE, listOf(movePlace))
-        playersMove.toJson()
-
-        val gameRecord = GameRecord(DateTimeTz.nowLocal(), listOf(playersMove), Board())
-        val gameRecordJson = gameRecord.toJson()
-        assertTrue(gameRecordJson.contains("place"))
-        val gameRecordRestored = GameRecord.fromJson(gameRecordJson)
-        assertTrue(gameRecordRestored != null, gameRecordJson)
-
-        assertEquals(gameRecord.playerMoves, gameRecordRestored.playerMoves)
-    }
-
-    private fun restartTest() {
-        presenter.computerMove()
-        presenter.computerMove()
-        assertTrue(presenter.boardViews.blocks.size > 1, modelAndViews())
-        assertTrue(presenter.model.history.currentGame.playerMoves.size > 1, currentGameString())
-
-        presenter.restart()
-        assertEquals(1, presenter.boardViews.blocks.size, modelAndViews())
-        assertEquals( 1, presenter.model.board.array.count { it != null }, modelAndViews())
-        assertEquals(1, presenter.model.history.currentGame.playerMoves.size, currentGameString())
-
-        presenter.computerMove()
-        assertEquals(2, presenter.model.board.array.count { it != null }, modelAndViews())
-        assertEquals(2, presenter.model.history.currentGame.playerMoves.size, currentGameString())
     }
 
     private fun mergeTest() {
@@ -102,26 +67,5 @@ class GameStartTest : ViewsForTesting(log = true) {
         assertEquals(board5.array.asList(), piecesOnBoardViews5, "Board views second after undo")
         assertTrue(presenter.canRedo(), historyString())
         assertTrue(presenter.canUndo(), historyString())
-    }
-
-    private fun presentedPieces() = presenter.boardViews.blocksOnBoard.map { it.firstOrNull()?.piece }
-
-    private fun blocksAt(square: Square) = presenter.boardViews.getAll(square).map { it.piece }
-
-    private fun modelAndViews() =
-            "Model:     " + presenter.model.board.array.mapIndexed { ind, piece ->
-        ind.toString() + ":" + (piece?.text ?: "-")
-    } + "\n" +
-            "BoardViews:" + presenter.boardViews.blocksOnBoard.mapIndexed { ind, list ->
-        ind.toString() + ":" + (if (list.isEmpty()) "-" else list.joinToString(transform = { it.piece.text }))
-    }
-
-    private fun currentGameString(): String = "CurrentGame" + presenter.model.history.currentGame.playerMoves
-            .mapIndexed { ind, playerMove ->
-                "\n" + (ind+1).toString() + ":" + playerMove
-            }
-
-    private fun historyString(): String = with(presenter.model.history) {
-        "History: index:$historyIndex, moves:${currentGame.playerMoves.size}"
     }
 }

@@ -13,13 +13,13 @@ class Model {
         return if (history.currentGame.finalBoard.isEmpty())
             restart()
         else
-            composerMove(history.currentGame.finalBoard)
+            composerMove(history.currentGame.finalBoard, true)
     }
 
-    fun composerMove(board: Board) = listOf(PlayerMove.composerMove(board)).play()
+    fun composerMove(board: Board, isRedo: Boolean = false) = listOf(PlayerMove.composerMove(board)).play(isRedo)
 
     fun restart(): List<PlayerMove> {
-        return composerMove(Board()).appendAll(computerMove())
+        return composerMove(Board()) + PlayerMove.delay() + computerMove()
     }
 
     fun canUndo(): Boolean {

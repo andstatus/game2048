@@ -11,7 +11,7 @@ import kotlin.test.assertEquals
 
 class KorGeTest : ViewsForTesting() {
 	@Test
-	fun test() = viewsTest {
+	fun korgeTest() = viewsTest {
 		val log = arrayListOf<String>()
 		val rect = solidRect(100, 100, Colors.RED)
 		rect.onClick {

@@ -50,7 +50,7 @@ class BoardViews(val stage: Stage, val width: Int = 4, val height: Int = 4,
         blocks.clear()
 
         board.pieces().forEach {
-            set(it, Block(it.piece).addTo(stage, it.square))
+            addBlock(it)
         }
     }
 
