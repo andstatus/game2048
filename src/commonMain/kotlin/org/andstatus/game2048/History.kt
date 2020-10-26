@@ -24,6 +24,9 @@ class History() {
     }
 
     fun onUpdate(): History {
+        if (bestScore < currentGame.finalBoard.score) {
+            bestScore = currentGame.finalBoard.score
+        }
         settings.storage[keyBest] = bestScore.toString()
         settings.storage[keyCurrentGame] = currentGame.toJson()
         return this
@@ -31,15 +34,13 @@ class History() {
 
     val currentPlayerMove: PlayerMove?
         get() = when {
-            historyIndex < 0 || historyIndex >= currentGame.playerMoves.size ->
-                PlayerMove.composerMove(currentGame.finalBoard)
+            historyIndex < 0 || historyIndex >= currentGame.playerMoves.size -> null
             else -> currentGame.playerMoves[historyIndex]
         }
 
     fun add(playerMove: PlayerMove, board: Board) {
         currentGame = when (playerMove.playerMoveEnum ) {
             PlayerMoveEnum.LOAD -> {
-                historyIndex = -1
                 GameRecord(DateTimeTz.nowLocal(), emptyList(), board)
             }
             else -> {
@@ -57,6 +58,7 @@ class History() {
                 GameRecord(currentGame.start, playerMoves + playerMove, board)
             }
         }
+        historyIndex = -1
         onUpdate()
     }
 
@@ -66,11 +68,14 @@ class History() {
             currentGame.playerMoves.lastOrNull()?.player == PlayerEnum.COMPUTER
 
     fun undo(): PlayerMove? {
-        if (canUndo()) {
-            if (historyIndex < 0) historyIndex = currentGame.playerMoves.size - 1 else historyIndex--
-            return currentPlayerMove
+        if (historyIndex < 0 && currentGame.playerMoves.size > 0) {
+            historyIndex = currentGame.playerMoves.size - 1
+        } else if (historyIndex > 0 && historyIndex < currentGame.playerMoves.size)
+            historyIndex--
+        else {
+            return null
         }
-        return null
+        return currentPlayerMove
     }
 
     fun canRedo(): Boolean {
@@ -79,7 +84,7 @@ class History() {
 
     fun redo(): PlayerMove? {
         if (canRedo()) {
-            return currentPlayerMove.also {
+            return currentPlayerMove?.also {
                 if (historyIndex < currentGame.playerMoves.size - 1)
                     historyIndex++
                 else {
@@ -87,6 +92,7 @@ class History() {
                 }
             }
         }
+        historyIndex = -1
         return null
     }
 }

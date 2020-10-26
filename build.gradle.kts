@@ -19,7 +19,7 @@ apply<KorgeGradlePlugin>()
 korge {
     id = "org.andstatus.game2048"
     name = "2048"
-    icon = file("src/commonMain/resources/korge.png")
+    icon = file("src/commonMain/resources/game2048.png")
     jvmMainClassName = "org.andstatus.game2048.MainKt"
 
     androidMinSdk = 24

@@ -44,14 +44,19 @@ class BoardViews(val stage: Stage, val width: Int = 4, val height: Int = 4,
     }
 
     fun load(board: Board) {
-        gameOver?.removeFromParent()
-        gameOver = null
+        removeGameOver()
         blocks.forEach { it.block.removeFromParent() }
         blocks.clear()
 
         board.pieces().forEach {
             addBlock(it)
         }
+    }
+
+    fun removeGameOver(): BoardViews {
+        gameOver?.removeFromParent()
+        gameOver = null
+        return this
     }
 
     fun copy() = BoardViews(stage, width, height, blocks).apply {

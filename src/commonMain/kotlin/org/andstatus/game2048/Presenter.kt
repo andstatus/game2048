@@ -33,6 +33,7 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
     fun undo() {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
+        boardViews.removeGameOver() // TODO: make this a move...
         (model.undo() + listOf(PlayerMove.delay()) + model.undo()).presentReversed()
     }
 
@@ -51,7 +52,7 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
 
         if (model.noMoreMoves()) {
             boardViews = boardViews
-                    .apply { gameOver?.removeFromParent() }
+                    .removeGameOver()
                     .copy()
                     .apply { gameOver = showGameOver(stage) }
             onPresentEnd()
