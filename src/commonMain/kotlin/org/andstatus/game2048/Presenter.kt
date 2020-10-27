@@ -9,9 +9,13 @@ import com.soywiz.korge.animate.animateSequence
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.view.Stage
 import com.soywiz.korio.async.ObservableProperty
+import com.soywiz.korio.async.launch
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.concurrent.atomic.KorAtomicBoolean
+import com.soywiz.korio.concurrent.atomic.KorAtomicRef
 import com.soywiz.korma.interpolation.Easing
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 
 class Presenter(private val stage: Stage, private val animateViews: Boolean) {
     val model = Model()
@@ -30,11 +34,49 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
 
     fun canRedo(): Boolean = model.canRedo()
 
+    fun onUndoClicked(coroutineScope: CoroutineScope) {
+        Console.log("Undo clicked $autoPlayCount , autoplay:${autoPlayingEnum.value}")
+        autoPlayCount++
+        if (autoPlayingEnum.value == AutoPlayingEnum.UNDO) {
+            val startCount = autoPlayCount
+            coroutineScope.launch {
+                while (autoPlayingEnum.value == AutoPlayingEnum.UNDO && startCount == autoPlayCount) {
+                    delay(100)
+                }
+                if (autoPlayingEnum.value == AutoPlayingEnum.NONE) {
+                    boardViews.removeGameOver() // TODO: make this a move...
+                    (model.undoToStart() + listOf(PlayerMove.delay()) + model.redo()).present()
+                }
+            }
+            return
+        }
+
+        undo()
+    }
+
     fun undo() {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
         boardViews.removeGameOver() // TODO: make this a move...
         (model.undo() + listOf(PlayerMove.delay()) + model.undo()).presentReversed()
+    }
+
+    fun onRedoClicked(coroutineScope: CoroutineScope) {
+        Console.log("Redo clicked $autoPlayCount , autoplay:${autoPlayingEnum.value}")
+        autoPlayCount++
+        if (autoPlayingEnum.value == AutoPlayingEnum.REDO) {
+            val startCount = autoPlayCount
+            coroutineScope.launch {
+                while (autoPlayingEnum.value == AutoPlayingEnum.REDO && startCount == autoPlayCount) {
+                    delay(100)
+                }
+                if (autoPlayingEnum.value == AutoPlayingEnum.NONE) {
+                    model.redoToCurrent().present()
+                }
+            }
+            return
+        }
+        redo()
     }
 
     fun redo() {
@@ -45,7 +87,12 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
 
     fun composerMove(board: Board) = model.composerMove(board).present()
 
-    fun restart() = model.restart().present()
+    fun restart() {
+        autoPlayCount = 0
+        autoPlayingEnum.value = AutoPlayingEnum.NONE
+
+        model.restart().present()
+    }
 
     fun userMove(playerMoveEnum: PlayerMoveEnum) {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
@@ -210,5 +257,38 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
                 time = 0.1.seconds,
                 easing = Easing.LINEAR
         )
+    }
+
+    private enum class AutoPlayingEnum {
+        UNDO,
+        REDO,
+        NONE
+    }
+    private var autoPlayingEnum: KorAtomicRef<AutoPlayingEnum> = KorAtomicRef(AutoPlayingEnum.NONE)
+    private var autoPlayCount = 0
+    fun onLogoClick(coroutineScope: CoroutineScope) {
+        Console.log("Logo clicked $autoPlayCount , autoplay:${autoPlayingEnum.value}")
+        autoPlayCount++
+        if (canRedo() && autoPlayingEnum.value != AutoPlayingEnum.REDO) {
+            val startCount = autoPlayCount
+            autoPlayingEnum.value = AutoPlayingEnum.REDO
+            coroutineScope.launch {
+                while (canRedo() && startCount == autoPlayCount) {
+                    redo()
+                    delay(1000)
+                }
+                autoPlayingEnum.compareAndSet(AutoPlayingEnum.REDO, AutoPlayingEnum.NONE)
+            }
+        } else if (canUndo() && autoPlayingEnum.value != AutoPlayingEnum.UNDO) {
+            val startCount = autoPlayCount
+            autoPlayingEnum.value = AutoPlayingEnum.UNDO
+            coroutineScope.launch {
+                while (canUndo() && startCount == autoPlayCount) {
+                    undo()
+                    delay(500)
+                }
+                autoPlayingEnum.compareAndSet(AutoPlayingEnum.UNDO, AutoPlayingEnum.NONE)
+            }
+        }
     }
 }

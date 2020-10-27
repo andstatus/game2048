@@ -26,13 +26,23 @@ class Model {
         return history.canUndo()
     }
 
+    fun undo(): List<PlayerMove> = history.undo()?.let { listOf(it).playReversed() } ?: emptyList()
+
+    fun undoToStart(): List<PlayerMove> {
+        history.historyIndex = 0
+        return composerMove(Board(), true)
+    }
+
     fun canRedo(): Boolean {
         return history.canRedo()
     }
 
-    fun undo(): List<PlayerMove> = history.undo()?.let { listOf(it).playReversed() } ?: emptyList()
-
     fun redo(): List<PlayerMove> = history.redo()?.let { listOf(it).play(true) } ?: emptyList()
+
+    fun redoToCurrent(): List<PlayerMove> {
+        history.historyIndex = -1
+        return composerMove(history.currentGame.finalBoard, true)
+    }
 
     fun computerMove(): List<PlayerMove> {
         return calcPlacedRandomBlock()?.let { computerMove(it) } ?: emptyList()

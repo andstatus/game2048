@@ -1,12 +1,13 @@
 package org.andstatus.game2048
 
+import com.soywiz.kds.CopyOnWriteFrozenList
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Stage
 
 data class PlacedBlock(val block: Block, val square: Square)
 
 class BoardViews(val stage: Stage, val width: Int = 4, val height: Int = 4,
-            val blocks: MutableList<PlacedBlock> = ArrayList()) {
+            val blocks: MutableList<PlacedBlock> = CopyOnWriteFrozenList()) {
     private val size = width * height
     var gameOver: Container? = null
 

@@ -69,10 +69,13 @@ fun getStorage(stage: Stage): NativeStorage {
 private var undoButton: Container by Delegates.notNull()
 private var redoButton: Container by Delegates.notNull()
 private suspend fun setupAppBar(stage: Stage) {
-    val bgLogo = stage.roundRect(buttonSize, buttonSize, buttonRadius, color = RGBA(237, 196, 3)) {
+    val appLogo = stage.roundRect(buttonSize, buttonSize, buttonRadius, color = RGBA(237, 196, 3)) {
         position(leftIndent, appBarTopIndent)
+        onClick { presenter.onLogoClick(stage) }
     }
-    stage.text("2048", cellSize * 0.4, Colors.WHITE, font).centerOn(bgLogo)
+    stage.text("2048", cellSize * 0.4, Colors.WHITE, font).centerOn(appLogo).onClick {
+        presenter.onLogoClick(stage)
+    }
 
     var nextXPosition = leftIndent + boardWidth - buttonSize
     stage.container {
@@ -97,7 +100,7 @@ private suspend fun setupAppBar(stage: Stage) {
         position(nextXPosition, appBarTopIndent)
         nextXPosition -= buttonSize + buttonPadding
         onClick {
-            presenter.redo()
+            presenter.onRedoClicked(stage)
         }
     }
 
@@ -110,7 +113,7 @@ private suspend fun setupAppBar(stage: Stage) {
         position(nextXPosition, appBarTopIndent)
         nextXPosition -= buttonSize + buttonPadding
         onClick {
-            presenter.undo()
+            presenter.onUndoClicked(stage)
         }
     }
 

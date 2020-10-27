@@ -23,7 +23,10 @@ If you found the project useful, please
 
 ## Additional features of Game2048 that are not present in the original game
 
-* Unlimited Undo and Redo.
+* Unlimited and animated Undo and Redo.
+* Auto replay current game forward and backward, stop at any position and continue from that place, overriding history.
+Clicking on "2048" logo initiates Auto Replay. Repeated click changes Replay direction. 
+Redo and Undo are used to stop or fast forward/backward.
 
 # How to run the project
 
