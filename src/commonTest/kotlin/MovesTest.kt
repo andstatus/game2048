@@ -9,12 +9,8 @@ class MovesTest : ViewsForTesting(log = true) {
 
     @Test
     fun movesTest() = viewsTest {
-        appEntry(this, animateViews = false)
+        gameView = GameView.appEntry(this, animateViews = false)
 
-        mergeTest()
-    }
-
-    private fun mergeTest() {
         presenter.composerMove(Board())
         assertEquals(0, presenter.boardViews.blocks.size, modelAndViews())
         val square1 = Square(1, 1)

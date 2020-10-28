@@ -17,12 +17,12 @@ import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 
-class Presenter(private val stage: Stage, private val animateViews: Boolean) {
+class Presenter(private val view: GameView) {
     val model = Model()
     private val moveIsInProgress = KorAtomicBoolean(false)
     val score = ObservableProperty(-1)
     val bestScore = ObservableProperty(-1)
-    var boardViews = BoardViews(stage, settings.boardWidth, settings.boardHeight)
+    var boardViews = BoardViews(view.stage, settings.boardWidth, settings.boardHeight)
 
     fun onAppEntry() = model.onAppEntry().present()
 
@@ -101,7 +101,7 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
             boardViews = boardViews
                     .removeGameOver()
                     .copy()
-                    .apply { gameOver = showGameOver(stage) }
+                    .apply { gameOver = view.showGameOver(stage) }
             onPresentEnd()
         } else {
             model.userMove(playerMoveEnum).let{
@@ -112,7 +112,7 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
 
     private fun List<PlayerMove>.present(index: Int = 0) {
         if (index < size) {
-            present(stage, this[index]) {
+            present(view.stage, this[index]) {
                 present(index + 1)
             }
         } else {
@@ -127,7 +127,7 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
         if (bestScore.value != model.bestScore) {
             bestScore.update(model.bestScore)
         }
-        restoreControls(stage)
+        view.restoreControls()
         moveIsInProgress.value = false
     }
 
@@ -153,12 +153,12 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
                                     boardViews.addBlock(move.merged)
                                 }
                                 sequenceLazy {
-                                    if (animateViews) boardViews[move.merged]
+                                    if (view.animateViews) boardViews[move.merged]
                                             ?.let { animateResultingBlock(this, it) }
                                 }
                             }
                         }
-                        is MoveDelay -> if (animateViews) {
+                        is MoveDelay -> if (view.animateViews) {
                             boardViews.blocks.lastOrNull()?.also {
                                 it.block.moveTo(it.square.positionX(), it.square.positionY(),
                                         move.delayMs.milliseconds, Easing.LINEAR)
@@ -175,7 +175,7 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
 
     private fun List<PlayerMove>.presentReversed(index: Int = 0) {
         if (index < size) {
-            presentReversed(stage, this[index]) {
+            presentReversed(view.stage, this[index]) {
                 presentReversed(index + 1)
             }
         } else {
@@ -211,7 +211,7 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
                                 }
                             }
                         }
-                        is MoveDelay -> if (animateViews) {
+                        is MoveDelay -> if (view.animateViews) {
                             boardViews.blocks.lastOrNull()?.also {
                                 it.block.moveTo(it.square.positionX(), it.square.positionY(),
                                         move.delayMs.milliseconds, Easing.LINEAR)
@@ -227,7 +227,7 @@ class Presenter(private val stage: Stage, private val animateViews: Boolean) {
     }
 
     private fun Block.move(animator: Animator, to: Square) {
-        if (animateViews) animator.apply {
+        if (view.animateViews) animator.apply {
             this@move.moveTo(to.positionX(), to.positionY(), 0.15.seconds, Easing.LINEAR)
         }
         boardViews[PlacedPiece(piece, to)] = this

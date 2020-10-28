@@ -1,5 +1,10 @@
+import org.andstatus.game2048.GameView
+import org.andstatus.game2048.Presenter
 import org.andstatus.game2048.Square
-import org.andstatus.game2048.presenter
+import kotlin.properties.Delegates
+
+var gameView: GameView by Delegates.notNull()
+val presenter: Presenter get() = gameView.presenter
 
 fun presentedPieces() = presenter.boardViews.blocksOnBoard.map { it.firstOrNull()?.piece }
 

@@ -1,5 +1,8 @@
 package org.andstatus.game2048
 
+import com.soywiz.klock.DateTime
+import com.soywiz.klogger.Console
+import com.soywiz.klogger.log
 import com.soywiz.korge.service.storage.NativeStorage
 import com.soywiz.korge.view.Stage
 import kotlin.properties.Delegates
@@ -50,4 +53,14 @@ fun loadSettings(stage: Stage) {
             allowUndo = it.toBoolean()
         }
     }
+}
+
+fun getStorage(stage: Stage): NativeStorage {
+    val storage = NativeStorage(stage.views)
+    val keyOpened = "opened"
+
+    Console.log("Storage: $storage" +
+            (storage.getOrNull(keyOpened)?.let { "\n last opened: $it" } ?: "\n storage is new"))
+    storage[keyOpened] = DateTime.now().toString()
+    return storage
 }

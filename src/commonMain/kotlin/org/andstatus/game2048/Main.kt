@@ -1,3 +1,3 @@
 package org.andstatus.game2048
 
-suspend fun main() = mainEntry()
+suspend fun main() = GameView.mainEntry()
