@@ -24,6 +24,15 @@ class Presenter(private val view: GameView) {
     val bestScore = ObservableProperty(-1)
     var boardViews = BoardViews(view.gameStage, settings.boardWidth, settings.boardHeight)
 
+    private enum class AutoPlayingEnum {
+        UNDO,
+        REDO,
+        NONE
+    }
+    private val autoPlayingEnum: KorAtomicRef<AutoPlayingEnum> = KorAtomicRef(AutoPlayingEnum.NONE)
+    private val preferableAutoPlayingEnum: KorAtomicRef<AutoPlayingEnum> = KorAtomicRef(AutoPlayingEnum.NONE)
+    private var autoPlayCount = 0
+
     fun onAppEntry() = model.onAppEntry().present()
 
     fun computerMove() = model.computerMove().present()
@@ -34,23 +43,10 @@ class Presenter(private val view: GameView) {
 
     fun canRedo(): Boolean = model.canRedo()
 
-    fun onUndoClicked() {
-        Console.log("Undo clicked $autoPlayCount , autoplay:${autoPlayingEnum.value}")
+    fun onUndoClick() {
+        logClick("Undo")
+        preferableAutoPlayingEnum.value = AutoPlayingEnum.UNDO
         autoPlayCount++
-        if (autoPlayingEnum.value == AutoPlayingEnum.UNDO) {
-            val startCount = autoPlayCount
-            coroutineScope.launch {
-                while (autoPlayingEnum.value == AutoPlayingEnum.UNDO && startCount == autoPlayCount) {
-                    delay(100)
-                }
-                if (autoPlayingEnum.value == AutoPlayingEnum.NONE) {
-                    boardViews.removeGameOver() // TODO: make this a move...
-                    (model.undoToStart() + listOf(PlayerMove.delay()) + model.redo()).present()
-                }
-            }
-            return
-        }
-
         undo()
     }
 
@@ -61,21 +57,10 @@ class Presenter(private val view: GameView) {
         (model.undo() + listOf(PlayerMove.delay()) + model.undo()).presentReversed()
     }
 
-    fun onRedoClicked() {
-        Console.log("Redo clicked $autoPlayCount , autoplay:${autoPlayingEnum.value}")
+    fun onRedoClick() {
+        logClick("Redo")
+        preferableAutoPlayingEnum.value = AutoPlayingEnum.REDO
         autoPlayCount++
-        if (autoPlayingEnum.value == AutoPlayingEnum.REDO) {
-            val startCount = autoPlayCount
-            coroutineScope.launch {
-                while (autoPlayingEnum.value == AutoPlayingEnum.REDO && startCount == autoPlayCount) {
-                    delay(100)
-                }
-                if (autoPlayingEnum.value == AutoPlayingEnum.NONE) {
-                    model.redoToCurrent().present()
-                }
-            }
-            return
-        }
         redo()
     }
 
@@ -86,6 +71,12 @@ class Presenter(private val view: GameView) {
     }
 
     fun composerMove(board: Board) = model.composerMove(board).present()
+
+    fun onRestartClick() {
+        logClick("Restart")
+        autoPlayCount++
+        restart()
+    }
 
     fun restart() {
         autoPlayCount = 0
@@ -127,8 +118,49 @@ class Presenter(private val view: GameView) {
         if (bestScore.value != model.bestScore) {
             bestScore.update(model.bestScore)
         }
-        view.restoreControls()
+        showControls()
         moveIsInProgress.value = false
+    }
+
+    private fun showControls() {
+        view.showControls(buttonsToShow())
+    }
+
+    private fun buttonsToShow(): List<ButtonsEnum> {
+        val list = ArrayList<ButtonsEnum>()
+        when(autoPlayingEnum.value) {
+            AutoPlayingEnum.NONE -> {
+                if (canRedo() && (preferableAutoPlayingEnum.value == AutoPlayingEnum.REDO || !canUndo())) {
+                    list.add(ButtonsEnum.PLAY)
+                } else if (canUndo()) {
+                    list.add(ButtonsEnum.PLAY_BACKWARDS)
+                } else {
+                    list.add(ButtonsEnum.APP_LOGO)
+                }
+
+                if (canUndo()) {
+                    list.add(ButtonsEnum.UNDO)
+                }
+                if (canRedo()) {
+                    list.add(ButtonsEnum.REDO)
+                }
+
+                list.add(ButtonsEnum.RESTART)
+            }
+            AutoPlayingEnum.UNDO -> {
+                list.add(ButtonsEnum.STOP)
+                if (canUndo()) {
+                    list.add(ButtonsEnum.TO_START)
+                }
+            }
+            AutoPlayingEnum.REDO -> {
+                list.add(ButtonsEnum.STOP)
+                if (canRedo()) {
+                    list.add(ButtonsEnum.TO_CURRENT)
+                }
+            }
+        }
+        return list
     }
 
     private fun present(playerMove: PlayerMove, onEnd: () -> Unit) = view.gameStage.launchImmediately {
@@ -259,15 +291,59 @@ class Presenter(private val view: GameView) {
         )
     }
 
-    private enum class AutoPlayingEnum {
-        UNDO,
-        REDO,
-        NONE
-    }
-    private var autoPlayingEnum: KorAtomicRef<AutoPlayingEnum> = KorAtomicRef(AutoPlayingEnum.NONE)
-    private var autoPlayCount = 0
     fun onLogoClick() {
-        Console.log("Logo clicked $autoPlayCount , autoplay:${autoPlayingEnum.value}")
+        logClick("Logo")
+        showControls()
+        autoPlayCount++
+    }
+
+    fun onStopClick() {
+        logClick("Stop")
+        showControls()
+        autoPlayCount++
+    }
+
+    fun onToStartClick() {
+        logClick("ToStart")
+        preferableAutoPlayingEnum.value = AutoPlayingEnum.UNDO
+        autoPlayCount++
+        if (autoPlayingEnum.value == AutoPlayingEnum.UNDO) {
+            val startCount = autoPlayCount
+            coroutineScope.launch {
+                while (autoPlayingEnum.value == AutoPlayingEnum.UNDO && startCount == autoPlayCount) {
+                    delay(100)
+                }
+                if (autoPlayingEnum.value == AutoPlayingEnum.NONE) {
+                    boardViews.removeGameOver() // TODO: make this a move...
+                    (model.undoToStart() + listOf(PlayerMove.delay()) + model.redo()).present()
+                }
+            }
+            return
+        }
+    }
+
+    fun onPlayBackwardsClick() {
+        logClick("Play Backwards")
+        preferableAutoPlayingEnum.value = AutoPlayingEnum.UNDO
+        autoPlayCount++
+        if (canUndo() && autoPlayingEnum.value != AutoPlayingEnum.UNDO) {
+            val startCount = autoPlayCount
+            autoPlayingEnum.value = AutoPlayingEnum.UNDO
+            showControls()
+            coroutineScope.launch {
+                while (canUndo() && startCount == autoPlayCount) {
+                    undo()
+                    delay(500)
+                }
+                autoPlayingEnum.compareAndSet(AutoPlayingEnum.UNDO, AutoPlayingEnum.NONE)
+                showControls()
+            }
+        }
+    }
+
+    fun onPlayClick() {
+        logClick("Play")
+        preferableAutoPlayingEnum.value = AutoPlayingEnum.REDO
         autoPlayCount++
         if (canRedo() && autoPlayingEnum.value != AutoPlayingEnum.REDO) {
             val startCount = autoPlayCount
@@ -278,17 +354,27 @@ class Presenter(private val view: GameView) {
                     delay(1000)
                 }
                 autoPlayingEnum.compareAndSet(AutoPlayingEnum.REDO, AutoPlayingEnum.NONE)
-            }
-        } else if (canUndo() && autoPlayingEnum.value != AutoPlayingEnum.UNDO) {
-            val startCount = autoPlayCount
-            autoPlayingEnum.value = AutoPlayingEnum.UNDO
-            coroutineScope.launch {
-                while (canUndo() && startCount == autoPlayCount) {
-                    undo()
-                    delay(500)
-                }
-                autoPlayingEnum.compareAndSet(AutoPlayingEnum.UNDO, AutoPlayingEnum.NONE)
+                showControls()
             }
         }
+    }
+
+    fun onToCurrentClick() {
+        logClick("ToCurrent")
+        preferableAutoPlayingEnum.value = AutoPlayingEnum.REDO
+        autoPlayCount++
+        val startCount = autoPlayCount
+        coroutineScope.launch {
+            while (autoPlayingEnum.value != AutoPlayingEnum.NONE && startCount == autoPlayCount) {
+                delay(100)
+            }
+            if (autoPlayingEnum.value == AutoPlayingEnum.NONE) {
+                model.redoToCurrent().present()
+            }
+        }
+    }
+
+    private fun logClick(buttonName: String) {
+        Console.log("$buttonName clicked $autoPlayCount , autoplay:${autoPlayingEnum.value}")
     }
 }

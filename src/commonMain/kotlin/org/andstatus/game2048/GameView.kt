@@ -27,7 +27,6 @@ const val buttonRadius = 5.0
 class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
     private val bgColor = Colors["#b9aea0"]
     private var buttonSize : Double = 0.0
-    private var boardControls: Container by Delegates.notNull()
 
     var presenter: Presenter by Delegates.notNull()
 
@@ -40,6 +39,8 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
     private var undoButton: Container by Delegates.notNull()
     private var redoButton: Container by Delegates.notNull()
     private var restartButton: Container by Delegates.notNull()
+
+    private var boardControls: Container by Delegates.notNull()
 
     companion object {
         suspend fun mainEntry() = Korge(width = 480, height = 680, title = "2048", bgcolor = Colors["#fdf7f0"]) {
@@ -88,19 +89,19 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             }
             position(nextXPosition, appBarTopIndent)
             onClick {
-                presenter.onLogoClick()
+                presenter.onPlayBackwardsClick()
             }
         }
 
         stopButton = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
             image(resourcesVfs["stop.png"].readBitmap()) {
-                size(buttonSize * 0.6, buttonSize * 0.6)
+                size(buttonSize * 0.4, buttonSize * 0.4)
                 centerOn(background)
             }
             position(nextXPosition, appBarTopIndent)
             onClick {
-                presenter.onLogoClick()
+                presenter.onStopClick()
             }
         }
 
@@ -112,7 +113,32 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             }
             position(nextXPosition, appBarTopIndent)
             onClick {
-                presenter.onLogoClick()
+                presenter.onPlayClick()
+            }
+        }
+
+        nextXPosition += buttonSize + buttonPadding
+        toStartButton = Container().apply {
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
+            image(resourcesVfs["skip_previous.png"].readBitmap()) {
+                size(buttonSize * 0.6, buttonSize * 0.6)
+                centerOn(background)
+            }
+            position(nextXPosition, appBarTopIndent)
+            onClick {
+                presenter.onToStartClick()
+            }
+        }
+
+        toCurrentButton = Container().apply {
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
+            image(resourcesVfs["skip_next.png"].readBitmap()) {
+                size(buttonSize * 0.6, buttonSize * 0.6)
+                centerOn(background)
+            }
+            position(nextXPosition, appBarTopIndent)
+            onClick {
+                presenter.onToCurrentClick()
             }
         }
 
@@ -125,7 +151,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             }
             position(nextXPosition, appBarTopIndent)
             onClick {
-                presenter.restart()
+                presenter.onRestartClick()
             }
         }
 
@@ -138,31 +164,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             }
             position(nextXPosition, appBarTopIndent)
             onClick {
-                presenter.onRedoClicked()
-            }
-        }
-
-        toStartButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
-            image(resourcesVfs["skip_previous.png"].readBitmap()) {
-                size(buttonSize * 0.6, buttonSize * 0.6)
-                centerOn(background)
-            }
-            position(nextXPosition, appBarTopIndent)
-            onClick {
-                presenter.onUndoClicked()
-            }
-        }
-
-        toCurrentButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
-            image(resourcesVfs["skip_next.png"].readBitmap()) {
-                size(buttonSize * 0.6, buttonSize * 0.6)
-                centerOn(background)
-            }
-            position(nextXPosition, appBarTopIndent)
-            onClick {
-                presenter.onRedoClicked()
+                presenter.onRedoClick()
             }
         }
 
@@ -175,27 +177,9 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             }
             position(nextXPosition, appBarTopIndent)
             onClick {
-                presenter.onUndoClicked()
+                presenter.onUndoClick()
             }
         }
-    }
-
-    private fun showAppBar() {
-        appLogo.addTo(gameStage)
-
-        if (presenter.canRedo()) {
-            redoButton.addTo(gameStage)
-        } else {
-            redoButton.removeFromParent()
-        }
-
-        if (presenter.canUndo()) {
-            undoButton.addTo(gameStage)
-        } else {
-            undoButton.removeFromParent()
-        }
-
-        restartButton.addTo(gameStage)
     }
 
     private fun setupStaticViews() {
@@ -276,10 +260,28 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         return boardView
     }
 
-    fun restoreControls() {
-        showAppBar()
-        // Ensure the view is on top to receive onSwipe events
+    fun showControls(buttonsToShow: List<ButtonsEnum>) {
+        val show = showButton(buttonsToShow)
+        show(appLogo, ButtonsEnum.APP_LOGO)
+        show(playBackwardsButton, ButtonsEnum.PLAY_BACKWARDS)
+        show(playButton, ButtonsEnum.PLAY)
+        show(stopButton, ButtonsEnum.STOP)
+        show(toStartButton, ButtonsEnum.TO_START)
+        show(toCurrentButton, ButtonsEnum.TO_CURRENT)
+        show(undoButton, ButtonsEnum.UNDO)
+        show(redoButton, ButtonsEnum.REDO)
+        show(restartButton, ButtonsEnum.RESTART)
+
+        // Ensure the view is on the top to receive onSwipe events
         boardControls.addTo(gameStage)
+    }
+
+    private fun showButton(buttonsToShow: List<ButtonsEnum>) = { button: Container, tag: ButtonsEnum ->
+        if (buttonsToShow.contains(tag)) {
+            button.addTo(gameStage)
+        } else {
+            button.removeFromParent()
+        }
     }
 
     fun showGameOver(): Container = gameStage.container {
