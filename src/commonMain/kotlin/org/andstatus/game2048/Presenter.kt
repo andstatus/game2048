@@ -7,7 +7,6 @@ import com.soywiz.klogger.log
 import com.soywiz.korge.animate.Animator
 import com.soywiz.korge.animate.animateSequence
 import com.soywiz.korge.tween.get
-import com.soywiz.korge.view.Stage
 import com.soywiz.korio.async.ObservableProperty
 import com.soywiz.korio.async.launch
 import com.soywiz.korio.async.launchImmediately
@@ -18,11 +17,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 
 class Presenter(private val view: GameView) {
+    val coroutineScope: CoroutineScope get() = view.gameStage
     val model = Model()
     private val moveIsInProgress = KorAtomicBoolean(false)
     val score = ObservableProperty(-1)
     val bestScore = ObservableProperty(-1)
-    var boardViews = BoardViews(view.stage, settings.boardWidth, settings.boardHeight)
+    var boardViews = BoardViews(view.gameStage, settings.boardWidth, settings.boardHeight)
 
     fun onAppEntry() = model.onAppEntry().present()
 
@@ -34,7 +34,7 @@ class Presenter(private val view: GameView) {
 
     fun canRedo(): Boolean = model.canRedo()
 
-    fun onUndoClicked(coroutineScope: CoroutineScope) {
+    fun onUndoClicked() {
         Console.log("Undo clicked $autoPlayCount , autoplay:${autoPlayingEnum.value}")
         autoPlayCount++
         if (autoPlayingEnum.value == AutoPlayingEnum.UNDO) {
@@ -61,7 +61,7 @@ class Presenter(private val view: GameView) {
         (model.undo() + listOf(PlayerMove.delay()) + model.undo()).presentReversed()
     }
 
-    fun onRedoClicked(coroutineScope: CoroutineScope) {
+    fun onRedoClicked() {
         Console.log("Redo clicked $autoPlayCount , autoplay:${autoPlayingEnum.value}")
         autoPlayCount++
         if (autoPlayingEnum.value == AutoPlayingEnum.REDO) {
@@ -101,7 +101,7 @@ class Presenter(private val view: GameView) {
             boardViews = boardViews
                     .removeGameOver()
                     .copy()
-                    .apply { gameOver = view.showGameOver(stage) }
+                    .apply { gameOver = view.showGameOver() }
             onPresentEnd()
         } else {
             model.userMove(playerMoveEnum).let{
@@ -112,7 +112,7 @@ class Presenter(private val view: GameView) {
 
     private fun List<PlayerMove>.present(index: Int = 0) {
         if (index < size) {
-            present(view.stage, this[index]) {
+            present(this[index]) {
                 present(index + 1)
             }
         } else {
@@ -131,8 +131,8 @@ class Presenter(private val view: GameView) {
         moveIsInProgress.value = false
     }
 
-    private fun present(stage: Stage, playerMove: PlayerMove, onEnd: () -> Unit) = stage.launchImmediately {
-        stage.animateSequence {
+    private fun present(playerMove: PlayerMove, onEnd: () -> Unit) = view.gameStage.launchImmediately {
+        view.gameStage.animateSequence {
             parallel {
                 playerMove.moves.forEach { move ->
                     when(move) {
@@ -175,7 +175,7 @@ class Presenter(private val view: GameView) {
 
     private fun List<PlayerMove>.presentReversed(index: Int = 0) {
         if (index < size) {
-            presentReversed(view.stage, this[index]) {
+            presentReversed(this[index]) {
                 presentReversed(index + 1)
             }
         } else {
@@ -183,8 +183,8 @@ class Presenter(private val view: GameView) {
         }
     }
 
-    private fun presentReversed(stage: Stage, playerMove: PlayerMove, onEnd: () -> Unit) = stage.launchImmediately {
-        stage.animateSequence {
+    private fun presentReversed(playerMove: PlayerMove, onEnd: () -> Unit) = view.gameStage.launchImmediately {
+        view.gameStage.animateSequence {
             parallel {
                 playerMove.moves.asReversed().forEach { move ->
                     when(move) {
@@ -266,7 +266,7 @@ class Presenter(private val view: GameView) {
     }
     private var autoPlayingEnum: KorAtomicRef<AutoPlayingEnum> = KorAtomicRef(AutoPlayingEnum.NONE)
     private var autoPlayCount = 0
-    fun onLogoClick(coroutineScope: CoroutineScope) {
+    fun onLogoClick() {
         Console.log("Logo clicked $autoPlayCount , autoplay:${autoPlayingEnum.value}")
         autoPlayCount++
         if (canRedo() && autoPlayingEnum.value != AutoPlayingEnum.REDO) {

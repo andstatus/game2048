@@ -24,7 +24,7 @@ private const val buttonPadding = 18.0
 private const val appBarTopIndent = buttonPadding
 const val buttonRadius = 5.0
 
-class GameView(val stage: Stage, val animateViews: Boolean = true) {
+class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
     private val bgColor = Colors["#b9aea0"]
     private var buttonSize : Double = 0.0
     private var boardControls: Container by Delegates.notNull()
@@ -59,15 +59,15 @@ class GameView(val stage: Stage, val animateViews: Boolean = true) {
             topIndent = appBarTopIndent + view.buttonSize + buttonPadding + view.buttonSize + buttonPadding
 
             view.presenter = Presenter(view)
-            view.setupAppBar(stage)
-            view.setupStaticViews(stage)
-            view.boardControls = view.setupControls(stage)
+            view.setupAppBar()
+            view.setupStaticViews()
+            view.boardControls = view.setupControls()
             view.presenter.onAppEntry()
             return view
         }
     }
 
-    private suspend fun setupAppBar(stage: Stage) {
+    private suspend fun setupAppBar() {
         var nextXPosition = leftIndent
         appLogo = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, color = RGBA(237, 196, 3))
@@ -76,7 +76,7 @@ class GameView(val stage: Stage, val animateViews: Boolean = true) {
             }
             position(nextXPosition, appBarTopIndent)
             onClick {
-                presenter.onLogoClick(stage)
+                presenter.onLogoClick()
             }
         }
 
@@ -88,7 +88,7 @@ class GameView(val stage: Stage, val animateViews: Boolean = true) {
             }
             position(nextXPosition, appBarTopIndent)
             onClick {
-                presenter.onLogoClick(stage)
+                presenter.onLogoClick()
             }
         }
 
@@ -100,7 +100,7 @@ class GameView(val stage: Stage, val animateViews: Boolean = true) {
             }
             position(nextXPosition, appBarTopIndent)
             onClick {
-                presenter.onLogoClick(stage)
+                presenter.onLogoClick()
             }
         }
 
@@ -112,7 +112,7 @@ class GameView(val stage: Stage, val animateViews: Boolean = true) {
             }
             position(nextXPosition, appBarTopIndent)
             onClick {
-                presenter.onLogoClick(stage)
+                presenter.onLogoClick()
             }
         }
 
@@ -138,7 +138,7 @@ class GameView(val stage: Stage, val animateViews: Boolean = true) {
             }
             position(nextXPosition, appBarTopIndent)
             onClick {
-                presenter.onRedoClicked(stage)
+                presenter.onRedoClicked()
             }
         }
 
@@ -150,7 +150,7 @@ class GameView(val stage: Stage, val animateViews: Boolean = true) {
             }
             position(nextXPosition, appBarTopIndent)
             onClick {
-                presenter.onUndoClicked(stage)
+                presenter.onUndoClicked()
             }
         }
 
@@ -162,7 +162,7 @@ class GameView(val stage: Stage, val animateViews: Boolean = true) {
             }
             position(nextXPosition, appBarTopIndent)
             onClick {
-                presenter.onRedoClicked(stage)
+                presenter.onRedoClicked()
             }
         }
 
@@ -175,40 +175,38 @@ class GameView(val stage: Stage, val animateViews: Boolean = true) {
             }
             position(nextXPosition, appBarTopIndent)
             onClick {
-                presenter.onUndoClicked(stage)
+                presenter.onUndoClicked()
             }
         }
-
-        showAppBar(stage)
     }
 
-    private fun showAppBar(stage: Stage) {
-        appLogo.addTo(stage)
+    private fun showAppBar() {
+        appLogo.addTo(gameStage)
 
         if (presenter.canRedo()) {
-            redoButton.addTo(stage)
+            redoButton.addTo(gameStage)
         } else {
             redoButton.removeFromParent()
         }
 
         if (presenter.canUndo()) {
-            undoButton.addTo(stage)
+            undoButton.addTo(gameStage)
         } else {
             undoButton.removeFromParent()
         }
 
-        restartButton.addTo(stage)
+        restartButton.addTo(gameStage)
     }
 
-    private fun setupStaticViews(stage: Stage) {
-        val bgBest = stage.roundRect(cellSize * 1.5, buttonSize, buttonRadius, color = bgColor) {
+    private fun setupStaticViews() {
+        val bgBest = gameStage.roundRect(cellSize * 1.5, buttonSize, buttonRadius, color = bgColor) {
             position(leftIndent + boardWidth - cellSize * 1.5, appBarTopIndent + buttonSize + buttonPadding)
         }
-        stage.text("BEST", cellSize * 0.25, RGBA(239, 226, 210), font) {
+        gameStage.text("BEST", cellSize * 0.25, RGBA(239, 226, 210), font) {
             centerXOn(bgBest)
             alignTopToTopOf(bgBest, buttonRadius)
         }
-        stage.text("", cellSize * 0.5, Colors.WHITE, font) {
+        gameStage.text("", cellSize * 0.5, Colors.WHITE, font) {
             setTextBounds(Rectangle(0.0, 0.0, bgBest.width, cellSize - 24.0))
             format = format.copy(align = Html.Alignment.MIDDLE_CENTER)
             alignTopToTopOf(bgBest, 12.0)
@@ -218,15 +216,15 @@ class GameView(val stage: Stage, val animateViews: Boolean = true) {
             }
         }
 
-        val bgScore = stage.roundRect(cellSize * 1.5, buttonSize, buttonRadius, color = bgColor) {
+        val bgScore = gameStage.roundRect(cellSize * 1.5, buttonSize, buttonRadius, color = bgColor) {
             alignRightToLeftOf(bgBest, buttonPadding)
             alignTopToTopOf(bgBest)
         }
-        stage.text("SCORE", cellSize * 0.25, RGBA(239, 226, 210), font) {
+        gameStage.text("SCORE", cellSize * 0.25, RGBA(239, 226, 210), font) {
             centerXOn(bgScore)
             alignTopToTopOf(bgScore, buttonRadius)
         }
-        stage.text("", cellSize * 0.5, Colors.WHITE, font) {
+        gameStage.text("", cellSize * 0.5, Colors.WHITE, font) {
             setTextBounds(Rectangle(0.0, 0.0, bgScore.width, cellSize - 24.0))
             format = format.copy(align = Html.Alignment.MIDDLE_CENTER)
             centerXOn(bgScore)
@@ -236,10 +234,10 @@ class GameView(val stage: Stage, val animateViews: Boolean = true) {
             }
         }
 
-        stage.roundRect(boardWidth, boardWidth, buttonRadius, color = bgColor) {
+        gameStage.roundRect(boardWidth, boardWidth, buttonRadius, color = bgColor) {
             position(leftIndent, topIndent)
         }
-        stage.graphics {
+        gameStage.graphics {
             position(leftIndent, topIndent)
             fill(Colors["#cec0b2"]) {
                 for (x in 0 until settings.boardWidth) {
@@ -252,9 +250,9 @@ class GameView(val stage: Stage, val animateViews: Boolean = true) {
         }
     }
 
-    private fun setupControls(stage: Stage): Container {
+    private fun setupControls(): Container {
         val boardView = SolidRect(boardWidth, boardWidth, Colors.TRANSPARENT_WHITE)
-                .addTo(stage).position(leftIndent, topIndent)
+                .addTo(gameStage).position(leftIndent, topIndent)
 
         boardView.onSwipe(20.0) {
             when (it.direction) {
@@ -279,12 +277,12 @@ class GameView(val stage: Stage, val animateViews: Boolean = true) {
     }
 
     fun restoreControls() {
-        showAppBar(stage)
+        showAppBar()
         // Ensure the view is on top to receive onSwipe events
-        boardControls.addTo(stage)
+        boardControls.addTo(gameStage)
     }
 
-    fun showGameOver(stage: Stage): Container = stage.container {
+    fun showGameOver(): Container = gameStage.container {
         val format = TextFormat(RGBA(0, 0, 0), 40, Html.FontFace.Bitmap(font))
         val skin = TextSkin(
                 normal = format,
