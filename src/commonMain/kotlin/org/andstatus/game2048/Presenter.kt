@@ -7,7 +7,6 @@ import com.soywiz.klogger.log
 import com.soywiz.korge.animate.Animator
 import com.soywiz.korge.animate.animateSequence
 import com.soywiz.korge.tween.get
-import com.soywiz.korio.async.ObservableProperty
 import com.soywiz.korio.async.launch
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.concurrent.atomic.KorAtomicBoolean
@@ -20,8 +19,8 @@ class Presenter(private val view: GameView) {
     val coroutineScope: CoroutineScope get() = view.gameStage
     val model = Model()
     private val moveIsInProgress = KorAtomicBoolean(false)
-    val score = ObservableProperty(-1)
-    val bestScore = ObservableProperty(-1)
+    val score get() = model.score
+    val bestScore get() = model.bestScore
     var boardViews = BoardViews(view.gameStage, settings.boardWidth, settings.boardHeight)
 
     private enum class AutoPlayingEnum {
@@ -112,12 +111,6 @@ class Presenter(private val view: GameView) {
     }
 
     private fun onPresentEnd() {
-        if (score.value != model.score) {
-            score.update(model.score)
-        }
-        if (bestScore.value != model.bestScore) {
-            bestScore.update(model.bestScore)
-        }
         showControls()
         moveIsInProgress.value = false
     }

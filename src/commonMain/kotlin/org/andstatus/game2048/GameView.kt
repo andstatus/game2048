@@ -30,6 +30,9 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
     var presenter: Presenter by Delegates.notNull()
 
+    private var score: Text by Delegates.notNull()
+    private var bestScore: Text by Delegates.notNull()
+
     private var appLogo: Container by Delegates.notNull()
     private var playBackwardsButton: Container by Delegates.notNull()
     private var playButton: Container by Delegates.notNull()
@@ -190,14 +193,11 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             centerXOn(bgBest)
             alignTopToTopOf(bgBest, buttonRadius)
         }
-        gameStage.text("", cellSize * 0.5, Colors.WHITE, font) {
+        bestScore = gameStage.text("", cellSize * 0.5, Colors.WHITE, font) {
             setTextBounds(Rectangle(0.0, 0.0, bgBest.width, cellSize - 24.0))
             format = format.copy(align = Html.Alignment.MIDDLE_CENTER)
             alignTopToTopOf(bgBest, 12.0)
             centerXOn(bgBest)
-            presenter.bestScore {
-                text = it.toString()
-            }
         }
 
         val bgScore = gameStage.roundRect(cellSize * 1.5, buttonSize, buttonRadius, color = bgColor) {
@@ -208,14 +208,11 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             centerXOn(bgScore)
             alignTopToTopOf(bgScore, buttonRadius)
         }
-        gameStage.text("", cellSize * 0.5, Colors.WHITE, font) {
+        score = gameStage.text("", cellSize * 0.5, Colors.WHITE, font) {
             setTextBounds(Rectangle(0.0, 0.0, bgScore.width, cellSize - 24.0))
             format = format.copy(align = Html.Alignment.MIDDLE_CENTER)
             centerXOn(bgScore)
             alignTopToTopOf(bgScore, 12.0)
-            presenter.score {
-                text = it.toString()
-            }
         }
 
         gameStage.roundRect(boardWidth, boardWidth, buttonRadius, color = bgColor) {
@@ -271,6 +268,9 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         show(undoButton, ButtonsEnum.UNDO)
         show(redoButton, ButtonsEnum.REDO)
         show(restartButton, ButtonsEnum.RESTART)
+
+        bestScore.text = presenter.bestScore.toString()
+        score.text = presenter.score.toString()
 
         // Ensure the view is on the top to receive onSwipe events
         boardControls.addTo(gameStage)
