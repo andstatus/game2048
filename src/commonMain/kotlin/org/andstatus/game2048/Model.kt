@@ -1,11 +1,17 @@
 package org.andstatus.game2048
 
+import com.soywiz.kmem.isOdd
 import kotlin.random.Random
 
 class Model {
     val history: History = History()
     var board: Board = Board()
 
+    val moveNumber: Int get() {
+        val currentIndex = if(history.historyIndex < 0) history.currentGame.playerMoves.size else history.historyIndex
+        if (currentIndex < 2 ) return 1
+        return (if (currentIndex.isOdd) (currentIndex + 1) else (currentIndex + 2)) / 2
+    }
     val bestScore get() = history.bestScore
     val score get() = board.score
 

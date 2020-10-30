@@ -30,6 +30,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
     var presenter: Presenter by Delegates.notNull()
 
+    private var moveNumber: Text by Delegates.notNull()
     private var score: Text by Delegates.notNull()
     private var bestScore: Text by Delegates.notNull()
 
@@ -215,6 +216,13 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             alignTopToTopOf(bgScore, 12.0)
         }
 
+        moveNumber = gameStage.text("1.", cellSize * 0.5, Colors.BLACK, font) {
+            setTextBounds(Rectangle(0.0, 0.0, bgScore.width, cellSize - 24.0))
+            format = format.copy(align = Html.Alignment.MIDDLE_CENTER)
+            positionX(leftIndent)
+            alignTopToTopOf(bgScore, 12.0)
+        }.addTo(gameStage)
+
         gameStage.roundRect(boardWidth, boardWidth, buttonRadius, color = bgColor) {
             position(leftIndent, topIndent)
         }
@@ -269,6 +277,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         show(redoButton, ButtonsEnum.REDO)
         show(restartButton, ButtonsEnum.RESTART)
 
+        moveNumber.text = presenter.model.moveNumber.toString() + "."
         bestScore.text = presenter.bestScore.toString()
         score.text = presenter.score.toString()
 

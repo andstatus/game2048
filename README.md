@@ -25,6 +25,7 @@ If you found the project useful, please
 
 * Unlimited and animated Undo and Redo.
 * Auto replay current game forward and backwards, stop at any position and continue from that place, overriding history.
+* Move number is shown.
 
 # How to run the project
 
