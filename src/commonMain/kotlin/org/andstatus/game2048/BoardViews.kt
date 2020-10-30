@@ -7,7 +7,7 @@ import com.soywiz.korge.view.Stage
 data class PlacedBlock(val block: Block, val square: Square)
 
 class BoardViews(val stage: Stage, val width: Int = 4, val height: Int = 4,
-            val blocks: MutableList<PlacedBlock> = CopyOnWriteFrozenList()) {
+            val blocks: MutableList<PlacedBlock> = ArrayList()) {
     private val size = width * height
     var gameOver: Container? = null
 
