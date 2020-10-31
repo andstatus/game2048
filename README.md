@@ -1,4 +1,4 @@
-# 2048 game
+# 2048 Open Fun Game
 This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatform implementation.
 
 Download: 
