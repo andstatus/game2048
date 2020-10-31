@@ -111,6 +111,7 @@ class Presenter(private val view: GameView) {
         autoPlayCount = 0
         autoPlayingEnum.value = AutoPlayingEnum.NONE
         gameTime.stop()
+        gameTime.seconds = 0
 
         model.restart().present()
     }

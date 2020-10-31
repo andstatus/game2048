@@ -5,6 +5,7 @@ import com.soywiz.klogger.Console
 import com.soywiz.klogger.log
 import com.soywiz.korge.service.storage.NativeStorage
 import com.soywiz.korge.view.Stage
+import com.soywiz.korio.util.OS
 import kotlin.properties.Delegates
 
 // Game options / tweaks. Default values are for original game,
@@ -59,7 +60,7 @@ fun getStorage(stage: Stage): NativeStorage {
     val storage = NativeStorage(stage.views)
     val keyOpened = "opened"
 
-    Console.log("Storage: $storage" +
+    Console.log("Platform:${OS.platformName}, storage: $storage" +
             (storage.getOrNull(keyOpened)?.let { "\n last opened: $it" } ?: "\n storage is new"))
     storage[keyOpened] = DateTime.now().toString()
     return storage

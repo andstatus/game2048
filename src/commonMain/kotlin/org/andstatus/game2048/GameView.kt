@@ -1,12 +1,11 @@
 package org.andstatus.game2048
 
+import com.soywiz.klogger.Console
+import com.soywiz.klogger.log
 import com.soywiz.korev.Key
 import com.soywiz.korge.Korge
 import com.soywiz.korge.html.Html
-import com.soywiz.korge.input.SwipeDirection
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.input.onKeyDown
-import com.soywiz.korge.input.onSwipe
+import com.soywiz.korge.input.*
 import com.soywiz.korge.ui.TextFormat
 import com.soywiz.korge.ui.TextSkin
 import com.soywiz.korge.ui.uiText
@@ -16,6 +15,7 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.vector.roundRect
 import kotlin.properties.Delegates
@@ -34,6 +34,9 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
     private var moveNumber: Text by Delegates.notNull()
     private var score: Text by Delegates.notNull()
     private var bestScore: Text by Delegates.notNull()
+
+    private var buttonPosXClicked: Double = 0.0
+    private var buttonXPositions: List<Double> by Delegates.notNull()
 
     private var appLogo: Container by Delegates.notNull()
     private var playBackwardsButton: Container by Delegates.notNull()
@@ -59,10 +62,13 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             font = resourcesVfs["clear_sans.fnt"].readBitmapFont()
             val allCellMargins = cellMargin * (settings.boardWidth + 1)
             cellSize = (stage.views.virtualWidth - allCellMargins - 2 * buttonPadding) / settings.boardWidth
-            view.buttonSize = cellSize * 0.8
+            view.buttonSize = (stage.views.virtualWidth - buttonPadding * 6) / 5
             boardWidth = cellSize * settings.boardWidth + allCellMargins
             leftIndent = (stage.views.virtualWidth - boardWidth) / 2
             topIndent = appBarTopIndent + view.buttonSize + buttonPadding + view.buttonSize + buttonPadding
+            view.buttonXPositions = (0 .. 4).fold(emptyList()) {acc, i ->
+                acc + (leftIndent + i * (view.buttonSize + buttonPadding))
+            }
 
             view.presenter = Presenter(view)
             view.setupAppBar()
@@ -74,16 +80,13 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
     }
 
     private suspend fun setupAppBar() {
-        var nextXPosition = leftIndent
         appLogo = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, color = RGBA(237, 196, 3))
             text("2048", cellSize * 0.4, Colors.WHITE, font) {
                 centerOn(background)
             }
-            position(nextXPosition, appBarTopIndent)
-            onClick {
-                presenter.onLogoClick()
-            }
+            positionY(appBarTopIndent)
+            customOnClick { presenter.onLogoClick() }
         }
 
         playBackwardsButton = Container().apply {
@@ -92,10 +95,8 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
-            position(nextXPosition, appBarTopIndent)
-            onClick {
-                presenter.onPlayBackwardsClick()
-            }
+            positionY(appBarTopIndent)
+            customOnClick { presenter.onPlayBackwardsClick() }
         }
 
         stopButton = Container().apply {
@@ -104,10 +105,8 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
                 size(buttonSize * 0.4, buttonSize * 0.4)
                 centerOn(background)
             }
-            position(nextXPosition, appBarTopIndent)
-            onClick {
-                presenter.onStopClick()
-            }
+            positionY(appBarTopIndent)
+            customOnClick { presenter.onStopClick() }
         }
 
         playButton = Container().apply {
@@ -116,23 +115,18 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
-            position(nextXPosition, appBarTopIndent)
-            onClick {
-                presenter.onPlayClick()
-            }
+            positionY(appBarTopIndent)
+            customOnClick { presenter.onPlayClick() }
         }
 
-        nextXPosition += buttonSize + buttonPadding
         toStartButton = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
             image(resourcesVfs["skip_previous.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
-            position(nextXPosition, appBarTopIndent)
-            onClick {
-                presenter.onToStartClick()
-            }
+            positionY(appBarTopIndent)
+            customOnClick { presenter.onToStartClick() }
         }
 
         toCurrentButton = Container().apply {
@@ -141,48 +135,52 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
-            position(nextXPosition, appBarTopIndent)
-            onClick {
-                presenter.onToCurrentClick()
-            }
+            positionY(appBarTopIndent)
+            customOnClick { presenter.onToCurrentClick() }
         }
 
-        nextXPosition = leftIndent + boardWidth - buttonSize
-        restartButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
-            image(resourcesVfs["restart.png"].readBitmap()) {
-                size(buttonSize * 0.8, buttonSize * 0.8)
-                centerOn(background)
-            }
-            position(nextXPosition, appBarTopIndent)
-            onClick {
-                presenter.onRestartClick()
-            }
-        }
-
-        nextXPosition -= buttonSize + buttonPadding
-        redoButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
-            image(resourcesVfs["redo.png"].readBitmap()) {
-                size(buttonSize * 0.6, buttonSize * 0.6)
-                centerOn(background)
-            }
-            position(nextXPosition, appBarTopIndent)
-            onClick {
-                presenter.onRedoClick()
-            }
-        }
-
-        nextXPosition -= buttonSize + buttonPadding
         undoButton = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
             image(resourcesVfs["undo.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
-            position(nextXPosition, appBarTopIndent)
+            positionY(appBarTopIndent)
+            customOnClick { presenter.onUndoClick() }
+        }
+
+        redoButton = Container().apply {
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
+            image(resourcesVfs["redo.png"].readBitmap()) {
+                size(buttonSize * 0.6, buttonSize * 0.6)
+                centerOn(background)
+            }
+            positionY(appBarTopIndent)
+            customOnClick { presenter.onRedoClick() }
+        }
+
+        restartButton = Container().apply {
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
+            image(resourcesVfs["restart.png"].readBitmap()) {
+                size(buttonSize * 0.8, buttonSize * 0.8)
+                centerOn(background)
+            }
+            positionY(appBarTopIndent)
+            customOnClick { presenter.onRestartClick() }
+        }
+    }
+
+    /** Workaround for the bug: https://github.com/korlibs/korge-next/issues/56 */
+    private fun Container.customOnClick(handler: () -> Unit) {
+        if (OS.isAndroid) {
+            onOver {
+                Console.log("onOver x:${this.pos.x}")
+                buttonPosXClicked = this.pos.x
+                handler()
+            }
+        } else {
             onClick {
-                presenter.onUndoClick()
+                handler()
             }
         }
     }
@@ -272,7 +270,8 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
     }
 
     fun showControls(buttonsToShow: List<ButtonsEnum>) {
-        val show = showButton(buttonsToShow)
+        Console.log("Last clicked:$buttonPosXClicked, Button positions:$buttonXPositions")
+        val show = showButton(buttonXPositions.filter { it != buttonPosXClicked }, buttonsToShow)
         show(appLogo, ButtonsEnum.APP_LOGO)
         show(playBackwardsButton, ButtonsEnum.PLAY_BACKWARDS)
         show(playButton, ButtonsEnum.PLAY)
@@ -291,8 +290,10 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         boardControls.addTo(gameStage)
     }
 
-    private fun showButton(buttonsToShow: List<ButtonsEnum>) = { button: Container, tag: ButtonsEnum ->
+    private fun showButton(xPositions: List<Double>, buttonsToShow: List<ButtonsEnum>) = { button: Container, tag: ButtonsEnum ->
         if (buttonsToShow.contains(tag)) {
+            val x = xPositions[tag.positionIndex.let { if (tag.positionIndex < 2 || xPositions.size > 4) it else it - 1} ]
+            button.positionX(x)
             button.addTo(gameStage)
         } else {
             button.removeFromParent()
@@ -326,7 +327,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         uiText("Try again", 120.0, 35.0, skin) {
             centerBetween(0.0, 0.0, boardWidth, boardWidth)
             y += 20
-            onClick { removeMe() }
+            customOnClick { removeMe() }
         }
         onKeyDown {
             when (it.key) {
