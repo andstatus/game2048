@@ -1,0 +1,73 @@
+buildscript {
+    repositories {
+		google();
+		jcenter();
+		maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
+	}
+    dependencies {
+		classpath 'com.android.tools.build:gradle:4.0.2';
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.72'
+	}
+}
+repositories {
+    mavenLocal()
+    maven { url = 'https://dl.bintray.com/korlibs/korlibs' }
+    google()
+    jcenter()
+    maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
+}
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+android {
+    compileSdkVersion 29
+    defaultConfig {
+        versionCode 1
+        versionName '0.05'
+
+        applicationId 'org.andstatus.game2048'
+        minSdkVersion 24
+        targetSdkVersion 29
+    }
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled true
+        }
+    }
+    sourceSets {
+        main {
+            java.srcDirs += ["../src/commonMain/kotlin", "../src/jvmMain/kotlin"]
+            assets.srcDirs += ["../src/commonMain/resources", "../build/genMainResources"]
+        }
+    }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/*.kotlin_module'
+        exclude '**/*.kotlin_metadata'
+        exclude '**/*.kotlin_builtins'
+    }
+}
+dependencies {
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.72'
+    implementation 'com.soywiz.korlibs.korge:korge-android:1.15.0'
+    implementation 'com.soywiz.korlibs.klock:klock-android:1.11.14'
+    implementation 'com.soywiz.korlibs.kmem:kmem-android:1.10.7'
+    implementation 'com.soywiz.korlibs.kds:kds-android:1.10.13'
+    implementation 'com.soywiz.korlibs.korma:korma-android:1.11.21'
+    implementation 'com.soywiz.korlibs.korio:korio-android:1.11.13'
+    implementation 'com.soywiz.korlibs.korim:korim-android:1.12.29'
+    implementation 'com.soywiz.korlibs.korau:korau-android:1.11.10'
+    implementation 'com.soywiz.korlibs.korgw:korgw-android:1.12.25'
+    implementation 'com.soywiz.korlibs.krypto:krypto-android:1.11.1'
+    implementation 'com.soywiz.korlibs.korinject:korinject-android:1.10.2'
+    implementation 'com.soywiz.korlibs.klogger:klogger-android:1.10.1'
+}
