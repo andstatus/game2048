@@ -158,7 +158,7 @@ class Presenter(private val view: GameView) {
         when(autoPlayingEnum.value) {
             AutoPlayingEnum.NONE -> {
                 if (preferableAutoPlayingEnum.value == AutoPlayingEnum.NONE && gameTime.started) {
-                    list.add(ButtonsEnum.STOP)
+                    list.add(ButtonsEnum.PAUSE)
                 } else if (canRedo() && (preferableAutoPlayingEnum.value == AutoPlayingEnum.REDO || !canUndo())) {
                     list.add(ButtonsEnum.PLAY)
                 } else if (canUndo()) {
@@ -177,13 +177,13 @@ class Presenter(private val view: GameView) {
                 list.add(ButtonsEnum.RESTART)
             }
             AutoPlayingEnum.UNDO -> {
-                list.add(ButtonsEnum.STOP)
+                list.add(ButtonsEnum.PAUSE)
                 if (canUndo()) {
                     list.add(ButtonsEnum.TO_START)
                 }
             }
             AutoPlayingEnum.REDO -> {
-                list.add(ButtonsEnum.STOP)
+                list.add(ButtonsEnum.PAUSE)
                 if (canRedo()) {
                     list.add(ButtonsEnum.TO_CURRENT)
                 }
@@ -326,8 +326,8 @@ class Presenter(private val view: GameView) {
         autoPlayCount++
     }
 
-    fun onStopClick() {
-        logClick("Stop")
+    fun onPauseClick() {
+        logClick("Pause")
         gameTime.stop()
         showControls()
         autoPlayCount++

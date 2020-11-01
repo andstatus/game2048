@@ -43,7 +43,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
     private var appLogo: Container by Delegates.notNull()
     private var playBackwardsButton: Container by Delegates.notNull()
     private var playButton: Container by Delegates.notNull()
-    private var stopButton: Container by Delegates.notNull()
+    private var pauseButton: Container by Delegates.notNull()
     private var toStartButton: Container by Delegates.notNull()
     private var toCurrentButton: Container by Delegates.notNull()
     private var undoButton: Container by Delegates.notNull()
@@ -53,7 +53,9 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
     private var boardControls: SolidRect by Delegates.notNull()
 
     companion object {
-        suspend fun mainEntry() = Korge(width = 480, height = 680, title = "2048 Open Fun Game", bgcolor = Colors["#fdf7f0"]) {
+        suspend fun mainEntry() = Korge(width = 480, height = 680, title = "2048 Open Fun Game",
+                gameId = "org.andstatus.game2048",
+                bgcolor = Colors["#fdf7f0"]) {
             appEntry(this, true)
         }
 
@@ -102,14 +104,14 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             customOnClick { presenter.onPlayBackwardsClick() }
         }
 
-        stopButton = Container().apply {
+        pauseButton = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["stop.png"].readBitmap()) {
-                size(buttonSize * 0.4, buttonSize * 0.4)
+            image(resourcesVfs["pause.png"].readBitmap()) {
+                size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
             positionY(appBarTopIndent)
-            customOnClick { presenter.onStopClick() }
+            customOnClick { presenter.onPauseClick() }
         }
 
         playButton = Container().apply {
@@ -276,7 +278,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         show(appLogo, ButtonsEnum.APP_LOGO)
         show(playBackwardsButton, ButtonsEnum.PLAY_BACKWARDS)
         show(playButton, ButtonsEnum.PLAY)
-        show(stopButton, ButtonsEnum.STOP)
+        show(pauseButton, ButtonsEnum.PAUSE)
         show(toStartButton, ButtonsEnum.TO_START)
         show(toCurrentButton, ButtonsEnum.TO_CURRENT)
         show(undoButton, ButtonsEnum.UNDO)

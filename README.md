@@ -25,8 +25,8 @@ If you found the project useful, please
 
 * Unlimited and animated Undo and Redo.
 * Auto replay current game forward and backwards, stop at any position and continue from that place, overriding history.
-* Move number is shown.
-* Game time played shown. The time starts when you make a move. And stops when you undo or press "Stop" button.
+* Move number shown.
+* Game time played shown. The time starts when you make a move. It stops when you tap Undo or Pause button.
 
 # How to run the project
 
