@@ -4,8 +4,10 @@ import com.soywiz.klogger.Console
 import com.soywiz.klogger.log
 import com.soywiz.korev.Key
 import com.soywiz.korge.Korge
-import com.soywiz.korge.html.Html
-import com.soywiz.korge.input.*
+import com.soywiz.korge.input.SwipeDirection
+import com.soywiz.korge.input.onClick
+import com.soywiz.korge.input.onOver
+import com.soywiz.korge.input.onSwipe
 import com.soywiz.korge.ui.TextFormat
 import com.soywiz.korge.ui.TextSkin
 import com.soywiz.korge.ui.uiText
@@ -14,9 +16,9 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korim.format.readBitmap
+import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.util.OS
-import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.vector.roundRect
 import kotlin.properties.Delegates
 
@@ -48,10 +50,10 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
     private var redoButton: Container by Delegates.notNull()
     private var restartButton: Container by Delegates.notNull()
 
-    private var boardControls: Container by Delegates.notNull()
+    private var boardControls: SolidRect by Delegates.notNull()
 
     companion object {
-        suspend fun mainEntry() = Korge(width = 480, height = 680, title = "2048", bgcolor = Colors["#fdf7f0"]) {
+        suspend fun mainEntry() = Korge(width = 480, height = 680, title = "2048 Open Fun Game", bgcolor = Colors["#fdf7f0"]) {
             appEntry(this, true)
         }
 
@@ -72,8 +74,9 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
             view.presenter = Presenter(view)
             view.setupAppBar()
-            view.setupStaticViews()
-            view.boardControls = view.setupControls()
+            view.setupScoreBar()
+            view.setupBoardBackground()
+            view.boardControls = view.setupBoardControls()
             view.presenter.onAppEntry()
             return view
         }
@@ -81,8 +84,8 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
     private suspend fun setupAppBar() {
         appLogo = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = RGBA(237, 196, 3))
-            text("2048", cellSize * 0.4, Colors.WHITE, font) {
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = RGBA(237, 196, 3))
+            text("2048", cellSize * 0.4, Colors.WHITE, font, TextAlignment.MIDDLE_CENTER) {
                 centerOn(background)
             }
             positionY(appBarTopIndent)
@@ -90,7 +93,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         }
 
         playBackwardsButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
             image(resourcesVfs["play_backwards.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
@@ -100,7 +103,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         }
 
         stopButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
             image(resourcesVfs["stop.png"].readBitmap()) {
                 size(buttonSize * 0.4, buttonSize * 0.4)
                 centerOn(background)
@@ -110,7 +113,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         }
 
         playButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
             image(resourcesVfs["play.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
@@ -120,7 +123,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         }
 
         toStartButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
             image(resourcesVfs["skip_previous.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
@@ -130,7 +133,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         }
 
         toCurrentButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
             image(resourcesVfs["skip_next.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
@@ -140,7 +143,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         }
 
         undoButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
             image(resourcesVfs["undo.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
@@ -150,7 +153,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         }
 
         redoButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
             image(resourcesVfs["redo.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
@@ -160,7 +163,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         }
 
         restartButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, color = bgColor)
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
             image(resourcesVfs["restart.png"].readBitmap()) {
                 size(buttonSize * 0.8, buttonSize * 0.8)
                 centerOn(background)
@@ -185,49 +188,49 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         }
     }
 
-    private fun setupStaticViews() {
-        val bgBest = gameStage.roundRect(cellSize * 1.5, buttonSize, buttonRadius, color = bgColor) {
-            position(leftIndent + boardWidth - cellSize * 1.5, appBarTopIndent + buttonSize + buttonPadding)
-        }
-        gameStage.text("BEST", cellSize * 0.25, RGBA(239, 226, 210), font) {
-            centerXOn(bgBest)
-            alignTopToTopOf(bgBest, buttonRadius)
-        }
-        bestScore = gameStage.text("", cellSize * 0.5, Colors.WHITE, font) {
-            setTextBounds(Rectangle(0.0, 0.0, bgBest.width, cellSize - 24.0))
-            format = format.copy(align = Html.Alignment.MIDDLE_CENTER)
-            alignTopToTopOf(bgBest, 12.0)
-            centerXOn(bgBest)
-        }
+    private fun setupScoreBar() {
+        val scoreButtonWidth = (boardWidth - 2 * buttonPadding) / 3
+        val scoreButtonTop = appBarTopIndent + buttonSize + buttonPadding
+        val textYPadding = 15.0
+        val scoreLabelSize = cellSize * 0.30
+        val scoreTextSize = cellSize * 0.5
 
-        val bgScore = gameStage.roundRect(cellSize * 1.5, buttonSize, buttonRadius, color = bgColor) {
-            alignRightToLeftOf(bgBest, buttonPadding)
-            alignTopToTopOf(bgBest)
+        gameTime = gameStage.text("00:00:00", scoreLabelSize, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
+            positionX(leftIndent + scoreButtonWidth / 2)
+            positionY(scoreButtonTop + textYPadding)
         }
-        gameStage.text("SCORE", cellSize * 0.25, RGBA(239, 226, 210), font) {
-            centerXOn(bgScore)
-            alignTopToTopOf(bgScore, buttonRadius)
-        }
-        score = gameStage.text("", cellSize * 0.5, Colors.WHITE, font) {
-            setTextBounds(Rectangle(0.0, 0.0, bgScore.width, cellSize - 24.0))
-            format = format.copy(align = Html.Alignment.MIDDLE_CENTER)
-            centerXOn(bgScore)
-            alignTopToTopOf(bgScore, 12.0)
-        }
-
-        moveNumber = gameStage.text("", cellSize * 0.5, Colors.BLACK, font) {
-            setTextBounds(Rectangle(0.0, 0.0, bgScore.width, cellSize - 24.0))
-            format = format.copy(align = Html.Alignment.MIDDLE_CENTER)
-            positionX(leftIndent)
-            alignTopToTopOf(bgScore, 12.0)
+        moveNumber = gameStage.text("", scoreTextSize, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
+            centerXOn(gameTime)
+            positionY(scoreButtonTop + scoreLabelSize + textYPadding)
         }.addTo(gameStage)
 
-        gameTime = gameStage.text("00:00:00", cellSize * 0.25, Colors.BLACK, font) {
-            centerXOn(moveNumber)
-            alignTopToTopOf(bgScore, buttonRadius)
+        val bgScore = gameStage.roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = bgColor) {
+            position(leftIndent + (scoreButtonWidth + buttonPadding), scoreButtonTop)
+        }
+        gameStage.text("SCORE", scoreLabelSize, RGBA(239, 226, 210), font, TextAlignment.MIDDLE_CENTER) {
+            centerXOn(bgScore)
+            positionY(scoreButtonTop + textYPadding)
+        }
+        score = gameStage.text("", scoreTextSize, Colors.WHITE, font, TextAlignment.MIDDLE_CENTER) {
+            centerXOn(bgScore)
+            positionY(scoreButtonTop + scoreLabelSize + textYPadding)
         }
 
-        gameStage.roundRect(boardWidth, boardWidth, buttonRadius, color = bgColor) {
+        val bgBest = gameStage.roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = bgColor) {
+            position(leftIndent + (scoreButtonWidth + buttonPadding) * 2, scoreButtonTop)
+        }
+        gameStage.text("BEST", scoreLabelSize, RGBA(239, 226, 210), font, TextAlignment.MIDDLE_CENTER) {
+            centerXOn(bgBest)
+            positionY(scoreButtonTop + textYPadding)
+        }
+        bestScore = gameStage.text("", scoreTextSize, Colors.WHITE, font, TextAlignment.MIDDLE_CENTER) {
+            centerXOn(bgBest)
+            positionY(scoreButtonTop + scoreLabelSize + textYPadding)
+        }
+    }
+
+    private fun setupBoardBackground() {
+        gameStage.roundRect(boardWidth, boardWidth, buttonRadius, fill = bgColor) {
             position(leftIndent, topIndent)
         }
         gameStage.graphics {
@@ -243,7 +246,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         }
     }
 
-    private fun setupControls(): Container {
+    private fun setupBoardControls(): SolidRect {
         val boardView = SolidRect(boardWidth, boardWidth, Colors.TRANSPARENT_WHITE)
                 .addTo(gameStage).position(leftIndent, topIndent)
 
@@ -256,14 +259,12 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             }
         }
 
-        boardView.onKeyDown {
-            when (it.key) {
-                Key.LEFT -> presenter.userMove(PlayerMoveEnum.LEFT)
-                Key.RIGHT -> presenter.userMove(PlayerMoveEnum.RIGHT)
-                Key.UP -> presenter.userMove(PlayerMoveEnum.UP)
-                Key.DOWN -> presenter.userMove(PlayerMoveEnum.DOWN)
-                else -> Unit
-            }
+        boardView.addUpdater {
+            val keys = gameStage.views.input.keys
+            if (keys[Key.LEFT]) { presenter.userMove(PlayerMoveEnum.LEFT) }
+            if (keys[Key.RIGHT]) { presenter.userMove(PlayerMoveEnum.RIGHT) }
+            if (keys[Key.UP]) { presenter.userMove(PlayerMoveEnum.UP) }
+            if (keys[Key.DOWN]) { presenter.userMove(PlayerMoveEnum.DOWN) }
         }
 
         return boardView
@@ -282,7 +283,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         show(redoButton, ButtonsEnum.REDO)
         show(restartButton, ButtonsEnum.RESTART)
 
-        moveNumber.text = presenter.model.moveNumber.toString() + "."
+        moveNumber.text = presenter.model.moveNumber.toString()
         bestScore.text = presenter.bestScore.toString()
         score.text = presenter.score.toString()
 
@@ -301,7 +302,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
     }
 
     fun showGameOver(): Container = gameStage.container {
-        val format = TextFormat(RGBA(0, 0, 0), 40, Html.FontFace.Bitmap(font))
+        val format = TextFormat(RGBA(0, 0, 0), 40, font)
         val skin = TextSkin(
                 normal = format,
                 over = format.copy(RGBA(90, 90, 90)),
@@ -315,25 +316,23 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
         position(leftIndent, topIndent)
 
-        graphics {
+        val bgGameOver = graphics {
             fill(Colors.WHITE, 0.2) {
                 roundRect(0.0, 0.0, boardWidth, boardWidth, buttonRadius)
             }
         }
-        text("Game Over", 60.0, Colors.BLACK, font) {
-            centerBetween(0.0, 0.0, boardWidth, boardWidth)
-            y -= 60
+        text("Game Over", 60.0, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
+            centerOn(bgGameOver)
         }
         uiText("Try again", 120.0, 35.0, skin) {
             centerBetween(0.0, 0.0, boardWidth, boardWidth)
-            y += 20
+            y += 40
             customOnClick { removeMe() }
         }
-        onKeyDown {
-            when (it.key) {
-                Key.ENTER, Key.SPACE -> removeMe()
-                else -> Unit
-            }
+
+        addUpdater {
+            val keys = gameStage.views.input.keys
+            if (keys[Key.ENTER] or keys[Key.SPACE]) { removeMe() }
         }
     }
 }

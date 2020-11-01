@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="org.andstatus.game2048">
+<manifest
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	package="org.andstatus.game2048"
+>
 	<application
 		
 		android:allowBackup="true"
@@ -9,6 +12,9 @@
 		android:supportsRtl="true"
 	>
 		<activity android:name=".MainActivity"
+			android:banner="@drawable/app_icon"
+			android:icon="@drawable/app_icon"
+			android:label="2048 Open Fun Game"
 		>
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"/>

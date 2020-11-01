@@ -1,1 +1,2 @@
 enableFeaturePreview("GRADLE_METADATA")
+rootProject.name = "game2048"

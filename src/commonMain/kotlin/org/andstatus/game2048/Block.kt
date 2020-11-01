@@ -3,6 +3,7 @@ package org.andstatus.game2048
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korma.geom.vector.roundRect
 
 class Block(val piece: Piece) : Container() {
@@ -12,8 +13,8 @@ class Block(val piece: Piece) : Container() {
             fill(piece.color()) {
                 roundRect(0.0, 0.0, cellSize, cellSize, buttonRadius)
             }
-            text(piece.text, piece.textSize(), piece.textColor(), font).apply {
-                centerBetween(0.0, 0.0, cellSize, cellSize)
+            text(piece.text, piece.textSize(), piece.textColor(), font, TextAlignment.MIDDLE_CENTER) {
+                centerOn(this@graphics)
             }
         }
     }
