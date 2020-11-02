@@ -7,9 +7,12 @@ import com.soywiz.klogger.log
 class History() {
     private val keyBest = "best"
     private val keyCurrentGame = "current"
+    private val keyGame = "game"
+    private val gameIdsRange = 1..200
 
     // 1. Info on previous games
     var bestScore: Int = 0
+    var prevGames: List<GameSummary> = emptyList()
 
     // 2. This game, see for the inspiration https://en.wikipedia.org/wiki/Portable_Game_Notation
     var historyIndex = -1
@@ -21,7 +24,26 @@ class History() {
         currentGame = settings.storage.getOrNull(keyCurrentGame)
                 ?.let { GameRecord.fromJson(it)}
                 ?: GameRecord(DateTimeTz.nowLocal(), emptyList(), Board())
+        loadPrevGames()
     }
+
+    private fun loadPrevGames() {
+        prevGames = gameIdsRange.fold(emptyList(), { acc, ind ->
+            settings.storage.getOrNull(keyGame + ind)
+                    ?.let { GameSummary.fromJson(it)}
+                    ?.let { acc + it } ?: acc
+        })
+    }
+
+    fun restoreGameByIndex(historyIndex: Int): GameRecord? =
+        prevGames.getOrNull(historyIndex)
+            ?.let { settings.storage.getOrNull(keyGame + it.id) }
+            ?.let { GameRecord.fromJson(it) }
+            ?.let {
+                Console.log("Restored game ${it.start}")
+                currentGame = it
+                it
+            }
 
     fun onUpdate(): History {
         if (bestScore < currentGame.finalBoard.score) {
@@ -30,6 +52,29 @@ class History() {
         settings.storage[keyBest] = bestScore.toString()
         settings.storage[keyCurrentGame] = currentGame.toJson()
         return this
+    }
+
+    fun saveCurrentToHistory() {
+        val idToStore = if (currentGame.id > 0){
+            currentGame.id
+        } else {
+            (gameIdsRange.find { id -> prevGames.none { it.id == id }}
+                    ?: prevGames.minByOrNull { it.finalBoard.time }?.id
+                    ?: gameIdsRange.first)
+                .also {
+                    currentGame.id = it
+                }
+        }
+        settings.storage[keyGame + idToStore] = currentGame.toJson()
+        Console.log("Game $idToStore saved ${currentGame.start}")
+        loadPrevGames()
+    }
+
+    fun deleteCurrent() {
+        if (currentGame.id == 0) return
+
+        settings.storage.remove(keyGame + currentGame.id)
+        loadPrevGames()
     }
 
     val currentPlayerMove: PlayerMove?

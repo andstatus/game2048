@@ -17,16 +17,24 @@ class Model {
 
     fun onAppEntry(): List<PlayerMove> {
         return if (history.currentGame.finalBoard.isEmpty())
-            restart()
+            restart(false)
         else
             composerMove(history.currentGame.finalBoard, true)
     }
 
     fun composerMove(board: Board, isRedo: Boolean = false) = listOf(PlayerMove.composerMove(board)).play(isRedo)
 
-    fun restart(): List<PlayerMove> {
+    fun restart(saveCurrent: Boolean): List<PlayerMove> {
+        if (saveCurrent && history.currentGame.finalBoard.score > 0) {
+            history.saveCurrentToHistory()
+        }
         return composerMove(Board()) + PlayerMove.delay() + computerMove()
     }
+
+    fun restoreGame(historyIndex: Int): List<PlayerMove> =
+        history.restoreGameByIndex(historyIndex)
+                ?.let { redoToCurrent() }
+                ?: emptyList()
 
     fun canUndo(): Boolean {
         return history.canUndo()

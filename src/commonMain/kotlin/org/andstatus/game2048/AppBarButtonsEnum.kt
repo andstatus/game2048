@@ -1,6 +1,6 @@
 package org.andstatus.game2048
 
-enum class ButtonsEnum(val positionIndex: Int) {
+enum class AppBarButtonsEnum(val positionIndex: Int) {
     APP_LOGO(0),
     PLAY_BACKWARDS(0),
     PLAY(0),
@@ -9,5 +9,5 @@ enum class ButtonsEnum(val positionIndex: Int) {
     TO_CURRENT(1),
     UNDO(2),
     REDO(3),
-    RESTART(4);
+    GAME_MENU(4);
 }

@@ -8,8 +8,8 @@ var font: BitmapFont by Delegates.notNull()
 const val cellMargin: Double = 10.0
 var boardWidth: Double = 0.0
 var cellSize: Double = 0.0
-var leftIndent: Double = 0.0
-var topIndent: Double = 0.0
+var boardLeft: Double = 0.0
+var boardTop: Double = 0.0
 
-fun Square.positionX() = leftIndent + cellMargin + (cellSize + cellMargin) * x
-fun Square.positionY() = topIndent + cellMargin + (cellSize + cellMargin) * y
+fun Square.positionX() = boardLeft + cellMargin + (cellSize + cellMargin) * x
+fun Square.positionY() = boardTop + cellMargin + (cellSize + cellMargin) * y

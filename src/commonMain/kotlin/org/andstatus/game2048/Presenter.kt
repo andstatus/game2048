@@ -111,9 +111,9 @@ class Presenter(private val view: GameView) {
         autoPlayCount = 0
         autoPlayingEnum.value = AutoPlayingEnum.NONE
         gameTime.stop()
-        gameTime.seconds = 0
 
-        model.restart().present()
+        model.restart(true).present()
+        gameTime.seconds = 0
     }
 
     fun userMove(playerMoveEnum: PlayerMoveEnum) {
@@ -153,39 +153,39 @@ class Presenter(private val view: GameView) {
         view.showControls(buttonsToShow())
     }
 
-    private fun buttonsToShow(): List<ButtonsEnum> {
-        val list = ArrayList<ButtonsEnum>()
+    private fun buttonsToShow(): List<AppBarButtonsEnum> {
+        val list = ArrayList<AppBarButtonsEnum>()
         when(autoPlayingEnum.value) {
             AutoPlayingEnum.NONE -> {
                 if (preferableAutoPlayingEnum.value == AutoPlayingEnum.NONE && gameTime.started) {
-                    list.add(ButtonsEnum.PAUSE)
+                    list.add(AppBarButtonsEnum.PAUSE)
                 } else if (canRedo() && (preferableAutoPlayingEnum.value == AutoPlayingEnum.REDO || !canUndo())) {
-                    list.add(ButtonsEnum.PLAY)
+                    list.add(AppBarButtonsEnum.PLAY)
                 } else if (canUndo()) {
-                    list.add(ButtonsEnum.PLAY_BACKWARDS)
+                    list.add(AppBarButtonsEnum.PLAY_BACKWARDS)
                 } else {
-                    list.add(ButtonsEnum.APP_LOGO)
+                    list.add(AppBarButtonsEnum.APP_LOGO)
                 }
 
                 if (canUndo()) {
-                    list.add(ButtonsEnum.UNDO)
+                    list.add(AppBarButtonsEnum.UNDO)
                 }
                 if (canRedo()) {
-                    list.add(ButtonsEnum.REDO)
+                    list.add(AppBarButtonsEnum.REDO)
                 }
 
-                list.add(ButtonsEnum.RESTART)
+                list.add(AppBarButtonsEnum.GAME_MENU)
             }
             AutoPlayingEnum.UNDO -> {
-                list.add(ButtonsEnum.PAUSE)
+                list.add(AppBarButtonsEnum.PAUSE)
                 if (canUndo()) {
-                    list.add(ButtonsEnum.TO_START)
+                    list.add(AppBarButtonsEnum.TO_START)
                 }
             }
             AutoPlayingEnum.REDO -> {
-                list.add(ButtonsEnum.PAUSE)
+                list.add(AppBarButtonsEnum.PAUSE)
                 if (canRedo()) {
-                    list.add(ButtonsEnum.TO_CURRENT)
+                    list.add(AppBarButtonsEnum.TO_CURRENT)
                 }
             }
         }
@@ -402,6 +402,35 @@ class Presenter(private val view: GameView) {
                 model.redoToCurrent().present()
             }
         }
+    }
+
+    fun onGameMenuClick() {
+        logClick("GameMenu")
+        autoPlayCount++
+        gameTime.stop()
+        view.showGameMenu(model.history.currentGame)
+    }
+
+    fun onDeleteGameClick() {
+        logClick("DeleteGame")
+        autoPlayCount++
+
+        model.history.deleteCurrent()
+        model.restart(false).present()
+    }
+
+    fun onRestoreClick() {
+        logClick("Restore")
+        autoPlayCount++
+        view.showGameHistory(model.history.prevGames)
+    }
+
+    fun onHistoryItemClick(index: Int) {
+        logClick("History$index")
+        if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
+
+        autoPlayCount++
+        model.restoreGame(index).present()
     }
 
     private fun logClick(buttonName: String) {
