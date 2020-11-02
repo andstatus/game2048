@@ -1,9 +1,25 @@
 # 2048 Open Fun Game
 This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatform implementation.
 
-Download: 
-* The latest Android build is available [here](https://github.com/andstatus/game2048/issues/1)
-* Windows X64 zipped executable is [here](https://github.com/andstatus/game2048/issues/2) 
+**Android**  The latest Beta Android build is available [here](https://github.com/andstatus/game2048/issues/1).
+
+[<img src="doc/images/get-it-on-google-play.png" alt="Get it on Google Play" width="250" />](https://play.google.com/store/apps/details?id=org.andstatus.game2048)
+
+**Windows X64** zipped executable is [here](https://github.com/andstatus/game2048/issues/2). 
+
+## Features of "2048 Open Fun Game" that are not present in the original game
+
+* Unlimited and animated Undo and Redo.
+* Auto replay current game forward and backwards, stop at any position and continue from that place, overriding history.
+* Move number shown.
+* Game time played shown. The time starts when you make a move. It stops when you tap Undo or Pause button.
+
+<img alt="Main screen of Game2048" src="doc/screenshots/game2048.png" height="400" />
+
+If you found the project useful, please 
+[donate to the 2048 game development](http://andstatus.org/donate.html) via its lead developer.
+
+## About the project
 
 The project started from [RezMike/2048 KorGe tutorial project](https://github.com/RezMike/2048#readme), 
 but it's not a clone of that repository: it's a rewrite aiming at becoming a (board) game template
@@ -13,20 +29,6 @@ and [KorGe game engine](https://korge.org/).
 Following this goal, the source code has been structured and cleaned. We're trying to use 
 board games terminology (e.g. [Glossary of chess](https://en.wikipedia.org/wiki/Glossary_of_chess))
 in order to ease understanding of implementation logic.   
-
-If you found the project useful, please 
-[donate to the 2048 game development](http://andstatus.org/donate.html) via its lead developer.
-
-<p>
-<img alt="Main screen of Game2048" src="doc/screenshots/game2048.png" height="400" />
-</p>
-
-## Additional features of Game2048 that are not present in the original game
-
-* Unlimited and animated Undo and Redo.
-* Auto replay current game forward and backwards, stop at any position and continue from that place, overriding history.
-* Move number shown.
-* Game time played shown. The time starts when you make a move. It stops when you tap Undo or Pause button.
 
 # How to run the project
 
