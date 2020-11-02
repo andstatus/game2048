@@ -1,9 +1,9 @@
 # 2048 Open Fun Game
 This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatform implementation.
 
-**Android**  The latest Beta Android build is available [here](https://github.com/andstatus/game2048/issues/1).
+**Android**.  The latest Beta Android build is available [here](https://github.com/andstatus/game2048/issues/1).
 
-[<img src="doc/images/get-it-on-google-play.png" alt="Get it on Google Play" width="250" />](https://play.google.com/store/apps/details?id=org.andstatus.game2048)
+[<img src="doc/images/get-it-on-google-play.png" alt="Get 2048 Open Fun Game on Google Play" height="50" />](https://play.google.com/store/apps/details?id=org.andstatus.game2048)
 
 **Windows X64** zipped executable is [here](https://github.com/andstatus/game2048/issues/2). 
 
