@@ -35,14 +35,12 @@ class History() {
         })
     }
 
-    fun restoreGameByIndex(historyIndex: Int): GameRecord? =
-        prevGames.getOrNull(historyIndex)
-            ?.let { settings.storage.getOrNull(keyGame + it.id) }
+    fun restoreGameById(id: Int): GameRecord? =
+        settings.storage.getOrNull(keyGame + id)
             ?.let { GameRecord.fromJson(it) }
-            ?.let {
-                Console.log("Restored game ${it.start}")
+            ?.also {
+                Console.log("Restored game $id ${it.start}")
                 currentGame = it
-                it
             }
 
     fun onUpdate(): History {

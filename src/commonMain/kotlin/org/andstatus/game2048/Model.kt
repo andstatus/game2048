@@ -32,9 +32,12 @@ class Model {
     }
 
     fun restoreGame(historyIndex: Int): List<PlayerMove> =
-        history.restoreGameByIndex(historyIndex)
-                ?.let { redoToCurrent() }
-                ?: emptyList()
+            history.prevGames.getOrNull(historyIndex)?.id?.let { id ->
+                if (id != history.currentGame.id && history.currentGame.finalBoard.score > 0) {
+                    history.saveCurrentToHistory()
+                }
+                history.restoreGameById(id)?.let { redoToCurrent() }
+            } ?: emptyList()
 
     fun canUndo(): Boolean {
         return history.canUndo()
