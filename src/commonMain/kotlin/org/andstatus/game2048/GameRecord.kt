@@ -11,8 +11,8 @@ private const val keyFinalBoard = "finalBoard"
 
 class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>) {
 
-    fun toJson(): Map<String, Any> = shortRecord.toJson() +
-            (keyPlayersMoves to playerMoves.map { it.toJson() })
+    fun toMap(): Map<String, Any> = shortRecord.toMap() +
+            (keyPlayersMoves to playerMoves.map { it.toMap() })
 
     var id: Int by shortRecord::id
     val score get() = shortRecord.finalBoard.score
@@ -34,10 +34,10 @@ class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>
 
         override fun toString(): String = "${finalBoard.score} ${finalBoard.dateTime.format(SUMMARY_FORMAT)} id:$id"
 
-        fun toJson(): Map<String, Any> = mapOf(
+        fun toMap(): Map<String, Any> = mapOf(
                 keyId to id,
                 keyStart to start.format(DateFormat.FORMAT1),
-                keyFinalBoard to finalBoard.toJson()
+                keyFinalBoard to finalBoard.toMap()
         )
 
         companion object {

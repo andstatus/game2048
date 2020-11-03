@@ -51,13 +51,13 @@ class PersistenceTest : ViewsForTesting(log = true) {
                 else -> Square(1, 3)
             }
             val move = PlayerMove.computerMove(PlacedPiece(Piece.N2, square))
-            assertTrue(move.toJson().keys.size > 2, move.toJson().toString())
+            assertTrue(move.toMap().keys.size > 2, move.toMap().toString())
             moves.add(move)
             nMovesActual++
         }
 
         val gameRecord = GameRecord.newWithBoardAndMoves(Board(), moves)
-        val gameRecordJson = gameRecord.toJson().toJson()
+        val gameRecordJson = gameRecord.toMap().toJson()
         val message = "nMoves:$nMoves, $gameRecordJson"
 
         if (nMoves > 0) {
@@ -73,7 +73,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         val actual = presenter.model.history
         assertEquals(expected.currentGame.playerMoves, actual.currentGame.playerMoves, modelAndViews())
         assertEquals(expected.currentGame.score, actual.currentGame.score, modelAndViews())
-        assertEquals(expected.currentGame.toJson().toJson(), actual.currentGame.toJson().toJson(), modelAndViews())
+        assertEquals(expected.currentGame.toMap().toJson(), actual.currentGame.toMap().toJson(), modelAndViews())
         assertTrue(presenter.canUndo(), modelAndViews())
         assertFalse(presenter.canRedo(), modelAndViews())
     }

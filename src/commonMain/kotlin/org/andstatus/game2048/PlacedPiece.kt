@@ -4,9 +4,9 @@ private const val keyPiece = "piece"
 private const val keySquare = "square"
 
 data class PlacedPiece(val piece: Piece, val square: Square) {
-    fun toJson(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any> = mapOf(
             keyPiece to piece.id,
-            keySquare to square.toJson()
+            keySquare to square.toMap()
     )
 
     companion object {

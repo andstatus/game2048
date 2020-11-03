@@ -10,25 +10,25 @@ private const val keyBoard = "board"
 sealed class Move(val moveEnum: MoveEnum) {
     open fun points() = 0
 
-    fun toJson(): Map<String, Any> = when(this) {
+    fun toMap(): Map<String, Any> = when(this) {
         is MoveOne -> mapOf(
                     keyMoveEnum to moveEnum.id,
-                    keyFirst to first.toJson(),
-                    keyDestination to destination.toJson()
+                    keyFirst to first.toMap(),
+                    keyDestination to destination.toMap()
             )
         is MoveMerge -> mapOf(
                 keyMoveEnum to moveEnum.id,
-                keyFirst to first.toJson(),
-                keySecond to second.toJson(),
-                keyMerged to merged.toJson()
+                keyFirst to first.toMap(),
+                keySecond to second.toMap(),
+                keyMerged to merged.toMap()
         )
         is MovePlace -> mapOf(
                 keyMoveEnum to moveEnum.id,
-                keyFirst to first.toJson()
+                keyFirst to first.toMap()
         )
         is MoveLoad -> mapOf(
                 keyMoveEnum to moveEnum.id,
-                keyBoard to board.toJson()
+                keyBoard to board.toMap()
         )
         is MoveDelay -> emptyMap()
     }

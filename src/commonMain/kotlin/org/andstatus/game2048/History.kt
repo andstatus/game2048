@@ -57,7 +57,7 @@ class History() {
             bestScore = currentGame.score
         }
         settings.storage[keyBest] = bestScore.toString()
-        settings.storage[keyCurrentGame] = currentGame.toJson().toJson()
+        settings.storage[keyCurrentGame] = currentGame.toMap().toJson()
         return this
     }
 
@@ -74,7 +74,7 @@ class History() {
         } else {
             currentGame.id
         }
-        settings.storage[keyGame + idToStore] = currentGame.toJson().toJson()
+        settings.storage[keyGame + idToStore] = currentGame.toMap().toJson()
         Console.log((if (newGame) "New" else "Old") + " game saved $currentGame")
         loadPrevGames()
     }

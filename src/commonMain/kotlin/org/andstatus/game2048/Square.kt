@@ -48,7 +48,7 @@ data class Square(val x: Int, val y: Int) {
         return null
     }
 
-    fun toJson(): Map<String, Int> = mapOf(
+    fun toMap(): Map<String, Int> = mapOf(
             keyX to x,
             keyY to y
     )

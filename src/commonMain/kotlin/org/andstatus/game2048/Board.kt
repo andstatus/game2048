@@ -104,7 +104,7 @@ class Board(val width: Int = settings.boardWidth,
 
     fun save() = IntArray(size) { array[it]?.id ?: 0 }
 
-    fun toJson(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any> = mapOf(
             keyPieces to array.map { it?.id ?: 0 },
             keyScore to score,
             keyDateTime to dateTime.format(DateFormat.FORMAT1),

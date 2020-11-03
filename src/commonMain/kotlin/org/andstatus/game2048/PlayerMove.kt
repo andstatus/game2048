@@ -6,10 +6,10 @@ private const val keyMoves = "moves"
 
 data class PlayerMove(val player: PlayerEnum, val playerMoveEnum: PlayerMoveEnum, val moves: List<Move>) {
 
-    fun toJson(): Map<String, Any> = mapOf(
+    fun toMap(): Map<String, Any> = mapOf(
         keyPlayerEnum to player.id,
         keyPlayersMoveEnum to playerMoveEnum.id,
-        keyMoves to moves.map{ it.toJson() }
+        keyMoves to moves.map{ it.toMap() }
     )
 
     companion object{
