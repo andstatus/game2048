@@ -32,7 +32,9 @@ class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>
 
     class ShortRecord(var id: Int, val start: DateTimeTz, val finalBoard: Board) {
 
-        override fun toString(): String = "${finalBoard.score} ${finalBoard.dateTime.format(SUMMARY_FORMAT)} id:$id"
+        override fun toString(): String = "${finalBoard.score} $timeString id:$id"
+
+        val timeString get() = finalBoard.dateTime.format(SUMMARY_FORMAT)
 
         fun toMap(): Map<String, Any> = mapOf(
                 keyId to id,

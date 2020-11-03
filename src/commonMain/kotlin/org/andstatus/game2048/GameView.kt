@@ -8,7 +8,10 @@ import com.soywiz.korge.input.SwipeDirection
 import com.soywiz.korge.input.onClick
 import com.soywiz.korge.input.onOver
 import com.soywiz.korge.input.onSwipe
-import com.soywiz.korge.ui.*
+import com.soywiz.korge.ui.TextFormat
+import com.soywiz.korge.ui.TextSkin
+import com.soywiz.korge.ui.uiScrollableArea
+import com.soywiz.korge.ui.uiText
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
@@ -449,14 +452,14 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
         text("Select a game to restore", 40.0, Colors.BLACK, font, TextAlignment.TOP_CENTER) {
             centerXOn(bgWindow)
-            positionY(appBarTop)
+            positionY(gameBarTop)
         }
 
         val listTop = gameBarTop + buttonSize // To avoid unintentional click on the list after click onLogo
         val btnCloseTop = winHeight - buttonSize - buttonPadding
 
         val nItems = prevGames.size
-        val itemHeight = 64.0
+        val itemHeight = buttonSize
         val textWidth = winWidth * 2
         uiScrollableArea(config = {
             position(cellMargin, listTop)
@@ -466,24 +469,49 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             contentHeight = max(itemHeight * nItems, height)
         }) {
             prevGames.sortedByDescending { it.finalBoard.dateTime }.forEachIndexed {index, game ->
-                uiTextButton(text = game.toString(),
-                        width = textWidth, height = 64.0, textFont = font) {
-                    position(0.0, index * itemHeight)
-                    onClick {
+                val button = Container().apply {
+                    val background = roundRect(textWidth, itemHeight, buttonRadius, fill = bgColor)
+                    var xPos = cellMargin
+                    text(game.finalBoard.score.toString(), itemHeight * 0.6, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+                        positionX(xPos)
+                        centerYOn(background)
+                    }
+                    xPos += itemHeight * 1.5
+                    text(game.timeString, itemHeight * 0.6, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+                        positionX(xPos)
+                        centerYOn(background)
+                    }
+                    xPos += itemHeight * 4
+                    text(game.finalBoard.gameClock.playedSecondsString, itemHeight * 0.6, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+                        positionX(xPos)
+                        centerYOn(background)
+                    }
+                    xPos += itemHeight * 2
+                    text("id:${game.id}", itemHeight * 0.6, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+                        positionX(xPos)
+                        centerYOn(background)
+                    }
+                    position(0.0, index * (itemHeight + cellMargin))
+                    customOnClick {
                         this@container.removeFromParent()
                         presenter.onHistoryItemClick(game.id)
                     }
+                    addTo(this@uiScrollableArea)
                 }
             }
         }
 
-        val btnClose = uiTextButton(buttonSize * 2, buttonSize, "Close") {
+        val btnClose = Container().apply {
+            val background = roundRect(buttonSize * 2, buttonSize, buttonRadius, fill = bgColor)
+            text("Close", itemHeight * 0.6, Colors.WHITE, font, TextAlignment.MIDDLE_CENTER) {
+                centerOn(background)
+            }
             position(winWidth - this.width - buttonPadding, btnCloseTop)
-            onClick {
+            customOnClick {
                 Console.log("Close clicked")
                 this@container.removeFromParent()
             }
-            enable()
+            addTo(this@container)
         }
 
         addUpdater {

@@ -2,6 +2,7 @@ package org.andstatus.game2048
 
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
+import com.soywiz.korio.lang.format
 
 class GameClock(initialSeconds: Int = 0) {
 
@@ -40,4 +41,14 @@ class GameClock(initialSeconds: Int = 0) {
 
     val started: Boolean get() = counterRef.value.started
     val playedSeconds: Int get() = counterRef.value.current()
+
+    val playedSecondsString: String get() {
+        fun Int.format() = "%02d".format(this)
+
+        val seconds = playedSeconds
+        val sec: Int = seconds.rem(60)
+        val min: Int = ((seconds - sec) / 60).rem(60)
+        val hours: Int = (seconds - sec - (min * 60)) / 60
+        return hours.format() + ":" + min.format() + ":" + sec.format()
+    }
 }

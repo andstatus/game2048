@@ -20,7 +20,11 @@ It stops when you tap Undo or Pause button.
 * When you tap "Restart" button or restore existing game, current game is automatically saved to the history,
  so you can review or continue to play it later.
 
-<img alt="Main screen of Game2048" src="doc/screenshots/game2048.png" height="400" />
+<img title="Main screen of Game2048 app" src="doc/screenshots/game2048.png" height="400" />
+<img src="doc/images/5x5.png" width="5" />
+<img title="Game menu of Game2048 app" src="doc/screenshots/gameMenu.png" height="400" />
+<img src="doc/images/5x5.png" width="5" />
+<img title="Game History of Game2048 app" src="doc/screenshots/gameHistory.png" height="400" />
 
 If you found the project useful, please 
 [donate to the 2048 game development](http://andstatus.org/donate.html) via its lead developer.

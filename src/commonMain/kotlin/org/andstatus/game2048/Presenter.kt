@@ -38,18 +38,13 @@ class Presenter(private val view: GameView) {
     private val preferableAutoPlayingEnum: KorAtomicRef<AutoPlayingEnum> = KorAtomicRef(AutoPlayingEnum.NONE)
     private var autoPlayCount = 0
 
-    fun presentGameClock(coroutineScope: CoroutineScope, model: Model, textSupplier: () -> Text) {
+    private fun presentGameClock(coroutineScope: CoroutineScope, model: Model, textSupplier: () -> Text) {
         fun Int.format() = "%02d".format(this)
 
         coroutineScope.launch {
             while (true) {
                 delay(1000)
-                val seconds = model.gameClock.playedSeconds
-
-                val sec: Int = seconds.rem(60)
-                val min: Int = ((seconds - sec) / 60).rem(60)
-                val hours: Int = (seconds - sec - (min * 60)) / 60
-                textSupplier().text = hours.format() + ":" + min.format() + ":" + sec.format()
+                textSupplier().text = model.gameClock.playedSecondsString
             }
         }
     }
