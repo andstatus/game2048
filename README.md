@@ -7,6 +7,8 @@ This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatfo
 
 **Windows X64** zipped executable is [here](https://github.com/andstatus/game2048/issues/2). 
 
+<a id="features"/>
+
 ## Features of "2048 Open Fun Game" that are not present in the original game
 
 * Unlimited and animated Undo and Redo.
@@ -21,11 +23,11 @@ It stops when you tap Undo or Pause button.
  so you can review or continue to play it later.
 
 <p>
-<img title="Main screen of Game2048 app" src="doc/screenshots/game2048.png" height="350" />
+<img title="Main screen of Game2048 app" src="doc/screenshots/game2048.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Game menu of Game2048 app" src="doc/screenshots/gameMenu.png" height="350" />
+<img title="Game menu of Game2048 app" src="doc/screenshots/gameMenu.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Game History of Game2048 app" src="doc/screenshots/gameHistory.png" height="350" />
+<img title="Game History of Game2048 app" src="doc/screenshots/gameHistory.png" height="400" />
 </p>
 
 If you found the project useful, please 
@@ -41,6 +43,12 @@ and [KorGe game engine](https://korge.org/).
 Following this goal, the source code has been structured and cleaned. We're trying to use 
 board games terminology (e.g. [Glossary of chess](https://en.wikipedia.org/wiki/Glossary_of_chess))
 in order to ease understanding of implementation logic.   
+
+<a id="changelog"/>
+
+## Changelog
+
+No changes yet, please see [Features](#features).
 
 # How to run the project
 
