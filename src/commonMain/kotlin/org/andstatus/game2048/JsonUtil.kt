@@ -17,6 +17,7 @@ fun Any.asJsonArray(): List<Any> = try {
 }
 
 fun Any.asJsonMap(): Map<String, Any> = try {
+    @Suppress("UNCHECKED_CAST")
     when (this) {
         is String -> Json.parse(this)
         else -> this

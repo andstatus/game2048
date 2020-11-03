@@ -366,6 +366,8 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             if (keys[Key.RIGHT]) { presenter.userMove(PlayerMoveEnum.RIGHT) }
             if (keys[Key.UP]) { presenter.userMove(PlayerMoveEnum.UP) }
             if (keys[Key.DOWN]) { presenter.userMove(PlayerMoveEnum.DOWN) }
+            if (keys[Key.SPACE]) { presenter.onPauseClick() }
+            if (keys[Key.M]) { presenter.onGameMenuClick() }
         }
 
         return boardView

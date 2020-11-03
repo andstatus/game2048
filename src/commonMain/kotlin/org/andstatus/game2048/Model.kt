@@ -148,6 +148,7 @@ class Model {
                     board[move.second.square] = null
                     board[move.merged.square] = move.merged.piece
                 }
+                is MoveDelay -> Unit
             }
         }
         return board
@@ -178,6 +179,7 @@ class Model {
                     board[move.second.square] = move.second.piece
                     board[move.first.square] = move.first.piece
                 }
+                is MoveDelay -> Unit
             }
         }
         return board
