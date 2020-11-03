@@ -60,8 +60,10 @@ fun getStorage(stage: Stage): NativeStorage {
     val storage = NativeStorage(stage.views)
     val keyOpened = "opened"
 
-    Console.log("Platform:${OS.platformName}, storage: $storage" +
-            (storage.getOrNull(keyOpened)?.let { "\n last opened: $it" } ?: "\n storage is new"))
+    Console.log("Platform:${OS.platformName}, \nStorage " +
+            (storage.getOrNull(keyOpened)?.let { "last opened: $it" } ?: "is new") +
+            "\nStorage keys: ${storage.keys().sorted()}"
+    )
     storage[keyOpened] = DateTime.now().toString()
     return storage
 }

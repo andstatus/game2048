@@ -447,7 +447,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             }
         }
 
-        text("Select game to restore", 40.0, Colors.BLACK, font, TextAlignment.TOP_CENTER) {
+        text("Select a game to restore", 40.0, Colors.BLACK, font, TextAlignment.TOP_CENTER) {
             centerXOn(bgWindow)
             positionY(appBarTop)
         }
@@ -465,13 +465,13 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             height = btnCloseTop - this.y - buttonPadding
             contentHeight = max(itemHeight * nItems, height)
         }) {
-            for (n in 0 until nItems) {
-                uiTextButton(text = (prevGames.getOrNull(n)?.summary ?: "ind ${n} ???"),
+            prevGames.sortedByDescending { it.finalBoard.dateTime }.forEachIndexed {index, gameSummary ->
+                uiTextButton(text = gameSummary.summary,
                         width = textWidth, height = 64.0, textFont = font) {
-                    position(0.0, (nItems - 1 - n) * itemHeight)
+                    position(0.0, index * itemHeight)
                     onClick {
                         this@container.removeFromParent()
-                        presenter.onHistoryItemClick(n)
+                        presenter.onHistoryItemClick(gameSummary.id)
                     }
                 }
             }

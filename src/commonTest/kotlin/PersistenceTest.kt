@@ -29,8 +29,9 @@ class PersistenceTest : ViewsForTesting(log = true) {
         val finalBoard = Board(array = arrayOf(null, null, null, null,
                 null, null, null, null,
                 null, null, Piece.N4, null,
-                null, Piece.N2, null, null))
-        currentGame = GameRecord(DateTimeTz.nowLocal(), listOf(move1, move2, move3), finalBoard)
+                null, Piece.N2, null, null),
+            gameClock = GameClock(125))
+        currentGame = GameRecord(0, DateTimeTz.nowLocal(), finalBoard, listOf(move1, move2, move3))
             onUpdate()
     }
 
@@ -54,7 +55,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
             nMovesActual++
         }
 
-        val gameRecord = GameRecord(DateTimeTz.nowLocal(), moves, Board())
+        val gameRecord = GameRecord(0, DateTimeTz.nowLocal(), Board(), moves)
         val gameRecordJson = gameRecord.toJson()
         val message = "nMoves:$nMoves, $gameRecordJson"
 

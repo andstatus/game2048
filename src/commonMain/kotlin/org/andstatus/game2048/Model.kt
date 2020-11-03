@@ -12,6 +12,7 @@ class Model {
         if (currentIndex < 2 ) return 1
         return (if (currentIndex.isOdd) (currentIndex + 1) else (currentIndex + 2)) / 2
     }
+    val gameClock get() = board.gameClock
     val bestScore get() = history.bestScore
     val score get() = board.score
 
@@ -31,13 +32,12 @@ class Model {
         return composerMove(Board()) + PlayerMove.delay() + computerMove()
     }
 
-    fun restoreGame(historyIndex: Int): List<PlayerMove> =
-            history.prevGames.getOrNull(historyIndex)?.id?.let { id ->
-                if (id != history.currentGame.id && history.currentGame.finalBoard.score > 0) {
-                    history.saveCurrentToHistory()
-                }
-                history.restoreGameById(id)?.let { redoToCurrent() }
-            } ?: emptyList()
+    fun restoreGame(id: Int): List<PlayerMove> {
+        if (id != history.currentGame.id && history.currentGame.finalBoard.score > 0) {
+            history.saveCurrentToHistory()
+        }
+        return history.restoreGame(id)?.let { redoToCurrent() } ?: emptyList()
+    }
 
     fun canUndo(): Boolean {
         return history.canUndo()
@@ -78,6 +78,7 @@ class Model {
     fun userMove(playerMoveEnum: PlayerMoveEnum): List<PlayerMove> {
         return calcMove(playerMoveEnum).let {
             if (it.moves.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) {
+                gameClock.start()
                 listOf(it).play()
             } else {
                 emptyList()
@@ -86,7 +87,7 @@ class Model {
     }
 
     fun calcMove(playerMoveEnum: PlayerMoveEnum): PlayerMove {
-        val board = this.board.copy()
+        val board = this.board.copyWithCurrentTime()
         val moves = mutableListOf<Move>()
         val direction = playerMoveEnum.reverseDirection()
         var square: Square? = board.firstSquareToIterate(direction)
@@ -128,7 +129,7 @@ class Model {
     }
 
     private fun play(playerMove: PlayerMove, oldBoard: Board): Board {
-        var board = oldBoard.copy()
+        var board = oldBoard.copyWithCurrentTime()
         playerMove.moves.forEach { move ->
             board.score += move.points()
             when(move) {

@@ -7,13 +7,15 @@ import kotlin.random.Random
 
 private const val keyPieces = "pieces"
 private const val keyScore = "score"
-private const val keyTime = "time"
+private const val keyDateTime = "time"
+private const val keyPlayedSeconds = "playedSeconds"
 
 class Board(val width: Int = settings.boardWidth,
             val height: Int = settings.boardHeight,
             val array: Array<Piece?> = Array(width * height) { null },
             var score: Int = 0,
-            val time: DateTimeTz = DateTimeTz.nowLocal()) {
+            val dateTime: DateTimeTz = DateTimeTz.nowLocal(),
+            val gameClock: GameClock = GameClock()) {
     private val size = width * height
 
     fun firstSquareToIterate(direction: Direction) = when (direction) {
@@ -105,14 +107,16 @@ class Board(val width: Int = settings.boardWidth,
     fun toJson(): Map<String, Any> = mapOf(
             keyPieces to array.map { it?.id ?: 0 },
             keyScore to score,
-            keyTime to time.format(DateFormat.FORMAT1)
+            keyDateTime to dateTime.format(DateFormat.FORMAT1),
+            keyPlayedSeconds to gameClock.playedSeconds
     )
 
     override fun toString(): String = "pieces:" + array.mapIndexed { ind, piece ->
         ind.toString() + ":" + (piece ?: "-")
-    } + ", score:$score, time:${time.format(DateFormat.FORMAT1)}"
+    } + ", score:$score, time:${dateTime.format(DateFormat.FORMAT1)}"
 
-    fun copy() = Board(width, height, array.copyOf(), score, time)
+    fun copy() = Board(width, height, array.copyOf(), score, dateTime, gameClock)
+    fun copyWithCurrentTime() = Board(width, height, array.copyOf(), score, DateTimeTz.nowLocal(), gameClock)
 
     fun isEmpty(): Boolean = score == 0 && array.find { it != null } == null
 
@@ -123,9 +127,10 @@ class Board(val width: Int = settings.boardWidth,
             val pieces: Array<Piece?>? = aMap[keyPieces]?.asJsonArray()
                     ?.map { Piece.fromId(it as Int) }?.toTypedArray()
             val score: Int? = aMap[keyScore] as Int?
-            val time: DateTimeTz? = aMap[keyTime]?.let { DateTime.parse(it as String)}
-            return if (pieces != null && score != null && time != null)
-                Board(settings.boardWidth, settings.boardHeight, pieces, score, time)
+            val dateTime: DateTimeTz? = aMap[keyDateTime]?.let { DateTime.parse(it as String)}
+            val playedSeconds: Int = aMap[keyPlayedSeconds] as Int? ?: 0
+            return if (pieces != null && score != null && dateTime != null)
+                Board(settings.boardWidth, settings.boardHeight, pieces, score, dateTime, GameClock(playedSeconds))
             else null
         }
 

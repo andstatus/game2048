@@ -23,7 +23,7 @@ class History() {
         Console.log("Best score: ${bestScore}")
         currentGame = settings.storage.getOrNull(keyCurrentGame)
                 ?.let { GameRecord.fromJson(it)}
-                ?: GameRecord(DateTimeTz.nowLocal(), emptyList(), Board())
+                ?: GameRecord(0, DateTimeTz.nowLocal(), Board(), emptyList())
         loadPrevGames()
     }
 
@@ -35,13 +35,22 @@ class History() {
         })
     }
 
-    fun restoreGameById(id: Int): GameRecord? =
-        settings.storage.getOrNull(keyGame + id)
-            ?.let { GameRecord.fromJson(it) }
-            ?.also {
-                Console.log("Restored game $id ${it.start}")
-                currentGame = it
-            }
+    fun restoreGame(id: Int): GameRecord? =
+            settings.storage.getOrNull(keyGame + id)
+                ?.let {
+                    Console.log("gameId:$id, json:$it")
+                    GameRecord.fromJson(it)
+                }
+                ?.also {
+                    if (it.id == id) {
+                        Console.log("Restored game ${it.summary}")
+                    } else {
+                        Console.log("Fixed id $id for Restored game ${it.summary}")
+                        it.id = id
+                    }
+                    currentGame = it
+                    onUpdate()
+                }
 
     fun onUpdate(): History {
         if (bestScore < currentGame.finalBoard.score) {
@@ -53,18 +62,20 @@ class History() {
     }
 
     fun saveCurrentToHistory() {
-        val idToStore = if (currentGame.id > 0){
-            currentGame.id
-        } else {
+        val newGame = currentGame.id <= 0
+        val idToStore = if (newGame){
             (gameIdsRange.find { id -> prevGames.none { it.id == id }}
-                    ?: prevGames.minByOrNull { it.finalBoard.time }?.id
+                    ?: prevGames.minByOrNull { it.finalBoard.dateTime }?.id
                     ?: gameIdsRange.first)
-                .also {
-                    currentGame.id = it
-                }
+                    .also {
+                        currentGame.id = it
+                        onUpdate()
+                    }
+        } else {
+            currentGame.id
         }
         settings.storage[keyGame + idToStore] = currentGame.toJson()
-        Console.log("Game $idToStore saved ${currentGame.start}")
+        Console.log((if (newGame) "New" else "Old") + " game saved ${currentGame.summary}")
         loadPrevGames()
     }
 
@@ -84,7 +95,7 @@ class History() {
     fun add(playerMove: PlayerMove, board: Board) {
         currentGame = when (playerMove.playerMoveEnum ) {
             PlayerMoveEnum.LOAD -> {
-                GameRecord(DateTimeTz.nowLocal(), emptyList(), board)
+                GameRecord(currentGame.id, DateTimeTz.nowLocal(), board, emptyList())
             }
             else -> {
                 val playerMoves = when {
@@ -98,7 +109,7 @@ class History() {
                         currentGame.playerMoves.take(historyIndex)
                     }
                 }
-                GameRecord(currentGame.start, playerMoves + playerMove, board)
+                GameRecord(currentGame.id, currentGame.start, board, playerMoves + playerMove)
             }
         }
         historyIndex = -1

@@ -18,13 +18,16 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 
 class Presenter(private val view: GameView) {
-    val coroutineScope: CoroutineScope get() = view.gameStage
+    private val coroutineScope: CoroutineScope get() = view.gameStage
     val model = Model()
     private val moveIsInProgress = KorAtomicBoolean(false)
-    val gameTime = TimePresenter(view.gameStage, {view.gameTime})
     val score get() = model.score
     val bestScore get() = model.bestScore
     var boardViews = BoardViews(view.gameStage, settings.boardWidth, settings.boardHeight)
+
+    init {
+        presentGameClock(view.gameStage, model) { view.gameTime }
+    }
 
     private enum class AutoPlayingEnum {
         UNDO,
@@ -35,30 +38,20 @@ class Presenter(private val view: GameView) {
     private val preferableAutoPlayingEnum: KorAtomicRef<AutoPlayingEnum> = KorAtomicRef(AutoPlayingEnum.NONE)
     private var autoPlayCount = 0
 
-    class TimePresenter(val coroutineScope: CoroutineScope, textSupplier: () -> Text) {
-        var started = false
-        var seconds: Int = 0
+    fun presentGameClock(coroutineScope: CoroutineScope, model: Model, textSupplier: () -> Text) {
+        fun Int.format() = "%02d".format(this)
 
-        init {
-            coroutineScope.launch {
-                while (true) {
-                    delay(1000)
-                    if (started) {
-                        seconds++
+        coroutineScope.launch {
+            while (true) {
+                delay(1000)
+                val seconds = model.gameClock.playedSeconds
 
-                        val sec: Int = seconds.rem(60)
-                        val min: Int = ((seconds - sec) / 60).rem(60)
-                        val hours: Int = (seconds - sec - (min * 60)) / 60
-                        textSupplier().text = hours.format() + ":" + min.format() + ":" + sec.format()
-                    }
-                }
+                val sec: Int = seconds.rem(60)
+                val min: Int = ((seconds - sec) / 60).rem(60)
+                val hours: Int = (seconds - sec - (min * 60)) / 60
+                textSupplier().text = hours.format() + ":" + min.format() + ":" + sec.format()
             }
         }
-
-        private fun Int.format() = "%02d".format(this)
-
-        fun start() { started = true }
-        fun stop() { started = false }
     }
 
     fun onAppEntry() = model.onAppEntry().present()
@@ -81,7 +74,7 @@ class Presenter(private val view: GameView) {
     fun undo() {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
-        gameTime.stop()
+        model.gameClock.stop()
         boardViews.removeGameOver() // TODO: make this a move...
         (model.undo() + listOf(PlayerMove.delay()) + model.undo()).presentReversed()
     }
@@ -110,17 +103,13 @@ class Presenter(private val view: GameView) {
     fun restart() {
         autoPlayCount = 0
         autoPlayingEnum.value = AutoPlayingEnum.NONE
-        gameTime.stop()
-
         model.restart(true).present()
-        gameTime.seconds = 0
     }
 
     fun userMove(playerMoveEnum: PlayerMoveEnum) {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
         preferableAutoPlayingEnum.value = AutoPlayingEnum.NONE
-        gameTime.start()
         if (model.noMoreMoves()) {
             boardViews = boardViews
                     .removeGameOver()
@@ -157,7 +146,7 @@ class Presenter(private val view: GameView) {
         val list = ArrayList<AppBarButtonsEnum>()
         when(autoPlayingEnum.value) {
             AutoPlayingEnum.NONE -> {
-                if (preferableAutoPlayingEnum.value == AutoPlayingEnum.NONE && gameTime.started) {
+                if (preferableAutoPlayingEnum.value == AutoPlayingEnum.NONE && model.gameClock.started) {
                     list.add(AppBarButtonsEnum.PAUSE)
                 } else if (canRedo() && (preferableAutoPlayingEnum.value == AutoPlayingEnum.REDO || !canUndo())) {
                     list.add(AppBarButtonsEnum.PLAY)
@@ -328,7 +317,7 @@ class Presenter(private val view: GameView) {
 
     fun onPauseClick() {
         logClick("Pause")
-        gameTime.stop()
+        model.gameClock.stop()
         showControls()
         autoPlayCount++
     }
@@ -407,7 +396,7 @@ class Presenter(private val view: GameView) {
     fun onGameMenuClick() {
         logClick("GameMenu")
         autoPlayCount++
-        gameTime.stop()
+        model.gameClock.stop()
         view.showGameMenu(model.history.currentGame)
     }
 
@@ -425,12 +414,12 @@ class Presenter(private val view: GameView) {
         view.showGameHistory(model.history.prevGames)
     }
 
-    fun onHistoryItemClick(index: Int) {
-        logClick("History$index")
+    fun onHistoryItemClick(id: Int) {
+        logClick("History$id")
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
         autoPlayCount++
-        model.restoreGame(index).present()
+        model.restoreGame(id).present()
     }
 
     private fun logClick(buttonName: String) {
