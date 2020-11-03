@@ -436,7 +436,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         }
     }
 
-    fun showGameHistory(prevGames: List<GameSummary>): Container = gameStage.container {
+    fun showGameHistory(prevGames: List<GameRecord.ShortRecord>): Container = gameStage.container {
         val winWidth = gameStage.views.virtualWidth - cellMargin * 2
         val winHeight = gameStage.views.virtualHeight - cellMargin * 2
         position(cellMargin, cellMargin)
@@ -465,13 +465,13 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             height = btnCloseTop - this.y - buttonPadding
             contentHeight = max(itemHeight * nItems, height)
         }) {
-            prevGames.sortedByDescending { it.finalBoard.dateTime }.forEachIndexed {index, gameSummary ->
-                uiTextButton(text = gameSummary.summary,
+            prevGames.sortedByDescending { it.finalBoard.dateTime }.forEachIndexed {index, game ->
+                uiTextButton(text = game.toString(),
                         width = textWidth, height = 64.0, textFont = font) {
                     position(0.0, index * itemHeight)
                     onClick {
                         this@container.removeFromParent()
-                        presenter.onHistoryItemClick(gameSummary.id)
+                        presenter.onHistoryItemClick(game.id)
                     }
                 }
             }

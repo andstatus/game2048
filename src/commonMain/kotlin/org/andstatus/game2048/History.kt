@@ -1,8 +1,8 @@
 package org.andstatus.game2048
 
-import com.soywiz.klock.DateTimeTz
 import com.soywiz.klogger.Console
 import com.soywiz.klogger.log
+import com.soywiz.korio.serialization.json.toJson
 
 class History() {
     private val keyBest = "best"
@@ -12,7 +12,7 @@ class History() {
 
     // 1. Info on previous games
     var bestScore: Int = 0
-    var prevGames: List<GameSummary> = emptyList()
+    var prevGames: List<GameRecord.ShortRecord> = emptyList()
 
     // 2. This game, see for the inspiration https://en.wikipedia.org/wiki/Portable_Game_Notation
     var historyIndex = -1
@@ -23,14 +23,14 @@ class History() {
         Console.log("Best score: ${bestScore}")
         currentGame = settings.storage.getOrNull(keyCurrentGame)
                 ?.let { GameRecord.fromJson(it)}
-                ?: GameRecord(0, DateTimeTz.nowLocal(), Board(), emptyList())
+                ?: GameRecord.newWithBoardAndMoves(Board(), emptyList())
         loadPrevGames()
     }
 
     private fun loadPrevGames() {
         prevGames = gameIdsRange.fold(emptyList(), { acc, ind ->
             settings.storage.getOrNull(keyGame + ind)
-                    ?.let { GameSummary.fromJson(it)}
+                    ?.let { GameRecord.ShortRecord.fromJson(it)}
                     ?.let { acc + it } ?: acc
         })
     }
@@ -43,9 +43,9 @@ class History() {
                 }
                 ?.also {
                     if (it.id == id) {
-                        Console.log("Restored game ${it.summary}")
+                        Console.log("Restored game $it")
                     } else {
-                        Console.log("Fixed id $id for Restored game ${it.summary}")
+                        Console.log("Fixed id $id for Restored game $it")
                         it.id = id
                     }
                     currentGame = it
@@ -53,11 +53,11 @@ class History() {
                 }
 
     fun onUpdate(): History {
-        if (bestScore < currentGame.finalBoard.score) {
-            bestScore = currentGame.finalBoard.score
+        if (bestScore < currentGame.score) {
+            bestScore = currentGame.score
         }
         settings.storage[keyBest] = bestScore.toString()
-        settings.storage[keyCurrentGame] = currentGame.toJson()
+        settings.storage[keyCurrentGame] = currentGame.toJson().toJson()
         return this
     }
 
@@ -74,8 +74,8 @@ class History() {
         } else {
             currentGame.id
         }
-        settings.storage[keyGame + idToStore] = currentGame.toJson()
-        Console.log((if (newGame) "New" else "Old") + " game saved ${currentGame.summary}")
+        settings.storage[keyGame + idToStore] = currentGame.toJson().toJson()
+        Console.log((if (newGame) "New" else "Old") + " game saved $currentGame")
         loadPrevGames()
     }
 
@@ -95,7 +95,7 @@ class History() {
     fun add(playerMove: PlayerMove, board: Board) {
         currentGame = when (playerMove.playerMoveEnum ) {
             PlayerMoveEnum.LOAD -> {
-                GameRecord(currentGame.id, DateTimeTz.nowLocal(), board, emptyList())
+                GameRecord.newWithBoardAndMoves(board, emptyList())
             }
             else -> {
                 val playerMoves = when {
@@ -109,7 +109,7 @@ class History() {
                         currentGame.playerMoves.take(historyIndex)
                     }
                 }
-                GameRecord(currentGame.id, currentGame.start, board, playerMoves + playerMove)
+                GameRecord(GameRecord.ShortRecord(currentGame.id, currentGame.shortRecord.start, board), playerMoves + playerMove)
             }
         }
         historyIndex = -1

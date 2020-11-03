@@ -1,5 +1,5 @@
-import com.soywiz.klock.DateTimeTz
 import com.soywiz.korge.tests.ViewsForTesting
+import com.soywiz.korio.serialization.json.toJson
 import org.andstatus.game2048.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -26,12 +26,13 @@ class PersistenceTest : ViewsForTesting(log = true) {
         val move1 = PlayerMove.computerMove(placedPiece)
         val move2 = PlayerMove.userMove(PlayerMoveEnum.DOWN, listOf(MoveOne(placedPiece, Square(1, 3))))
         val move3 = PlayerMove.computerMove(PlacedPiece(Piece.N4, Square(2, 1)))
-        val finalBoard = Board(array = arrayOf(null, null, null, null,
+        val board = Board(array = arrayOf(null, null, null, null,
                 null, null, null, null,
                 null, null, Piece.N4, null,
                 null, Piece.N2, null, null),
+            score = 2,
             gameClock = GameClock(125))
-        currentGame = GameRecord(0, DateTimeTz.nowLocal(), finalBoard, listOf(move1, move2, move3))
+        currentGame = GameRecord.newWithBoardAndMoves(board, listOf(move1, move2, move3))
             onUpdate()
     }
 
@@ -55,8 +56,8 @@ class PersistenceTest : ViewsForTesting(log = true) {
             nMovesActual++
         }
 
-        val gameRecord = GameRecord(0, DateTimeTz.nowLocal(), Board(), moves)
-        val gameRecordJson = gameRecord.toJson()
+        val gameRecord = GameRecord.newWithBoardAndMoves(Board(), moves)
+        val gameRecordJson = gameRecord.toJson().toJson()
         val message = "nMoves:$nMoves, $gameRecordJson"
 
         if (nMoves > 0) {
@@ -71,8 +72,8 @@ class PersistenceTest : ViewsForTesting(log = true) {
     private fun assertTestHistory(expected: History) {
         val actual = presenter.model.history
         assertEquals(expected.currentGame.playerMoves, actual.currentGame.playerMoves, modelAndViews())
-        assertEquals(expected.currentGame.finalBoard.score, actual.currentGame.finalBoard.score, modelAndViews())
-        assertEquals(expected.currentGame.toJson(), actual.currentGame.toJson(), modelAndViews())
+        assertEquals(expected.currentGame.score, actual.currentGame.score, modelAndViews())
+        assertEquals(expected.currentGame.toJson().toJson(), actual.currentGame.toJson().toJson(), modelAndViews())
         assertTrue(presenter.canUndo(), modelAndViews())
         assertFalse(presenter.canRedo(), modelAndViews())
     }

@@ -17,23 +17,23 @@ class Model {
     val score get() = board.score
 
     fun onAppEntry(): List<PlayerMove> {
-        return if (history.currentGame.finalBoard.isEmpty())
+        return if (history.currentGame.score == 0)
             restart(false)
         else
-            composerMove(history.currentGame.finalBoard, true)
+            composerMove(history.currentGame.shortRecord.finalBoard, true)
     }
 
     fun composerMove(board: Board, isRedo: Boolean = false) = listOf(PlayerMove.composerMove(board)).play(isRedo)
 
     fun restart(saveCurrent: Boolean): List<PlayerMove> {
-        if (saveCurrent && history.currentGame.finalBoard.score > 0) {
+        if (saveCurrent && history.currentGame.score > 0) {
             history.saveCurrentToHistory()
         }
         return composerMove(Board()) + PlayerMove.delay() + computerMove()
     }
 
     fun restoreGame(id: Int): List<PlayerMove> {
-        if (id != history.currentGame.id && history.currentGame.finalBoard.score > 0) {
+        if (id != history.currentGame.id && history.currentGame.score > 0) {
             history.saveCurrentToHistory()
         }
         return history.restoreGame(id)?.let { redoToCurrent() } ?: emptyList()
@@ -58,7 +58,7 @@ class Model {
 
     fun redoToCurrent(): List<PlayerMove> {
         history.historyIndex = -1
-        return composerMove(history.currentGame.finalBoard, true)
+        return composerMove(history.currentGame.shortRecord.finalBoard, true)
     }
 
     fun computerMove(): List<PlayerMove> {
