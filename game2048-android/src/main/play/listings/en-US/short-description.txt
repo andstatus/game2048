@@ -1,0 +1,1 @@
+2048 game with Auto Replay, History and other fun features, Open Source, no ads

@@ -29,11 +29,11 @@ It stops when you tap Undo or Pause button.
  so you can review or continue to play it later.
 
 <p>
-<img title="Main screen of Game2048 app" src="doc/screenshots/game2048.png" height="400" />
+<img title="Main screen of Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/1.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Game menu of Game2048 app" src="doc/screenshots/gameMenu.png" height="400" />
+<img title="Game menu of Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/2.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Game History of Game2048 app" src="doc/screenshots/gameHistory.png" height="400" />
+<img title="Game History of Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/3.png" height="400" />
 </p>
 
 If you found the project useful, please 

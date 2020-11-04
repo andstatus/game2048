@@ -1,0 +1,17 @@
+"2048 Open Fun Game" is 2048 game with Auto Replay, History and other fun features,
+Open Source, no ads.
+
+For Android v.7.0+ devices.
+
+Features of "2048 Open Fun Game" that are not present in the original game:
+
+* Unlimited and animated Undo and Redo.
+* Auto replay current game forward and backwards, stop at any position and continue from that place,
+ overriding history.
+* Move number and game time played shown. The time starts when you make a move.
+It stops when you tap Undo or Pause button.
+* Latest games with all their moves and scores are stored in a history and can be replayed.
+* Game menu allows to delete current game from history, to restart a game
+ or to restore existing game from a list.
+* When you tap "Restart" button or restore existing game, current game is automatically saved to the history,
+ so you can review or continue to play it later.
