@@ -1,5 +1,11 @@
 # 2048 Open Fun Game
-This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatform implementation.
+
+2048 game with Auto Replay, History and other fun features,
+Open Source, no ads
+
+This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatform implementation
+ in [Kotlin](https://kotlinlang.org/) programming language
+ and [KorGe game engine](https://korge.org/).
 
 **Android**.  The latest Beta Android build is available [here](https://github.com/andstatus/game2048/issues/1).
 
