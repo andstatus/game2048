@@ -41,6 +41,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
     private var buttonPosXClicked: Double = 0.0
     private var buttonXPositions: List<Double> by Delegates.notNull()
+    private val duplicateKeyPressFilter = DuplicateKeyPressFilter()
 
     private var appLogo: Container by Delegates.notNull()
     private var playBackwardsButton: Container by Delegates.notNull()
@@ -191,9 +192,9 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
         val gameMenu = Container().apply {
             addUpdater {
-                val keys = gameStage.views.input.keys
-                if (keys[Key.ENTER] or keys[Key.SPACE]) {
+                duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
                     removeFromParent()
+                    presenter.showControls()
                 }
             }
         }
@@ -271,6 +272,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
     }
 
     fun showGameMenu(gameRecord: GameRecord) {
+        boardControls.removeFromParent()
         gameMenu.addTo(gameStage)
     }
 
@@ -368,6 +370,10 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             if (keys[Key.DOWN]) { presenter.userMove(PlayerMoveEnum.DOWN) }
             if (keys[Key.SPACE]) { presenter.onPauseClick() }
             if (keys[Key.M]) { presenter.onGameMenuClick() }
+            if (keys[Key.BACKSPACE]) duplicateKeyPressFilter.onPress(Key.BACKSPACE) {
+                Console.log("Closing game window...")
+                gameStage.gameWindow.close()
+            }
         }
 
         return boardView
@@ -414,7 +420,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
                 down = format.copy(RGBA(120, 120, 120))
         )
 
-        fun removeMe() {
+        fun close() {
             removeFromParent()
             presenter.restart()
         }
@@ -432,12 +438,13 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         uiText("Try again", 120.0, 35.0, skin) {
             centerBetween(0.0, 0.0, boardWidth, boardWidth)
             y += 40
-            customOnClick { removeMe() }
+            customOnClick { close() }
         }
 
         addUpdater {
-            val keys = gameStage.views.input.keys
-            if (keys[Key.ENTER] or keys[Key.SPACE]) { removeMe() }
+            duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
+                close()
+            }
         }
     }
 
@@ -512,14 +519,15 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             customOnClick {
                 Console.log("Close clicked")
                 this@container.removeFromParent()
+                presenter.showControls()
             }
             addTo(this@container)
         }
 
         addUpdater {
-            val keys = gameStage.views.input.keys
-            if (keys[Key.ENTER] or keys[Key.SPACE]) {
+            duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
                 removeFromParent()
+                presenter.showControls()
             }
         }
     }

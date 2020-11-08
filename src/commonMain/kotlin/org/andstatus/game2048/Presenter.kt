@@ -133,7 +133,7 @@ class Presenter(private val view: GameView) {
         moveIsInProgress.value = false
     }
 
-    private fun showControls() {
+    fun showControls() {
         view.showControls(buttonsToShow())
     }
 

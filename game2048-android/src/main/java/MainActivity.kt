@@ -1,9 +1,12 @@
 package org.andstatus.game2048
-import com.soywiz.korio.android.withAndroidContext
+import com.soywiz.klogger.Console
+import com.soywiz.klogger.log
 import com.soywiz.korgw.KorgwActivity
-import org.andstatus.game2048.main
+
 class MainActivity : KorgwActivity() {
 	override suspend fun activityMain() {
 		org.andstatus.game2048.main()
+		Console.log("game2048.main ended")
+		finish()
 	}
 }
