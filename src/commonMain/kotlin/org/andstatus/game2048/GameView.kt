@@ -21,6 +21,7 @@ import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korio.async.launch
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.util.OS
+import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.vector.roundRect
 import kotlin.math.max
 import kotlin.properties.Delegates
@@ -40,7 +41,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
     private var score: Text by Delegates.notNull()
     private var bestScore: Text by Delegates.notNull()
 
-    private var buttonPosXClicked: Double = 0.0
+    private var buttonPointClicked = Point(0, 0)
     private var buttonXPositions: List<Double> by Delegates.notNull()
     private val duplicateKeyPressFilter = DuplicateKeyPressFilter()
 
@@ -56,6 +57,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
     private var gameBarTop: Double by Delegates.notNull()
     private var gameMenu: Container by Delegates.notNull()
+    private var deleteButton: Container by Delegates.notNull()
     private var restartButton: Container by Delegates.notNull()
     private var restoreButton: Container by Delegates.notNull()
     private var closeButton: Container by Delegates.notNull()
@@ -188,7 +190,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
     private suspend fun setupGameMenu(): Container {
         gameBarTop = appBarTop + buttonSize + buttonPadding // To avoid unintentional click on the list after previous click
-        val winWidth = gameStage.views.virtualWidth - cellMargin * 2
+        val winWidth = gameStage.views.virtualWidth.toDouble()
         val winHeight = gameBarTop + buttonSize + buttonPadding
 
         val window = Container().apply {
@@ -200,19 +202,17 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             }
         }
 
-        val bgWindow = Graphics(false).apply {
-            position(cellMargin, cellMargin)
+        window.graphics {
             fill(Colors.WHITE) {
                 roundRect(0.0, 0.0, winWidth, winHeight, buttonRadius)
             }
-            addTo(window)
         }
 
         window.text("Choose game action", 40.0, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
             position(winWidth / 2,appBarTop + buttonSize / 2)
         }
 
-        val deleteButton = Container().apply {
+        deleteButton = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
             image(resourcesVfs["delete.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
@@ -280,8 +280,8 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
     private fun Container.customOnClick(handler: () -> Unit) {
         if (OS.isAndroid) {
             onOver {
-                Console.log("onOver x:${this.pos.x}")
-                buttonPosXClicked = this.pos.x
+                Console.log("onOver ${this.pos}")
+                buttonPointClicked = this.pos
                 handler()
             }
         } else {
@@ -382,8 +382,10 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
     fun showControls(appBarButtonsToShow: List<AppBarButtonsEnum>) {
         gameMenu.removeFromParent()
 
-        Console.log("Last clicked:$buttonPosXClicked, Button positions:$buttonXPositions")
-        val show = showButton(buttonXPositions.filter { it != buttonPosXClicked }, appBarButtonsToShow)
+        Console.log("Last clicked:$buttonPointClicked, Button positions:$buttonXPositions")
+        val show = showButton(
+                buttonXPositions.filter { buttonPointClicked.y != appBarTop ||  it != buttonPointClicked.x },
+                appBarButtonsToShow)
         show(appLogo, AppBarButtonsEnum.APP_LOGO)
         show(playBackwardsButton, AppBarButtonsEnum.PLAY_BACKWARDS)
         show(playButton, AppBarButtonsEnum.PLAY)
