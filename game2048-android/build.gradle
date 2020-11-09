@@ -63,7 +63,7 @@ android {
     }
     sourceSets {
         main {
-            java.srcDirs += ["../src/commonMain/kotlin", "../src/jvmMain/kotlin"]
+            java.srcDirs += ["../src/commonMain/kotlin", "../src/androidMain/kotlin"]
             assets.srcDirs += ["../src/commonMain/resources", "../build/korgeProcessedResources/metadata/main"]
         }
     }
