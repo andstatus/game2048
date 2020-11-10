@@ -75,7 +75,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             loadSettings(stage)
 
             val view = GameView(stage, animateViews)
-            font = resourcesVfs["clear_sans.fnt"].readBitmapFont()
+            font = resourcesVfs["assets/clear_sans.fnt"].readBitmapFont()
             val allCellMargins = cellMargin * (settings.boardWidth + 1)
             cellSize = (stage.views.virtualWidth - allCellMargins - 2 * buttonPadding) / settings.boardWidth
             view.buttonSize = (stage.views.virtualWidth - buttonPadding * 6) / 5
@@ -109,7 +109,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
         playBackwardsButton = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["play_backwards.png"].readBitmap()) {
+            image(resourcesVfs["assets/play_backwards.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
@@ -119,7 +119,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
         pauseButton = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["pause.png"].readBitmap()) {
+            image(resourcesVfs["assets/pause.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
@@ -129,7 +129,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
         playButton = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["play.png"].readBitmap()) {
+            image(resourcesVfs["assets/play.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
@@ -139,7 +139,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
         toStartButton = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["skip_previous.png"].readBitmap()) {
+            image(resourcesVfs["assets/skip_previous.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
@@ -149,7 +149,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
         toCurrentButton = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["skip_next.png"].readBitmap()) {
+            image(resourcesVfs["assets/skip_next.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
@@ -159,7 +159,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
         undoButton = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["undo.png"].readBitmap()) {
+            image(resourcesVfs["assets/undo.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
@@ -169,7 +169,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
         redoButton = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["redo.png"].readBitmap()) {
+            image(resourcesVfs["assets/redo.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
@@ -179,7 +179,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
         gameMenuButton = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["menu.png"].readBitmap()) {
+            image(resourcesVfs["assets/menu.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
@@ -214,7 +214,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
         deleteButton = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["delete.png"].readBitmap()) {
+            image(resourcesVfs["assets/delete.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
@@ -228,7 +228,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
         restoreButton = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["restore.png"].readBitmap()) {
+            image(resourcesVfs["assets/restore.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
@@ -242,7 +242,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
         restartButton = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["restart.png"].readBitmap()) {
+            image(resourcesVfs["assets/restart.png"].readBitmap()) {
                 size(buttonSize * 0.8, buttonSize * 0.8)
                 centerOn(background)
             }
@@ -256,7 +256,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
         closeButton = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["close.png"].readBitmap()) {
+            image(resourcesVfs["assets/close.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
@@ -270,7 +270,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
 
         Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["share.png"].readBitmap()) {
+            image(resourcesVfs["assets/share.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
@@ -481,7 +481,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         val buttonCloseX = buttonXPositions[4]
         container {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["close.png"].readBitmap()) {
+            image(resourcesVfs["assets/close.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }

@@ -24,8 +24,8 @@ korge {
     id = "org.andstatus.game2048"
     name = "2048 Open Fun Game"
 
-    icon = file("src/commonMain/resources/game2048.png")
-    banner = file("src/commonMain/resources/game2048.png")
+    icon = file("src/commonMain/resources/assets/game2048.png")
+    banner = file("src/commonMain/resources/assets/game2048.png")
     jvmMainClassName = "org.andstatus.game2048.MainKt"
 
     androidMinSdk = 24

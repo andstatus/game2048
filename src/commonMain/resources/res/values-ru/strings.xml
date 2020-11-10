@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="score">СЧЁТ</string>
+  <string name="best">ЛУЧШИЙ</string>
+  <string name="app_name">2048 Открытая Забавная Игра</string>
+  <string name="game_actions">Действия с игрой</string>
+  <string name="restore_game">Восстановление игры</string>
+  <string name="share">Поделиться</string>
+</resources>

@@ -65,6 +65,7 @@ android {
         main {
             java.srcDirs += ["../src/commonMain/kotlin", "../src/androidMain/kotlin"]
             assets.srcDirs += ["../src/commonMain/resources", "../build/korgeProcessedResources/metadata/main"]
+            res.srcDirs  += ["../src/commonMain/resources/res"]
         }
     }
 }
