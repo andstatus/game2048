@@ -191,7 +191,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
     private suspend fun setupGameMenu(): Container {
         gameBarTop = appBarTop + buttonSize + buttonPadding // To avoid unintentional click on the list after previous click
         val winWidth = gameStage.views.virtualWidth.toDouble()
-        val winHeight = gameBarTop + buttonSize + buttonPadding
+        val winHeight = gameBarTop + (buttonSize + buttonPadding) * 2
 
         val window = Container().apply {
             addUpdater {
@@ -263,6 +263,20 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             position(buttonXPositions[4], gameBarTop)
             customOnClick {
                 Console.log("Close clicked")
+                window.removeFromParent()
+            }
+            addTo(window)
+        }
+
+        Container().apply {
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
+            image(resourcesVfs["share.png"].readBitmap()) {
+                size(buttonSize * 0.6, buttonSize * 0.6)
+                centerOn(background)
+            }
+            position(buttonXPositions[2], gameBarTop + buttonPadding + buttonSize)
+            customOnClick {
+                presenter.onShareClick()
                 window.removeFromParent()
             }
             addTo(window)

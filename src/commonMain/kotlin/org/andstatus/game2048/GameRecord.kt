@@ -36,7 +36,11 @@ class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>
 
         val timeString get() = finalBoard.dateTime.format(SUMMARY_FORMAT)
 
+        val jsonFileName: String get() =
+            "${start.format(FILENAME_FORMAT)}_${finalBoard.score}.game2048.json"
+
         fun toMap(): Map<String, Any> = mapOf(
+                "type" to "org.andstatus.game2048:GameRecord:1",
                 keyId to id,
                 keyStart to start.format(DateFormat.FORMAT1),
                 keyFinalBoard to finalBoard.toMap()
@@ -44,6 +48,7 @@ class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>
 
         companion object {
             val SUMMARY_FORMAT = DateFormat("yyyy-MM-dd HH:mm")
+            val FILENAME_FORMAT = DateFormat("yyyy-MM-dd-HH-mm")
 
             fun fromJson(json: Any): ShortRecord? {
                 val aMap: Map<String, Any> = json.asJsonMap()

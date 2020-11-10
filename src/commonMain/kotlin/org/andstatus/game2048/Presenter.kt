@@ -13,6 +13,7 @@ import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.concurrent.atomic.KorAtomicBoolean
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
 import com.soywiz.korio.lang.format
+import com.soywiz.korio.serialization.json.toJson
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -419,5 +420,11 @@ class Presenter(private val view: GameView) {
 
     private fun logClick(buttonName: String) {
         Console.log("$buttonName clicked $autoPlayCount , autoplay:${autoPlayingEnum.value}")
+    }
+
+    fun onShareClick() {
+        logClick("Share")
+        shareText("Share", model.history.currentGame.shortRecord.jsonFileName,
+                model.history.currentGame.toMap().toJson())
     }
 }
