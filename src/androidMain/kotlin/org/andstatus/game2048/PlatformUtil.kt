@@ -12,6 +12,8 @@ import java.io.FileOutputStream
 import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
 
+actual val defaultLanguage: String get() = java.util.Locale.getDefault().language
+
 actual fun shareText(actionTitle: String, fileName: String, value: String) {
     Console.log("androidMain, shareText '$fileName' (${value.length} bytes): ${value.substr(0, 500)}...")
     MainActivity.mainActivity?.let { context ->

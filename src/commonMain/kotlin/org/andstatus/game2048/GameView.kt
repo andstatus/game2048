@@ -30,7 +30,7 @@ private const val buttonPadding = 18.0
 private const val appBarTop = buttonPadding
 const val buttonRadius = 5.0
 
-class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
+class GameView(val gameStage: Stage, val stringResources: StringResources, val animateViews: Boolean = true) {
     private val bgColor = Colors["#b9aea0"]
     private var buttonSize : Double = 0.0
 
@@ -65,16 +65,20 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
     private var boardControls: SolidRect by Delegates.notNull()
 
     companion object {
-        suspend fun mainEntry() = Korge(width = 480, height = 680, title = "2048 Open Fun Game",
-                gameId = "org.andstatus.game2048",
-                bgcolor = Colors["#fdf7f0"]) {
-            appEntry(this, true)
+        suspend fun mainEntry() {
+            val stringResources = StringResources.load(defaultLanguage)
+            Korge(width = 480, height = 680, title = stringResources.text("app_name"),
+                    gameId = "org.andstatus.game2048",
+                    bgcolor = Colors["#fdf7f0"]) {
+                appEntry(this, true)
+            }
         }
 
         suspend fun appEntry(stage: Stage, animateViews: Boolean): GameView {
             loadSettings(stage)
 
-            val view = GameView(stage, animateViews)
+            // As the font has latin characters only, we cannot use localized text yet
+            val view = GameView(stage, StringResources.load(""), animateViews)
             font = resourcesVfs["assets/clear_sans.fnt"].readBitmapFont()
             val allCellMargins = cellMargin * (settings.boardWidth + 1)
             cellSize = (stage.views.virtualWidth - allCellMargins - 2 * buttonPadding) / settings.boardWidth
@@ -208,7 +212,7 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             }
         }
 
-        window.text("Choose game action", 40.0, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
+        window.text(stringResources.text("game_actions"), 40.0, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
             position(winWidth / 2,appBarTop + buttonSize / 2)
         }
 
@@ -324,7 +328,8 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         val bgScore = gameStage.roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = bgColor) {
             position(boardLeft + (scoreButtonWidth + buttonPadding), scoreButtonTop)
         }
-        gameStage.text("SCORE", scoreLabelSize, RGBA(239, 226, 210), font, TextAlignment.MIDDLE_CENTER) {
+        gameStage.text(stringResources.text("score"), scoreLabelSize, RGBA(239, 226, 210), font,
+                TextAlignment.MIDDLE_CENTER) {
             centerXOn(bgScore)
             positionY(scoreButtonTop + textYPadding)
         }
@@ -336,7 +341,8 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
         val bgBest = gameStage.roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = bgColor) {
             position(boardLeft + (scoreButtonWidth + buttonPadding) * 2, scoreButtonTop)
         }
-        gameStage.text("BEST", scoreLabelSize, RGBA(239, 226, 210), font, TextAlignment.MIDDLE_CENTER) {
+        gameStage.text(stringResources.text("best"), scoreLabelSize, RGBA(239, 226, 210), font,
+                TextAlignment.MIDDLE_CENTER) {
             centerXOn(bgBest)
             positionY(scoreButtonTop + textYPadding)
         }
@@ -448,10 +454,10 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
                 roundRect(0.0, 0.0, boardWidth, boardWidth, buttonRadius)
             }
         }
-        text("Game Over", 60.0, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
+        text(stringResources.text("game_over"), 60.0, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
             centerOn(bgGameOver)
         }
-        uiText("Try again", 120.0, 35.0, skin) {
+        uiText(stringResources.text("try_again"), 120.0, 35.0, skin) {
             centerBetween(0.0, 0.0, boardWidth, boardWidth)
             y += 40
             customOnClick { close() }
@@ -493,7 +499,8 @@ class GameView(val gameStage: Stage, val animateViews: Boolean = true) {
             }
         }
 
-        text("Select game to restore", 40.0, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
+        text(stringResources.text("restore_game"), 40.0, Colors.BLACK, font,
+                TextAlignment.MIDDLE_CENTER) {
             position((buttonCloseX - cellMargin) / 2, gameBarTop + buttonSize / 2)
         }
 

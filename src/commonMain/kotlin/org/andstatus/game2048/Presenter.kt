@@ -424,7 +424,7 @@ class Presenter(private val view: GameView) {
 
     fun onShareClick() {
         logClick("Share")
-        shareText("Share", model.history.currentGame.shortRecord.jsonFileName,
+        shareText(view.stringResources.text("game_actions"), model.history.currentGame.shortRecord.jsonFileName,
                 model.history.currentGame.toMap().toJson())
     }
 }
