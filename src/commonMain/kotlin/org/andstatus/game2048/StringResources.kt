@@ -9,6 +9,7 @@ import com.soywiz.korio.serialization.xml.Xml
 class StringResources private constructor(private val strings: Map<String, String>,
                                           private val defaultStrings: Map<String, String>) {
     fun text(key: String): String = strings[key] ?: defaultStrings[key] ?: key
+    val hasNonDefaultStrings: Boolean get() = strings.isNotEmpty()
 
     companion object {
         suspend fun load(lang: String): StringResources = StringResources(loadLang(lang), loadLang(""))

@@ -24,7 +24,7 @@ class Presenter(private val view: GameView) {
     private val moveIsInProgress = KorAtomicBoolean(false)
     val score get() = model.score
     val bestScore get() = model.bestScore
-    var boardViews = BoardViews(view.gameStage, settings.boardWidth, settings.boardHeight)
+    var boardViews = BoardViews(view, settings.boardWidth, settings.boardHeight)
 
     init {
         presentGameClock(view.gameStage, model) { view.gameTime }
@@ -107,11 +107,11 @@ class Presenter(private val view: GameView) {
 
         preferableAutoPlayingEnum.value = AutoPlayingEnum.NONE
         if (model.noMoreMoves()) {
+            onPresentEnd()
             boardViews = boardViews
                     .removeGameOver()
                     .copy()
                     .apply { gameOver = view.showGameOver() }
-            onPresentEnd()
         } else {
             model.userMove(playerMoveEnum).let{
                 if (it.isEmpty()) it else it + model.computerMove()

@@ -1,12 +1,10 @@
 package org.andstatus.game2048
 
-import com.soywiz.kds.CopyOnWriteFrozenList
 import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Stage
 
 data class PlacedBlock(val block: Block, val square: Square)
 
-class BoardViews(val stage: Stage, val width: Int = 4, val height: Int = 4,
+class BoardViews(val gameView: GameView, val width: Int = 4, val height: Int = 4,
             val blocks: MutableList<PlacedBlock> = ArrayList()) {
     private val size = width * height
     var gameOver: Container? = null
@@ -60,12 +58,12 @@ class BoardViews(val stage: Stage, val width: Int = 4, val height: Int = 4,
         return this
     }
 
-    fun copy() = BoardViews(stage, width, height, blocks).apply {
+    fun copy() = BoardViews(gameView, width, height, blocks).apply {
         gameOver = this@BoardViews.gameOver
     }
 
-    fun addBlock(destination: PlacedPiece): Block = Block(destination.piece)
-            .addTo(stage, destination.square)
+    fun addBlock(destination: PlacedPiece): Block = Block(destination.piece, gameView.latinFont)
+            .addTo(gameView.gameStage, destination.square)
             .also { set(destination, it) }
 
     fun removeBlock(block: Block): Block? =

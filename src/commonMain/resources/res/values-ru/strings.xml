@@ -3,8 +3,8 @@
   <string name="app_name">2048 Открытая Забавная Игра</string>
   <string name="best">ЛУЧШИЙ</string>
   <string name="game_actions">Действия с игрой</string>
-  <string name="game_over">Игра закончена</string>
-  <string name="restore_game">Восстановление игры</string>
+  <string name="game_over">Игра окончена</string>
+  <string name="restore_game">Загрузка игры</string>
   <string name="score">СЧЁТ</string>
   <string name="share">Поделиться</string>
   <string name="try_again">Попробуйте ещё раз</string>
