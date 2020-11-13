@@ -511,7 +511,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             width = winWidth - cellMargin * 2
             contentWidth = textWidth
             height = winHeight - listTop - cellMargin
-            contentHeight = max(itemHeight * nItems, height)
+            contentHeight = max(itemHeight * nItems + itemHeight * 0.5, height)
         }) {
             prevGames.sortedByDescending { it.finalBoard.dateTime }.forEachIndexed {index, game ->
                 container {
@@ -536,6 +536,14 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                         positionX(xPos)
                         centerYOn(background)
                     }
+                    if (game.note.isNotBlank()) {
+                        xPos += itemHeight * 1.5
+                        text(game.note, itemHeight * 0.6, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+                            positionX(xPos)
+                            centerYOn(background)
+                        }
+                    }
+
                     position(0.0, index * (itemHeight + cellMargin))
                     customOnClick {
                         window.removeFromParent()

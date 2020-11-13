@@ -109,7 +109,9 @@ class History() {
                         currentGame.playerMoves.take(historyIndex)
                     }
                 }
-                GameRecord(GameRecord.ShortRecord(currentGame.id, currentGame.shortRecord.start, board), playerMoves + playerMove)
+                GameRecord(GameRecord.ShortRecord(currentGame.shortRecord.note ,
+                        currentGame.id, currentGame.shortRecord.start, board),
+                        playerMoves + playerMove)
             }
         }
         historyIndex = -1

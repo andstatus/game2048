@@ -4,6 +4,7 @@ import com.soywiz.klock.DateFormat
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.DateTimeTz
 
+private const val keyNote = "note"
 private const val keyId = "id"
 private const val keyStart = "start"
 private const val keyPlayersMoves = "playersMoves"
@@ -20,7 +21,7 @@ class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>
 
     companion object {
         fun newWithBoardAndMoves(board: Board, playerMoves: List<PlayerMove>) =
-                GameRecord(ShortRecord(0, board.dateTime, board), playerMoves)
+                GameRecord(ShortRecord("", 0, board.dateTime, board), playerMoves)
 
         fun fromJson(json: Any): GameRecord? =
                 ShortRecord.fromJson(json)?.let { shortRecord ->
@@ -30,7 +31,7 @@ class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>
                 }
     }
 
-    class ShortRecord(var id: Int, val start: DateTimeTz, val finalBoard: Board) {
+    class ShortRecord(val note: String, var id: Int, val start: DateTimeTz, val finalBoard: Board) {
 
         override fun toString(): String = "${finalBoard.score} $timeString id:$id"
 
@@ -40,10 +41,11 @@ class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>
             "${start.format(FILENAME_FORMAT)}_${finalBoard.score}.game2048.json"
 
         fun toMap(): Map<String, Any> = mapOf(
-                "type" to "org.andstatus.game2048:GameRecord:1",
-                keyId to id,
+                keyNote to note,
                 keyStart to start.format(DateFormat.FORMAT1),
-                keyFinalBoard to finalBoard.toMap()
+                keyFinalBoard to finalBoard.toMap(),
+                keyId to id,
+                "type" to "org.andstatus.game2048:GameRecord:1",
         )
 
         companion object {
@@ -52,11 +54,12 @@ class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>
 
             fun fromJson(json: Any): ShortRecord? {
                 val aMap: Map<String, Any> = json.asJsonMap()
+                val note: String = aMap[keyNote] as String? ?: ""
                 val id = aMap[keyId]?.let { it as Int } ?: 0
                 val start: DateTimeTz? = aMap[keyStart]?.let { DateTime.parse(it as String) }
                 val finalBoard: Board? = aMap[keyFinalBoard]?.let { Board.fromJson(it) }
                 return if (start != null && finalBoard != null)
-                    ShortRecord(id, start, finalBoard)
+                    ShortRecord(note, id, start, finalBoard)
                 else null
             }
         }
