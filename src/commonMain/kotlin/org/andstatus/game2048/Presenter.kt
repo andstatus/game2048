@@ -305,12 +305,6 @@ class Presenter(private val view: GameView) {
         )
     }
 
-    fun onLogoClick() {
-        logClick("Logo")
-        showControls()
-        autoPlayCount++
-    }
-
     fun onPauseClick() {
         logClick("Pause")
         model.gameClock.stop()

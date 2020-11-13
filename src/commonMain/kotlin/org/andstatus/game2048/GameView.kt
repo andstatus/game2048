@@ -105,7 +105,6 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 centerOn(background)
             }
             positionY(appBarTop)
-            customOnClick { presenter.onLogoClick() }
         }
 
         playBackwardsButton = Container().apply {
