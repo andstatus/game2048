@@ -191,7 +191,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private suspend fun setupGameMenu(): Container {
         gameBarTop = appBarTop + buttonSize + buttonPadding // To avoid unintentional click on the list after previous click
         val winWidth = gameStage.views.virtualWidth.toDouble()
-        val winHeight = gameBarTop + (buttonSize + buttonPadding) * 2
+        val winHeight = gameBarTop + (buttonSize + buttonPadding) * 2 - cellMargin
 
         val window = Container().apply {
             addUpdater {
@@ -202,10 +202,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             }
         }
 
-        window.graphics {
-            fill(Colors.WHITE) {
-                roundRect(0.0, 0.0, winWidth, winHeight, buttonRadius)
-            }
+        window.roundRect(winWidth, winHeight, buttonRadius, stroke = Colors.BLACK, strokeThickness = 2.0, fill = Colors.WHITE) {
+            positionY(cellMargin)
         }
 
         window.text(stringResources.text("game_actions"), 40.0, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
@@ -487,12 +485,10 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private suspend fun internalShowGameHistory(prevGames: List<GameRecord.ShortRecord>): Container = gameStage.container {
         val window = this
         val winWidth = gameStage.views.virtualWidth.toDouble()
-        val winHeight = gameStage.views.virtualHeight.toDouble()
+        val winHeight = gameStage.views.virtualHeight.toDouble() - gameBarTop + cellMargin
 
-        graphics {
-            fill(Colors.WHITE) {
-                roundRect(0.0, 0.0, winWidth, winHeight, buttonRadius)
-            }
+        window.roundRect(winWidth, winHeight, buttonRadius, stroke = Colors.BLACK, strokeThickness = 2.0, fill = Colors.WHITE) {
+            position(0.0, gameBarTop - cellMargin)
         }
 
         val buttonCloseX = buttonXPositions[4]
@@ -520,11 +516,12 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         val nItems = prevGames.size
         val itemHeight = buttonSize
         val textWidth = winWidth * 2
+        val scrollBarWidth = 40.0
         uiScrollableArea(config = {
             position(cellMargin, listTop)
             width = winWidth - cellMargin * 2
             contentWidth = textWidth
-            height = winHeight - listTop - cellMargin
+            height = winHeight - buttonSize - buttonPadding - cellMargin * 2 - scrollBarWidth
             contentHeight = max(itemHeight * nItems + itemHeight * 0.5, height)
         }) {
             prevGames.sortedByDescending { it.finalBoard.dateTime }.forEachIndexed {index, game ->
@@ -551,7 +548,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                         centerYOn(background)
                     }
                     if (game.note.isNotBlank()) {
-                        xPos += itemHeight * 1.5
+                        xPos += itemHeight * 1.2
                         text(game.note, itemHeight * 0.6, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
                             positionX(xPos)
                             centerYOn(background)
