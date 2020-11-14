@@ -23,8 +23,8 @@ class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>
         fun newWithBoardAndMoves(board: Board, playerMoves: List<PlayerMove>) =
                 GameRecord(ShortRecord("", 0, board.dateTime, board), playerMoves)
 
-        fun fromJson(json: Any): GameRecord? =
-                ShortRecord.fromJson(json)?.let { shortRecord ->
+        fun fromJson(json: Any, newId: Int? = null): GameRecord? =
+                ShortRecord.fromJson(json, newId)?.let { shortRecord ->
                     val playerMoves: List<PlayerMove> = json.asJsonMap()[keyPlayersMoves]?.asJsonArray()
                             ?.mapNotNull { PlayerMove.fromJson(it) } ?: emptyList()
                     GameRecord(shortRecord, playerMoves)
@@ -52,10 +52,10 @@ class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>
             val SUMMARY_FORMAT = DateFormat("yyyy-MM-dd HH:mm")
             val FILENAME_FORMAT = DateFormat("yyyy-MM-dd-HH-mm")
 
-            fun fromJson(json: Any): ShortRecord? {
+            fun fromJson(json: Any, newId: Int? = null): ShortRecord? {
                 val aMap: Map<String, Any> = json.asJsonMap()
                 val note: String = aMap[keyNote] as String? ?: ""
-                val id = aMap[keyId]?.let { it as Int } ?: 0
+                val id = newId ?: aMap[keyId]?.let { it as Int } ?: 0
                 val start: DateTimeTz? = aMap[keyStart]?.let { DateTime.parse(it as String) }
                 val finalBoard: Board? = aMap[keyFinalBoard]?.let { Board.fromJson(it) }
                 return if (start != null && finalBoard != null)

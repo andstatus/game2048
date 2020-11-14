@@ -10,8 +10,9 @@ Features of "2048 Open Fun Game" that are not present in the original game:
  overriding history.
 * Move number and game time played shown. The time starts when you make a move.
 It stops when you tap Undo or Pause button.
-* Latest games with all their moves and scores are stored in a history and can be replayed.
-* Game menu allows to delete current game from history, to restart a game
+* The Latest games with all their moves and scores are stored in a history and can be replayed.
+* Game menu allows you to delete current game from history, to restart a game
  or to restore existing game from a list.
 * When you tap "Restart" button or restore existing game, current game is automatically saved to the history,
  so you can review or continue to play it later.
+* Share a game as a file, so it can be loaded and replayed on any other device.

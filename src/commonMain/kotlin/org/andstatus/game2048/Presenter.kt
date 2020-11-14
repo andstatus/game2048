@@ -418,7 +418,18 @@ class Presenter(private val view: GameView) {
 
     fun onShareClick() {
         logClick("Share")
-        shareText(view.stringResources.text("game_actions"), model.history.currentGame.shortRecord.jsonFileName,
+        shareText(view.stringResources.text("share"), model.history.currentGame.shortRecord.jsonFileName,
                 model.history.currentGame.toMap().toJson())
+    }
+
+    fun onLoadClick() {
+        logClick("Load")
+        loadJsonGameRecord { json ->
+            Console.log("Opened game: $json")
+            GameRecord.fromJson(json, newId = 0)?.let {
+                model.history.currentGame = it
+                onToCurrentClick()
+            }
+        }
     }
 }

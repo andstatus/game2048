@@ -282,6 +282,20 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             addTo(window)
         }
 
+        Container().apply {
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
+            image(resourcesVfs["assets/load.png"].readBitmap()) {
+                size(buttonSize * 0.6, buttonSize * 0.6)
+                centerOn(background)
+            }
+            position(buttonXPositions[3], gameBarTop + buttonPadding + buttonSize)
+            customOnClick {
+                presenter.onLoadClick()
+                window.removeFromParent()
+            }
+            addTo(window)
+        }
+
         return window
     }
 

@@ -22,11 +22,12 @@ This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatfo
  overriding history.
 * Move number and game time played shown. The time starts when you make a move. 
 It stops when you tap Undo or Pause button.
-* Latest games with all their moves and scores are stored in a history and can be replayed.
-* Game menu allows to delete current game from history, to restart a game
+* The Latest games with all their moves and scores are stored in a history and can be replayed.
+* Game menu allows you to delete current game from history, to restart a game
  or to restore existing game from a list.
 * When you tap "Restart" button or restore existing game, current game is automatically saved to the history,
  so you can review or continue to play it later.
+* Share a game as a file, so it can be loaded and replayed on any other device.   
 
 <p>
 <img title="Main screen of Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/1.png" height="400" />
@@ -58,6 +59,12 @@ No changes yet, please see [Features](#features).
 
 # How to run the project
 
+## Android-specific project
+This multiplatform project has additional Android-specific project that is customized to have richer User experience
+on Android platform.
+The project is in the *game2048-android* subfolder and can be opened and run using Android Studio. 
+
+## Running on all platforms
 The implementation uses the [KorGe template project](https://github.com/korlibs/korge-hello-world#readme).
 Below are the compiling and running instructions taken from the template.
 

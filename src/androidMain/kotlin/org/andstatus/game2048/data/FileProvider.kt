@@ -67,7 +67,6 @@ class FileProvider : ContentProvider() {
         const val AUTHORITY = "org.andstatus.game2048" + ".data.FileProvider"
         const val CACHED_FILE_PATH = "cachedFile"
         val CACHED_FILE_URI = Uri.parse("content://" + AUTHORITY + "/" + CACHED_FILE_PATH)
-        const val currentGameFileName = "current.game2048.json"
 
         fun cachedFilenameToUri(filename: String?): Uri {
             return Uri.withAppendedPath(CACHED_FILE_URI, filename)
