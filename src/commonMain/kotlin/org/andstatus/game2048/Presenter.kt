@@ -13,6 +13,7 @@ import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.concurrent.atomic.KorAtomicBoolean
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
 import com.soywiz.korio.lang.format
+import com.soywiz.korio.lang.substr
 import com.soywiz.korio.serialization.json.toJson
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
@@ -425,10 +426,16 @@ class Presenter(private val view: GameView) {
     fun onLoadClick() {
         logClick("Load")
         loadJsonGameRecord { json ->
-            Console.log("Opened game: $json")
-            GameRecord.fromJson(json, newId = 0)?.let {
-                model.history.currentGame = it
-                onToCurrentClick()
+            view.gameStage.launch {
+                Console.log("Opened game: ${json.substr(0, 140)}")
+                GameRecord.fromJson(json, newId = 0)?.let {
+                    // I noticed some kind of KorGe window reset after return from the other activity,
+                    //   so let's wait for awhile and redraw everything a bit later...
+                    delay(3000)
+                    Console.log("Restored game: $it")
+                    model.history.currentGame = it
+                    onToCurrentClick()
+                }
             }
         }
     }
