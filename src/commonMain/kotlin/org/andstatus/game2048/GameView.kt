@@ -31,8 +31,7 @@ private const val appBarTop = buttonPadding
 const val buttonRadius = 5.0
 
 class GameView(val gameStage: Stage, val stringResources: StringResources, val animateViews: Boolean = true) {
-    var latinFont: Font by Delegates.notNull()
-    private var font: Font by Delegates.notNull()
+    var font: Font by Delegates.notNull()
     private val bgColor = Colors["#b9aea0"]
     private var buttonSize : Double = 0.0
 
@@ -71,12 +70,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             loadSettings(stage)
 
             val view = GameView(stage, stringResources, animateViews)
-            // Better-resolution font, but latin chars only. We use it for numbers.
-            view.latinFont = resourcesVfs["assets/clear_sans.fnt"].readBitmapFont()
-            view.font = if (view.stringResources.hasNonDefaultStrings) {
-                // Low-resolution font, better font needed...
-                resourcesVfs["assets/roboto-regular-ft-12.fnt"].readBitmapFont()
-            } else view.latinFont
+            view.font = resourcesVfs["assets/clear_sans.fnt"].readBitmapFont()
             val allCellMargins = cellMargin * (settings.boardWidth + 1)
             cellSize = (stage.views.virtualWidth - allCellMargins - 2 * buttonPadding) / settings.boardWidth
             view.buttonSize = (stage.views.virtualWidth - buttonPadding * 6) / 5
@@ -101,7 +95,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private suspend fun setupAppBar() {
         appLogo = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = RGBA(237, 196, 3))
-            text("2048", cellSize * 0.4, Colors.WHITE, latinFont, TextAlignment.MIDDLE_CENTER) {
+            text("2048", cellSize * 0.4, Colors.WHITE, font, TextAlignment.MIDDLE_CENTER) {
                 centerOn(background)
             }
             positionY(appBarTop)
@@ -327,11 +321,11 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         val scoreLabelSize = cellSize * 0.30
         val scoreTextSize = cellSize * 0.5
 
-        gameTime = gameStage.text("00:00:00", scoreLabelSize, Colors.BLACK, latinFont, TextAlignment.MIDDLE_CENTER) {
+        gameTime = gameStage.text("00:00:00", scoreLabelSize, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
             positionX(boardLeft + scoreButtonWidth / 2)
             positionY(scoreButtonTop + textYPadding)
         }
-        moveNumber = gameStage.text("", scoreTextSize, Colors.BLACK, latinFont, TextAlignment.MIDDLE_CENTER) {
+        moveNumber = gameStage.text("", scoreTextSize, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
             centerXOn(gameTime)
             positionY(scoreButtonTop + scoreLabelSize + textYPadding)
         }.addTo(gameStage)
@@ -344,7 +338,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             centerXOn(bgScore)
             positionY(scoreButtonTop + textYPadding)
         }
-        score = gameStage.text("", scoreTextSize, Colors.WHITE, latinFont, TextAlignment.MIDDLE_CENTER) {
+        score = gameStage.text("", scoreTextSize, Colors.WHITE, font, TextAlignment.MIDDLE_CENTER) {
             centerXOn(bgScore)
             positionY(scoreButtonTop + scoreLabelSize + textYPadding)
         }
@@ -357,7 +351,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             centerXOn(bgBest)
             positionY(scoreButtonTop + textYPadding)
         }
-        bestScore = gameStage.text("", scoreTextSize, Colors.WHITE, latinFont, TextAlignment.MIDDLE_CENTER) {
+        bestScore = gameStage.text("", scoreTextSize, Colors.WHITE, font, TextAlignment.MIDDLE_CENTER) {
             centerXOn(bgBest)
             positionY(scoreButtonTop + scoreLabelSize + textYPadding)
         }
@@ -530,22 +524,22 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 container {
                     val background = roundRect(textWidth, itemHeight, buttonRadius, fill = bgColor)
                     var xPos = cellMargin
-                    text(game.finalBoard.score.toString(), itemHeight * 0.6, Colors.WHITE, latinFont, TextAlignment.MIDDLE_LEFT) {
+                    text(game.finalBoard.score.toString(), itemHeight * 0.6, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
                         positionX(xPos)
                         centerYOn(background)
                     }
                     xPos += itemHeight * 1.5
-                    text(game.timeString, itemHeight * 0.6, Colors.WHITE, latinFont, TextAlignment.MIDDLE_LEFT) {
+                    text(game.timeString, itemHeight * 0.6, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
                         positionX(xPos)
                         centerYOn(background)
                     }
                     xPos += itemHeight * 4
-                    text(game.finalBoard.gameClock.playedSecondsString, itemHeight * 0.6, Colors.WHITE, latinFont, TextAlignment.MIDDLE_LEFT) {
+                    text(game.finalBoard.gameClock.playedSecondsString, itemHeight * 0.6, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
                         positionX(xPos)
                         centerYOn(background)
                     }
                     xPos += itemHeight * 2
-                    text("id:${game.id}", itemHeight * 0.6, Colors.WHITE, latinFont, TextAlignment.MIDDLE_LEFT) {
+                    text("id:${game.id}", itemHeight * 0.6, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
                         positionX(xPos)
                         centerYOn(background)
                     }

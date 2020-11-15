@@ -7,14 +7,14 @@ import com.soywiz.korim.font.Font
 import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korma.geom.vector.roundRect
 
-class Block(val piece: Piece, latinFont: Font) : Container() {
+class Block(val piece: Piece, font: Font) : Container() {
 
     init {
         graphics {
             fill(piece.color()) {
                 roundRect(0.0, 0.0, cellSize, cellSize, buttonRadius)
             }
-            text(piece.text, piece.textSize(), piece.textColor(), latinFont, TextAlignment.MIDDLE_CENTER) {
+            text(piece.text, piece.textSize(), piece.textColor(), font, TextAlignment.MIDDLE_CENTER) {
                 centerOn(this@graphics)
             }
         }

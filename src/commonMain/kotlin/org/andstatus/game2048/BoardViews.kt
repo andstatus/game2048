@@ -62,7 +62,7 @@ class BoardViews(val gameView: GameView, val width: Int = 4, val height: Int = 4
         gameOver = this@BoardViews.gameOver
     }
 
-    fun addBlock(destination: PlacedPiece): Block = Block(destination.piece, gameView.latinFont)
+    fun addBlock(destination: PlacedPiece): Block = Block(destination.piece, gameView.font)
             .addTo(gameView.gameStage, destination.square)
             .also { set(destination, it) }
 
