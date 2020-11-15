@@ -306,9 +306,11 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private fun Container.customOnClick(handler: () -> Unit) {
         if (OS.isAndroid) {
             onOver {
-                Console.log("onOver ${this.pos}")
-                buttonPointClicked = this.pos
-                handler()
+                duplicateKeyPressFilter.onPress(Key.RIGHT) {
+                    Console.log("onOver ${this.pos}")
+                    buttonPointClicked = this.pos
+                    handler()
+                }
             }
         } else {
             onClick {
@@ -382,11 +384,13 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 .addTo(gameStage).position(boardLeft, boardTop)
 
         boardView.onSwipe(20.0) {
-            when (it.direction) {
-                SwipeDirection.LEFT -> presenter.userMove(PlayerMoveEnum.LEFT)
-                SwipeDirection.RIGHT -> presenter.userMove(PlayerMoveEnum.RIGHT)
-                SwipeDirection.TOP -> presenter.userMove(PlayerMoveEnum.UP)
-                SwipeDirection.BOTTOM -> presenter.userMove(PlayerMoveEnum.DOWN)
+            duplicateKeyPressFilter.onPress(Key.RIGHT) {
+                when (it.direction) {
+                    SwipeDirection.LEFT -> presenter.userMove(PlayerMoveEnum.LEFT)
+                    SwipeDirection.RIGHT -> presenter.userMove(PlayerMoveEnum.RIGHT)
+                    SwipeDirection.TOP -> presenter.userMove(PlayerMoveEnum.UP)
+                    SwipeDirection.BOTTOM -> presenter.userMove(PlayerMoveEnum.DOWN)
+                }
             }
         }
 
@@ -464,6 +468,10 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         uiText(stringResources.text("try_again"), 120.0, 35.0, skin) {
             centerXBetween(0.0, boardWidth)
             positionY((boardWidth + textSize) / 2)
+            customOnClick {
+                removeFromParent()
+                presenter.restart()
+            }
         }
 
         addUpdater {
@@ -471,11 +479,6 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 removeFromParent()
                 presenter.restart()
             }
-        }
-
-        customOnClick {
-            removeFromParent()
-            presenter.restart()
         }
     }
 
