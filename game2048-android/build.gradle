@@ -6,8 +6,8 @@ buildscript {
 		maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
 	}
     dependencies {
-		classpath 'com.android.tools.build:gradle:4.1.0';
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.20-M1' }
+		classpath 'com.android.tools.build:gradle:4.1.1';
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.20-RC' }
 }
 repositories {
     mavenLocal()
@@ -48,8 +48,8 @@ android {
         applicationId 'org.andstatus.game2048'
         minSdkVersion 24
         targetSdkVersion 29
-        versionCode 6
-        versionName '0.10'
+        versionCode 7
+        versionName '0.11'
 
         archivesBaseName = "game2048-android-$versionName"
     }
@@ -70,7 +70,7 @@ android {
     }
 }
 dependencies {
-	implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.20-M1'
+	implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.20-RC'
 	implementation 'com.soywiz.korlibs.korge:korge-android:2.0.0-rc2'
 	implementation 'com.soywiz.korlibs.klock:klock-android:2.0.0-rc2'
 	implementation 'com.soywiz.korlibs.kmem:kmem-android:2.0.0-rc2'

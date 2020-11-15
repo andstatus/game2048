@@ -1,1 +1,2 @@
+v.0.11 Unified multilingual font
 v.0.09 Share a game as a file, so it can be loaded and replayed on any other device
