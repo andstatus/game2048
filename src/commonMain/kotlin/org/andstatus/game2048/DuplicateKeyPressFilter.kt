@@ -7,13 +7,15 @@ import kotlin.math.abs
 
 class DuplicateKeyPressFilter {
     private val pressed: MutableMap<Key, Long> = HashMap()
-    private val minMillisBetweenPresses = 500
+    private val minMillisBetweenPresses = 300
 
     fun ifWindowCloseKeyPressed(input: Input, action: () -> Unit) {
         val keys = input.keys
         if (keys[Key.ENTER] or keys[Key.SPACE] or keys[Key.BACKSPACE])
             onPress(Key.BACKSPACE, action)
     }
+
+    fun onSwipeOrOver(action: () -> Unit) = onPress(Key.RIGHT, action)
 
     fun onPress(key: Key, action: () -> Unit) {
         val now = DateTime.nowUnixLong()

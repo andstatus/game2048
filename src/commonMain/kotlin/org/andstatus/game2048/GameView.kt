@@ -306,9 +306,10 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private fun Container.customOnClick(handler: () -> Unit) {
         if (OS.isAndroid) {
             onOver {
-                duplicateKeyPressFilter.onPress(Key.RIGHT) {
-                    Console.log("onOver ${this.pos}")
-                    buttonPointClicked = this.pos
+                duplicateKeyPressFilter.onSwipeOrOver {
+                    val pos1 = this.pos.copy()
+                    Console.log("onOver ${buttonPointClicked} -> $pos1")
+                    buttonPointClicked = pos1
                     handler()
                 }
             }
@@ -384,7 +385,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 .addTo(gameStage).position(boardLeft, boardTop)
 
         boardView.onSwipe(20.0) {
-            duplicateKeyPressFilter.onPress(Key.RIGHT) {
+            duplicateKeyPressFilter.onSwipeOrOver {
                 when (it.direction) {
                     SwipeDirection.LEFT -> presenter.userMove(PlayerMoveEnum.LEFT)
                     SwipeDirection.RIGHT -> presenter.userMove(PlayerMoveEnum.RIGHT)
@@ -413,11 +414,9 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
     fun showControls(appBarButtonsToShow: List<AppBarButtonsEnum>) {
         gameMenu.removeFromParent()
-
-        Console.log("Last clicked:$buttonPointClicked, Button positions:$buttonXPositions")
-        val show = showButton(
-                buttonXPositions.filter { buttonPointClicked.y != appBarTop ||  it != buttonPointClicked.x },
-                appBarButtonsToShow)
+        val xPositions = buttonXPositions.filter { buttonPointClicked.y != appBarTop || it != buttonPointClicked.x }
+        Console.log("Last clicked:$buttonPointClicked, Button positions:${xPositions} y:$appBarTop")
+        val show = showButton(xPositions, appBarButtonsToShow)
         show(appLogo, AppBarButtonsEnum.APP_LOGO)
         show(playBackwardsButton, AppBarButtonsEnum.PLAY_BACKWARDS)
         show(playButton, AppBarButtonsEnum.PLAY)
