@@ -1,3 +1,4 @@
+import com.soywiz.korge.input.SwipeDirection
 import com.soywiz.korge.tests.ViewsForTesting
 import org.andstatus.game2048.*
 import kotlin.test.Test
@@ -26,7 +27,7 @@ class MovesTest : ViewsForTesting(log = true) {
         val piecesOnBoardViews1 = presentedPieces()
         assertEquals(board1.array.asList(), piecesOnBoardViews1, modelAndViews())
 
-        presenter.userMove(PlayerMoveEnum.DOWN)
+        presenter.onSwipe(SwipeDirection.BOTTOM)
         assertEquals(listOf(Piece.N4), blocksAt(Square(1, 3)), modelAndViews())
         assertEquals(2, presenter.boardViews.blocks.size, modelAndViews())
 
@@ -51,7 +52,7 @@ class MovesTest : ViewsForTesting(log = true) {
         assertEquals(board4.array.asList(), piecesOnBoardViews4, "Board views after redo")
         assertFalse(presenter.canRedo(), historyString())
 
-        presenter.userMove(PlayerMoveEnum.UP)
+        presenter.onSwipe(SwipeDirection.TOP)
         assertTrue(presenter.canUndo(), historyString())
         assertFalse(presenter.canRedo(), historyString())
 

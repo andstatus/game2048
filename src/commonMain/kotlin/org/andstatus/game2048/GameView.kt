@@ -380,21 +380,16 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
         boardView.onSwipe(20.0) {
             duplicateKeyPressFilter.onSwipeOrOver {
-                when (it.direction) {
-                    SwipeDirection.LEFT -> presenter.userMove(PlayerMoveEnum.LEFT)
-                    SwipeDirection.RIGHT -> presenter.userMove(PlayerMoveEnum.RIGHT)
-                    SwipeDirection.TOP -> presenter.userMove(PlayerMoveEnum.UP)
-                    SwipeDirection.BOTTOM -> presenter.userMove(PlayerMoveEnum.DOWN)
-                }
+                presenter.onSwipe(it.direction)
             }
         }
 
         boardView.addUpdater {
             val keys = gameStage.views.input.keys
-            if (keys[Key.LEFT]) { presenter.userMove(PlayerMoveEnum.LEFT) }
-            if (keys[Key.RIGHT]) { presenter.userMove(PlayerMoveEnum.RIGHT) }
-            if (keys[Key.UP]) { presenter.userMove(PlayerMoveEnum.UP) }
-            if (keys[Key.DOWN]) { presenter.userMove(PlayerMoveEnum.DOWN) }
+            if (keys[Key.LEFT]) { presenter.onSwipe(SwipeDirection.LEFT) }
+            if (keys[Key.RIGHT]) { presenter.onSwipe(SwipeDirection.RIGHT) }
+            if (keys[Key.UP]) { presenter.onSwipe(SwipeDirection.TOP) }
+            if (keys[Key.DOWN]) { presenter.onSwipe(SwipeDirection.BOTTOM) }
             if (keys[Key.SPACE]) { presenter.onPauseClick() }
             if (keys[Key.M]) { presenter.onGameMenuClick() }
             if (keys[Key.BACKSPACE]) duplicateKeyPressFilter.onPress(Key.BACKSPACE) {
