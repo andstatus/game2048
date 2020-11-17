@@ -3,7 +3,10 @@ package org.andstatus.game2048
 import com.soywiz.klogger.Console
 import com.soywiz.klogger.log
 import com.soywiz.korev.Key
-import com.soywiz.korge.input.*
+import com.soywiz.korge.input.SwipeDirection
+import com.soywiz.korge.input.onClick
+import com.soywiz.korge.input.onOver
+import com.soywiz.korge.input.onSwipe
 import com.soywiz.korge.ui.TextFormat
 import com.soywiz.korge.ui.TextSkin
 import com.soywiz.korge.ui.uiScrollableArea
@@ -53,12 +56,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private var redoButton: Container by Delegates.notNull()
     private var gameMenuButton: Container by Delegates.notNull()
 
-    private var gameBarTop: Double by Delegates.notNull()
     private var gameMenu: Container by Delegates.notNull()
-    private var deleteButton: Container by Delegates.notNull()
-    private var restartButton: Container by Delegates.notNull()
-    private var restoreButton: Container by Delegates.notNull()
-    private var closeButton: Container by Delegates.notNull()
 
     private var boardControls: SolidRect by Delegates.notNull()
 
@@ -179,113 +177,104 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
     }
 
-    private suspend fun setupGameMenu(): Container {
-        gameBarTop = appBarTop + buttonSize + buttonPadding // To avoid unintentional click on the list after previous click
+    private suspend fun setupGameMenu(): Container = Container().apply {
+        val window = this
+        val winTop = appBarTop + buttonSize + buttonPadding // To avoid unintentional click on the list after previous click
         val winWidth = gameStage.views.virtualWidth.toDouble()
-        val winHeight = gameBarTop + (buttonSize + buttonPadding) * 2 - cellMargin
+        val winHeight = winTop + (buttonSize + buttonPadding) * 2 - cellMargin
 
-        val window = Container().apply {
-            addUpdater {
-                duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
-                    removeFromParent()
-                    presenter.showControls()
-                }
+        addUpdater {
+            duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
+                removeFromParent()
+                presenter.showControls()
             }
         }
 
-        window.roundRect(winWidth, winHeight, buttonRadius, stroke = Colors.BLACK, strokeThickness = 2.0, fill = Colors.WHITE) {
+        roundRect(winWidth, winHeight, buttonRadius, stroke = Colors.BLACK, strokeThickness = 2.0, fill = Colors.WHITE) {
             positionY(cellMargin)
         }
 
-        window.text(stringResources.text("game_actions"), 40.0, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
+        text(stringResources.text("game_actions"), 40.0, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
             position(winWidth / 2,appBarTop + buttonSize / 2)
         }
 
-        deleteButton = Container().apply {
+        container {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
             image(resourcesVfs["assets/delete.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
-            position(buttonXPositions[0], gameBarTop)
+            position(buttonXPositions[0], winTop)
             customOnClick {
                 presenter.onDeleteGameClick()
                 window.removeFromParent()
             }
-            addTo(window)
         }
 
-        restoreButton = Container().apply {
+        container {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
             image(resourcesVfs["assets/restore.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
-            position(buttonXPositions[2], gameBarTop)
+            position(buttonXPositions[2], winTop)
             customOnClick {
                 presenter.onRestoreClick()
                 window.removeFromParent()
             }
-            addTo(window)
         }
 
-        restartButton = Container().apply {
+        container {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
             image(resourcesVfs["assets/restart.png"].readBitmap()) {
                 size(buttonSize * 0.8, buttonSize * 0.8)
                 centerOn(background)
             }
-            position(buttonXPositions[3], gameBarTop)
+            position(buttonXPositions[3], winTop)
             customOnClick {
                 presenter.onRestartClick()
                 window.removeFromParent()
             }
-            addTo(window)
         }
 
-        closeButton = Container().apply {
+        container {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
             image(resourcesVfs["assets/close.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
-            position(buttonXPositions[4], gameBarTop)
+            position(buttonXPositions[4], winTop)
             customOnClick {
                 Console.log("Close clicked")
                 window.removeFromParent()
             }
-            addTo(window)
         }
 
-        Container().apply {
+        container {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
             image(resourcesVfs["assets/share.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
-            position(buttonXPositions[2], gameBarTop + buttonPadding + buttonSize)
+            position(buttonXPositions[2], winTop + buttonPadding + buttonSize)
             customOnClick {
                 presenter.onShareClick()
                 window.removeFromParent()
             }
-            addTo(window)
         }
 
-        Container().apply {
+        container {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
             image(resourcesVfs["assets/load.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
-            position(buttonXPositions[3], gameBarTop + buttonPadding + buttonSize)
+            position(buttonXPositions[3], winTop + buttonPadding + buttonSize)
             customOnClick {
                 presenter.onLoadClick()
                 window.removeFromParent()
             }
-            addTo(window)
         }
-
-        return window
     }
 
     fun showGameMenu(gameRecord: GameRecord) {
@@ -477,15 +466,16 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     fun showGameHistory(prevGames: List<GameRecord.ShortRecord>) =
-        gameStage.launch { internalShowGameHistory(prevGames) }
+        gameStage.launch { setupGameHistory(prevGames).addTo(gameStage) }
 
-    private suspend fun internalShowGameHistory(prevGames: List<GameRecord.ShortRecord>): Container = gameStage.container {
+    private suspend fun setupGameHistory(prevGames: List<GameRecord.ShortRecord>): Container = Container().apply {
         val window = this
+        val winTop = appBarTop + buttonSize + cellMargin
         val winWidth = gameStage.views.virtualWidth.toDouble()
-        val winHeight = gameStage.views.virtualHeight.toDouble() - gameBarTop + cellMargin
+        val winHeight = gameStage.views.virtualHeight.toDouble() - winTop
 
-        window.roundRect(winWidth, winHeight, buttonRadius, stroke = Colors.BLACK, strokeThickness = 2.0, fill = Colors.WHITE) {
-            position(0.0, gameBarTop - cellMargin)
+        roundRect(winWidth, winHeight, buttonRadius, stroke = Colors.BLACK, strokeThickness = 2.0, fill = Colors.WHITE) {
+            position(0.0, winTop)
         }
 
         val buttonCloseX = buttonXPositions[4]
@@ -495,7 +485,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
-            position(buttonCloseX, gameBarTop)
+            position(buttonCloseX, winTop + cellMargin)
             customOnClick {
                 Console.log("Close clicked")
                 window.removeFromParent()
@@ -505,20 +495,19 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
         text(stringResources.text("restore_game"), 40.0, Colors.BLACK, font,
                 TextAlignment.MIDDLE_CENTER) {
-            position((buttonCloseX - cellMargin) / 2, gameBarTop + buttonSize / 2)
+            position((buttonCloseX - cellMargin) / 2, winTop + cellMargin + buttonSize / 2)
         }
 
-        val listTop = gameBarTop + buttonSize + buttonPadding // To avoid unintentional click on the list after click onLogo
+        val listTop = winTop + cellMargin + buttonSize + buttonPadding // To avoid unintentional click on the list after previous click
 
         val nItems = prevGames.size
         val itemHeight = buttonSize
         val textWidth = winWidth * 2
-        val scrollBarWidth = 40.0
         uiScrollableArea(config = {
             position(cellMargin, listTop)
             width = winWidth - cellMargin * 2
             contentWidth = textWidth
-            height = winHeight - buttonSize - buttonPadding - cellMargin * 2 - scrollBarWidth
+            height = winTop + winHeight - listTop - cellMargin
             contentHeight = max(itemHeight * nItems + itemHeight * 0.5, height)
         }) {
             prevGames.sortedByDescending { it.finalBoard.dateTime }.forEachIndexed {index, game ->
