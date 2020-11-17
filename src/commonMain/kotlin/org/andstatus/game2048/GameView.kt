@@ -3,10 +3,7 @@ package org.andstatus.game2048
 import com.soywiz.klogger.Console
 import com.soywiz.klogger.log
 import com.soywiz.korev.Key
-import com.soywiz.korge.input.SwipeDirection
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.input.onOver
-import com.soywiz.korge.input.onSwipe
+import com.soywiz.korge.input.*
 import com.soywiz.korge.ui.TextFormat
 import com.soywiz.korge.ui.TextSkin
 import com.soywiz.korge.ui.uiScrollableArea
@@ -385,14 +382,18 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
 
         boardView.addUpdater {
-            val keys = gameStage.views.input.keys
-            if (keys[Key.LEFT]) { presenter.onSwipe(SwipeDirection.LEFT) }
-            if (keys[Key.RIGHT]) { presenter.onSwipe(SwipeDirection.RIGHT) }
-            if (keys[Key.UP]) { presenter.onSwipe(SwipeDirection.TOP) }
-            if (keys[Key.DOWN]) { presenter.onSwipe(SwipeDirection.BOTTOM) }
-            if (keys[Key.SPACE]) { presenter.onPauseClick() }
-            if (keys[Key.M]) { presenter.onGameMenuClick() }
-            if (keys[Key.BACKSPACE]) duplicateKeyPressFilter.onPress(Key.BACKSPACE) {
+            val ifKey = { key: Key, action: () -> Unit ->
+                if (gameStage.views.input.keys[key]) {
+                    duplicateKeyPressFilter.onPress(key, action)
+                }
+            }
+            ifKey(Key.LEFT) { presenter.onSwipe(SwipeDirection.LEFT) }
+            ifKey(Key.RIGHT) { presenter.onSwipe(SwipeDirection.RIGHT) }
+            ifKey(Key.UP) { presenter.onSwipe(SwipeDirection.TOP) }
+            ifKey(Key.DOWN) { presenter.onSwipe(SwipeDirection.BOTTOM) }
+            ifKey(Key.SPACE) { presenter.onPauseClick() }
+            ifKey(Key.M) { presenter.onGameMenuClick() }
+            ifKey(Key.BACKSPACE) {
                 Console.log("Closing game window...")
                 gameStage.gameWindow.close()
             }
@@ -401,7 +402,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         return boardView
     }
 
-    fun showControls(appBarButtonsToShow: List<AppBarButtonsEnum>) {
+    fun showControls(appBarButtonsToShow: List<AppBarButtonsEnum>, playSpeed: Int) {
         gameMenu.removeFromParent()
         val xPositions = buttonXPositions.filter { buttonPointClicked.y != appBarTop || it != buttonPointClicked.x }
         Console.log("Last clicked:$buttonPointClicked, Button positions:${xPositions} y:$appBarTop")
@@ -416,7 +417,12 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         show(redoButton, AppBarButtonsEnum.REDO)
         show(gameMenuButton, AppBarButtonsEnum.GAME_MENU)
 
-        moveNumber.text = presenter.model.moveNumber.toString()
+        if (appBarButtonsToShow.contains(AppBarButtonsEnum.TO_CURRENT) ||
+                appBarButtonsToShow.contains(AppBarButtonsEnum.TO_START)) {
+            moveNumber.text = presenter.model.moveNumber.toString() + " x$playSpeed"
+        } else {
+            moveNumber.text = presenter.model.moveNumber.toString()
+        }
         bestScore.text = presenter.bestScore.toString()
         score.text = presenter.score.toString()
 
