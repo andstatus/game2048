@@ -46,12 +46,16 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private var buttonXPositions: List<Double> by Delegates.notNull()
     private val duplicateKeyPressFilter = DuplicateKeyPressFilter()
 
-    private var appLogo: Container by Delegates.notNull()
-    private var playBackwardsButton: Container by Delegates.notNull()
     private var playButton: Container by Delegates.notNull()
-    private var pauseButton: Container by Delegates.notNull()
     private var toStartButton: Container by Delegates.notNull()
+    private var backwardsButton: Container by Delegates.notNull()
+    private var stopButton: Container by Delegates.notNull()
+    private var forwardButton: Container by Delegates.notNull()
     private var toCurrentButton: Container by Delegates.notNull()
+
+    private var appLogo: Container by Delegates.notNull()
+    private var watchButton: Container by Delegates.notNull()
+    private var pauseButton: Container by Delegates.notNull()
     private var undoButton: Container by Delegates.notNull()
     private var redoButton: Container by Delegates.notNull()
     private var gameMenuButton: Container by Delegates.notNull()
@@ -96,85 +100,28 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             positionY(appBarTop)
         }
 
-        playBackwardsButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["assets/play_backwards.png"].readBitmap()) {
-                size(buttonSize * 0.6, buttonSize * 0.6)
-                centerOn(background)
-            }
-            positionY(appBarTop)
-            customOnClick { presenter.onPlayBackwardsClick() }
-        }
+        playButton = appBarButton("assets/play.png", presenter::onPlayClick)
+        toStartButton = appBarButton("assets/skip_previous.png", presenter::onToStartClick)
+        backwardsButton = appBarButton("assets/backwards.png", presenter::onBackwardsClick)
+        stopButton = appBarButton("assets/stop.png", presenter::onStopClick)
+        forwardButton = appBarButton("assets/forward.png", presenter::onForwardClick)
+        toCurrentButton = appBarButton("assets/skip_next.png", presenter::onToCurrentClick)
 
-        pauseButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["assets/pause.png"].readBitmap()) {
-                size(buttonSize * 0.6, buttonSize * 0.6)
-                centerOn(background)
-            }
-            positionY(appBarTop)
-            customOnClick { presenter.onPauseClick() }
-        }
+        watchButton = appBarButton("assets/watch.png", presenter::onWatchClick)
+        pauseButton = appBarButton("assets/pause.png", presenter::onPauseClick)
+        undoButton = appBarButton("assets/undo.png", presenter::onUndoClick)
+        redoButton = appBarButton("assets/redo.png", presenter::onRedoClick)
+        gameMenuButton = appBarButton("assets/menu.png", presenter::onGameMenuClick)
+    }
 
-        playButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["assets/play.png"].readBitmap()) {
-                size(buttonSize * 0.6, buttonSize * 0.6)
-                centerOn(background)
-            }
-            positionY(appBarTop)
-            customOnClick { presenter.onPlayClick() }
+    suspend fun appBarButton(icon: String, handler: () -> Unit): Container = Container().apply {
+        val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
+        image(resourcesVfs[icon].readBitmap()) {
+            size(buttonSize * 0.6, buttonSize * 0.6)
+            centerOn(background)
         }
-
-        toStartButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["assets/skip_previous.png"].readBitmap()) {
-                size(buttonSize * 0.6, buttonSize * 0.6)
-                centerOn(background)
-            }
-            positionY(appBarTop)
-            customOnClick { presenter.onToStartClick() }
-        }
-
-        toCurrentButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["assets/skip_next.png"].readBitmap()) {
-                size(buttonSize * 0.6, buttonSize * 0.6)
-                centerOn(background)
-            }
-            positionY(appBarTop)
-            customOnClick { presenter.onToCurrentClick() }
-        }
-
-        undoButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["assets/undo.png"].readBitmap()) {
-                size(buttonSize * 0.6, buttonSize * 0.6)
-                centerOn(background)
-            }
-            positionY(appBarTop)
-            customOnClick { presenter.onUndoClick() }
-        }
-
-        redoButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["assets/redo.png"].readBitmap()) {
-                size(buttonSize * 0.6, buttonSize * 0.6)
-                centerOn(background)
-            }
-            positionY(appBarTop)
-            customOnClick { presenter.onRedoClick() }
-        }
-
-        gameMenuButton = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
-            image(resourcesVfs["assets/menu.png"].readBitmap()) {
-                size(buttonSize * 0.6, buttonSize * 0.6)
-                centerOn(background)
-            }
-            positionY(appBarTop)
-            customOnClick { presenter.onGameMenuClick() }
-        }
+        positionY(appBarTop)
+        customOnClick { handler() }
     }
 
     private suspend fun setupGameMenu(): Container = Container().apply {
@@ -185,8 +132,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
         addUpdater {
             duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
+                presenter.onCloseGameMenuClick()
                 removeFromParent()
-                presenter.showControls()
             }
         }
 
@@ -245,7 +192,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             }
             position(buttonXPositions[4], winTop)
             customOnClick {
-                Console.log("Close clicked")
+                presenter.onCloseGameMenuClick()
                 window.removeFromParent()
             }
         }
@@ -393,18 +340,48 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
     fun showControls(appBarButtonsToShow: List<AppBarButtonsEnum>, playSpeed: Int) {
         gameMenu.removeFromParent()
-        val xPositions = buttonXPositions.filter { buttonPointClicked.y != appBarTop || it != buttonPointClicked.x }
+
+        val buttons = mapOf(
+                AppBarButtonsEnum.PLAY to playButton,
+                AppBarButtonsEnum.TO_START to toStartButton,
+                AppBarButtonsEnum.BACKWARDS to backwardsButton,
+                AppBarButtonsEnum.STOP to stopButton,
+                AppBarButtonsEnum.FORWARD to forwardButton,
+                AppBarButtonsEnum.TO_CURRENT to toCurrentButton,
+
+                AppBarButtonsEnum.APP_LOGO to appLogo,
+                AppBarButtonsEnum.WATCH to watchButton,
+                AppBarButtonsEnum.PAUSE to pauseButton,
+                AppBarButtonsEnum.UNDO to undoButton,
+                AppBarButtonsEnum.REDO to redoButton,
+                AppBarButtonsEnum.GAME_MENU to gameMenuButton,
+        )
+
+        buttons.filter { !appBarButtonsToShow.contains(it.key) }
+            .values
+            .forEach { it.removeFromParent() }
+
+        val toShow = buttons.filter { appBarButtonsToShow.contains(it.key) }
+
+        val xPositions = buttonXPositions
+            .filter { buttonPointClicked.y != appBarTop || it != buttonPointClicked.x }
+            .let {
+                if (it.size > toShow.size) {
+                    val unusedX = it.filterNot { x -> toShow.keys.any { buttonXPositions[it.positionIndex] == x}}
+                            .take(it.size - toShow.size)
+                    //it.filterNot { x -> unusedX.contains(x)}
+                    it.filterNot(unusedX::contains)
+                }
+                else it
+            }
+
         Console.log("Last clicked:$buttonPointClicked, Button positions:${xPositions} y:$appBarTop")
-        val show = showButton(xPositions, appBarButtonsToShow)
-        show(appLogo, AppBarButtonsEnum.APP_LOGO)
-        show(playBackwardsButton, AppBarButtonsEnum.PLAY_BACKWARDS)
-        show(playButton, AppBarButtonsEnum.PLAY)
-        show(pauseButton, AppBarButtonsEnum.PAUSE)
-        show(toStartButton, AppBarButtonsEnum.TO_START)
-        show(toCurrentButton, AppBarButtonsEnum.TO_CURRENT)
-        show(undoButton, AppBarButtonsEnum.UNDO)
-        show(redoButton, AppBarButtonsEnum.REDO)
-        show(gameMenuButton, AppBarButtonsEnum.GAME_MENU)
+
+        toShow.values.zip(xPositions)
+        .forEach { (button, x) ->
+            button.positionX(x)
+            button.addTo(gameStage)
+        }
 
         if (appBarButtonsToShow.contains(AppBarButtonsEnum.TO_CURRENT) ||
                 appBarButtonsToShow.contains(AppBarButtonsEnum.TO_START)) {
@@ -417,16 +394,6 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
         // Ensure the view is on the top to receive onSwipe events
         boardControls.addTo(gameStage)
-    }
-
-    private fun showButton(xPositions: List<Double>, appBarButtonsToShow: List<AppBarButtonsEnum>) = { button: Container, tag: AppBarButtonsEnum ->
-        if (appBarButtonsToShow.contains(tag)) {
-            val x = xPositions[tag.positionIndex.let { if (tag.positionIndex < 2 || xPositions.size > 4) it else it - 1} ]
-            button.positionX(x)
-            button.addTo(gameStage)
-        } else {
-            button.removeFromParent()
-        }
     }
 
     fun showGameOver(): Container = gameStage.container {

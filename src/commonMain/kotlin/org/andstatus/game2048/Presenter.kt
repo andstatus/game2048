@@ -259,9 +259,9 @@ class Presenter(private val view: GameView) {
                 if (autoPlaying.preferable == AutoPlayingEnum.NONE && model.gameClock.started) {
                     list.add(AppBarButtonsEnum.PAUSE)
                 } else if (canRedo() && (autoPlaying.preferable == AutoPlayingEnum.FORWARD || !canUndo())) {
-                    list.add(AppBarButtonsEnum.PLAY)
+                    list.add(AppBarButtonsEnum.FORWARD)
                 } else if (canUndo()) {
-                    list.add(AppBarButtonsEnum.PLAY_BACKWARDS)
+                    list.add(AppBarButtonsEnum.BACKWARDS)
                 } else {
                     list.add(AppBarButtonsEnum.APP_LOGO)
                 }
@@ -445,9 +445,24 @@ class Presenter(private val view: GameView) {
         }
     }
 
-    fun onPlayBackwardsClick() {
-        logClick("Play Backwards")
+    fun onWatchClick() {
+        logClick("Watch")
+        TODO()
+    }
+
+    fun onPlayClick() {
+        logClick("Play")
+        TODO()
+    }
+
+    fun onBackwardsClick() {
+        logClick("Backwards")
         startAutoPlaying(AutoPlayingEnum.BACKWARDS)
+    }
+
+    fun onStopClick() {
+        logClick("Stop")
+        TODO()
     }
 
     private fun startAutoPlaying(newState: AutoPlayingEnum) {
@@ -471,8 +486,8 @@ class Presenter(private val view: GameView) {
         }
     }
 
-    fun onPlayClick() {
-        logClick("Play")
+    fun onForwardClick() {
+        logClick("Forward")
         startAutoPlaying(AutoPlayingEnum.FORWARD)
     }
 
@@ -500,6 +515,11 @@ class Presenter(private val view: GameView) {
             model.gameClock.stop()
             view.showGameMenu(model.history.currentGame)
         }
+    }
+
+    fun onCloseGameMenuClick() {
+        logClick("CloseGameMenu")
+        showControls()
     }
 
     fun onDeleteGameClick() {
