@@ -95,7 +95,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         appLogo = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = RGBA(237, 196, 3))
             text("2048", cellSize * 0.4, Colors.WHITE, font, TextAlignment.MIDDLE_CENTER) {
-                centerOn(background)
+                position(buttonSize / 2, buttonSize / 2)
             }
             positionY(appBarTop)
         }
@@ -268,7 +268,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
         gameStage.text(stringResources.text("score"), scoreLabelSize, RGBA(239, 226, 210), font,
                 TextAlignment.MIDDLE_CENTER) {
-            centerXOn(bgScore)
+            positionX(bgScore.pos.x + scoreButtonWidth / 2)
             positionY(scoreButtonTop + textYPadding)
         }
         score = gameStage.text("", scoreTextSize, Colors.WHITE, font, TextAlignment.MIDDLE_CENTER) {
@@ -281,7 +281,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
         gameStage.text(stringResources.text("best"), scoreLabelSize, RGBA(239, 226, 210), font,
                 TextAlignment.MIDDLE_CENTER) {
-            centerXOn(bgBest)
+            positionX(bgBest.pos.x + scoreButtonWidth / 2)
             positionY(scoreButtonTop + textYPadding)
         }
         bestScore = gameStage.text("", scoreTextSize, Colors.WHITE, font, TextAlignment.MIDDLE_CENTER) {

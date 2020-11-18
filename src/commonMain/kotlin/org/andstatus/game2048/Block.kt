@@ -15,7 +15,7 @@ class Block(val piece: Piece, font: Font) : Container() {
                 roundRect(0.0, 0.0, cellSize, cellSize, buttonRadius)
             }
             text(piece.text, piece.textSize(), piece.textColor(), font, TextAlignment.MIDDLE_CENTER) {
-                centerOn(this@graphics)
+                position(cellSize / 2, cellSize / 2)
             }
         }
     }
