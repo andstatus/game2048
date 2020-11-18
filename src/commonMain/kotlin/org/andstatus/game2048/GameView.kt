@@ -23,6 +23,7 @@ import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.vector.roundRect
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.properties.Delegates
 
@@ -383,12 +384,10 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             button.addTo(gameStage)
         }
 
-        if (appBarButtonsToShow.contains(AppBarButtonsEnum.TO_CURRENT) ||
-                appBarButtonsToShow.contains(AppBarButtonsEnum.TO_START)) {
-            moveNumber.text = presenter.model.moveNumber.toString() + " x$playSpeed"
-        } else {
-            moveNumber.text = presenter.model.moveNumber.toString()
-        }
+        moveNumber.text = presenter.model.moveNumber.toString() +
+                (if (playSpeed < 0) " <" else "") +
+                (if (playSpeed > 0) " >" else "") +
+                (if (playSpeed != 0) abs(playSpeed) else "")
         bestScore.text = presenter.bestScore.toString()
         score.text = presenter.score.toString()
 

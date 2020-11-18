@@ -42,105 +42,107 @@ class Presenter(private val view: GameView) {
         }
     }
 
-    private enum class AutoPlayingEnum {
+    private enum class GameModeEnum {
         BACKWARDS,
         FORWARD,
-        NONE
+        STOP,
+        PLAY,
     }
 
-    private data class AutoPlayingData(val state: AutoPlayingEnum,
-                                       val preferable: AutoPlayingEnum,
-                                       val speed: Int)
+    private data class GameModeData(val mode: GameModeEnum, val speed: Int)
 
-    private val autoPlaying = object {
+    private val maxSpeed = 6
+    private val gameMode = object {
         private val data = KorAtomicRef(initialData())
 
         fun stop() {
             val old = data.value
-            data.compareAndSet(old, AutoPlayingData(AutoPlayingEnum.NONE, old.preferable, 0))
+            data.compareAndSet(old, GameModeData(GameModeEnum.STOP, 0))
         }
 
-        val speed get() = abs(data.value.speed)
+        val speed get() = data.value.speed
+        val absSpeed get() = abs(data.value.speed)
 
-        var state : AutoPlayingEnum
-            get() = data.value.state
+        val autoPlaying get() = mode == GameModeEnum.BACKWARDS || mode == GameModeEnum.FORWARD
+
+        var mode : GameModeEnum
+            get() = data.value.mode
             set(value) {
-                data.value = AutoPlayingData(
-                        value,
+                data.value = GameModeData(
                         value,
                         when(value) {
-                            AutoPlayingEnum.BACKWARDS -> -1
-                            AutoPlayingEnum.FORWARD -> 1
-                            AutoPlayingEnum.NONE -> 0
+                            GameModeEnum.BACKWARDS -> -1
+                            GameModeEnum.FORWARD -> 1
+                            GameModeEnum.STOP, GameModeEnum.PLAY -> 0
                         }
                 )
             }
 
-        var preferable
-            get() = data.value.preferable
-            set(value) {
-                data.value = AutoPlayingData(data.value.state, value, data.value.speed)
-            }
+        fun initialData() = GameModeData(GameModeEnum.STOP, 0)
 
-        fun initialData() = AutoPlayingData(AutoPlayingEnum.NONE, AutoPlayingEnum.NONE, 0)
-
-        fun increase() {
+        fun increaseSpeed() {
             val value = data.value
-            if (value.speed < 10) {
+            if (value.speed < maxSpeed) {
                 val newSpeed = value.speed + 1
-                val newState = if (newSpeed > 0) AutoPlayingEnum.FORWARD else AutoPlayingEnum.BACKWARDS
-                data.compareAndSet(value, AutoPlayingData(newState, newState, newSpeed))
+                val newMode = when (newSpeed) {
+                    in Int.MIN_VALUE .. -1 -> GameModeEnum.BACKWARDS
+                    0 -> GameModeEnum.STOP
+                    else -> GameModeEnum.FORWARD
+                }
+                data.compareAndSet(value, GameModeData(newMode, newSpeed))
             }
         }
 
-        fun decrease() {
+        fun decreaseSpeed() {
             val value = data.value
-            if (value.speed > -10) {
+            if (value.speed > -maxSpeed) {
                 val newSpeed = value.speed - 1
-                val newState = if (newSpeed > 0) AutoPlayingEnum.FORWARD else AutoPlayingEnum.BACKWARDS
-                data.compareAndSet(value, AutoPlayingData(newState, newState, newSpeed))
+                val newMode = when (newSpeed) {
+                    in Int.MIN_VALUE .. -1 -> GameModeEnum.BACKWARDS
+                    0 -> GameModeEnum.STOP
+                    else -> GameModeEnum.FORWARD
+                }
+                data.compareAndSet(value, GameModeData(newMode, newSpeed))
             }
         }
 
-        val delayMs get() = when(speed){
+        val delayMs get() = when(absSpeed){
             in Int.MIN_VALUE .. 1 -> 500
             1 -> 250
             2 -> 125
             3 -> 64
             4 -> 32
             5 -> 16
-            6 -> 8
-            7 -> 4
-            8 -> 2
             else -> 1
         }
 
-        val moveMs get() = when(speed){
+        val moveMs get() = when(absSpeed){
             in Int.MIN_VALUE .. 1 -> 150
             1 -> 75
             2 -> 37
             3 -> 18
             4 -> 9
             5 -> 4
-            6 -> 2
             else -> 1
         }
 
-        val resultingBlockMs get() = when(speed){
+        val resultingBlockMs get() = when(absSpeed){
             in Int.MIN_VALUE .. 1 -> 100
             1 -> 50
             2 -> 28
             3 -> 15
             4 -> 8
             5 -> 4
-            6 -> 2
             else -> 1
         }
     }
 
     private var autoPlayCount = KorAtomicInt(0)
 
-    fun onAppEntry() = model.onAppEntry().present()
+    fun onAppEntry() {
+        gameMode.mode = if (model.history.currentGame.id == 0) GameModeEnum.PLAY else GameModeEnum.STOP
+        model.onAppEntry().present()
+    }
 
     fun canUndo(): Boolean = model.canUndo()
 
@@ -149,7 +151,6 @@ class Presenter(private val view: GameView) {
     fun onUndoClick() {
         afterStop {
             logClick("Undo")
-            autoPlaying.preferable = AutoPlayingEnum.BACKWARDS
             undo()
         }
     }
@@ -165,7 +166,6 @@ class Presenter(private val view: GameView) {
     fun onRedoClick() {
         afterStop {
             logClick("Redo")
-            autoPlaying.preferable = AutoPlayingEnum.FORWARD
             redo()
         }
     }
@@ -185,20 +185,22 @@ class Presenter(private val view: GameView) {
 
     fun restart() {
         afterStop {
+            gameMode.mode = GameModeEnum.PLAY
             model.restart(true).present()
         }
     }
 
     fun onSwipe(swipeDirection: SwipeDirection) {
-        when(autoPlaying.state) {
-            AutoPlayingEnum.BACKWARDS, AutoPlayingEnum.FORWARD -> {
+        when(gameMode.mode) {
+            GameModeEnum.BACKWARDS, GameModeEnum.FORWARD, GameModeEnum.STOP -> {
                 when (swipeDirection) {
-                    SwipeDirection.LEFT -> autoPlaying.decrease()
-                    SwipeDirection.RIGHT -> autoPlaying.increase()
+                    SwipeDirection.LEFT -> startAutoPlaying(GameModeEnum.BACKWARDS)
+                    SwipeDirection.RIGHT -> startAutoPlaying(GameModeEnum.FORWARD)
+                    SwipeDirection.BOTTOM -> onStopClick()
                     else -> {}
                 }
             }
-            AutoPlayingEnum.NONE -> {
+            GameModeEnum.PLAY -> {
                 userMove(when (swipeDirection) {
                     SwipeDirection.LEFT -> PlayerMoveEnum.LEFT
                     SwipeDirection.RIGHT -> PlayerMoveEnum.RIGHT
@@ -218,53 +220,51 @@ class Presenter(private val view: GameView) {
         }
     }
 
-    fun onToStartClick() {
-        logClick("ToStart")
-        autoPlaying.preferable = AutoPlayingEnum.BACKWARDS
-        val startCount = autoPlayCount.incrementAndGet()
-        if (autoPlaying.state == AutoPlayingEnum.BACKWARDS) {
-            coroutineScope.launch {
-                while (autoPlaying.state == AutoPlayingEnum.BACKWARDS && startCount == autoPlayCount.value) {
-                    delay(100)
-                }
-                if (autoPlaying.state == AutoPlayingEnum.NONE) {
-                    boardViews.removeGameOver() // TODO: make this a move...
-                    (model.undoToStart() + listOf(PlayerMove.delay()) + model.redo()).present()
-                }
-            }
-            return
+    fun onWatchClick() {
+        afterStop {
+            logClick("Watch")
+            gameMode.mode = GameModeEnum.STOP
+            showControls()
         }
     }
 
-    fun onWatchClick() {
-        logClick("Watch")
-        TODO()
-    }
-
     fun onPlayClick() {
-        logClick("Play")
-        TODO()
+        afterStop {
+            logClick("Play")
+            gameMode.mode = GameModeEnum.PLAY
+            showControls()
+        }
     }
 
     fun onBackwardsClick() {
         logClick("Backwards")
-        startAutoPlaying(AutoPlayingEnum.BACKWARDS)
+        startAutoPlaying(GameModeEnum.BACKWARDS)
     }
 
     fun onStopClick() {
-        logClick("Stop")
-        TODO()
+        afterStop {
+            logClick("Stop")
+            gameMode.mode = GameModeEnum.STOP
+            showControls()
+        }
     }
 
     fun onForwardClick() {
         logClick("Forward")
-        startAutoPlaying(AutoPlayingEnum.FORWARD)
+        startAutoPlaying(GameModeEnum.FORWARD)
+    }
+
+    fun onToStartClick() {
+        afterStop {
+            logClick("ToStart")
+            boardViews.removeGameOver() // TODO: make this a move...
+            (model.undoToStart() + listOf(PlayerMove.delay()) + model.redo()).present()
+        }
     }
 
     fun onToCurrentClick() {
         afterStop {
             logClick("ToCurrent")
-            autoPlaying.preferable = AutoPlayingEnum.FORWARD
             model.redoToCurrent().present()
         }
     }
@@ -301,6 +301,7 @@ class Presenter(private val view: GameView) {
         afterStop {
             logClick("History$id")
             if (moveIsInProgress.compareAndSet(expect = false, update = true)) {
+                gameMode.mode = GameModeEnum.STOP
                 model.restoreGame(id).present()
             }
         }
@@ -329,35 +330,37 @@ class Presenter(private val view: GameView) {
         }
     }
 
-    private fun startAutoPlaying(newState: AutoPlayingEnum) {
-        autoPlaying.preferable = newState
-        val startCount = autoPlayCount.incrementAndGet()
-        if (autoPlaying.state != newState &&
-                if (newState == AutoPlayingEnum.BACKWARDS) canUndo() else canRedo()) {
-            autoPlaying.state = newState
-            showControls()
-            coroutineScope.launch {
-                while (startCount == autoPlayCount.value &&
-                        if (autoPlaying.state == AutoPlayingEnum.BACKWARDS) canUndo() else canRedo()) {
-                    if (autoPlaying.speed != 0) {
-                        if (autoPlaying.state == AutoPlayingEnum.BACKWARDS) undo() else redo()
-                    }
-                    delay(autoPlaying.delayMs.toLong())
-                }
-                autoPlaying.stop()
+    private fun startAutoPlaying(newMode: GameModeEnum) {
+        if (gameMode.mode == newMode) {
+            if (newMode == GameModeEnum.BACKWARDS) gameMode.decreaseSpeed() else gameMode.increaseSpeed()
+        } else if (if (newMode == GameModeEnum.BACKWARDS) canUndo() else canRedo()) {
+            afterStop {
+                val startCount = autoPlayCount.incrementAndGet()
+                gameMode.mode = newMode
                 showControls()
+                coroutineScope.launch {
+                    while (startCount == autoPlayCount.value &&
+                            if (gameMode.mode == GameModeEnum.BACKWARDS) canUndo() else canRedo()) {
+                        if (gameMode.speed != 0) {
+                            if (gameMode.mode == GameModeEnum.BACKWARDS) undo() else redo()
+                        }
+                        delay(gameMode.delayMs.toLong())
+                    }
+                    gameMode.stop()
+                    showControls()
+                }
             }
         }
     }
 
     private fun logClick(buttonName: String) {
-        Console.log("$buttonName clicked $autoPlayCount , autoplay:${autoPlaying.state}")
+        Console.log("$buttonName clicked ${autoPlayCount.value} , autoplay:${gameMode.mode}")
     }
 
     private fun afterStop(action: () -> Unit) {
         val startCount = autoPlayCount.incrementAndGet()
         coroutineScope.launch {
-            while (autoPlaying.state != AutoPlayingEnum.NONE && startCount == autoPlayCount.value) {
+            while (gameMode.autoPlaying && startCount == autoPlayCount.value) {
                 delay(100)
             }
             action()
@@ -373,7 +376,6 @@ class Presenter(private val view: GameView) {
     private fun userMove(playerMoveEnum: PlayerMoveEnum) {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
-        autoPlaying.preferable = AutoPlayingEnum.NONE
         if (model.noMoreMoves()) {
             onPresentEnd()
             boardViews = boardViews
@@ -403,19 +405,17 @@ class Presenter(private val view: GameView) {
     }
 
     fun showControls() {
-        view.showControls(buttonsToShow(), autoPlaying.speed)
+        view.showControls(buttonsToShow(), gameMode.speed)
     }
 
     private fun buttonsToShow(): List<AppBarButtonsEnum> {
         val list = ArrayList<AppBarButtonsEnum>()
-        when(autoPlaying.state) {
-            AutoPlayingEnum.NONE -> {
-                if (autoPlaying.preferable == AutoPlayingEnum.NONE && model.gameClock.started) {
+        when(gameMode.mode) {
+            GameModeEnum.PLAY -> {
+                if (model.gameClock.started) {
                     list.add(AppBarButtonsEnum.PAUSE)
-                } else if (canRedo() && (autoPlaying.preferable == AutoPlayingEnum.FORWARD || !canUndo())) {
-                    list.add(AppBarButtonsEnum.FORWARD)
-                } else if (canUndo()) {
-                    list.add(AppBarButtonsEnum.BACKWARDS)
+                } else if (model.history.currentGame.playerMoves.size > 1) {
+                    list.add(AppBarButtonsEnum.WATCH)
                 } else {
                     list.add(AppBarButtonsEnum.APP_LOGO)
                 }
@@ -429,16 +429,27 @@ class Presenter(private val view: GameView) {
 
                 list.add(AppBarButtonsEnum.GAME_MENU)
             }
-            AutoPlayingEnum.BACKWARDS -> {
-                list.add(AppBarButtonsEnum.PAUSE)
+            else -> {
+                list.add(AppBarButtonsEnum.PLAY)
                 if (canUndo()) {
-                    list.add(AppBarButtonsEnum.TO_START)
+                    if (gameMode.speed == -maxSpeed) {
+                        list.add(AppBarButtonsEnum.TO_START)
+                    } else {
+                        list.add(AppBarButtonsEnum.BACKWARDS)
+                    }
                 }
-            }
-            AutoPlayingEnum.FORWARD -> {
-                list.add(AppBarButtonsEnum.PAUSE)
+                if (gameMode.mode != GameModeEnum.STOP) {
+                    list.add(AppBarButtonsEnum.STOP)
+                }
                 if (canRedo()) {
-                    list.add(AppBarButtonsEnum.TO_CURRENT)
+                    if (gameMode.speed == maxSpeed) {
+                        list.add(AppBarButtonsEnum.TO_CURRENT)
+                    } else {
+                        list.add(AppBarButtonsEnum.FORWARD)
+                    }
+                }
+                if (gameMode.mode == GameModeEnum.STOP) {
+                    list.add(AppBarButtonsEnum.GAME_MENU)
                 }
             }
         }
@@ -475,7 +486,7 @@ class Presenter(private val view: GameView) {
                         is MoveDelay -> if (view.animateViews) {
                             boardViews.blocks.lastOrNull()?.also {
                                 it.block.moveTo(it.square.positionX(), it.square.positionY(),
-                                        autoPlaying.delayMs.milliseconds, Easing.LINEAR)
+                                        gameMode.delayMs.milliseconds, Easing.LINEAR)
                             }
                         }
                     }
@@ -528,7 +539,7 @@ class Presenter(private val view: GameView) {
                         is MoveDelay -> if (view.animateViews) {
                             boardViews.blocks.lastOrNull()?.also {
                                 it.block.moveTo(it.square.positionX(), it.square.positionY(),
-                                        autoPlaying.delayMs.milliseconds, Easing.LINEAR)
+                                        gameMode.delayMs.milliseconds, Easing.LINEAR)
                             }
                         }
                     }
@@ -542,7 +553,7 @@ class Presenter(private val view: GameView) {
 
     private fun Block.move(animator: Animator, to: Square) {
         if (view.animateViews) animator.apply {
-            this@move.moveTo(to.positionX(), to.positionY(), autoPlaying.moveMs.milliseconds, Easing.LINEAR)
+            this@move.moveTo(to.positionX(), to.positionY(), gameMode.moveMs.milliseconds, Easing.LINEAR)
         }
         boardViews[PlacedPiece(piece, to)] = this
     }
@@ -561,14 +572,14 @@ class Presenter(private val view: GameView) {
                 block::x[x - shift],
                 block::y[y - shift],
                 block::scale[scale + scaleChange],
-                time = autoPlaying.resultingBlockMs.milliseconds,
+                time = gameMode.resultingBlockMs.milliseconds,
                 easing = Easing.LINEAR
         )
         animator.tween(
                 block::x[x],
                 block::y[y],
                 block::scale[scale],
-                time = autoPlaying.resultingBlockMs.milliseconds,
+                time = gameMode.resultingBlockMs.milliseconds,
                 easing = Easing.LINEAR
         )
     }
