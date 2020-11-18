@@ -416,6 +416,9 @@ class Presenter(private val view: GameView) {
                     list.add(AppBarButtonsEnum.PAUSE)
                 } else if (model.history.currentGame.playerMoves.size > 1) {
                     list.add(AppBarButtonsEnum.WATCH)
+                    if (!canRedo()) {
+                        list.add(AppBarButtonsEnum.RESTART)
+                    }
                 } else {
                     list.add(AppBarButtonsEnum.APP_LOGO)
                 }

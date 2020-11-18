@@ -57,6 +57,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private var appLogo: Container by Delegates.notNull()
     private var watchButton: Container by Delegates.notNull()
     private var pauseButton: Container by Delegates.notNull()
+    private var restartButton: Container by Delegates.notNull()
     private var undoButton: Container by Delegates.notNull()
     private var redoButton: Container by Delegates.notNull()
     private var gameMenuButton: Container by Delegates.notNull()
@@ -110,6 +111,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
         watchButton = appBarButton("assets/watch.png", presenter::onWatchClick)
         pauseButton = appBarButton("assets/pause.png", presenter::onPauseClick)
+        restartButton = appBarButton("assets/restart.png", presenter::onRestartClick)
         undoButton = appBarButton("assets/undo.png", presenter::onUndoClick)
         redoButton = appBarButton("assets/redo.png", presenter::onRedoClick)
         gameMenuButton = appBarButton("assets/menu.png", presenter::onGameMenuClick)
@@ -353,6 +355,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 AppBarButtonsEnum.APP_LOGO to appLogo,
                 AppBarButtonsEnum.WATCH to watchButton,
                 AppBarButtonsEnum.PAUSE to pauseButton,
+                AppBarButtonsEnum.RESTART to restartButton,
                 AppBarButtonsEnum.UNDO to undoButton,
                 AppBarButtonsEnum.REDO to redoButton,
                 AppBarButtonsEnum.GAME_MENU to gameMenuButton,
