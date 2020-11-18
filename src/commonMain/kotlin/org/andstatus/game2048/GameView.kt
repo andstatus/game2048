@@ -114,7 +114,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         gameMenuButton = appBarButton("assets/menu.png", presenter::onGameMenuClick)
     }
 
-    suspend fun appBarButton(icon: String, handler: () -> Unit): Container = Container().apply {
+    private suspend fun appBarButton(icon: String, handler: () -> Unit): Container = Container().apply {
         val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
         image(resourcesVfs[icon].readBitmap()) {
             size(buttonSize * 0.6, buttonSize * 0.6)

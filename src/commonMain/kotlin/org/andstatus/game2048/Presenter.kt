@@ -33,6 +33,15 @@ class Presenter(private val view: GameView) {
         presentGameClock(view.gameStage, model) { view.gameTime }
     }
 
+    private fun presentGameClock(coroutineScope: CoroutineScope, model: Model, textSupplier: () -> Text) {
+        coroutineScope.launch {
+            while (true) {
+                delay(1000)
+                textSupplier().text = model.gameClock.playedSecondsString
+            }
+        }
+    }
+
     private enum class AutoPlayingEnum {
         BACKWARDS,
         FORWARD,
@@ -131,20 +140,7 @@ class Presenter(private val view: GameView) {
 
     private var autoPlayCount = KorAtomicInt(0)
 
-    private fun presentGameClock(coroutineScope: CoroutineScope, model: Model, textSupplier: () -> Text) {
-        coroutineScope.launch {
-            while (true) {
-                delay(1000)
-                textSupplier().text = model.gameClock.playedSecondsString
-            }
-        }
-    }
-
     fun onAppEntry() = model.onAppEntry().present()
-
-    fun computerMove() = model.computerMove().present()
-
-    fun computerMove(placedPiece: PlacedPiece) = model.computerMove(placedPiece).present()
 
     fun canUndo(): Boolean = model.canUndo()
 
@@ -180,8 +176,6 @@ class Presenter(private val view: GameView) {
         (model.redo() + listOf(PlayerMove.delay()) + model.redo()).present()
     }
 
-    fun composerMove(board: Board) = model.composerMove(board).present()
-
     fun onRestartClick() {
         afterStop {
             logClick("Restart")
@@ -215,6 +209,166 @@ class Presenter(private val view: GameView) {
         }
 
     }
+
+    fun onPauseClick() {
+        afterStop {
+            logClick("Pause")
+            model.gameClock.stop()
+            showControls()
+        }
+    }
+
+    fun onToStartClick() {
+        logClick("ToStart")
+        autoPlaying.preferable = AutoPlayingEnum.BACKWARDS
+        val startCount = autoPlayCount.incrementAndGet()
+        if (autoPlaying.state == AutoPlayingEnum.BACKWARDS) {
+            coroutineScope.launch {
+                while (autoPlaying.state == AutoPlayingEnum.BACKWARDS && startCount == autoPlayCount.value) {
+                    delay(100)
+                }
+                if (autoPlaying.state == AutoPlayingEnum.NONE) {
+                    boardViews.removeGameOver() // TODO: make this a move...
+                    (model.undoToStart() + listOf(PlayerMove.delay()) + model.redo()).present()
+                }
+            }
+            return
+        }
+    }
+
+    fun onWatchClick() {
+        logClick("Watch")
+        TODO()
+    }
+
+    fun onPlayClick() {
+        logClick("Play")
+        TODO()
+    }
+
+    fun onBackwardsClick() {
+        logClick("Backwards")
+        startAutoPlaying(AutoPlayingEnum.BACKWARDS)
+    }
+
+    fun onStopClick() {
+        logClick("Stop")
+        TODO()
+    }
+
+    fun onForwardClick() {
+        logClick("Forward")
+        startAutoPlaying(AutoPlayingEnum.FORWARD)
+    }
+
+    fun onToCurrentClick() {
+        afterStop {
+            logClick("ToCurrent")
+            autoPlaying.preferable = AutoPlayingEnum.FORWARD
+            model.redoToCurrent().present()
+        }
+    }
+
+    fun onGameMenuClick() {
+        afterStop {
+            logClick("GameMenu")
+            model.gameClock.stop()
+            view.showGameMenu(model.history.currentGame)
+        }
+    }
+
+    fun onCloseGameMenuClick() {
+        logClick("CloseGameMenu")
+        showControls()
+    }
+
+    fun onDeleteGameClick() {
+        afterStop {
+            logClick("DeleteGame")
+            model.history.deleteCurrent()
+            model.restart(false).present()
+        }
+    }
+
+    fun onRestoreClick() {
+        afterStop {
+            logClick("Restore")
+            view.showGameHistory(model.history.prevGames)
+        }
+    }
+
+    fun onHistoryItemClick(id: Int) {
+        afterStop {
+            logClick("History$id")
+            if (moveIsInProgress.compareAndSet(expect = false, update = true)) {
+                model.restoreGame(id).present()
+            }
+        }
+    }
+
+    fun onShareClick() {
+        logClick("Share")
+        shareText(view.stringResources.text("share"), model.history.currentGame.shortRecord.jsonFileName,
+                model.history.currentGame.toMap().toJson())
+    }
+
+    fun onLoadClick() {
+        logClick("Load")
+        loadJsonGameRecord { json ->
+            view.gameStage.launch {
+                Console.log("Opened game: ${json.substr(0, 140)}")
+                GameRecord.fromJson(json, newId = 0)?.let {
+                    // I noticed some kind of KorGe window reset after return from the other activity,
+                    //   so let's wait for awhile and redraw everything a bit later...
+                    delay(3000)
+                    Console.log("Restored game: $it")
+                    model.history.currentGame = it
+                    onToCurrentClick()
+                }
+            }
+        }
+    }
+
+    private fun startAutoPlaying(newState: AutoPlayingEnum) {
+        autoPlaying.preferable = newState
+        val startCount = autoPlayCount.incrementAndGet()
+        if (autoPlaying.state != newState &&
+                if (newState == AutoPlayingEnum.BACKWARDS) canUndo() else canRedo()) {
+            autoPlaying.state = newState
+            showControls()
+            coroutineScope.launch {
+                while (startCount == autoPlayCount.value &&
+                        if (autoPlaying.state == AutoPlayingEnum.BACKWARDS) canUndo() else canRedo()) {
+                    if (autoPlaying.speed != 0) {
+                        if (autoPlaying.state == AutoPlayingEnum.BACKWARDS) undo() else redo()
+                    }
+                    delay(autoPlaying.delayMs.toLong())
+                }
+                autoPlaying.stop()
+                showControls()
+            }
+        }
+    }
+
+    private fun logClick(buttonName: String) {
+        Console.log("$buttonName clicked $autoPlayCount , autoplay:${autoPlaying.state}")
+    }
+
+    private fun afterStop(action: () -> Unit) {
+        val startCount = autoPlayCount.incrementAndGet()
+        coroutineScope.launch {
+            while (autoPlaying.state != AutoPlayingEnum.NONE && startCount == autoPlayCount.value) {
+                delay(100)
+            }
+            action()
+        }
+    }
+
+    fun composerMove(board: Board) = model.composerMove(board).present()
+
+    fun computerMove() = model.computerMove().present()
+
+    fun computerMove(placedPiece: PlacedPiece) = model.computerMove(placedPiece).present()
 
     private fun userMove(playerMoveEnum: PlayerMoveEnum) {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
@@ -417,159 +571,5 @@ class Presenter(private val view: GameView) {
                 time = autoPlaying.resultingBlockMs.milliseconds,
                 easing = Easing.LINEAR
         )
-    }
-
-    fun onPauseClick() {
-        afterStop {
-            logClick("Pause")
-            model.gameClock.stop()
-            showControls()
-        }
-    }
-
-    fun onToStartClick() {
-        logClick("ToStart")
-        autoPlaying.preferable = AutoPlayingEnum.BACKWARDS
-        val startCount = autoPlayCount.incrementAndGet()
-        if (autoPlaying.state == AutoPlayingEnum.BACKWARDS) {
-            coroutineScope.launch {
-                while (autoPlaying.state == AutoPlayingEnum.BACKWARDS && startCount == autoPlayCount.value) {
-                    delay(100)
-                }
-                if (autoPlaying.state == AutoPlayingEnum.NONE) {
-                    boardViews.removeGameOver() // TODO: make this a move...
-                    (model.undoToStart() + listOf(PlayerMove.delay()) + model.redo()).present()
-                }
-            }
-            return
-        }
-    }
-
-    fun onWatchClick() {
-        logClick("Watch")
-        TODO()
-    }
-
-    fun onPlayClick() {
-        logClick("Play")
-        TODO()
-    }
-
-    fun onBackwardsClick() {
-        logClick("Backwards")
-        startAutoPlaying(AutoPlayingEnum.BACKWARDS)
-    }
-
-    fun onStopClick() {
-        logClick("Stop")
-        TODO()
-    }
-
-    private fun startAutoPlaying(newState: AutoPlayingEnum) {
-        autoPlaying.preferable = newState
-        val startCount = autoPlayCount.incrementAndGet()
-        if (autoPlaying.state != newState &&
-                if (newState == AutoPlayingEnum.BACKWARDS) canUndo() else canRedo()) {
-            autoPlaying.state = newState
-            showControls()
-            coroutineScope.launch {
-                while (startCount == autoPlayCount.value &&
-                        if (autoPlaying.state == AutoPlayingEnum.BACKWARDS) canUndo() else canRedo()) {
-                    if (autoPlaying.speed != 0) {
-                        if (autoPlaying.state == AutoPlayingEnum.BACKWARDS) undo() else redo()
-                    }
-                    delay(autoPlaying.delayMs.toLong())
-                }
-                autoPlaying.stop()
-                showControls()
-            }
-        }
-    }
-
-    fun onForwardClick() {
-        logClick("Forward")
-        startAutoPlaying(AutoPlayingEnum.FORWARD)
-    }
-
-    fun onToCurrentClick() {
-        afterStop {
-            logClick("ToCurrent")
-            autoPlaying.preferable = AutoPlayingEnum.FORWARD
-            model.redoToCurrent().present()
-        }
-    }
-
-    private fun afterStop(action: () -> Unit) {
-        val startCount = autoPlayCount.incrementAndGet()
-        coroutineScope.launch {
-            while (autoPlaying.state != AutoPlayingEnum.NONE && startCount == autoPlayCount.value) {
-                delay(100)
-            }
-            action()
-        }
-    }
-
-    fun onGameMenuClick() {
-        afterStop {
-            logClick("GameMenu")
-            model.gameClock.stop()
-            view.showGameMenu(model.history.currentGame)
-        }
-    }
-
-    fun onCloseGameMenuClick() {
-        logClick("CloseGameMenu")
-        showControls()
-    }
-
-    fun onDeleteGameClick() {
-        afterStop {
-            logClick("DeleteGame")
-            model.history.deleteCurrent()
-            model.restart(false).present()
-        }
-    }
-
-    fun onRestoreClick() {
-        afterStop {
-            logClick("Restore")
-            view.showGameHistory(model.history.prevGames)
-        }
-    }
-
-    fun onHistoryItemClick(id: Int) {
-        afterStop {
-            logClick("History$id")
-            if (moveIsInProgress.compareAndSet(expect = false, update = true)) {
-                model.restoreGame(id).present()
-            }
-        }
-    }
-
-    private fun logClick(buttonName: String) {
-        Console.log("$buttonName clicked $autoPlayCount , autoplay:${autoPlaying.state}")
-    }
-
-    fun onShareClick() {
-        logClick("Share")
-        shareText(view.stringResources.text("share"), model.history.currentGame.shortRecord.jsonFileName,
-                model.history.currentGame.toMap().toJson())
-    }
-
-    fun onLoadClick() {
-        logClick("Load")
-        loadJsonGameRecord { json ->
-            view.gameStage.launch {
-                Console.log("Opened game: ${json.substr(0, 140)}")
-                GameRecord.fromJson(json, newId = 0)?.let {
-                    // I noticed some kind of KorGe window reset after return from the other activity,
-                    //   so let's wait for awhile and redraw everything a bit later...
-                    delay(3000)
-                    Console.log("Restored game: $it")
-                    model.history.currentGame = it
-                    onToCurrentClick()
-                }
-            }
-        }
     }
 }
