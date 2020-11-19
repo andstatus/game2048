@@ -22,7 +22,7 @@ This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatfo
   It stops when you tap Undo or Pause button.
 * "Watch" mode. Auto replay current game forward and backwards with any speed,
   stop at any position.
-  Switch to "Play" mode from that place, overriding history.
+  Switch to "Play" mode from that place and continue playing, overriding history.
 * The Latest games with all their moves and scores are stored in a history and can be replayed.
 * Game menu allows you to delete current game from history, to restart a game
   or to restore existing game from a list.
