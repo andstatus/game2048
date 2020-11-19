@@ -80,7 +80,7 @@ class Presenter(private val view: GameView) {
 
         fun initialData() = GameModeData(GameModeEnum.STOP, 0)
 
-        fun increaseSpeed() {
+        fun incrementSpeed() {
             val value = data.value
             if (value.speed < maxSpeed) {
                 val newSpeed = value.speed + 1
@@ -93,7 +93,7 @@ class Presenter(private val view: GameView) {
             }
         }
 
-        fun decreaseSpeed() {
+        fun decrementSpeed() {
             val value = data.value
             if (value.speed > -maxSpeed) {
                 val newSpeed = value.speed - 1
@@ -137,7 +137,7 @@ class Presenter(private val view: GameView) {
         }
     }
 
-    private var autoPlayCount = KorAtomicInt(0)
+    private var clickCounter = KorAtomicInt(0)
 
     fun onAppEntry() {
         gameMode.mode = if (model.history.currentGame.id == 0) GameModeEnum.PLAY else GameModeEnum.STOP
@@ -332,14 +332,14 @@ class Presenter(private val view: GameView) {
 
     private fun startAutoPlaying(newMode: GameModeEnum) {
         if (gameMode.mode == newMode) {
-            if (newMode == GameModeEnum.BACKWARDS) gameMode.decreaseSpeed() else gameMode.increaseSpeed()
+            if (newMode == GameModeEnum.BACKWARDS) gameMode.decrementSpeed() else gameMode.incrementSpeed()
         } else if (if (newMode == GameModeEnum.BACKWARDS) canUndo() else canRedo()) {
             afterStop {
-                val startCount = autoPlayCount.incrementAndGet()
+                val startCount = clickCounter.incrementAndGet()
                 gameMode.mode = newMode
                 showControls()
                 coroutineScope.launch {
-                    while (startCount == autoPlayCount.value &&
+                    while (startCount == clickCounter.value &&
                             if (gameMode.mode == GameModeEnum.BACKWARDS) canUndo() else canRedo()) {
                         if (gameMode.speed != 0) {
                             if (gameMode.mode == GameModeEnum.BACKWARDS) undo() else redo()
@@ -354,13 +354,13 @@ class Presenter(private val view: GameView) {
     }
 
     private fun logClick(buttonName: String) {
-        Console.log("$buttonName clicked ${autoPlayCount.value} , autoplay:${gameMode.mode}")
+        Console.log("$buttonName clicked ${clickCounter.value}, mode:${gameMode.mode}")
     }
 
     private fun afterStop(action: () -> Unit) {
-        val startCount = autoPlayCount.incrementAndGet()
+        val startCount = clickCounter.incrementAndGet()
         coroutineScope.launch {
-            while (gameMode.autoPlaying && startCount == autoPlayCount.value) {
+            while (gameMode.autoPlaying && startCount == clickCounter.value) {
                 delay(100)
             }
             action()
