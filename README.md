@@ -18,16 +18,17 @@ This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatfo
 ## Features of "2048 Open Fun Game" that are not present in the original game
 
 * Unlimited and animated Undo and Redo.
-* Auto replay current game forward and backwards, stop at any position and continue from that place,
- overriding history.
-* Move number and game time played shown. The time starts when you make a move. 
-It stops when you tap Undo or Pause button.
+* Move number and game time played shown. The time starts when you make a move.
+  It stops when you tap Undo or Pause button.
+* "Watch" mode. Auto replay current game forward and backwards with any speed,
+  stop at any position.
+  Switch to "Play" mode from that place, overriding history.
 * The Latest games with all their moves and scores are stored in a history and can be replayed.
 * Game menu allows you to delete current game from history, to restart a game
- or to restore existing game from a list.
+  or to restore existing game from a list.
 * When you tap "Restart" button or restore existing game, current game is automatically saved to the history,
- so you can review or continue to play it later.
-* Share a game as a file, so it can be loaded and replayed on any other device.   
+  so you can review or continue to play it later.
+* Share a game as a file, so it can be loaded and replayed on any other device.
 
 <p>
 <img title="Main screen of Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/1.png" height="400" />
@@ -35,6 +36,8 @@ It stops when you tap Undo or Pause button.
 <img title="Game menu of Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/2.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
 <img title="Game History of Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/3.png" height="400" />
+<img src="doc/images/5x5.png" width="5" />
+<img title="Game Over in Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/4.png" height="400" />
 </p>
 
 If you found the project useful, please 
