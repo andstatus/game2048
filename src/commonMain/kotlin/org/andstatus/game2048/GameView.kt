@@ -399,8 +399,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             }
         }
         text(stringResources.text("game_over"), 50.0, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
-            centerXBetween(0.0, boardWidth)
-            positionY((boardWidth - textSize) / 2)
+            position(boardWidth / 2, (boardWidth - textSize) / 2)
         }
         uiText(stringResources.text("try_again"), 120.0, 35.0, skin) {
             centerXBetween(0.0, boardWidth)
