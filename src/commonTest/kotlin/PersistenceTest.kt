@@ -23,9 +23,9 @@ class PersistenceTest : ViewsForTesting(log = true) {
 
     private fun saveTestHistory() = with (History()) {
         val placedPiece = PlacedPiece(Piece.N2, Square(1, 2))
-        val move1 = PlayerMove.computerMove(placedPiece)
-        val move2 = PlayerMove.userMove(PlayerMoveEnum.DOWN, listOf(MoveOne(placedPiece, Square(1, 3))))
-        val move3 = PlayerMove.computerMove(PlacedPiece(Piece.N4, Square(2, 1)))
+        val move1 = PlayerMove.computerMove(placedPiece, 0)
+        val move2 = PlayerMove.userMove(PlayerMoveEnum.DOWN, 1, listOf(MoveOne(placedPiece, Square(1, 3))))
+        val move3 = PlayerMove.computerMove(PlacedPiece(Piece.N4, Square(2, 1)), 2)
         val board = Board(array = arrayOf(null, null, null, null,
                 null, null, null, null,
                 null, null, Piece.N4, null,
@@ -50,7 +50,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
                 1 -> Square(2, 2)
                 else -> Square(1, 3)
             }
-            val move = PlayerMove.computerMove(PlacedPiece(Piece.N2, square))
+            val move = PlayerMove.computerMove(PlacedPiece(Piece.N2, square), 0)
             assertTrue(move.toMap().keys.size > 2, move.toMap().toString())
             moves.add(move)
             nMovesActual++

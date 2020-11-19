@@ -23,7 +23,7 @@ class MovesTest : ViewsForTesting(log = true) {
         presenter.computerMove(piece2)
         assertEquals(listOf(Piece.N2), blocksAt(square2), modelAndViews())
 
-        val board1 = presenter.model.board.copy()
+        val board1 = presenter.model.board.copyNow()
         val piecesOnBoardViews1 = presentedPieces()
         assertEquals(board1.array.asList(), piecesOnBoardViews1, modelAndViews())
 
@@ -31,13 +31,13 @@ class MovesTest : ViewsForTesting(log = true) {
         assertEquals(listOf(Piece.N4), blocksAt(Square(1, 3)), modelAndViews())
         assertEquals(2, presenter.boardViews.blocks.size, modelAndViews())
 
-        val board2 = presenter.model.board.copy()
+        val board2 = presenter.model.board.copyNow()
         val piecesOnBoardViews2 = presentedPieces()
         assertEquals(board2.array.asList(), piecesOnBoardViews2, modelAndViews())
         assertTrue(presenter.canUndo(), historyString())
 
         presenter.undo()
-        val board3 = presenter.model.board.copy()
+        val board3 = presenter.model.board.copyNow()
         val piecesOnBoardViews3 = presentedPieces()
 
         assertEquals(board1.array.asList(), board3.array.asList(),"Board after undo")
@@ -45,7 +45,7 @@ class MovesTest : ViewsForTesting(log = true) {
         assertTrue(presenter.canRedo(), historyString())
 
         presenter.redo()
-        val board4 = presenter.model.board.copy()
+        val board4 = presenter.model.board.copyNow()
         val piecesOnBoardViews4 = presentedPieces()
 
         assertEquals(board2.array.asList(), board4.array.asList(), "Board after redo")
@@ -57,7 +57,7 @@ class MovesTest : ViewsForTesting(log = true) {
         assertFalse(presenter.canRedo(), historyString())
 
         presenter.undo()
-        val board5 = presenter.model.board.copy()
+        val board5 = presenter.model.board.copyNow()
         val piecesOnBoardViews5 = presentedPieces()
 
         assertEquals(board4.array.asList(), board5.array.asList(),"Board after second undo")

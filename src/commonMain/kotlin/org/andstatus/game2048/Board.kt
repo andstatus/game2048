@@ -115,10 +115,9 @@ class Board(val width: Int = settings.boardWidth,
         ind.toString() + ":" + (piece ?: "-")
     } + ", score:$score, time:${dateTime.format(DateFormat.FORMAT1)}"
 
-    fun copy() = Board(width, height, array.copyOf(), score, dateTime, gameClock)
-    fun copyWithCurrentTime() = Board(width, height, array.copyOf(), score, DateTimeTz.nowLocal(), gameClock)
-
-    fun isEmpty(): Boolean = score == 0 && array.find { it != null } == null
+    fun copyWithSeconds(seconds: Int) = Board(width, height, array.copyOf(), score, dateTime,
+            if (seconds == 0) gameClock else GameClock(seconds))
+    fun copyNow() = Board(width, height, array.copyOf(), score, DateTimeTz.nowLocal(), gameClock)
 
     companion object {
 

@@ -23,7 +23,8 @@ class Model {
             composerMove(history.currentGame.shortRecord.finalBoard, true)
     }
 
-    fun composerMove(board: Board, isRedo: Boolean = false) = listOf(PlayerMove.composerMove(board)).play(isRedo)
+    fun composerMove(board: Board, isRedo: Boolean = false) =
+            listOf(PlayerMove.composerMove(board, gameClock.playedSeconds)).play(isRedo)
 
     fun restart(saveCurrent: Boolean): List<PlayerMove> {
         if (saveCurrent && history.currentGame.score > 0) {
@@ -66,10 +67,10 @@ class Model {
     }
 
     fun computerMove(placedPiece: PlacedPiece): List<PlayerMove> {
-        return placedPiece.let { listOf(PlayerMove.computerMove(it)).play() }
+        return placedPiece.let { listOf(PlayerMove.computerMove(it, gameClock.playedSeconds)).play() }
     }
 
-    fun calcPlacedRandomBlock(): PlacedPiece?  =
+    private fun calcPlacedRandomBlock(): PlacedPiece?  =
             board.getRandomFreeSquare()?.let {square ->
                 val piece = if (Random.nextDouble() < 0.9) Piece.N2 else Piece.N4
                 PlacedPiece(piece, square)
@@ -86,8 +87,8 @@ class Model {
         }
     }
 
-    fun calcMove(playerMoveEnum: PlayerMoveEnum): PlayerMove {
-        val board = this.board.copyWithCurrentTime()
+    private fun calcMove(playerMoveEnum: PlayerMoveEnum): PlayerMove {
+        val board = this.board.copyNow()
         val moves = mutableListOf<Move>()
         val direction = playerMoveEnum.reverseDirection()
         var square: Square? = board.firstSquareToIterate(direction)
@@ -116,20 +117,20 @@ class Model {
                 }
             }
         }
-        return PlayerMove.userMove(playerMoveEnum, moves)
+        return PlayerMove.userMove(playerMoveEnum, gameClock.playedSeconds, moves)
     }
 
     private fun List<PlayerMove>.play(isRedo: Boolean = false): List<PlayerMove> {
         forEach { playerMove ->
-            board = play(playerMove, board).also { newBoard ->
+            board = play(playerMove, isRedo, board).also { newBoard ->
                 if (!isRedo) history.add(playerMove, newBoard)
             }
         }
         return this
     }
 
-    private fun play(playerMove: PlayerMove, oldBoard: Board): Board {
-        var board = oldBoard.copyWithCurrentTime()
+    private fun play(playerMove: PlayerMove, isRedo: Boolean = false, oldBoard: Board): Board {
+        var board = if (isRedo) oldBoard.copyWithSeconds(playerMove.seconds) else oldBoard.copyNow()
         playerMove.moves.forEach { move ->
             board.score += move.points()
             when(move) {
@@ -160,7 +161,7 @@ class Model {
     }
 
     private fun playReversed(playerMove: PlayerMove, oldBoard: Board): Board {
-        var board = oldBoard.copy()
+        var board = oldBoard.copyWithSeconds(playerMove.seconds)
         playerMove.moves.asReversed().forEach { move ->
             board.score -= move.points()
             when(move) {
