@@ -47,23 +47,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private var buttonXPositions: List<Double> by Delegates.notNull()
     private val duplicateKeyPressFilter = DuplicateKeyPressFilter()
 
-    private var playButton: Container by Delegates.notNull()
-    private var toStartButton: Container by Delegates.notNull()
-    private var backwardsButton: Container by Delegates.notNull()
-    private var stopButton: Container by Delegates.notNull()
-    private var forwardButton: Container by Delegates.notNull()
-    private var toCurrentButton: Container by Delegates.notNull()
-
-    private var appLogo: Container by Delegates.notNull()
-    private var watchButton: Container by Delegates.notNull()
-    private var pauseButton: Container by Delegates.notNull()
-    private var restartButton: Container by Delegates.notNull()
-    private var undoButton: Container by Delegates.notNull()
-    private var redoButton: Container by Delegates.notNull()
-    private var gameMenuButton: Container by Delegates.notNull()
-
+    private var appBarButtons: Map<AppBarButtonsEnum, Container> by Delegates.notNull()
     private var gameMenu: Container by Delegates.notNull()
-
     private var boardControls: SolidRect by Delegates.notNull()
 
     companion object {
@@ -94,7 +79,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     private suspend fun setupAppBar() {
-        appLogo = Container().apply {
+        val appLogo = Container().apply {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = RGBA(237, 196, 3))
             text("2048", cellSize * 0.4, Colors.WHITE, font, TextAlignment.MIDDLE_CENTER) {
                 position(buttonSize / 2, buttonSize / 2)
@@ -102,19 +87,36 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             positionY(appBarTop)
         }
 
-        playButton = appBarButton("assets/play.png", presenter::onPlayClick)
-        toStartButton = appBarButton("assets/skip_previous.png", presenter::onToStartClick)
-        backwardsButton = appBarButton("assets/backwards.png", presenter::onBackwardsClick)
-        stopButton = appBarButton("assets/stop.png", presenter::onStopClick)
-        forwardButton = appBarButton("assets/forward.png", presenter::onForwardClick)
-        toCurrentButton = appBarButton("assets/skip_next.png", presenter::onToCurrentClick)
+        val playButton = appBarButton("assets/play.png", presenter::onPlayClick)
+        val toStartButton = appBarButton("assets/skip_previous.png", presenter::onToStartClick)
+        val backwardsButton = appBarButton("assets/backwards.png", presenter::onBackwardsClick)
+        val stopButton = appBarButton("assets/stop.png", presenter::onStopClick)
+        val forwardButton = appBarButton("assets/forward.png", presenter::onForwardClick)
+        val toCurrentButton = appBarButton("assets/skip_next.png", presenter::onToCurrentClick)
 
-        watchButton = appBarButton("assets/watch.png", presenter::onWatchClick)
-        pauseButton = appBarButton("assets/pause.png", presenter::onPauseClick)
-        restartButton = appBarButton("assets/restart.png", presenter::onRestartClick)
-        undoButton = appBarButton("assets/undo.png", presenter::onUndoClick)
-        redoButton = appBarButton("assets/redo.png", presenter::onRedoClick)
-        gameMenuButton = appBarButton("assets/menu.png", presenter::onGameMenuClick)
+        val watchButton = appBarButton("assets/watch.png", presenter::onWatchClick)
+        val pauseButton = appBarButton("assets/pause.png", presenter::onPauseClick)
+        val restartButton = appBarButton("assets/restart.png", presenter::onRestartClick)
+        val undoButton = appBarButton("assets/undo.png", presenter::onUndoClick)
+        val redoButton = appBarButton("assets/redo.png", presenter::onRedoClick)
+        val gameMenuButton = appBarButton("assets/menu.png", presenter::onGameMenuClick)
+
+        appBarButtons = mapOf(
+            AppBarButtonsEnum.PLAY to playButton,
+            AppBarButtonsEnum.TO_START to toStartButton,
+            AppBarButtonsEnum.BACKWARDS to backwardsButton,
+            AppBarButtonsEnum.STOP to stopButton,
+            AppBarButtonsEnum.FORWARD to forwardButton,
+            AppBarButtonsEnum.TO_CURRENT to toCurrentButton,
+
+            AppBarButtonsEnum.APP_LOGO to appLogo,
+            AppBarButtonsEnum.WATCH to watchButton,
+            AppBarButtonsEnum.PAUSE to pauseButton,
+            AppBarButtonsEnum.RESTART to restartButton,
+            AppBarButtonsEnum.UNDO to undoButton,
+            AppBarButtonsEnum.REDO to redoButton,
+            AppBarButtonsEnum.GAME_MENU to gameMenuButton,
+        )
     }
 
     private suspend fun appBarButton(icon: String, handler: () -> Unit): Container = Container().apply {
@@ -344,28 +346,11 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     fun showControls(appBarButtonsToShow: List<AppBarButtonsEnum>, playSpeed: Int) {
         gameMenu.removeFromParent()
 
-        val buttons = mapOf(
-                AppBarButtonsEnum.PLAY to playButton,
-                AppBarButtonsEnum.TO_START to toStartButton,
-                AppBarButtonsEnum.BACKWARDS to backwardsButton,
-                AppBarButtonsEnum.STOP to stopButton,
-                AppBarButtonsEnum.FORWARD to forwardButton,
-                AppBarButtonsEnum.TO_CURRENT to toCurrentButton,
-
-                AppBarButtonsEnum.APP_LOGO to appLogo,
-                AppBarButtonsEnum.WATCH to watchButton,
-                AppBarButtonsEnum.PAUSE to pauseButton,
-                AppBarButtonsEnum.RESTART to restartButton,
-                AppBarButtonsEnum.UNDO to undoButton,
-                AppBarButtonsEnum.REDO to redoButton,
-                AppBarButtonsEnum.GAME_MENU to gameMenuButton,
-        )
-
-        buttons.filter { !appBarButtonsToShow.contains(it.key) }
+        appBarButtons.filter { !appBarButtonsToShow.contains(it.key) }
             .values
             .forEach { it.removeFromParent() }
 
-        val toShow = buttons.filter { appBarButtonsToShow.contains(it.key) }
+        val toShow = appBarButtons.filter { appBarButtonsToShow.contains(it.key) }
 
         val xPositions = buttonXPositions
             .filter { buttonPointClicked.y != appBarTop || it != buttonPointClicked.x }
@@ -388,8 +373,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
 
         moveNumber.text = presenter.model.moveNumber.toString() +
-                (if (playSpeed < 0) " <" else "") +
-                (if (playSpeed > 0) " >" else "") +
+                (if (playSpeed < 0) " «" else "") +
+                (if (playSpeed > 0) " »" else "") +
                 (if (playSpeed != 0) abs(playSpeed) else "")
         bestScore.text = presenter.bestScore.toString()
         score.text = presenter.score.toString()
