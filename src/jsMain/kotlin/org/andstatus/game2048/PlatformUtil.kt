@@ -2,8 +2,13 @@ package org.andstatus.game2048
 
 import com.soywiz.klogger.Console
 import com.soywiz.klogger.log
+import com.soywiz.korma.geom.SizeInt
 
 const val platformSourceFolder = "jsMain"
+
+actual val gameWindowSize: SizeInt get() = defaultGameWindowSize
+
+actual val isDarkThemeOn: Boolean = false
 
 actual val defaultLanguage: String get() = ""
 

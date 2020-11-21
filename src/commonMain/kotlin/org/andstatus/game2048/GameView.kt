@@ -27,14 +27,18 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.properties.Delegates
 
-private const val buttonPadding = 18.0
-private const val appBarTop = buttonPadding
-const val buttonRadius = 5.0
-
 class GameView(val gameStage: Stage, val stringResources: StringResources, val animateViews: Boolean = true) {
+    private val gameViewLeft: Int
+    private val gameViewTop: Int
+    private val gameViewWidth: Int
+    private val gameViewHeight: Int
+    private val gameScale: Double
+
+    private val buttonPadding: Double
+    private val appBarTop: Double
+
+    private val buttonSize : Double
     var font: Font by Delegates.notNull()
-    private val bgColor = Colors["#b9aea0"]
-    private var buttonSize : Double = 0.0
 
     var presenter: Presenter by Delegates.notNull()
 
@@ -44,7 +48,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private var bestScore: Text by Delegates.notNull()
 
     private var buttonPointClicked = Point(0, 0)
-    private var buttonXPositions: List<Double> by Delegates.notNull()
+    private val buttonXPositions: List<Double>
     private val duplicateKeyPressFilter = DuplicateKeyPressFilter()
 
     private var appBarButtons: Map<AppBarButtonsEnum, Container> by Delegates.notNull()
@@ -52,25 +56,17 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private var boardControls: SolidRect by Delegates.notNull()
 
     companion object {
-        suspend fun appEntry(stage: Stage, stringResources: StringResources, animateViews: Boolean): GameView {
+        suspend fun appEntry(stage: Stage, animateViews: Boolean): GameView {
             loadSettings(stage)
+            val stringResources = StringResources.load(defaultLanguage)
+            stage.gameWindow.title = stringResources.text("app_name")
 
             val view = GameView(stage, stringResources, animateViews)
             view.font = resourcesVfs["assets/clear_sans.fnt"].readBitmapFont()
-            val allCellMargins = cellMargin * (settings.boardWidth + 1)
-            cellSize = (stage.views.virtualWidth - allCellMargins - 2 * buttonPadding) / settings.boardWidth
-            view.buttonSize = (stage.views.virtualWidth - buttonPadding * 6) / 5
-            boardWidth = cellSize * settings.boardWidth + allCellMargins
-            boardLeft = (stage.views.virtualWidth - boardWidth) / 2
-            boardTop = appBarTop + view.buttonSize + buttonPadding + view.buttonSize + buttonPadding
-            view.buttonXPositions = (0 .. 4).fold(emptyList()) {acc, i ->
-                acc + (boardLeft + i * (view.buttonSize + buttonPadding))
-            }
-
             view.presenter = Presenter(view)
+            view.setupStageBackground()
             view.setupAppBar()
             view.setupScoreBar()
-            view.setupBoardBackground()
             view.boardControls = view.setupBoardControls()
             view.gameMenu = view.setupGameMenu()
             view.presenter.onAppEntry()
@@ -78,9 +74,61 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
     }
 
+    init {
+        if (gameStage.views.virtualWidth < gameStage.views.virtualHeight) {
+            gameViewWidth = gameStage.views.virtualWidth
+            gameViewHeight = gameViewWidth * defaultGameWindowSize.height / defaultGameWindowSize.width
+            gameViewLeft = 0
+            gameViewTop = (gameStage.views.virtualHeight - gameViewHeight) / 2
+        } else {
+            gameViewWidth = gameStage.views.virtualHeight * defaultGameWindowSize.width / defaultGameWindowSize.height
+            gameViewHeight = gameStage.views.virtualHeight
+            gameViewLeft = (gameStage.views.virtualWidth - gameViewWidth) / 2
+            gameViewTop = 0
+        }
+        Console.log("Window:${gameWindowSize}" +
+                " -> Virtual:${gameStage.views.virtualWidth}x${gameStage.views.virtualHeight}" +
+                " -> Game:${gameViewWidth}x$gameViewHeight")
+
+        gameScale = gameViewWidth.toDouble() / defaultGameWindowSize.width
+        buttonPadding = 27 * gameScale
+        appBarTop = buttonPadding + (gameStage.views.virtualHeight - gameViewHeight) / 2
+
+        cellMargin = 15 * gameScale
+        buttonRadius = 8 * gameScale
+
+        val allCellMargins = cellMargin * (settings.boardWidth + 1)
+        cellSize = (gameViewWidth - allCellMargins - 2 * buttonPadding) / settings.boardWidth
+        buttonSize = (gameViewWidth - buttonPadding * 6) / 5
+        boardWidth = cellSize * settings.boardWidth + allCellMargins
+        boardLeft = gameViewLeft + (gameViewWidth - boardWidth) / 2
+        boardTop = appBarTop + buttonSize + buttonPadding + buttonSize + buttonPadding
+        buttonXPositions = (0 .. 4).fold(emptyList()) {acc, i ->
+            acc + (boardLeft + i * (buttonSize + buttonPadding))
+        }
+    }
+
+    private fun setupStageBackground() {
+        gameStage.solidRect(gameViewWidth, gameViewHeight, color = gameColors.stageBackground)
+        gameStage.roundRect(boardWidth, boardWidth, buttonRadius, fill = gameColors.buttonBackground) {
+            position(boardLeft, boardTop)
+        }
+        gameStage.graphics {
+            position(boardLeft, boardTop)
+            fill(Colors["#cec0b2"]) {
+                for (x in 0 until settings.boardWidth) {
+                    for (y in 0 until settings.boardHeight) {
+                        roundRect(cellMargin + (cellMargin + cellSize) * x, cellMargin + (cellMargin + cellSize) * y,
+                                cellSize, cellSize, buttonRadius)
+                    }
+                }
+            }
+        }
+    }
+
     private suspend fun setupAppBar() {
         val appLogo = Container().apply {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = RGBA(237, 196, 3))
+            roundRect(buttonSize, buttonSize, buttonRadius, fill = RGBA(237, 196, 3))
             text("2048", cellSize * 0.4, Colors.WHITE, font, TextAlignment.MIDDLE_CENTER) {
                 position(buttonSize / 2, buttonSize / 2)
             }
@@ -120,7 +168,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     private suspend fun appBarButton(icon: String, handler: () -> Unit): Container = Container().apply {
-        val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
+        val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
         image(resourcesVfs[icon].readBitmap()) {
             size(buttonSize * 0.6, buttonSize * 0.6)
             centerOn(background)
@@ -132,7 +180,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private suspend fun setupGameMenu(): Container = Container().apply {
         val window = this
         val winTop = appBarTop + buttonSize + buttonPadding // To avoid unintentional click on the list after previous click
-        val winWidth = gameStage.views.virtualWidth.toDouble()
+        val winWidth = gameViewWidth.toDouble()
         val winHeight = winTop + (buttonSize + buttonPadding) * 2 - cellMargin
 
         addUpdater {
@@ -143,15 +191,15 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
 
         roundRect(winWidth, winHeight, buttonRadius, stroke = Colors.BLACK, strokeThickness = 2.0, fill = Colors.WHITE) {
-            positionY(cellMargin)
+            position(gameViewLeft.toDouble(), cellMargin)
         }
 
-        text(stringResources.text("game_actions"), 40.0, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
-            position(winWidth / 2,appBarTop + buttonSize / 2)
+        text(stringResources.text("game_actions"), defaultTextSize, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
+            position(gameViewLeft + winWidth / 2,appBarTop + buttonSize / 2)
         }
 
         container {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
             image(resourcesVfs["assets/delete.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
@@ -164,7 +212,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
 
         container {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
             image(resourcesVfs["assets/restore.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
@@ -177,7 +225,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
 
         container {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
             image(resourcesVfs["assets/restart.png"].readBitmap()) {
                 size(buttonSize * 0.8, buttonSize * 0.8)
                 centerOn(background)
@@ -190,7 +238,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
 
         container {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
             image(resourcesVfs["assets/close.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
@@ -203,7 +251,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
 
         container {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
             image(resourcesVfs["assets/share.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
@@ -216,7 +264,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
 
         container {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
             image(resourcesVfs["assets/load.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
@@ -255,7 +303,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private fun setupScoreBar() {
         val scoreButtonWidth = (boardWidth - 2 * buttonPadding) / 3
         val scoreButtonTop = appBarTop + buttonSize + buttonPadding
-        val textYPadding = 19.0
+        val textYPadding = 28 * gameScale
         val scoreLabelSize = cellSize * 0.30
         val scoreTextSize = cellSize * 0.5
 
@@ -268,7 +316,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             positionY(scoreButtonTop + scoreLabelSize + textYPadding)
         }.addTo(gameStage)
 
-        val bgScore = gameStage.roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = bgColor) {
+        val bgScore = gameStage.roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
             position(boardLeft + (scoreButtonWidth + buttonPadding), scoreButtonTop)
         }
         gameStage.text(stringResources.text("score"), scoreLabelSize, RGBA(239, 226, 210), font,
@@ -281,7 +329,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             positionY(scoreButtonTop + scoreLabelSize + textYPadding)
         }
 
-        val bgBest = gameStage.roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = bgColor) {
+        val bgBest = gameStage.roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
             position(boardLeft + (scoreButtonWidth + buttonPadding) * 2, scoreButtonTop)
         }
         gameStage.text(stringResources.text("best"), scoreLabelSize, RGBA(239, 226, 210), font,
@@ -292,23 +340,6 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         bestScore = gameStage.text("", scoreTextSize, Colors.WHITE, font, TextAlignment.MIDDLE_CENTER) {
             centerXOn(bgBest)
             positionY(scoreButtonTop + scoreLabelSize + textYPadding)
-        }
-    }
-
-    private fun setupBoardBackground() {
-        gameStage.roundRect(boardWidth, boardWidth, buttonRadius, fill = bgColor) {
-            position(boardLeft, boardTop)
-        }
-        gameStage.graphics {
-            position(boardLeft, boardTop)
-            fill(Colors["#cec0b2"]) {
-                for (x in 0 until settings.boardWidth) {
-                    for (y in 0 until settings.boardHeight) {
-                        roundRect(cellMargin + (cellMargin + cellSize) * x, cellMargin + (cellMargin + cellSize) * y,
-                                cellSize, cellSize, buttonRadius)
-                    }
-                }
-            }
         }
     }
 
@@ -423,17 +454,18 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
     private suspend fun setupGameHistory(prevGames: List<GameRecord.ShortRecord>): Container = Container().apply {
         val window = this
+        val winLeft = gameViewLeft.toDouble()
         val winTop = appBarTop + buttonSize + cellMargin
-        val winWidth = gameStage.views.virtualWidth.toDouble()
-        val winHeight = gameStage.views.virtualHeight.toDouble() - winTop
+        val winWidth = gameViewWidth.toDouble()
+        val winHeight = gameViewHeight.toDouble() - winTop
 
         roundRect(winWidth, winHeight, buttonRadius, stroke = Colors.BLACK, strokeThickness = 2.0, fill = Colors.WHITE) {
-            position(0.0, winTop)
+            position(winLeft, winTop)
         }
 
         val buttonCloseX = buttonXPositions[4]
         container {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = bgColor)
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
             image(resourcesVfs["assets/close.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
@@ -446,18 +478,19 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             }
         }
 
-        text(stringResources.text("restore_game"), 40.0, Colors.BLACK, font,
+        text(stringResources.text("restore_game"), defaultTextSize, Colors.BLACK, font,
                 TextAlignment.MIDDLE_CENTER) {
-            position((buttonCloseX - cellMargin) / 2, winTop + cellMargin + buttonSize / 2)
+            position((winLeft + buttonCloseX - cellMargin) / 2, winTop + cellMargin + buttonSize / 2)
         }
 
         val listTop = winTop + cellMargin + buttonSize + buttonPadding // To avoid unintentional click on the list after previous click
 
         val nItems = prevGames.size
-        val itemHeight = buttonSize
+        val itemHeight = buttonSize * 3 / 4
         val textWidth = winWidth * 2
+        val textSize = defaultTextSize
         uiScrollableArea(config = {
-            position(cellMargin, listTop)
+            position(winLeft + cellMargin, listTop)
             width = winWidth - cellMargin * 2
             contentWidth = textWidth
             height = winTop + winHeight - listTop - cellMargin
@@ -465,32 +498,27 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }) {
             prevGames.sortedByDescending { it.finalBoard.dateTime }.forEachIndexed {index, game ->
                 container {
-                    val background = roundRect(textWidth, itemHeight, buttonRadius, fill = bgColor)
+                    roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
                     var xPos = cellMargin
-                    text(game.finalBoard.score.toString(), itemHeight * 0.6, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
-                        positionX(xPos)
-                        centerYOn(background)
+                    text(game.finalBoard.score.toString(), textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+                        position(xPos, itemHeight / 2)
                     }
-                    xPos += itemHeight * 1.5
-                    text(game.timeString, itemHeight * 0.6, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
-                        positionX(xPos)
-                        centerYOn(background)
+                    xPos += itemHeight * 1.6
+                    text(game.timeString, textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+                        position(xPos, itemHeight / 2)
                     }
-                    xPos += itemHeight * 4
-                    text(game.finalBoard.gameClock.playedSecondsString, itemHeight * 0.6, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
-                        positionX(xPos)
-                        centerYOn(background)
+                    xPos += itemHeight * 4.8
+                    text(game.finalBoard.gameClock.playedSecondsString, textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+                        position(xPos, itemHeight / 2)
                     }
-                    xPos += itemHeight * 2
-                    text("id:${game.id}", itemHeight * 0.6, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
-                        positionX(xPos)
-                        centerYOn(background)
+                    xPos += itemHeight * 2.4
+                    text("id:${game.id}", textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+                        position(xPos, itemHeight / 2)
                     }
                     if (game.note.isNotBlank()) {
                         xPos += itemHeight * 1.2
-                        text(game.note, itemHeight * 0.6, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
-                            positionX(xPos)
-                            centerYOn(background)
+                        text(game.note, textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+                            position(xPos, itemHeight / 2)
                         }
                     }
 

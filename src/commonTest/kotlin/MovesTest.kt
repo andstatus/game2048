@@ -10,7 +10,7 @@ class MovesTest : ViewsForTesting(log = true) {
 
     @Test
     fun movesTest() = viewsTest {
-        gameView = GameView.appEntry(this, StringResources.load(defaultLanguage), animateViews = false)
+        gameView = GameView.appEntry(this, animateViews = false)
 
         presenter.composerMove(Board())
         assertEquals(0, presenter.boardViews.blocks.size, modelAndViews())
