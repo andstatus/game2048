@@ -491,6 +491,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         val textSize = defaultTextSize
         uiScrollableArea(config = {
             position(winLeft + cellMargin, listTop)
+            buttonSize = itemHeight
             width = winWidth - cellMargin * 2
             contentWidth = textWidth
             height = winTop + winHeight - listTop - cellMargin
