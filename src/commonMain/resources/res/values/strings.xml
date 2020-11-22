@@ -5,6 +5,17 @@
   <string name="duration">Duration</string>
   <string name="game_actions">Game actions</string>
   <string name="game_over">Game Over</string>
+  <string name="help">How to play.
+Swipe the game board to move
+all tiles left, right, up, or down.
+When two tiles with the same
+number touch, they merge into
+one with a double number,
+i.e. 2+2 merge into 4,
+4+4 merge into 8 and so on.
+The goal is to create a tile
+with the highest number.
+Number 2048 is a good first win…</string>
   <string name="id">ID</string>
   <string name="last_changed">Last changed</string>
   <string name="note">Note</string>

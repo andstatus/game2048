@@ -142,17 +142,18 @@ class Presenter(private val view: GameView) {
     fun onAppEntry() {
         gameMode.mode = if (model.history.currentGame.id == 0) GameModeEnum.PLAY else GameModeEnum.STOP
         model.onAppEntry().present()
+        if (model.history.prevGames.isEmpty() && model.history.currentGame.score == 0) {
+            view.showHelp()
+        }
     }
 
     fun canUndo(): Boolean = model.canUndo()
 
     fun canRedo(): Boolean = model.canRedo()
 
-    fun onUndoClick() {
-        afterStop {
-            logClick("Undo")
-            undo()
-        }
+    fun onUndoClick() = afterStop {
+        logClick("Undo")
+        undo()
     }
 
     fun undo() {
@@ -163,11 +164,9 @@ class Presenter(private val view: GameView) {
         (model.undo() + listOf(PlayerMove.delay()) + model.undo()).presentReversed()
     }
 
-    fun onRedoClick() {
-        afterStop {
-            logClick("Redo")
-            redo()
-        }
+    fun onRedoClick() = afterStop {
+        logClick("Redo")
+        redo()
     }
 
     fun redo() {
@@ -176,18 +175,14 @@ class Presenter(private val view: GameView) {
         (model.redo() + listOf(PlayerMove.delay()) + model.redo()).present()
     }
 
-    fun onRestartClick() {
-        afterStop {
-            logClick("Restart")
-            restart()
-        }
+    fun onRestartClick() = afterStop {
+        logClick("Restart")
+        restart()
     }
 
-    fun restart() {
-        afterStop {
-            gameMode.mode = GameModeEnum.PLAY
-            model.restart(true).present()
-        }
+    fun restart() = afterStop {
+        gameMode.mode = GameModeEnum.PLAY
+        model.restart(true).present()
     }
 
     fun onSwipe(swipeDirection: SwipeDirection) {
@@ -212,28 +207,22 @@ class Presenter(private val view: GameView) {
 
     }
 
-    fun onPauseClick() {
-        afterStop {
-            logClick("Pause")
-            model.gameClock.stop()
-            showControls()
-        }
+    fun onPauseClick() = afterStop {
+        logClick("Pause")
+        model.gameClock.stop()
+        showControls()
     }
 
-    fun onWatchClick() {
-        afterStop {
-            logClick("Watch")
-            gameMode.mode = GameModeEnum.STOP
-            showControls()
-        }
+    fun onWatchClick() = afterStop {
+        logClick("Watch")
+        gameMode.mode = GameModeEnum.STOP
+        showControls()
     }
 
-    fun onPlayClick() {
-        afterStop {
-            logClick("Play")
-            gameMode.mode = GameModeEnum.PLAY
-            showControls()
-        }
+    fun onPlayClick() = afterStop {
+        logClick("Play")
+        gameMode.mode = GameModeEnum.PLAY
+        showControls()
     }
 
     fun onBackwardsClick() {
@@ -241,12 +230,10 @@ class Presenter(private val view: GameView) {
         startAutoPlaying(GameModeEnum.BACKWARDS)
     }
 
-    fun onStopClick() {
-        afterStop {
-            logClick("Stop")
-            gameMode.mode = GameModeEnum.STOP
-            showControls()
-        }
+    fun onStopClick() = afterStop {
+        logClick("Stop")
+        gameMode.mode = GameModeEnum.STOP
+        showControls()
     }
 
     fun onForwardClick() {
@@ -254,27 +241,21 @@ class Presenter(private val view: GameView) {
         startAutoPlaying(GameModeEnum.FORWARD)
     }
 
-    fun onToStartClick() {
-        afterStop {
-            logClick("ToStart")
-            boardViews.removeGameOver() // TODO: make this a move...
-            (model.undoToStart() + listOf(PlayerMove.delay()) + model.redo()).present()
-        }
+    fun onToStartClick() = afterStop {
+        logClick("ToStart")
+        boardViews.removeGameOver() // TODO: make this a move...
+        (model.undoToStart() + listOf(PlayerMove.delay()) + model.redo()).present()
     }
 
-    fun onToCurrentClick() {
-        afterStop {
-            logClick("ToCurrent")
-            model.redoToCurrent().present()
-        }
+    fun onToCurrentClick() = afterStop {
+        logClick("ToCurrent")
+        model.redoToCurrent().present()
     }
 
-    fun onGameMenuClick() {
-        afterStop {
-            logClick("GameMenu")
-            model.gameClock.stop()
-            view.showGameMenu(model.history.currentGame)
-        }
+    fun onGameMenuClick() = afterStop {
+        logClick("GameMenu")
+        model.gameClock.stop()
+        view.showGameMenu(model.history.currentGame)
     }
 
     fun onCloseGameMenuClick() {
@@ -282,38 +263,32 @@ class Presenter(private val view: GameView) {
         showControls()
     }
 
-    fun onDeleteGameClick() {
-        afterStop {
-            logClick("DeleteGame")
-            model.history.deleteCurrent()
-            model.restart(false).present()
+    fun onDeleteGameClick() = afterStop {
+        logClick("DeleteGame")
+        model.history.deleteCurrent()
+        model.restart(false).present()
+    }
+
+    fun onRestoreClick() = afterStop {
+        logClick("Restore")
+        view.showGameHistory(model.history.prevGames)
+    }
+
+    fun onHistoryItemClick(id: Int) = afterStop {
+        logClick("History$id")
+        if (moveIsInProgress.compareAndSet(expect = false, update = true)) {
+            gameMode.mode = GameModeEnum.STOP
+            model.restoreGame(id).present()
         }
     }
 
-    fun onRestoreClick() {
-        afterStop {
-            logClick("Restore")
-            view.showGameHistory(model.history.prevGames)
-        }
-    }
-
-    fun onHistoryItemClick(id: Int) {
-        afterStop {
-            logClick("History$id")
-            if (moveIsInProgress.compareAndSet(expect = false, update = true)) {
-                gameMode.mode = GameModeEnum.STOP
-                model.restoreGame(id).present()
-            }
-        }
-    }
-
-    fun onShareClick() {
+    fun onShareClick() = afterStop {
         logClick("Share")
         shareText(view.stringResources.text("share"), model.history.currentGame.shortRecord.jsonFileName,
                 model.history.currentGame.toMap().toJson())
     }
 
-    fun onLoadClick() {
+    fun onLoadClick() = afterStop {
         logClick("Load")
         loadJsonGameRecord { json ->
             view.gameStage.launch {
@@ -328,6 +303,16 @@ class Presenter(private val view: GameView) {
                 }
             }
         }
+    }
+
+    fun onHelpClick() = afterStop {
+        logClick("Help")
+        view.showHelp()
+    }
+
+    fun onHelpOkClick() = afterStop {
+        logClick("Help OK")
+        showControls()
     }
 
     private fun startAutoPlaying(newMode: GameModeEnum) {
