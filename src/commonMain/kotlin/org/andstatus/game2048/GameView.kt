@@ -319,7 +319,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         val bgScore = gameStage.roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
             position(boardLeft + (scoreButtonWidth + buttonPadding), scoreButtonTop)
         }
-        gameStage.text(stringResources.text("score"), scoreLabelSize, RGBA(239, 226, 210), font,
+        gameStage.text(stringResources.text("score_upper"), scoreLabelSize, RGBA(239, 226, 210), font,
                 TextAlignment.MIDDLE_CENTER) {
             positionX(bgScore.pos.x + scoreButtonWidth / 2)
             positionY(scoreButtonTop + textYPadding)
@@ -455,7 +455,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private suspend fun setupGameHistory(prevGames: List<GameRecord.ShortRecord>): Container = Container().apply {
         val window = this
         val winLeft = gameViewLeft.toDouble()
-        val winTop = appBarTop + buttonSize + cellMargin
+        val winTop = appBarTop
         val winWidth = gameViewWidth.toDouble()
         val winHeight = gameViewHeight.toDouble() - winTop
 
@@ -489,45 +489,56 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         val itemHeight = buttonSize * 3 / 4
         val textWidth = winWidth * 2
         val textSize = defaultTextSize
+
+        fun Container.oneRow(index: Int, score: String, lastChanged: String, duration: String, id: String,
+                             note: String, action: () -> Unit) {
+            container {
+                roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
+                var xPos = cellMargin
+                text(score, textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+                    position(xPos, itemHeight / 2)
+                }
+                xPos += itemHeight * 1.6
+                text(lastChanged, textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+                    position(xPos, itemHeight / 2)
+                }
+                xPos += itemHeight * 4.8
+                text(duration, textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+                    position(xPos, itemHeight / 2)
+                }
+                xPos += itemHeight * 2.4
+                text(id, textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+                    position(xPos, itemHeight / 2)
+                }
+                if (note.isNotBlank()) {
+                    xPos += itemHeight * 1.2
+                    text(note, textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+                        position(xPos, itemHeight / 2)
+                    }
+                }
+
+                position(0.0, index * (itemHeight + cellMargin))
+                customOnClick { action() }
+            }
+        }
+
         uiScrollableArea(config = {
             position(winLeft + cellMargin, listTop)
             buttonSize = itemHeight
             width = winWidth - cellMargin * 2
             contentWidth = textWidth
             height = winTop + winHeight - listTop - cellMargin
-            contentHeight = max(itemHeight * nItems + itemHeight * 0.5, height)
+            contentHeight = max((itemHeight + cellMargin) * (nItems + 1), height)
         }) {
-            prevGames.sortedByDescending { it.finalBoard.dateTime }.forEachIndexed {index, game ->
-                container {
-                    roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
-                    var xPos = cellMargin
-                    text(game.finalBoard.score.toString(), textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
-                        position(xPos, itemHeight / 2)
-                    }
-                    xPos += itemHeight * 1.6
-                    text(game.timeString, textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
-                        position(xPos, itemHeight / 2)
-                    }
-                    xPos += itemHeight * 4.8
-                    text(game.finalBoard.gameClock.playedSecondsString, textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
-                        position(xPos, itemHeight / 2)
-                    }
-                    xPos += itemHeight * 2.4
-                    text("id:${game.id}", textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
-                        position(xPos, itemHeight / 2)
-                    }
-                    if (game.note.isNotBlank()) {
-                        xPos += itemHeight * 1.2
-                        text(game.note, textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
-                            position(xPos, itemHeight / 2)
-                        }
-                    }
+            oneRow(0, stringResources.text("score"), stringResources.text("last_changed"),
+                    stringResources.text("duration"), stringResources.text("id"),
+                    stringResources.text("note")) {}
 
-                    position(0.0, index * (itemHeight + cellMargin))
-                    customOnClick {
-                        window.removeFromParent()
-                        presenter.onHistoryItemClick(game.id)
-                    }
+            prevGames.sortedByDescending { it.finalBoard.dateTime }.forEachIndexed {index, game ->
+                oneRow(index + 1, game.finalBoard.score.toString(), game.timeString,
+                        game.finalBoard.gameClock.playedSecondsString, game.id.toString(), game.note) {
+                    window.removeFromParent()
+                    presenter.onHistoryItemClick(game.id)
                 }
             }
         }
