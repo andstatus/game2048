@@ -1,3 +1,3 @@
-v.0.13 Switch between two game modes: Play (with Restart, Undo and Redo)
-and Watch (with auto playing game Forward and Backwards at any speed).
-Use swipes to change auto playing speed and direction. Swipe down stops auto playing.
+v.1.0 "How to play" screen added. Added column headers to the "Restore game" table.
+Dark theme on Android causes dark background outside game window.
+During auto replay and during undo or redo the time played changes as it was during actual game play.
