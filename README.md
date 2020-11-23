@@ -15,7 +15,15 @@ This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatfo
 
 <a id="features"/>
 
-## Features of "2048 Open Fun Game" that are not present in the original game
+## How to play
+
+Swipe the game board to move all tiles left, right, up, or down.
+When two tiles with the same number touch, they merge into one with a double number,
+i.e. 2+2 merge into 4, 4+4 merge into 8 and so on.
+The goal is to create a tile with the highest number.
+Number 2048 is a good first win…
+
+### Features of "2048 Open Fun Game" that are not present in the original game
 
 * Unlimited and animated Undo and Redo.
 * Move number and game time played shown. The time starts when you make a move.

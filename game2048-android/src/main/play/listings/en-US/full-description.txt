@@ -1,7 +1,12 @@
 "2048 Open Fun Game" is 2048 game with Auto Replay, History and other fun features,
 Open Source, no ads.
 
-For Android v.7.0+ devices.
+How to play.
+Swipe the game board to move all tiles left, right, up, or down.
+When two tiles with the same number touch, they merge into one with a double number,
+i.e. 2+2 merge into 4, 4+4 merge into 8 and so on.
+The goal is to create a tile with the highest number.
+Number 2048 is a good first win…
 
 Features of "2048 Open Fun Game" that are not present in the original game:
 
@@ -17,3 +22,5 @@ Features of "2048 Open Fun Game" that are not present in the original game:
 * When you tap "Restart" button or restore existing game, current game is automatically saved to the history,
   so you can review or continue to play it later.
 * Share a game as a file, so it can be loaded and replayed on any other device.
+
+For Android v.7.0+ devices.
