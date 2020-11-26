@@ -15,8 +15,8 @@ data class PlayerMove(val player: PlayerEnum, val playerMoveEnum: PlayerMoveEnum
     )
 
     companion object{
-        fun composerMove(board: Board, seconds: Int) =
-                PlayerMove(PlayerEnum.COMPOSER, PlayerMoveEnum.LOAD, seconds, listOf(MoveLoad(board)))
+        fun composerMove(board: Board) =
+                PlayerMove(PlayerEnum.COMPOSER, PlayerMoveEnum.LOAD, board.gameClock.playedSeconds, listOf(MoveLoad(board)))
 
         fun computerMove(placedPiece: PlacedPiece, seconds: Int) =
                 PlayerMove(PlayerEnum.COMPUTER, PlayerMoveEnum.PLACE, seconds, listOf(MovePlace(placedPiece)))

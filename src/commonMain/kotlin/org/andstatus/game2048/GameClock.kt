@@ -39,6 +39,8 @@ class GameClock(initialSeconds: Int = 0) {
         return counterRef.value.initialSeconds
     }
 
+    fun copy(): GameClock = GameClock(playedSeconds)
+
     val started: Boolean get() = counterRef.value.started
     val playedSeconds: Int get() = counterRef.value.current()
 
@@ -46,9 +48,10 @@ class GameClock(initialSeconds: Int = 0) {
         fun Int.format() = "%02d".format(this)
 
         val seconds = playedSeconds
-        val sec: Int = seconds.rem(60)
-        val min: Int = ((seconds - sec) / 60).rem(60)
-        val hours: Int = (seconds - sec - (min * 60)) / 60
-        return hours.format() + ":" + min.format() + ":" + sec.format()
+        val secOnly: Int = seconds.rem(60)
+        val minutes = (seconds - secOnly) / 60
+        val minOnly: Int = minutes.rem(60)
+        val hours = (minutes - minOnly) / 60
+        return hours.format() + ":" + minOnly.format() + ":" + secOnly.format()
     }
 }

@@ -133,7 +133,7 @@ class History() {
 
     fun createBookmark() {
         currentGame = with(currentGame.shortRecord) {
-            GameRecord(GameRecord.ShortRecord(note, id, start, finalBoard, bookmarks + finalBoard),
+            GameRecord(GameRecord.ShortRecord(note, id, start, finalBoard, bookmarks + finalBoard.copy()),
                     currentGame.playerMoves)
         }
         onUpdate()
@@ -180,5 +180,13 @@ class History() {
         }
         historyIndex = -1
         return null
+    }
+
+    fun gotoBookmark(board: Board) {
+        if (board.moveNumber >= currentGame.shortRecord.finalBoard.moveNumber) {
+            historyIndex = -1
+        } else {
+            historyIndex = board.moveNumber
+        }
     }
 }

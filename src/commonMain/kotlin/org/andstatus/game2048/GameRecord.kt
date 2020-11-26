@@ -35,9 +35,7 @@ class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>
     class ShortRecord(val note: String, var id: Int, val start: DateTimeTz, val finalBoard: Board,
         val bookmarks: List<Board>) {
 
-        override fun toString(): String = "${finalBoard.score} $timeString id:$id"
-
-        val timeString get() = finalBoard.dateTime.format(SUMMARY_FORMAT)
+        override fun toString(): String = "${finalBoard.score} ${finalBoard.timeString} id:$id"
 
         val jsonFileName: String get() =
             "${start.format(FILENAME_FORMAT)}_${finalBoard.score}.game2048.json"
@@ -52,7 +50,6 @@ class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>
         )
 
         companion object {
-            val SUMMARY_FORMAT = DateFormat("yyyy-MM-dd HH:mm")
             val FILENAME_FORMAT = DateFormat("yyyy-MM-dd-HH-mm")
 
             fun fromJson(json: Any, newId: Int? = null): ShortRecord? {

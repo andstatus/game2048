@@ -259,7 +259,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 addTo(this@addButton)
             }
 
-    fun showGameMenu(gameRecord: GameRecord) {
+    fun showGameMenu() {
         boardControls.removeFromParent()
         gameMenu.addTo(gameStage)
     }
@@ -432,9 +432,96 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
     }
 
-    fun showBookmarks(game: GameRecord) {
-        // TODO
-    }
+    fun showBookmarks(game: GameRecord)  = gameStage.launch { gameStage.container {
+        val window = this
+        val winLeft = gameViewLeft.toDouble()
+        val winTop = gameViewTop.toDouble()
+        val winWidth = gameViewWidth.toDouble()
+        val winHeight = gameViewHeight.toDouble()
+
+        roundRect(winWidth, winHeight, buttonRadius, stroke = Colors.BLACK, strokeThickness = 2.0, fill = Colors.WHITE) {
+            position(winLeft, winTop)
+        }
+
+        val buttonCloseX = buttonXs[4]
+        container {
+            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
+            image(resourcesVfs["assets/close.png"].readBitmap()) {
+                size(buttonSize * 0.6, buttonSize * 0.6)
+                centerOn(background)
+            }
+            position(buttonCloseX, buttonYs[0])
+            customOnClick {
+                Console.log("Close clicked")
+                window.removeFromParent()
+                presenter.showControls()
+            }
+        }
+
+        text(stringResources.text("goto_bookmark"), defaultTextSize, Colors.BLACK, font,
+                TextAlignment.MIDDLE_CENTER) {
+            position((winLeft + buttonCloseX - cellMargin) / 2, winTop + cellMargin + buttonSize / 2)
+        }
+
+        val listTop = winTop + cellMargin + buttonSize + buttonPadding // To avoid unintentional click on the list after previous click
+        val nItems = game.shortRecord.bookmarks.size + 1
+        val itemHeight = buttonSize * 3 / 4
+        val textWidth = winWidth * 2
+        val textSize = defaultTextSize
+
+        fun Container.rowText(value: String, xPosition: Double) = text(value, textSize,
+                Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+            position(xPosition, itemHeight / 2)
+        }
+
+        fun Container.oneRow(index: Int, score: String, lastChanged: String, duration: String, action: () -> Unit) {
+            container {
+                roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
+                var xPos = cellMargin
+                rowText(score, xPos)
+                xPos += itemHeight * 1.6
+                rowText(lastChanged, xPos)
+                xPos += itemHeight * 4.8
+                rowText(duration, xPos)
+
+                position(0.0, index * (itemHeight + cellMargin))
+                customOnClick { action() }
+            }
+        }
+
+        uiScrollableArea(config = {
+            position(winLeft + cellMargin, listTop)
+            buttonSize = itemHeight
+            width = winWidth - cellMargin * 2
+            contentWidth = textWidth
+            height = winTop + winHeight - listTop - cellMargin
+            contentHeight = max((itemHeight + cellMargin) * (nItems + 1), height)
+        }) {
+            oneRow(0, stringResources.text("score"), stringResources.text("last_changed"),
+                    stringResources.text("duration")) {}
+            with(game.shortRecord.finalBoard) {
+                oneRow(1, score.toString(), timeString,
+                        gameClock.playedSecondsString) {
+                    window.removeFromParent()
+                    presenter.onGoToBookmarkClick(this)
+                }
+            }
+            game.shortRecord.bookmarks.reversed().forEachIndexed {index, board ->
+                oneRow(index + 2, board.score.toString(), board.timeString,
+                        board.gameClock.playedSecondsString) {
+                    window.removeFromParent()
+                    presenter.onGoToBookmarkClick(board)
+                }
+            }
+        }
+
+        addUpdater {
+            duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
+                window.removeFromParent()
+                presenter.showControls()
+            }
+        }
+    }}
 
     fun showGameHistory(prevGames: List<GameRecord.ShortRecord>) = gameStage.launch { gameStage.container {
         val window = this
@@ -513,7 +600,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                     stringResources.text("note")) {}
 
             prevGames.sortedByDescending { it.finalBoard.dateTime }.forEachIndexed {index, game ->
-                oneRow(index + 1, game.finalBoard.score.toString(), game.timeString,
+                oneRow(index + 1, game.finalBoard.score.toString(), game.finalBoard.timeString,
                         game.finalBoard.gameClock.playedSecondsString, game.id.toString(), game.note) {
                     window.removeFromParent()
                     presenter.onHistoryItemClick(game.id)

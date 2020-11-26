@@ -19,8 +19,13 @@ class Model {
             composerMove(history.currentGame.shortRecord.finalBoard, true)
     }
 
+    fun gotoBookmark(board: Board): List<PlayerMove> {
+        history.gotoBookmark(board)
+        return composerMove(board, isRedo = true)
+    }
+
     fun composerMove(board: Board, isRedo: Boolean = false) =
-            listOf(PlayerMove.composerMove(board, gameClock.playedSeconds)).play(isRedo)
+            listOf(PlayerMove.composerMove(board)).play(isRedo)
 
     fun createBookmark() {
         history.createBookmark()
@@ -138,7 +143,7 @@ class Model {
                     board[move.first.square] = move.first.piece
                 }
                 is MoveLoad -> {
-                    board = move.board
+                    board = move.board.copy()
                 }
                 is MoveOne -> {
                     board[move.first.square] = null

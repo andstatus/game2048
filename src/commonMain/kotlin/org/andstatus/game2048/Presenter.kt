@@ -268,7 +268,7 @@ class Presenter(private val view: GameView) {
     fun onGameMenuClick() = afterStop {
         logClick("GameMenu")
         model.gameClock.stop()
-        view.showGameMenu(model.history.currentGame)
+        view.showGameMenu()
     }
 
     fun onCloseGameMenuClick() {
@@ -278,6 +278,7 @@ class Presenter(private val view: GameView) {
 
     fun onDeleteGameClick() = afterStop {
         logClick("DeleteGame")
+        gameMode.mode = GameModeEnum.PLAY
         model.history.deleteCurrent()
         model.restart().present()
     }
@@ -291,6 +292,14 @@ class Presenter(private val view: GameView) {
         logClick("Restore")
         model.saveCurrent()
         view.showGameHistory(model.history.prevGames)
+    }
+
+    fun onGoToBookmarkClick(board: Board) = afterStop {
+        logClick("GoTo${board.moveNumber}")
+        if (moveIsInProgress.compareAndSet(expect = false, update = true)) {
+            gameMode.mode = GameModeEnum.STOP
+            model.gotoBookmark(board).present()
+        }
     }
 
     fun onHistoryItemClick(id: Int) = afterStop {

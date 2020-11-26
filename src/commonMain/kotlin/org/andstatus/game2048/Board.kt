@@ -12,6 +12,8 @@ private const val keyScore = "score"
 private const val keyDateTime = "time"
 private const val keyPlayedSeconds = "playedSeconds"
 
+private val SUMMARY_FORMAT = DateFormat("yyyy-MM-dd HH:mm")
+
 class Board(val width: Int = settings.boardWidth,
             val height: Int = settings.boardHeight,
             val array: Array<Piece?> = Array(width * height) { null },
@@ -20,6 +22,8 @@ class Board(val width: Int = settings.boardWidth,
             val gameClock: GameClock = GameClock(),
             val moveNumber: Int = 0) {
     private val size = width * height
+
+    val timeString get() = dateTime.format(SUMMARY_FORMAT)
 
     val usersMoveNumber: Int get() {
         if (moveNumber < 2 ) return 1
@@ -124,9 +128,9 @@ class Board(val width: Int = settings.boardWidth,
         ind.toString() + ":" + (piece ?: "-")
     } + ", score:$score, time:${dateTime.format(DateFormat.FORMAT1)}"
 
-    fun copy() = Board(width, height, array.copyOf(), score, dateTime, gameClock, moveNumber)
+    fun copy() = Board(width, height, array.copyOf(), score, dateTime, gameClock.copy(), moveNumber)
     fun forAutoPlaying(seconds: Int, isForward: Boolean) = Board(width, height, array.copyOf(), score, dateTime,
-            if (seconds == 0) gameClock else GameClock(seconds), moveNumber + (if (isForward) 1 else -1))
+            if (seconds == 0) gameClock.copy() else GameClock(seconds), moveNumber + (if (isForward) 1 else -1))
     fun forNextMove() = Board(width, height, array.copyOf(), score, DateTimeTz.nowLocal(), gameClock,
             moveNumber + 1)
 

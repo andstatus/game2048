@@ -5,6 +5,7 @@
   <string name="duration">Duration</string>
   <string name="game_actions">Game actions</string>
   <string name="game_over">Game Over</string>
+  <string name="goto_bookmark">Go to Bookmark</string>
   <string name="help">How to play.
 Swipe the game board to move
 all tiles left, right, up, or down.

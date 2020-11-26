@@ -5,6 +5,7 @@
   <string name="duration">Длительность</string>
   <string name="game_actions">Действия с игрой</string>
   <string name="game_over">Игра окончена</string>
+  <string name="goto_bookmark">Перейти к закладке</string>
   <string name="help">Как играть.
 Проведите по игровому полю так,
 чтобы сдвинуть все плитки
