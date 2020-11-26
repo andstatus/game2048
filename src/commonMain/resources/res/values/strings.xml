@@ -6,8 +6,8 @@
   <string name="game_actions">Game actions</string>
   <string name="game_over">Game Over</string>
   <string name="goto_bookmark">Go to Bookmark</string>
-  <string name="help">How to play.
-Swipe the game board to move
+  <string name="help_title">How to play</string>
+  <string name="help">Swipe the game board to move
 all tiles left, right, up, or down.
 When two tiles with the same
 number touch, they merge into

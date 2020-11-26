@@ -6,8 +6,8 @@
   <string name="game_actions">Действия с игрой</string>
   <string name="game_over">Игра окончена</string>
   <string name="goto_bookmark">Перейти к закладке</string>
-  <string name="help">Как играть.
-Проведите по игровому полю так,
+  <string name="help_title">Как играть</string>
+  <string name="help">Проведите по игровому полю так,
 чтобы сдвинуть все плитки
 влево, вправо, вверх или вниз.
 Когда две плитки с одинаковым

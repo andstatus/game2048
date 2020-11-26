@@ -53,7 +53,6 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private val duplicateKeyPressFilter = DuplicateKeyPressFilter()
 
     private var appBarButtons: Map<AppBarButtonsEnum, Container> by Delegates.notNull()
-    private var gameMenu: Container by Delegates.notNull()
     private var boardControls: SolidRect by Delegates.notNull()
 
     companion object {
@@ -69,7 +68,6 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             view.setupAppBar()
             view.setupScoreBar()
             view.boardControls = view.setupBoardControls()
-            view.gameMenu = view.setupGameMenu()
             view.presenter.onAppEntry()
             return view
         }
@@ -189,28 +187,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         customOnClick { handler() }
     }
 
-    private suspend fun setupGameMenu(): Container = Container().apply {
-        val window = this
-        val winTop = gameViewTop.toDouble()
-        val winLeft = gameViewLeft.toDouble()
-        val winWidth = gameViewWidth.toDouble()
-        val winHeight = winTop + (buttonSize + buttonPadding) * 4 + cellMargin
-
-        addUpdater {
-            duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
-                presenter.onCloseGameMenuClick()
-                removeFromParent()
-            }
-        }
-
-        roundRect(winWidth, winHeight, buttonRadius, stroke = Colors.BLACK, strokeThickness = 2.0, fill = Colors.WHITE) {
-            position(winLeft, winTop)
-        }
-
-        text(stringResources.text("game_actions"), defaultTextSize, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
-            position(winLeft + winWidth / 2,winTop + buttonSize / 2)
-        }
-
+    fun showGameMenu() = showWindow("game_actions") {
         // Place buttons starting from the second row to avoid unintentional click after previous click
         addButton("bookmarks", buttonXs[0], buttonYs[1]) {
             presenter.onBookmarksClick()
@@ -224,11 +201,6 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
         addButton("restart", buttonXs[3], buttonYs[1]) {
             presenter.onRestartClick()
-            window.removeFromParent()
-        }
-
-        addButton("close", buttonXs[4], buttonYs[1]) {
-            presenter.onCloseGameMenuClick()
             window.removeFromParent()
         }
 
@@ -259,18 +231,13 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 addTo(this@addButton)
             }
 
-    fun showGameMenu() {
-        boardControls.removeFromParent()
-        gameMenu.addTo(gameStage)
-    }
-
     /** Workaround for the bug: https://github.com/korlibs/korge-next/issues/56 */
     private fun Container.customOnClick(handler: () -> Unit) {
         if (OS.isAndroid) {
             onOver {
                 duplicateKeyPressFilter.onSwipeOrOver {
                     val pos1 = this.pos.copy()
-                    Console.log("onOver ${buttonPointClicked} -> $pos1")
+                    Console.log("onOver $buttonPointClicked -> $pos1")
                     buttonPointClicked = pos1
                     handler()
                 }
@@ -357,8 +324,6 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     fun showControls(appBarButtonsToShow: List<AppBarButtonsEnum>, playSpeed: Int) {
-        gameMenu.removeFromParent()
-
         appBarButtons.filter { !appBarButtonsToShow.contains(it.key) }
             .values
             .forEach { it.removeFromParent() }
@@ -432,37 +397,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
     }
 
-    fun showBookmarks(game: GameRecord)  = gameStage.launch { gameStage.container {
-        val window = this
-        val winLeft = gameViewLeft.toDouble()
-        val winTop = gameViewTop.toDouble()
-        val winWidth = gameViewWidth.toDouble()
-        val winHeight = gameViewHeight.toDouble()
-
-        roundRect(winWidth, winHeight, buttonRadius, stroke = Colors.BLACK, strokeThickness = 2.0, fill = Colors.WHITE) {
-            position(winLeft, winTop)
-        }
-
-        val buttonCloseX = buttonXs[4]
-        container {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
-            image(resourcesVfs["assets/close.png"].readBitmap()) {
-                size(buttonSize * 0.6, buttonSize * 0.6)
-                centerOn(background)
-            }
-            position(buttonCloseX, buttonYs[0])
-            customOnClick {
-                Console.log("Close clicked")
-                window.removeFromParent()
-                presenter.showControls()
-            }
-        }
-
-        text(stringResources.text("goto_bookmark"), defaultTextSize, Colors.BLACK, font,
-                TextAlignment.MIDDLE_CENTER) {
-            position((winLeft + buttonCloseX - cellMargin) / 2, winTop + cellMargin + buttonSize / 2)
-        }
-
+    fun showBookmarks(game: GameRecord) = showWindow("goto_bookmark") {
         val listTop = winTop + cellMargin + buttonSize + buttonPadding // To avoid unintentional click on the list after previous click
         val nItems = game.shortRecord.bookmarks.size + 1
         val itemHeight = buttonSize * 3 / 4
@@ -521,39 +456,9 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 presenter.showControls()
             }
         }
-    }}
+    }
 
-    fun showGameHistory(prevGames: List<GameRecord.ShortRecord>) = gameStage.launch { gameStage.container {
-        val window = this
-        val winLeft = gameViewLeft.toDouble()
-        val winTop = gameViewTop.toDouble()
-        val winWidth = gameViewWidth.toDouble()
-        val winHeight = gameViewHeight.toDouble()
-
-        roundRect(winWidth, winHeight, buttonRadius, stroke = Colors.BLACK, strokeThickness = 2.0, fill = Colors.WHITE) {
-            position(winLeft, winTop)
-        }
-
-        val buttonCloseX = buttonXs[4]
-        container {
-            val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
-            image(resourcesVfs["assets/close.png"].readBitmap()) {
-                size(buttonSize * 0.6, buttonSize * 0.6)
-                centerOn(background)
-            }
-            position(buttonCloseX, buttonYs[0])
-            customOnClick {
-                Console.log("Close clicked")
-                window.removeFromParent()
-                presenter.showControls()
-            }
-        }
-
-        text(stringResources.text("restore_game"), defaultTextSize, Colors.BLACK, font,
-                TextAlignment.MIDDLE_CENTER) {
-            position((winLeft + buttonCloseX - cellMargin) / 2, winTop + cellMargin + buttonSize / 2)
-        }
-
+    fun showGameHistory(prevGames: List<GameRecord.ShortRecord>) = showWindow("restore_game") {
         val listTop = winTop + cellMargin + buttonSize + buttonPadding // To avoid unintentional click on the list after previous click
         val nItems = prevGames.size
         val itemHeight = buttonSize * 3 / 4
@@ -607,41 +512,67 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 }
             }
         }
+    }
 
-        addUpdater {
-            duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
-                window.removeFromParent()
-                presenter.showControls()
-            }
-        }
-    }}
-
-    fun showHelp(): Container = gameStage.container {
-        val window = this
-        position(gameViewLeft, gameViewTop)
-
-        graphics {
-            fill(Colors.WHITE) {
-                roundRect(0, 0, gameViewWidth, gameViewHeight, buttonRadius.toInt())
-            }
-        }
+    fun showHelp(): Container = showWindow("help_title") {
         text(stringResources.text("help"), defaultTextSize, Colors.BLACK, font, TextAlignment.TOP_LEFT) {
-            position(cellMargin, cellMargin)
+            position(cellMargin, buttonSize + buttonPadding + cellMargin)
         }
+    }
 
-        addUpdater {
-            duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
-                presenter.onHelpOkClick()
-                window.removeFromParent()
+    class MyWindow(val gameView: GameView, val titleKey: String) : Container() {
+        val window = this
+        val winLeft = gameView.gameViewLeft.toDouble()
+        val winTop = gameView.gameViewTop.toDouble()
+        val winWidth = gameView.gameViewWidth.toDouble()
+        val winHeight = gameView.gameViewHeight.toDouble()
+
+        suspend fun Container.show() {
+            roundRect(winWidth, winHeight, buttonRadius, stroke = Colors.BLACK, strokeThickness = 2.0, fill = Colors.WHITE) {
+                position(winLeft, winTop)
             }
-        }
 
-        gameStage.launch {
-            addButton("close", buttonXs[4], gameViewHeight - buttonSize - cellMargin) {
-                presenter.onHelpOkClick()
-                window.removeFromParent()
+            with(gameView) {
+                val buttonCloseX = listOf(buttonXs[4], buttonXs[3])
+                        .filter { buttonPointClicked.y != buttonYs[0] || it != buttonPointClicked.x }
+                        .first()
+                container {
+                    val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
+                    image(resourcesVfs["assets/close.png"].readBitmap()) {
+                        size(buttonSize * 0.6, buttonSize * 0.6)
+                        centerOn(background)
+                    }
+                    position(buttonCloseX, buttonYs[0])
+                    customOnClick {
+                        Console.log("Close clicked")
+                        window.removeFromParent()
+                        presenter.showControls()
+                    }
+                }
+
+                if (titleKey.isNotEmpty()) {
+                    text(stringResources.text(titleKey), defaultTextSize, Colors.BLACK, font,
+                            TextAlignment.MIDDLE_CENTER) {
+                        position((winLeft + buttonCloseX - cellMargin) / 2, winTop + cellMargin + buttonSize / 2)
+                    }
+                }
+
+                addUpdater {
+                    duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
+                        window.removeFromParent()
+                        presenter.showControls()
+                    }
+                }
             }
         }
     }
 
+    private fun showWindow(titleKey: String, action: suspend MyWindow.() -> Unit) =
+            MyWindow(this, titleKey).apply {
+                gameStage.launch {
+                    show()
+                    action()
+                    addTo(gameStage)
+                }
+            }
 }
