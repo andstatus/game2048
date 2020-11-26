@@ -105,7 +105,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         buttonXs = (0 .. 4).fold(emptyList()) { acc, i ->
             acc + (boardLeft + i * (buttonSize + buttonPadding))
         }
-        buttonYs = (0 .. 4).fold(emptyList()) { acc, i ->
+        buttonYs = (0 .. 6).fold(emptyList()) { acc, i ->
             acc + (appBarTop + i * (buttonSize + buttonPadding))
         }
     }
@@ -187,49 +187,31 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         customOnClick { handler() }
     }
 
-    fun showGameMenu() = showWindow("game_actions") {
-        // Place buttons starting from the second row to avoid unintentional click after previous click
-        addButton("bookmarks", buttonXs[0], buttonYs[1]) {
-            presenter.onBookmarksClick()
-            window.removeFromParent()
-        }
+    fun showGameMenu() = showWindow("") {
 
-        addButton("restore", buttonXs[1], buttonYs[1]) {
-            presenter.onRestoreClick()
-            window.removeFromParent()
-        }
+        suspend fun button(buttonEnum: GameMenuButtonsEnum, yInd: Int, handler: () -> Unit) =
+                barButton(buttonEnum.icon) {
+                    handler()
+                    window.removeFromParent()
+                }.apply {
+                    position(buttonXs[0], buttonYs[yInd])
+                    addTo(window)
+                    window.container {
+                        text(stringResources.text(buttonEnum.labelKey), defaultTextSize, Colors.BLACK, font,
+                                TextAlignment.MIDDLE_LEFT) {
+                            position(buttonXs[1], buttonYs[yInd] + buttonSize / 2)
+                        }
+                    }
+                }
 
-        addButton("restart", buttonXs[3], buttonYs[1]) {
-            presenter.onRestartClick()
-            window.removeFromParent()
-        }
-
-        addButton("share", buttonXs[2], buttonYs[2]) {
-            presenter.onShareClick()
-            window.removeFromParent()
-        }
-
-        addButton("load", buttonXs[3], buttonYs[2]) {
-            presenter.onLoadClick()
-            window.removeFromParent()
-        }
-
-        addButton("delete", buttonXs[0], buttonYs[3]) {
-            presenter.onDeleteGameClick()
-            window.removeFromParent()
-        }
-
-        addButton("help", buttonXs[4], buttonYs[3]) {
-            presenter.onHelpClick()
-            window.removeFromParent()
-        }
+        button(GameMenuButtonsEnum.BOOKMARKS, 0, presenter::onBookmarksClick)
+        button(GameMenuButtonsEnum.RESTORE, 1, presenter::onRestoreClick)
+        button(GameMenuButtonsEnum.RESTART, 2, presenter::onRestartClick)
+        button(GameMenuButtonsEnum.SHARE, 3, presenter::onShareClick)
+        button(GameMenuButtonsEnum.LOAD, 4, presenter::onLoadClick)
+        button(GameMenuButtonsEnum.HELP, 5, presenter::onHelpClick)
+        button(GameMenuButtonsEnum.DELETE, 6, presenter::onDeleteGameClick)
     }
-
-    private suspend fun Container.addButton(icon: String, x: Double, y: Double, handler: () -> Unit): Container =
-            barButton(icon, handler).apply {
-                position(x, y)
-                addTo(this@addButton)
-            }
 
     /** Workaround for the bug: https://github.com/korlibs/korge-next/issues/56 */
     private fun Container.customOnClick(handler: () -> Unit) {
@@ -533,27 +515,22 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             }
 
             with(gameView) {
-                val buttonCloseX = listOf(buttonXs[4], buttonXs[3])
-                        .filter { buttonPointClicked.y != buttonYs[0] || it != buttonPointClicked.x }
+                val xPos = buttonXs[4]
+                val yPos = listOf(buttonYs[0], buttonYs[1])
+                        .filter { buttonPointClicked.x != xPos || it != buttonPointClicked.y }
                         .first()
-                container {
-                    val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
-                    image(resourcesVfs["assets/close.png"].readBitmap()) {
-                        size(buttonSize * 0.6, buttonSize * 0.6)
-                        centerOn(background)
-                    }
-                    position(buttonCloseX, buttonYs[0])
-                    customOnClick {
-                        Console.log("Close clicked")
-                        window.removeFromParent()
-                        presenter.showControls()
-                    }
-                }
+                barButton("close") {
+                    Console.log("Close clicked")
+                    window.removeFromParent()
+                    presenter.showControls()
+                }.apply {
+                    position(xPos, yPos)
+                }.addTo(window)
 
                 if (titleKey.isNotEmpty()) {
                     text(stringResources.text(titleKey), defaultTextSize, Colors.BLACK, font,
                             TextAlignment.MIDDLE_CENTER) {
-                        position((winLeft + buttonCloseX - cellMargin) / 2, winTop + cellMargin + buttonSize / 2)
+                        position((winLeft + xPos - cellMargin) / 2, winTop + cellMargin + buttonSize / 2)
                     }
                 }
 
