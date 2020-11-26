@@ -61,9 +61,11 @@ class History() {
         return this
     }
 
-    fun saveCurrentToHistory() {
-        val newGame = currentGame.id <= 0
-        val idToStore = if (newGame){
+    fun saveCurrent() {
+        if (currentGame.score < 1) return
+
+        val isNew = currentGame.id <= 0
+        val idToStore = if (isNew){
             (gameIdsRange.find { id -> prevGames.none { it.id == id }}
                     ?: prevGames.minByOrNull { it.finalBoard.dateTime }?.id
                     ?: gameIdsRange.first)
@@ -75,7 +77,7 @@ class History() {
             currentGame.id
         }
         settings.storage[keyGame + idToStore] = currentGame.toMap().toJson()
-        Console.log((if (newGame) "New" else "Old") + " game saved $currentGame")
+        Console.log((if (isNew) "New" else "Old") + " game saved $currentGame")
         loadPrevGames()
     }
 

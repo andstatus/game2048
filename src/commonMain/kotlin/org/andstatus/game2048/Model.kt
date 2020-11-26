@@ -13,7 +13,7 @@ class Model {
 
     fun onAppEntry(): List<PlayerMove> {
         return if (history.currentGame.score == 0)
-            restart(false)
+            restart()
         else
             composerMove(history.currentGame.shortRecord.finalBoard, true)
     }
@@ -25,19 +25,15 @@ class Model {
         history.createBookmark()
     }
 
-    fun restart(saveCurrent: Boolean): List<PlayerMove> {
-        if (saveCurrent && history.currentGame.score > 0) {
-            history.saveCurrentToHistory()
-        }
+    fun restart(): List<PlayerMove> {
         return composerMove(Board()) + PlayerMove.delay() + computerMove()
     }
 
     fun restoreGame(id: Int): List<PlayerMove> {
-        if (id != history.currentGame.id && history.currentGame.score > 0) {
-            history.saveCurrentToHistory()
-        }
         return history.restoreGame(id)?.let { redoToCurrent() } ?: emptyList()
     }
+
+    fun saveCurrent() = history.saveCurrent()
 
     fun canUndo(): Boolean {
         return history.canUndo()

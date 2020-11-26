@@ -182,7 +182,8 @@ class Presenter(private val view: GameView) {
 
     fun restart() = afterStop {
         gameMode.mode = GameModeEnum.PLAY
-        model.restart(true).present()
+        model.saveCurrent()
+        model.restart().present()
     }
 
     fun onSwipe(swipeDirection: SwipeDirection) {
@@ -272,7 +273,7 @@ class Presenter(private val view: GameView) {
     fun onDeleteGameClick() = afterStop {
         logClick("DeleteGame")
         model.history.deleteCurrent()
-        model.restart(false).present()
+        model.restart().present()
     }
 
     fun onBookmarksClick() {
@@ -282,6 +283,7 @@ class Presenter(private val view: GameView) {
 
     fun onRestoreClick() = afterStop {
         logClick("Restore")
+        model.saveCurrent()
         view.showGameHistory(model.history.prevGames)
     }
 
