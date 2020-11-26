@@ -125,8 +125,8 @@ class Board(val width: Int = settings.boardWidth,
     } + ", score:$score, time:${dateTime.format(DateFormat.FORMAT1)}"
 
     fun copy() = Board(width, height, array.copyOf(), score, dateTime, gameClock, moveNumber)
-    fun forPreviousMove(seconds: Int) = Board(width, height, array.copyOf(), score, dateTime,
-            if (seconds == 0) gameClock else GameClock(seconds), moveNumber - 1)
+    fun forAutoPlaying(seconds: Int, isForward: Boolean) = Board(width, height, array.copyOf(), score, dateTime,
+            if (seconds == 0) gameClock else GameClock(seconds), moveNumber + (if (isForward) 1 else -1))
     fun forNextMove() = Board(width, height, array.copyOf(), score, DateTimeTz.nowLocal(), gameClock,
             moveNumber + 1)
 

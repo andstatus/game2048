@@ -100,6 +100,17 @@ class History() {
                 GameRecord.newWithBoardAndMoves(board, emptyList(), emptyList())
             }
             else -> {
+                val bookmarksNew = when {
+                    historyIndex < 0 -> {
+                        currentGame.shortRecord.bookmarks
+                    }
+                    historyIndex == 0 -> {
+                        emptyList()
+                    }
+                    else -> {
+                        currentGame.shortRecord.bookmarks.filterNot { it.moveNumber > historyIndex }
+                    }
+                }
                 val playerMoves = when {
                     historyIndex < 0 -> {
                         currentGame.playerMoves
@@ -110,10 +121,9 @@ class History() {
                     else -> {
                         currentGame.playerMoves.take(historyIndex)
                     }
-                }
+                } + playerMove
                 with(currentGame.shortRecord) {
-                    GameRecord(GameRecord.ShortRecord(note, id, start, board, bookmarks),
-                            playerMoves + playerMove)
+                    GameRecord(GameRecord.ShortRecord(note, id, start, board, bookmarksNew), playerMoves)
                 }
             }
         }
@@ -125,6 +135,15 @@ class History() {
         currentGame = with(currentGame.shortRecord) {
             GameRecord(GameRecord.ShortRecord(note, id, start, finalBoard, bookmarks + finalBoard),
                     currentGame.playerMoves)
+        }
+        onUpdate()
+    }
+
+    fun deleteBookmark() {
+        currentGame = with(currentGame.shortRecord) {
+            GameRecord(GameRecord.ShortRecord(note, id, start, finalBoard, bookmarks
+                    .filterNot { it.moveNumber == finalBoard.moveNumber }),
+                currentGame.playerMoves)
         }
         onUpdate()
     }

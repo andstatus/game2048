@@ -7,6 +7,7 @@ class Model {
     var board: Board = Board()
 
     val usersMoveNumber: Int get() = board.usersMoveNumber
+    val isBookmarked get() = history.currentGame.shortRecord.bookmarks.any { it.moveNumber == board.moveNumber }
     val gameClock get() = board.gameClock
     val bestScore get() = history.bestScore
     val score get() = board.score
@@ -23,6 +24,10 @@ class Model {
 
     fun createBookmark() {
         history.createBookmark()
+    }
+
+    fun deleteBookmark() {
+        history.deleteBookmark()
     }
 
     fun restart(): List<PlayerMove> {
@@ -125,7 +130,7 @@ class Model {
     }
 
     private fun play(playerMove: PlayerMove, isRedo: Boolean = false, oldBoard: Board): Board {
-        var board = if (isRedo) oldBoard.forPreviousMove(playerMove.seconds) else oldBoard.forNextMove()
+        var board = if (isRedo) oldBoard.forAutoPlaying(playerMove.seconds, true) else oldBoard.forNextMove()
         playerMove.moves.forEach { move ->
             board.score += move.points()
             when(move) {
@@ -156,7 +161,7 @@ class Model {
     }
 
     private fun playReversed(playerMove: PlayerMove, oldBoard: Board): Board {
-        var board = oldBoard.forPreviousMove(playerMove.seconds)
+        var board = oldBoard.forAutoPlaying(playerMove.seconds, false)
         playerMove.moves.asReversed().forEach { move ->
             board.score -= move.points()
             when(move) {

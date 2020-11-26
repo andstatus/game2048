@@ -148,6 +148,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
         val watchButton = appBarButton("watch", presenter::onWatchClick)
         val bookmarkButton = appBarButton("bookmark_border", presenter::onBookmarkClick)
+        val bookmarkedButton = appBarButton("bookmark", presenter::onBookmarkedClick)
         val pauseButton = appBarButton("pause", presenter::onPauseClick)
         val restartButton = appBarButton("restart", presenter::onRestartClick)
         val undoButton = appBarButton("undo", presenter::onUndoClick)
@@ -165,6 +166,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             AppBarButtonsEnum.APP_LOGO to appLogo,
             AppBarButtonsEnum.WATCH to watchButton,
             AppBarButtonsEnum.BOOKMARK to bookmarkButton,
+            AppBarButtonsEnum.BOOKMARKED to bookmarkedButton,
             AppBarButtonsEnum.PAUSE to pauseButton,
             AppBarButtonsEnum.RESTART to restartButton,
             AppBarButtonsEnum.UNDO to undoButton,

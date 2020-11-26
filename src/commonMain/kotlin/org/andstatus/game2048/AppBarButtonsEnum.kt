@@ -4,6 +4,7 @@ enum class AppBarButtonsEnum(val positionIndex: Int) {
     APP_LOGO(0),
     WATCH(0),
     BOOKMARK(0),
+    BOOKMARKED(0),
     PAUSE(0),
     RESTART(1),
     UNDO(3),
