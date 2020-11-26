@@ -1,3 +1,2 @@
-v.1.0 "How to play" screen added. Added column headers to the "Restore game" table.
-Dark theme on Android causes dark background outside game window.
-During auto replay and during undo or redo the time played changes as it was during actual game play.
+v.1.1 During the game, you can add bookmarks in those positions where you intend to return.
+For example, in order to replay from this position.

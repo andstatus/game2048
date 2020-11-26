@@ -1,6 +1,6 @@
 # 2048 Open Fun Game
 
-2048 game with Auto Replay, History and other fun features,
+2048 game with Bookmarks, Auto Replay, History and other fun features,
 Open Source, no ads
 
 This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatform implementation
@@ -26,7 +26,8 @@ Number 2048 is a good first win…
 ### Features of "2048 Open Fun Game" that are not present in the original game
 
 * Unlimited and animated Undo and Redo.
-* Move number and game time played shown. The time starts when you make a move.
+* Bookmarks at the interesting game positions.
+* Move number and game duration shown. The time starts when you make a move.
   It stops when you tap Undo or Pause button.
 * "Watch" mode. Auto replay current game forward and backwards with any speed,
   stop at any position.
@@ -60,7 +61,10 @@ and [KorGe game engine](https://korge.org/).
 
 Following this goal, the source code has been structured and cleaned. We're trying to use 
 board games terminology (e.g. [Glossary of chess](https://en.wikipedia.org/wiki/Glossary_of_chess))
-in order to ease understanding of implementation logic.   
+in order to ease understanding of implementation logic.
+
+Game exchange text format created (JSON based) to allow users share  
+and load shared games with all moves and bookmarks.
 
 <a id="changelog"/>
 
