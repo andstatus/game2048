@@ -207,6 +207,12 @@ class Presenter(private val view: GameView) {
 
     }
 
+    fun onBookmarkClick() = afterStop {
+        logClick("Bookmark")
+        model.createBookmark()
+        showControls()
+    }
+
     fun onPauseClick() = afterStop {
         logClick("Pause")
         model.gameClock.stop()
@@ -267,6 +273,11 @@ class Presenter(private val view: GameView) {
         logClick("DeleteGame")
         model.history.deleteCurrent()
         model.restart(false).present()
+    }
+
+    fun onBookmarksClick() {
+        logClick("Bookmarks")
+        view.showBookmarks(model.history.currentGame)
     }
 
     fun onRestoreClick() = afterStop {
@@ -399,6 +410,7 @@ class Presenter(private val view: GameView) {
             GameModeEnum.PLAY -> {
                 if (model.gameClock.started) {
                     list.add(AppBarButtonsEnum.PAUSE)
+                    list.add(AppBarButtonsEnum.BOOKMARK)
                 } else if (model.history.currentGame.playerMoves.size > 1) {
                     list.add(AppBarButtonsEnum.WATCH)
                     if (!canRedo()) {

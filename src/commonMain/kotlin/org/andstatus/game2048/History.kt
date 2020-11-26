@@ -23,7 +23,7 @@ class History() {
         Console.log("Best score: ${bestScore}")
         currentGame = settings.storage.getOrNull(keyCurrentGame)
                 ?.let { GameRecord.fromJson(it)}
-                ?: GameRecord.newWithBoardAndMoves(Board(), emptyList())
+                ?: GameRecord.newWithBoardAndMoves(Board(), emptyList(), emptyList())
         loadPrevGames()
     }
 
@@ -95,7 +95,7 @@ class History() {
     fun add(playerMove: PlayerMove, board: Board) {
         currentGame = when (playerMove.playerMoveEnum ) {
             PlayerMoveEnum.LOAD -> {
-                GameRecord.newWithBoardAndMoves(board, emptyList())
+                GameRecord.newWithBoardAndMoves(board, emptyList(), emptyList())
             }
             else -> {
                 val playerMoves = when {
@@ -109,12 +109,21 @@ class History() {
                         currentGame.playerMoves.take(historyIndex)
                     }
                 }
-                GameRecord(GameRecord.ShortRecord(currentGame.shortRecord.note ,
-                        currentGame.id, currentGame.shortRecord.start, board),
-                        playerMoves + playerMove)
+                with(currentGame.shortRecord) {
+                    GameRecord(GameRecord.ShortRecord(note, id, start, board, bookmarks),
+                            playerMoves + playerMove)
+                }
             }
         }
         historyIndex = -1
+        onUpdate()
+    }
+
+    fun createBookmark() {
+        currentGame = with(currentGame.shortRecord) {
+            GameRecord(GameRecord.ShortRecord(note, id, start, finalBoard, bookmarks + finalBoard),
+                    currentGame.playerMoves)
+        }
         onUpdate()
     }
 

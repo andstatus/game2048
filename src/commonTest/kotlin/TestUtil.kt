@@ -13,8 +13,12 @@ fun blocksAt(square: Square) = presenter.boardViews.getAll(square).map { it.piec
 fun modelAndViews() =
         "Model:     " + presenter.model.board.array.mapIndexed { ind, piece ->
             ind.toString() + ":" + (piece?.text ?: "-")
-        } + "\n" +
-                "BoardViews:" + presenter.boardViews.blocksOnBoard.mapIndexed { ind, list ->
+        } +
+        (if (presenter.model.history.currentGame.shortRecord.bookmarks.isNotEmpty())
+            "  bookmarks: " + presenter.model.history.currentGame.shortRecord.bookmarks.size
+            else "") +
+        "\n" +
+        "BoardViews:" + presenter.boardViews.blocksOnBoard.mapIndexed { ind, list ->
             ind.toString() + ":" + (if (list.isEmpty()) "-" else list.joinToString(transform = { it.piece.text }))
         }
 

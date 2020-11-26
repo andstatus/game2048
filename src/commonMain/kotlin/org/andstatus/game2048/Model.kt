@@ -1,17 +1,12 @@
 package org.andstatus.game2048
 
-import com.soywiz.kmem.isOdd
 import kotlin.random.Random
 
 class Model {
     val history: History = History()
     var board: Board = Board()
 
-    val moveNumber: Int get() {
-        val currentIndex = if(history.historyIndex < 0) history.currentGame.playerMoves.size else history.historyIndex
-        if (currentIndex < 2 ) return 1
-        return (if (currentIndex.isOdd) (currentIndex + 1) else (currentIndex + 2)) / 2
-    }
+    val usersMoveNumber: Int get() = board.usersMoveNumber
     val gameClock get() = board.gameClock
     val bestScore get() = history.bestScore
     val score get() = board.score
@@ -25,6 +20,10 @@ class Model {
 
     fun composerMove(board: Board, isRedo: Boolean = false) =
             listOf(PlayerMove.composerMove(board, gameClock.playedSeconds)).play(isRedo)
+
+    fun createBookmark() {
+        history.createBookmark()
+    }
 
     fun restart(saveCurrent: Boolean): List<PlayerMove> {
         if (saveCurrent && history.currentGame.score > 0) {
@@ -88,7 +87,7 @@ class Model {
     }
 
     private fun calcMove(playerMoveEnum: PlayerMoveEnum): PlayerMove {
-        val board = this.board.copyNow()
+        val board = this.board.forNextMove()
         val moves = mutableListOf<Move>()
         val direction = playerMoveEnum.reverseDirection()
         var square: Square? = board.firstSquareToIterate(direction)
@@ -130,7 +129,7 @@ class Model {
     }
 
     private fun play(playerMove: PlayerMove, isRedo: Boolean = false, oldBoard: Board): Board {
-        var board = if (isRedo) oldBoard.copyWithSeconds(playerMove.seconds) else oldBoard.copyNow()
+        var board = if (isRedo) oldBoard.forPreviousMove(playerMove.seconds) else oldBoard.forNextMove()
         playerMove.moves.forEach { move ->
             board.score += move.points()
             when(move) {
@@ -161,7 +160,7 @@ class Model {
     }
 
     private fun playReversed(playerMove: PlayerMove, oldBoard: Board): Board {
-        var board = oldBoard.copyWithSeconds(playerMove.seconds)
+        var board = oldBoard.forPreviousMove(playerMove.seconds)
         playerMove.moves.asReversed().forEach { move ->
             board.score -= move.points()
             when(move) {

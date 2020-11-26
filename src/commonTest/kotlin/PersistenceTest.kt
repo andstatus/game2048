@@ -30,9 +30,10 @@ class PersistenceTest : ViewsForTesting(log = true) {
                 null, null, null, null,
                 null, null, Piece.N4, null,
                 null, Piece.N2, null, null),
-            score = 2,
-            gameClock = GameClock(125))
-        currentGame = GameRecord.newWithBoardAndMoves(board, listOf(move1, move2, move3))
+                score = 2,
+                gameClock = GameClock(125),
+                moveNumber = 3)
+        currentGame = GameRecord.newWithBoardAndMoves(board, listOf(Board(), board), listOf(move1, move2, move3))
             onUpdate()
     }
 
@@ -56,7 +57,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
             nMovesActual++
         }
 
-        val gameRecord = GameRecord.newWithBoardAndMoves(Board(), moves)
+        val gameRecord = GameRecord.newWithBoardAndMoves(Board(), emptyList(), moves)
         val gameRecordJson = gameRecord.toMap().toJson()
         val message = "nMoves:$nMoves, $gameRecordJson"
 
@@ -73,6 +74,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         val actual = presenter.model.history
         assertEquals(expected.currentGame.playerMoves, actual.currentGame.playerMoves, modelAndViews())
         assertEquals(expected.currentGame.score, actual.currentGame.score, modelAndViews())
+        assertEquals(expected.currentGame.shortRecord.bookmarks.size, actual.currentGame.shortRecord.bookmarks.size, modelAndViews())
         assertEquals(expected.currentGame.toMap().toJson(), actual.currentGame.toMap().toJson(), modelAndViews())
         assertTrue(presenter.canUndo(), modelAndViews())
         assertFalse(presenter.canRedo(), modelAndViews())

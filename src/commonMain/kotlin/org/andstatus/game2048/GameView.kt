@@ -43,12 +43,13 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     var presenter: Presenter by Delegates.notNull()
 
     internal var gameTime: Text by Delegates.notNull()
-    private var moveNumber: Text by Delegates.notNull()
+    private var usersMoveNumber: Text by Delegates.notNull()
     private var score: Text by Delegates.notNull()
     private var bestScore: Text by Delegates.notNull()
 
     private var buttonPointClicked = Point(0, 0)
-    private val buttonXPositions: List<Double>
+    private val buttonXs: List<Double>
+    private val buttonYs: List<Double>
     private val duplicateKeyPressFilter = DuplicateKeyPressFilter()
 
     private var appBarButtons: Map<AppBarButtonsEnum, Container> by Delegates.notNull()
@@ -103,8 +104,11 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         boardWidth = cellSize * settings.boardWidth + allCellMargins
         boardLeft = gameViewLeft + (gameViewWidth - boardWidth) / 2
         boardTop = appBarTop + buttonSize + buttonPadding + buttonSize + buttonPadding
-        buttonXPositions = (0 .. 4).fold(emptyList()) {acc, i ->
+        buttonXs = (0 .. 4).fold(emptyList()) { acc, i ->
             acc + (boardLeft + i * (buttonSize + buttonPadding))
+        }
+        buttonYs = (0 .. 4).fold(emptyList()) { acc, i ->
+            acc + (appBarTop + i * (buttonSize + buttonPadding))
         }
     }
 
@@ -143,6 +147,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         val toCurrentButton = appBarButton("skip_next", presenter::onToCurrentClick)
 
         val watchButton = appBarButton("watch", presenter::onWatchClick)
+        val bookmarkButton = appBarButton("bookmark_border", presenter::onBookmarkClick)
         val pauseButton = appBarButton("pause", presenter::onPauseClick)
         val restartButton = appBarButton("restart", presenter::onRestartClick)
         val undoButton = appBarButton("undo", presenter::onUndoClick)
@@ -159,6 +164,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
             AppBarButtonsEnum.APP_LOGO to appLogo,
             AppBarButtonsEnum.WATCH to watchButton,
+            AppBarButtonsEnum.BOOKMARK to bookmarkButton,
             AppBarButtonsEnum.PAUSE to pauseButton,
             AppBarButtonsEnum.RESTART to restartButton,
             AppBarButtonsEnum.UNDO to undoButton,
@@ -183,9 +189,10 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
     private suspend fun setupGameMenu(): Container = Container().apply {
         val window = this
-        val winTop = appBarTop + buttonSize + buttonPadding // To avoid unintentional click on the list after previous click
+        val winTop = gameViewTop.toDouble()
+        val winLeft = gameViewLeft.toDouble()
         val winWidth = gameViewWidth.toDouble()
-        val winHeight = winTop + (buttonSize + buttonPadding) * 2 - cellMargin
+        val winHeight = winTop + (buttonSize + buttonPadding) * 4 + cellMargin
 
         addUpdater {
             duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
@@ -195,44 +202,50 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
 
         roundRect(winWidth, winHeight, buttonRadius, stroke = Colors.BLACK, strokeThickness = 2.0, fill = Colors.WHITE) {
-            position(gameViewLeft.toDouble(), cellMargin)
+            position(winLeft, winTop)
         }
 
         text(stringResources.text("game_actions"), defaultTextSize, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
-            position(gameViewLeft + winWidth / 2,appBarTop + buttonSize / 2)
+            position(winLeft + winWidth / 2,winTop + buttonSize / 2)
         }
 
-        addButton("delete", buttonXPositions[0], winTop) {
-            presenter.onDeleteGameClick()
+        // Place buttons starting from the second row to avoid unintentional click after previous click
+        addButton("bookmarks", buttonXs[0], buttonYs[1]) {
+            presenter.onBookmarksClick()
             window.removeFromParent()
         }
 
-        addButton("restore", buttonXPositions[2], winTop) {
+        addButton("restore", buttonXs[1], buttonYs[1]) {
             presenter.onRestoreClick()
             window.removeFromParent()
         }
 
-        addButton("restart", buttonXPositions[3], winTop) {
+        addButton("restart", buttonXs[3], buttonYs[1]) {
             presenter.onRestartClick()
             window.removeFromParent()
         }
 
-        addButton("close", buttonXPositions[4], winTop) {
+        addButton("close", buttonXs[4], buttonYs[1]) {
             presenter.onCloseGameMenuClick()
             window.removeFromParent()
         }
 
-        addButton("share", buttonXPositions[2], winTop + buttonPadding + buttonSize) {
+        addButton("share", buttonXs[2], buttonYs[2]) {
             presenter.onShareClick()
             window.removeFromParent()
         }
 
-        addButton("load", buttonXPositions[3], winTop + buttonPadding + buttonSize) {
+        addButton("load", buttonXs[3], buttonYs[2]) {
             presenter.onLoadClick()
             window.removeFromParent()
         }
 
-        addButton("help", buttonXPositions[4], winTop + buttonPadding + buttonSize) {
+        addButton("delete", buttonXs[0], buttonYs[3]) {
+            presenter.onDeleteGameClick()
+            window.removeFromParent()
+        }
+
+        addButton("help", buttonXs[4], buttonYs[3]) {
             presenter.onHelpClick()
             window.removeFromParent()
         }
@@ -278,7 +291,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             positionX(boardLeft + scoreButtonWidth / 2)
             positionY(scoreButtonTop + textYPadding)
         }
-        moveNumber = gameStage.text("", scoreTextSize, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
+        usersMoveNumber = gameStage.text("", scoreTextSize, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
             centerXOn(gameTime)
             positionY(scoreButtonTop + scoreLabelSize + textYPadding)
         }.addTo(gameStage)
@@ -350,11 +363,11 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
         val toShow = appBarButtons.filter { appBarButtonsToShow.contains(it.key) }
 
-        val xPositions = buttonXPositions
+        val xPositions = buttonXs
             .filter { buttonPointClicked.y != appBarTop || it != buttonPointClicked.x }
             .let {
                 if (it.size > toShow.size) {
-                    val unusedX = it.filterNot { x -> toShow.keys.any { buttonXPositions[it.positionIndex] == x}}
+                    val unusedX = it.filterNot { x -> toShow.keys.any { buttonXs[it.positionIndex] == x}}
                             .take(it.size - toShow.size)
                     //it.filterNot { x -> unusedX.contains(x)}
                     it.filterNot(unusedX::contains)
@@ -370,7 +383,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             button.addTo(gameStage)
         }
 
-        moveNumber.text = presenter.model.moveNumber.toString() +
+        usersMoveNumber.text = presenter.model.usersMoveNumber.toString() +
                 (if (playSpeed < 0) " «" else "") +
                 (if (playSpeed > 0) " »" else "") +
                 (if (playSpeed != 0) abs(playSpeed) else "")
@@ -417,13 +430,17 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
     }
 
+    fun showBookmarks(game: GameRecord) {
+        // TODO
+    }
+
     fun showGameHistory(prevGames: List<GameRecord.ShortRecord>) =
         gameStage.launch { setupGameHistory(prevGames).addTo(gameStage) }
 
     private suspend fun setupGameHistory(prevGames: List<GameRecord.ShortRecord>): Container = Container().apply {
         val window = this
         val winLeft = gameViewLeft.toDouble()
-        val winTop = appBarTop
+        val winTop = gameViewTop.toDouble()
         val winWidth = gameViewWidth.toDouble()
         val winHeight = gameViewHeight.toDouble() - winTop
 
@@ -431,14 +448,14 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             position(winLeft, winTop)
         }
 
-        val buttonCloseX = buttonXPositions[4]
+        val buttonCloseX = buttonXs[4]
         container {
             val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
             image(resourcesVfs["assets/close.png"].readBitmap()) {
                 size(buttonSize * 0.6, buttonSize * 0.6)
                 centerOn(background)
             }
-            position(buttonCloseX, winTop + cellMargin)
+            position(buttonCloseX, buttonYs[0])
             customOnClick {
                 Console.log("Close clicked")
                 window.removeFromParent()
@@ -540,7 +557,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
 
         gameStage.launch {
-            addButton("close", buttonXPositions[4], gameViewHeight - buttonSize - cellMargin) {
+            addButton("close", buttonXs[4], gameViewHeight - buttonSize - cellMargin) {
                 presenter.onHelpOkClick()
                 window.removeFromParent()
             }
