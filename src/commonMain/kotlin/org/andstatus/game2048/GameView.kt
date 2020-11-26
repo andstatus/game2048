@@ -436,15 +436,12 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         // TODO
     }
 
-    fun showGameHistory(prevGames: List<GameRecord.ShortRecord>) =
-        gameStage.launch { setupGameHistory(prevGames).addTo(gameStage) }
-
-    private suspend fun setupGameHistory(prevGames: List<GameRecord.ShortRecord>): Container = Container().apply {
+    fun showGameHistory(prevGames: List<GameRecord.ShortRecord>) = gameStage.launch { gameStage.container {
         val window = this
         val winLeft = gameViewLeft.toDouble()
         val winTop = gameViewTop.toDouble()
         val winWidth = gameViewWidth.toDouble()
-        val winHeight = gameViewHeight.toDouble() - winTop
+        val winHeight = gameViewHeight.toDouble()
 
         roundRect(winWidth, winHeight, buttonRadius, stroke = Colors.BLACK, strokeThickness = 2.0, fill = Colors.WHITE) {
             position(winLeft, winTop)
@@ -471,37 +468,31 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
 
         val listTop = winTop + cellMargin + buttonSize + buttonPadding // To avoid unintentional click on the list after previous click
-
         val nItems = prevGames.size
         val itemHeight = buttonSize * 3 / 4
         val textWidth = winWidth * 2
         val textSize = defaultTextSize
+
+        fun Container.rowText(value: String, xPosition: Double) = text(value, textSize,
+                Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+            position(xPosition, itemHeight / 2)
+        }
 
         fun Container.oneRow(index: Int, score: String, lastChanged: String, duration: String, id: String,
                              note: String, action: () -> Unit) {
             container {
                 roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
                 var xPos = cellMargin
-                text(score, textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
-                    position(xPos, itemHeight / 2)
-                }
+                rowText(score, xPos)
                 xPos += itemHeight * 1.6
-                text(lastChanged, textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
-                    position(xPos, itemHeight / 2)
-                }
+                rowText(lastChanged, xPos)
                 xPos += itemHeight * 4.8
-                text(duration, textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
-                    position(xPos, itemHeight / 2)
-                }
+                rowText(duration, xPos)
                 xPos += itemHeight * 2.4
-                text(id, textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
-                    position(xPos, itemHeight / 2)
-                }
+                rowText(id, xPos)
                 if (note.isNotBlank()) {
                     xPos += itemHeight * 1.2
-                    text(note, textSize, Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
-                        position(xPos, itemHeight / 2)
-                    }
+                    rowText(note, xPos)
                 }
 
                 position(0.0, index * (itemHeight + cellMargin))
@@ -536,7 +527,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 presenter.showControls()
             }
         }
-    }
+    }}
 
     fun showHelp(): Container = gameStage.container {
         val window = this
