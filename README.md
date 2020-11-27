@@ -26,18 +26,19 @@ Number 2048 is a good first win…
 ### Features of "2048 Open Fun Game" that are not present in the original game
 
 * Unlimited and animated Undo and Redo.
-* Bookmarks at the interesting game positions.
+* Bookmarks at the interesting game positions. Return to a bookmark and play again from that place.
 * Move number and game duration shown. The time starts when you make a move.
   It stops when you tap Undo or Pause button.
-* "Watch" mode. Auto replay current game forward and backwards with any speed,
+* "Watch" mode. Auto replay current game forward and backwards at any speed,
   stop at any position.
   Switch to "Play" mode from that place and continue playing, overriding history.
-* The Latest games with all their moves and scores are stored in a history and can be replayed.
-* Game menu allows you to delete current game from history, to restart a game
+* The Latest games with all their moves, bookmarks and scores are stored in a history and can be watched.
+  Or you can play them again.
+* Game menu allows you to delete current game from history, to restart a game ("Try again")
   or to restore existing game from a list.
-* When you tap "Restart" button or restore existing game, current game is automatically saved to the history,
+* When you tap "Try again" button or restore existing game, current game is automatically saved to the history,
   so you can review or continue to play it later.
-* Share a game as a file, so it can be loaded and replayed on any other device.
+* Share a game as a file, so it can be loaded, watched and even played on any other device.
 
 <p>
 <img title="Main screen of Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/1.png" height="400" />
@@ -77,7 +78,8 @@ No changes yet, please see [Features](#features).
 ## Android-specific project
 This multiplatform project has additional Android-specific project that is customized to have richer User experience
 on Android platform.
-The project is in the *game2048-android* subfolder and can be opened and run using Android Studio. 
+The project is in the *game2048-android* subfolder and can be opened and run using Android Studio.  
+It consist mostly of configuration files and manifests, and reuses common source code.
 
 ## Running on all platforms
 The implementation uses the [KorGe template project](https://github.com/korlibs/korge-hello-world#readme).
