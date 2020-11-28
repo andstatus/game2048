@@ -226,6 +226,13 @@ class Presenter(private val view: GameView) {
         showControls()
     }
 
+    fun onPauseEvent() {
+        Console.log("onPauseEvent")
+        model.gameClock.stop()
+        showControls()
+        model.history.onUpdate()
+    }
+
     fun onWatchClick() = afterStop {
         logClick("Watch")
         gameMode.mode = GameModeEnum.STOP

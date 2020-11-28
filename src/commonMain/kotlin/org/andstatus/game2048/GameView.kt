@@ -3,6 +3,8 @@ package org.andstatus.game2048
 import com.soywiz.klogger.Console
 import com.soywiz.klogger.log
 import com.soywiz.korev.Key
+import com.soywiz.korev.PauseEvent
+import com.soywiz.korev.addEventListener
 import com.soywiz.korge.input.SwipeDirection
 import com.soywiz.korge.input.onClick
 import com.soywiz.korge.input.onOver
@@ -68,7 +70,9 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             view.setupAppBar()
             view.setupScoreBar()
             view.boardControls = view.setupBoardControls()
+
             view.presenter.onAppEntry()
+            stage.gameWindow.addEventListener<PauseEvent> { view.presenter.onPauseEvent() }
             return view
         }
     }

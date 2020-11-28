@@ -59,8 +59,8 @@ class History() {
     fun onUpdate(): History {
         if (bestScore < currentGame.score) {
             bestScore = currentGame.score
+            settings.storage[keyBest] = bestScore.toString()
         }
-        settings.storage[keyBest] = bestScore.toString()
         settings.storage[keyCurrentGame] = currentGame.toMap().toJson()
         return this
     }
@@ -71,8 +71,8 @@ class History() {
         val isNew = currentGame.id <= 0
         val idToStore = if (isNew) idForNewGame().also {
                 currentGame.id = it
-                onUpdate()
             } else currentGame.id
+        onUpdate()
         settings.storage[keyGame + idToStore] = currentGame.toMap().toJson()
         Console.log((if (isNew) "New" else "Old") + " game saved $currentGame")
         loadPrevGames()
@@ -142,7 +142,6 @@ class History() {
             }
         }
         historyIndex = -1
-        onUpdate()
     }
 
     fun createBookmark() {
