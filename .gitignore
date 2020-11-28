@@ -7,3 +7,4 @@
 *.storage
 *.json
 local.properties
+/korge.keystore
