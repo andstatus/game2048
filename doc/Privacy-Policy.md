@@ -1,12 +1,12 @@
 ## Information collection
 
 2048 Open Fun Game app stores on the Android device in the internal memory of the app recent Game Records. 
-Each Game Record includes:
+Each Game Record contains:
 * Date and time, when the game started.
-* Total time played.
 * All moves during the game. Including moves by a Computer and by a User.
 * Final game board: placements of blocks on the board, current score, 
-  date and time of the last change.
+  date and time of the last change, total time played (excluding pauses).
+* Bookmarks: Each bookmark contains the same info as the "Final game board".  
 
 A User can see a list of stored Game Records and delete them one by one.
 
