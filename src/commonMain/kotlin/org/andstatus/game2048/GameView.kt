@@ -200,6 +200,10 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                         text(stringResources.text(buttonEnum.labelKey), defaultTextSize, Colors.BLACK, font,
                                 TextAlignment.MIDDLE_LEFT) {
                             position(buttonXs[1], buttonYs[yInd] + buttonSize / 2)
+                            customOnClick {
+                                handler()
+                                window.removeFromParent()
+                            }
                         }
                     }
                 }
