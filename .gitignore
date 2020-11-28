@@ -1,6 +1,8 @@
 /.gradle
 /.idea
 /build
+/src/main/res/drawable
+/src/main/res/mipmap-mdpi
 *.iml
 *.storage
 *.json

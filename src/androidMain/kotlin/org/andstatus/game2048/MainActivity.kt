@@ -1,4 +1,5 @@
 package org.andstatus.game2048
+
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -14,7 +15,7 @@ class MainActivity : KorgwActivity() {
 
 	override suspend fun activityMain() {
 		mainActivity = this
-		main()
+        main()
 		Console.log("game2048.main ended")
 		mainActivity = null
 		finish()

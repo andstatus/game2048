@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stub for building from the root project -->
+<resources>
+  <string name="app_name">2048 Multiplatform build</string>
+</resources>

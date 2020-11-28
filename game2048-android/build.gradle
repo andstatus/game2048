@@ -7,7 +7,7 @@ buildscript {
 	}
     dependencies {
 		classpath 'com.android.tools.build:gradle:4.1.1';
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.20-RC' }
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.20' }
 }
 repositories {
     mavenLocal()
@@ -37,9 +37,9 @@ android {
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/NOTICE.txt'
         exclude 'META-INF/notice.txt'
-        exclude 'META-INF/*.kotlin_module'
         exclude 'META-INF/LGPL*'
         exclude 'META-INF/AL2.0'
+        exclude 'META-INF/*.kotlin_module'
         exclude '**/*.kotlin_metadata'
         exclude '**/*.kotlin_builtins'
     }
@@ -63,25 +63,32 @@ android {
     }
     sourceSets {
         main {
-            java.srcDirs += ["../src/commonMain/kotlin", "../src/androidMain/kotlin"]
-            assets.srcDirs += ["../src/commonMain/resources", "../build/korgeProcessedResources/metadata/main"]
-            res.srcDirs  += ["../src/commonMain/resources/res"]
+            manifest.srcFile '../src/main/AndroidManifest.xml'
+            java.srcDirs += [
+                    "../src/main/java",
+                    "../src/commonMain/kotlin",
+                    "../src/androidMain/kotlin"]
+            assets.srcDirs += [
+                    "../src/commonMain/resources",
+                    "../build/korgeProcessedResources/metadata/main"]
+            res.srcDirs  += [
+                    "../src/commonMain/resources/res"]
         }
     }
 }
 dependencies {
-	implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.20-RC'
-	implementation 'com.soywiz.korlibs.korge:korge-android:2.0.0-rc3'
-	implementation 'com.soywiz.korlibs.klock:klock-android:2.0.0-rc3'
-	implementation 'com.soywiz.korlibs.korau:korau-android:2.0.0-rc3'
-	implementation 'com.soywiz.korlibs.korma:korma-android:2.0.0-rc3'
-	implementation 'com.soywiz.korlibs.korim:korim-android:2.0.0-rc3'
-	implementation 'com.soywiz.korlibs.korgw:korgw-android:2.0.0-rc3'
-	implementation 'com.soywiz.korlibs.krypto:krypto-android:2.0.0-rc3'
-	implementation 'com.soywiz.korlibs.korinject:korinject-android:2.0.0-rc3'
-	implementation 'com.soywiz.korlibs.klogger:klogger-android:2.0.0-rc3'
-	implementation 'com.soywiz.korlibs.kds:kds-android:2.0.0-rc3'
-	implementation 'com.soywiz.korlibs.korte:korte-android:2.0.0-rc3'
-	implementation 'com.soywiz.korlibs.korio:korio-android:2.0.0-rc3'
-	implementation 'com.soywiz.korlibs.kmem:kmem-android:2.0.0-rc3'
+	implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.20'
+	implementation 'com.soywiz.korlibs.korge:korge-android:2.0.1'
+	implementation 'com.soywiz.korlibs.klock:klock-android:2.0.0'
+	implementation 'com.soywiz.korlibs.korau:korau-android:2.0.0'
+	implementation 'com.soywiz.korlibs.korma:korma-android:2.0.0'
+	implementation 'com.soywiz.korlibs.korim:korim-android:2.0.0'
+	implementation 'com.soywiz.korlibs.korgw:korgw-android:2.0.0'
+	implementation 'com.soywiz.korlibs.krypto:krypto-android:2.0.0'
+	implementation 'com.soywiz.korlibs.korinject:korinject-android:2.0.0'
+	implementation 'com.soywiz.korlibs.klogger:klogger-android:2.0.0'
+	implementation 'com.soywiz.korlibs.kds:kds-android:2.0.0'
+	implementation 'com.soywiz.korlibs.korte:korte-android:2.0.0'
+	implementation 'com.soywiz.korlibs.korio:korio-android:2.0.0'
+	implementation 'com.soywiz.korlibs.kmem:kmem-android:2.0.0'
 }
