@@ -1,5 +1,7 @@
 package org.andstatus.game2048
 
+import com.soywiz.klock.DateTimeTz
+import com.soywiz.klock.weeks
 import com.soywiz.klogger.Console
 import com.soywiz.klogger.log
 import com.soywiz.korio.serialization.json.toJson
@@ -8,7 +10,9 @@ class History() {
     private val keyBest = "best"
     private val keyCurrentGame = "current"
     private val keyGame = "game"
-    private val gameIdsRange = 1..200
+
+    private val gameIdsRange = 1..60
+    private val maxOlderGames = 30
 
     // 1. Info on previous games
     var bestScore: Int = 0
@@ -65,20 +69,30 @@ class History() {
         if (currentGame.score < 1) return
 
         val isNew = currentGame.id <= 0
-        val idToStore = if (isNew){
-            (gameIdsRange.find { id -> prevGames.none { it.id == id }}
-                    ?: prevGames.minByOrNull { it.finalBoard.dateTime }?.id
-                    ?: gameIdsRange.first)
-                    .also {
-                        currentGame.id = it
-                        onUpdate()
-                    }
-        } else {
-            currentGame.id
-        }
+        val idToStore = if (isNew) idForNewGame().also {
+                currentGame.id = it
+                onUpdate()
+            } else currentGame.id
         settings.storage[keyGame + idToStore] = currentGame.toMap().toJson()
         Console.log((if (isNew) "New" else "Old") + " game saved $currentGame")
         loadPrevGames()
+    }
+
+    private fun idForNewGame(): Int {
+        val maxGames = gameIdsRange.last
+        if (prevGames.size > maxOlderGames) {
+            val keepAfter = DateTimeTz.nowLocal().minus(1.weeks)
+            val olderGames = prevGames.filter { it.finalBoard.dateTime < keepAfter }
+            val id = when {
+                olderGames.size > 20 -> olderGames.minByOrNull { it.finalBoard.score }?.id
+                prevGames.size >= maxGames -> prevGames.minByOrNull { it.finalBoard.score }?.id
+                else -> null
+            }
+            if (id != null) return id
+        }
+        return (gameIdsRange.find { id -> prevGames.none { it.id == id } }
+                ?: prevGames.minByOrNull { it.finalBoard.dateTime }?.id
+                ?: gameIdsRange.first)
     }
 
     fun deleteCurrent() {
