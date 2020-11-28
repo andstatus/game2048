@@ -41,13 +41,13 @@ Number 2048 is a good first win…
 * Share a game as a file, so it can be loaded, watched and even played on any other device.
 
 <p>
-<img title="Main screen of Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/1.png" height="400" />
+<img title="Main screen of Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/1.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Game menu of Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/2.png" height="400" />
+<img title="Game menu of Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/2.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Game History of Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/3.png" height="400" />
+<img title="Game History of Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/3.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Game Over in Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/4.png" height="400" />
+<img title="Game Over in Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/4.png" height="400" />
 </p>
 
 If you found the project useful, please 
