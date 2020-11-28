@@ -14,8 +14,6 @@ import com.soywiz.korge.ui.TextSkin
 import com.soywiz.korge.ui.uiScrollableArea
 import com.soywiz.korge.ui.uiText
 import com.soywiz.korge.view.*
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.Font
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korim.format.readBitmap
@@ -121,7 +119,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
         gameStage.graphics {
             position(boardLeft, boardTop)
-            fill(Colors["#cec0b2"]) {
+            fill(gameColors.cellBackground) {
                 for (x in 0 until settings.boardWidth) {
                     for (y in 0 until settings.boardHeight) {
                         roundRect(cellMargin + (cellMargin + cellSize) * x, cellMargin + (cellMargin + cellSize) * y,
@@ -133,14 +131,9 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     private suspend fun setupAppBar() {
-        val appLogo = Container().apply {
-            roundRect(buttonSize, buttonSize, buttonRadius, fill = RGBA(237, 196, 3))
-            text("2048", cellSize * 0.4, Colors.WHITE, font, TextAlignment.MIDDLE_CENTER) {
-                position(buttonSize / 2, buttonSize / 2)
-            }
+        val appLogo = Block(Piece.N2048, font, buttonSize).apply {
             positionY(appBarTop)
         }
-
         val playButton = appBarButton("play", presenter::onPlayClick)
         val toStartButton = appBarButton("skip_previous", presenter::onToStartClick)
         val backwardsButton = appBarButton("backwards", presenter::onBackwardsClick)
@@ -201,8 +194,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                     position(buttonXs[0], buttonYs[yInd])
                     addTo(window)
                     window.container {
-                        text(stringResources.text(buttonEnum.labelKey), defaultTextSize, Colors.BLACK, font,
-                                TextAlignment.MIDDLE_LEFT) {
+                        text(stringResources.text(buttonEnum.labelKey), defaultTextSize, gameColors.labelText,
+                                font, TextAlignment.MIDDLE_LEFT) {
                             position(buttonXs[1], buttonYs[yInd] + buttonSize / 2)
                             customOnClick {
                                 handler()
@@ -246,11 +239,11 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         val scoreLabelSize = cellSize * 0.30
         val scoreTextSize = cellSize * 0.5
 
-        gameTime = gameStage.text("00:00:00", scoreLabelSize, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
+        gameTime = gameStage.text("00:00:00", scoreLabelSize, gameColors.labelText, font, TextAlignment.MIDDLE_CENTER) {
             positionX(boardLeft + scoreButtonWidth / 2)
             positionY(scoreButtonTop + textYPadding)
         }
-        usersMoveNumber = gameStage.text("", scoreTextSize, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
+        usersMoveNumber = gameStage.text("", scoreTextSize, gameColors.labelText, font, TextAlignment.MIDDLE_CENTER) {
             centerXOn(gameTime)
             positionY(scoreButtonTop + scoreLabelSize + textYPadding)
         }.addTo(gameStage)
@@ -258,12 +251,12 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         val bgScore = gameStage.roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
             position(boardLeft + (scoreButtonWidth + buttonPadding), scoreButtonTop)
         }
-        gameStage.text(stringResources.text("score_upper"), scoreLabelSize, RGBA(239, 226, 210), font,
+        gameStage.text(stringResources.text("score_upper"), scoreLabelSize, gameColors.buttonLabelText, font,
                 TextAlignment.MIDDLE_CENTER) {
             positionX(bgScore.pos.x + scoreButtonWidth / 2)
             positionY(scoreButtonTop + textYPadding)
         }
-        score = gameStage.text("", scoreTextSize, Colors.WHITE, font, TextAlignment.MIDDLE_CENTER) {
+        score = gameStage.text("", scoreTextSize, gameColors.buttonText, font, TextAlignment.MIDDLE_CENTER) {
             centerXOn(bgScore)
             positionY(scoreButtonTop + scoreLabelSize + textYPadding)
         }
@@ -271,19 +264,19 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         val bgBest = gameStage.roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
             position(boardLeft + (scoreButtonWidth + buttonPadding) * 2, scoreButtonTop)
         }
-        gameStage.text(stringResources.text("best"), scoreLabelSize, RGBA(239, 226, 210), font,
+        gameStage.text(stringResources.text("best"), scoreLabelSize, gameColors.buttonLabelText, font,
                 TextAlignment.MIDDLE_CENTER) {
             positionX(bgBest.pos.x + scoreButtonWidth / 2)
             positionY(scoreButtonTop + textYPadding)
         }
-        bestScore = gameStage.text("", scoreTextSize, Colors.WHITE, font, TextAlignment.MIDDLE_CENTER) {
+        bestScore = gameStage.text("", scoreTextSize, gameColors.buttonText, font, TextAlignment.MIDDLE_CENTER) {
             centerXOn(bgBest)
             positionY(scoreButtonTop + scoreLabelSize + textYPadding)
         }
     }
 
     private fun setupBoardControls(): SolidRect {
-        val boardView = SolidRect(boardWidth, boardWidth, Colors.TRANSPARENT_WHITE)
+        val boardView = SolidRect(boardWidth, boardWidth, gameColors.transparent)
                 .addTo(gameStage).position(boardLeft, boardTop)
 
         boardView.onSwipe(20.0) {
@@ -353,21 +346,21 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
     fun showGameOver(): Container = gameStage.container {
         val window = this
-        val format = TextFormat(RGBA(0, 0, 0), defaultTextSize.toInt(), font)
+        val format = TextFormat(gameColors.labelText, defaultTextSize.toInt(), font)
         val skin = TextSkin(
                 normal = format,
-                over = format.copy(RGBA(90, 90, 90)),
-                down = format.copy(RGBA(120, 120, 120))
+                over = format.copy(gameColors.labelTextOver),
+                down = format.copy(gameColors.labelTextDown)
         )
 
         position(boardLeft, boardTop)
 
         graphics {
-            fill(Colors.WHITE, 0.2) {
+            fill(gameColors.gameOverBackground) {
                 roundRect(0.0, 0.0, boardWidth, boardWidth, buttonRadius)
             }
         }
-        text(stringResources.text("game_over"), defaultTextSize, Colors.BLACK, font, TextAlignment.MIDDLE_CENTER) {
+        text(stringResources.text("game_over"), defaultTextSize, gameColors.labelText, font, TextAlignment.MIDDLE_CENTER) {
             position(boardWidth / 2, (boardWidth - textSize) / 2)
         }
         uiText(stringResources.text("try_again"), 120.0, 35.0, skin) {
@@ -395,7 +388,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         val textSize = defaultTextSize
 
         fun Container.rowText(value: String, xPosition: Double) = text(value, textSize,
-                Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+                gameColors.buttonText, font, TextAlignment.MIDDLE_LEFT) {
             position(xPosition, itemHeight / 2)
         }
 
@@ -456,7 +449,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         val textSize = defaultTextSize
 
         fun Container.rowText(value: String, xPosition: Double) = text(value, textSize,
-                Colors.WHITE, font, TextAlignment.MIDDLE_LEFT) {
+                gameColors.buttonText, font, TextAlignment.MIDDLE_LEFT) {
             position(xPosition, itemHeight / 2)
         }
 
@@ -505,7 +498,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     fun showHelp(): Container = showWindow("help_title") {
-        text(stringResources.text("help"), defaultTextSize, Colors.BLACK, font, TextAlignment.TOP_LEFT) {
+        text(stringResources.text("help"), defaultTextSize, gameColors.labelText, font, TextAlignment.TOP_LEFT) {
             position(cellMargin, buttonSize + buttonPadding + cellMargin)
         }
     }
@@ -518,7 +511,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         val winHeight = gameView.gameViewHeight.toDouble()
 
         suspend fun Container.show() {
-            roundRect(winWidth, winHeight, buttonRadius, stroke = Colors.BLACK, strokeThickness = 2.0, fill = Colors.WHITE) {
+            roundRect(winWidth, winHeight, buttonRadius, stroke = gameColors.myWindowBorder, strokeThickness = 2.0,
+                    fill = gameColors.myWindowBackground) {
                 position(winLeft, winTop)
             }
 
@@ -536,7 +530,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 }.addTo(window)
 
                 if (titleKey.isNotEmpty()) {
-                    text(stringResources.text(titleKey), defaultTextSize, Colors.BLACK, font,
+                    text(stringResources.text(titleKey), defaultTextSize, gameColors.labelText, font,
                             TextAlignment.MIDDLE_CENTER) {
                         position((winLeft + xPos - cellMargin) / 2, winTop + cellMargin + buttonSize / 2)
                     }
