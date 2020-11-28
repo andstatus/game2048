@@ -39,6 +39,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
     private val buttonSize : Double
     var font: Font by Delegates.notNull()
+    var gameColors: ColorTheme by Delegates.notNull()
 
     var presenter: Presenter by Delegates.notNull()
 
@@ -63,6 +64,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
             val view = GameView(stage, stringResources, animateViews)
             view.font = resourcesVfs["assets/clear_sans.fnt"].readBitmapFont()
+            view.gameColors = ColorTheme.load()
             view.presenter = Presenter(view)
             view.setupStageBackground()
             view.setupAppBar()
@@ -131,7 +133,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     private suspend fun setupAppBar() {
-        val appLogo = Block(Piece.N2048, font, buttonSize).apply {
+        val appLogo = Block(Piece.N2048, this, buttonSize).apply {
             positionY(appBarTop)
         }
         val playButton = appBarButton("play", presenter::onPlayClick)
@@ -511,8 +513,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         val winHeight = gameView.gameViewHeight.toDouble()
 
         suspend fun Container.show() {
-            roundRect(winWidth, winHeight, buttonRadius, stroke = gameColors.myWindowBorder, strokeThickness = 2.0,
-                    fill = gameColors.myWindowBackground) {
+            roundRect(winWidth, winHeight, buttonRadius, stroke = gameView.gameColors.myWindowBorder, strokeThickness = 2.0,
+                    fill = gameView.gameColors.myWindowBackground) {
                 position(winLeft, winTop)
             }
 
