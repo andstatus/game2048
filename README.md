@@ -76,10 +76,10 @@ No changes yet, please see [Features](#features).
 # How to run the project
 
 ## Android-specific project
-This multiplatform project has additional Android-specific project that is customized to have richer User experience
-on Android platform.
+This multiplatform project has additional Android-specific project that is customized to have
+richer User experience on Android platform.
 The project is in the *game2048-android* subfolder and can be opened and run using Android Studio.  
-It consist mostly of configuration files and manifests, and reuses common source code.
+It consists of build configuration files, and it reuses common source code.
 
 ## Running on all platforms
 The implementation uses the [KorGe template project](https://github.com/korlibs/korge-hello-world#readme).
