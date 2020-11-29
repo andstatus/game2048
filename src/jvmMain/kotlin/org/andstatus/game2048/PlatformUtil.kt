@@ -8,7 +8,7 @@ const val platformSourceFolder = "jvmMain"
 
 actual val gameWindowSize: SizeInt get() = defaultGameWindowSize
 
-actual val isDarkThemeOn: Boolean = false
+actual val isDarkThemeOn: Boolean = System.getProperty("user.color.theme") == "dark"
 
 actual val defaultLanguage: String get() = java.util.Locale.getDefault().language
 
