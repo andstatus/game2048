@@ -26,6 +26,7 @@ Number 2048 is a good first win…
 ### Features of "2048 Open Fun Game" that are not present in the original game
 
 * Unlimited and animated Undo and Redo.
+* Dark theme for Android 9+. It turns on when system-wide "Dark theme" is turned on in device settings.
 * Bookmarks at the interesting game positions. Return to a bookmark and play again from that place.
 * Move number and game duration shown. The time starts when you make a move.
   It stops when you tap Undo or Pause button.
@@ -43,11 +44,13 @@ Number 2048 is a good first win…
 <p>
 <img title="Main screen of Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/1.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Game menu of Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/2.png" height="400" />
+<img title="Dark Theme of Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/2.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Game History of Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/3.png" height="400" />
+<img title="Game menu of Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/3.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Game Over in Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/4.png" height="400" />
+<img title="Game History of Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/4.png" height="400" />
+<img src="doc/images/5x5.png" width="5" />
+<img title="Game Over in Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/5.png" height="400" />
 </p>
 
 If you found the project useful, please 
@@ -81,7 +84,17 @@ richer User experience on Android platform.
 The project is in the *game2048-android* subfolder and can be opened and run using Android Studio.  
 It consists of build configuration files, and it reuses common source code.
 
-## Running on all platforms
+## JVM target
+Use "jvmRun" Gradle task to start the game as a Java application (i.e. no need for Android device or emulator).
+
+Additional arguments:
+
+ Argument | Description
+----------|-------------
+-Duser.color.theme=dark | switch to the Dark Theme
+-Duser.language=ru      | switch to Russian locale
+
+# Running instructions from Korge template project
 The implementation uses the [KorGe template project](https://github.com/korlibs/korge-hello-world#readme).
 Below are the compiling and running instructions taken from the template.
 

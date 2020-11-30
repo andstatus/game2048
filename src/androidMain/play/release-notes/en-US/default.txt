@@ -1,2 +1,1 @@
-v.1.1 During the game, you can add bookmarks in those positions where you intend to return.
-For example, in order to replay from this position.
+v.1.2 Dark theme for Android 9+. It turns on when system-wide "Dark theme" is turned on in device settings.

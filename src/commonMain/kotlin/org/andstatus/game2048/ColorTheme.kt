@@ -8,14 +8,14 @@ val gameDefaultBackgroundColor = Colors["#fdf7f0"]
 sealed class ColorTheme {
     open val stageBackground = gameDefaultBackgroundColor
     open val buttonBackground = Colors["#b9aea0"]
-    open val buttonLabelText = RGBA(239, 226, 210)
+    open val buttonLabelText = Colors["#efe2d2"]
     open val buttonText = Colors.WHITE
     open val cellBackground = Colors["#cec0b2"]
 
     open val labelText = Colors.BLACK
-    open val labelTextOver = RGBA(90, 90, 90)
-    open val labelTextDown = RGBA(120, 120, 120)
-    open val gameOverBackground = RGBA(255, 255, 255, 51)
+    open val labelTextOver = Colors["#5a5a5a"]
+    open val labelTextDown = Colors["#787878"]
+    open val gameOverBackground = Colors["#ffffff33"]
 
     open val myWindowBackground = Colors.WHITE
     open val myWindowBorder = Colors.BLACK
@@ -23,23 +23,23 @@ sealed class ColorTheme {
     open val transparent = Colors.TRANSPARENT_WHITE
 
     open fun pieceBackground(piece: Piece): RGBA = when (piece) {
-        Piece.N2 -> RGBA(240, 228, 218)
-        Piece.N4 -> RGBA(236, 224, 201)
-        Piece.N8 -> RGBA(255, 178, 120)
-        Piece.N16 -> RGBA(254, 150, 92)
-        Piece.N32 -> RGBA(247, 123, 97)
-        Piece.N64 -> RGBA(235, 88, 55)
-        Piece.N128 -> RGBA(236, 220, 146)
-        Piece.N256 -> RGBA(240, 212, 121)
-        Piece.N512 -> RGBA(244, 206, 96)
-        Piece.N1024 -> RGBA(248, 200, 71)
-        Piece.N2048 -> RGBA(256, 194, 46)
-        Piece.N4096 -> RGBA(104, 130, 249)
-        Piece.N8192 -> RGBA(51, 85, 247)
-        Piece.N16384 -> RGBA(10, 47, 222)
-        Piece.N32768 -> RGBA(9, 43, 202)
-        Piece.N65536 -> RGBA(181, 37, 188)
-        Piece.N131972 -> RGBA(166, 34, 172)
+        Piece.N2 -> Colors["#f0e4da"]
+        Piece.N4 -> Colors["#ece0c9"]
+        Piece.N8 -> Colors["#ffb278"]
+        Piece.N16 -> Colors["#fe965c"]
+        Piece.N32 -> Colors["#f77b61"]
+        Piece.N64 -> Colors["#eb5837"]
+        Piece.N128 -> Colors["#ecdc92"]
+        Piece.N256 -> Colors["#f0d479"]
+        Piece.N512 -> Colors["#f4ce60"]
+        Piece.N1024 -> Colors["#f8c847"]
+        Piece.N2048 -> Colors["#ffc22e"]
+        Piece.N4096 -> Colors["#6882f9"]
+        Piece.N8192 -> Colors["#3355f7"]
+        Piece.N16384 -> Colors["#0a2f16"]
+        Piece.N32768 -> Colors["#092bca"]
+        Piece.N65536 -> Colors["#b525bc"]
+        Piece.N131972 -> Colors["#a62248"]
     }
 
     open fun pieceText(piece: Piece) = when (piece) {
@@ -55,44 +55,45 @@ sealed class ColorTheme {
 class LightTheme: ColorTheme()
 
 class DarkTheme: ColorTheme() {
-    override val stageBackground = gameDefaultBackgroundColor
-    override val buttonBackground = Colors["#b9aea0"]
-    override val buttonLabelText = RGBA(239, 226, 210)
+    override val stageBackground = Colors.BLACK
+    override val buttonBackground = Colors["#212121"]
+    override val buttonLabelText = Colors["#efe2d2"]
     override val buttonText = Colors.WHITE
-    override val cellBackground = Colors["#cec0b2"]
+    override val cellBackground = Colors["#424242"]
 
-    override val labelText = Colors.BLACK
-    override val labelTextOver = RGBA(90, 90, 90)
-    override val labelTextDown = RGBA(120, 120, 120)
-    override val gameOverBackground = RGBA(255, 255, 255, 51)
+    override val labelText = Colors.WHITE
+    override val labelTextOver = Colors["#cacaca"]
+    override val labelTextDown = Colors["#dedede"]
+    override val gameOverBackground = Colors["#00000033"]
 
-    override val myWindowBackground = Colors.WHITE
-    override val myWindowBorder = Colors.BLACK
+    override val myWindowBackground = Colors.BLACK
+    override val myWindowBorder = Colors.DARKGRAY
 
     override val transparent = Colors.TRANSPARENT_WHITE
 
     override fun pieceBackground(piece: Piece): RGBA = when (piece) {
-        Piece.N2 -> RGBA(240, 228, 218)
-        Piece.N4 -> RGBA(236, 224, 201)
-        Piece.N8 -> RGBA(255, 178, 120)
-        Piece.N16 -> RGBA(254, 150, 92)
-        Piece.N32 -> RGBA(247, 123, 97)
-        Piece.N64 -> RGBA(235, 88, 55)
-        Piece.N128 -> RGBA(236, 220, 146)
-        Piece.N256 -> RGBA(240, 212, 121)
-        Piece.N512 -> RGBA(244, 206, 96)
-        Piece.N1024 -> RGBA(248, 200, 71)
-        Piece.N2048 -> RGBA(256, 194, 46)
-        Piece.N4096 -> RGBA(104, 130, 249)
-        Piece.N8192 -> RGBA(51, 85, 247)
-        Piece.N16384 -> RGBA(10, 47, 222)
-        Piece.N32768 -> RGBA(9, 43, 202)
-        Piece.N65536 -> RGBA(181, 37, 188)
-        Piece.N131972 -> RGBA(166, 34, 172)
+        Piece.N2 -> Colors["#a3abc2"]
+        Piece.N4 -> Colors["#5f70a6"]
+        Piece.N8 -> Colors["#395094"]
+        Piece.N16 -> Colors["#273d7e"]
+        Piece.N32 -> Colors["#a3bac2"]
+        Piece.N64 -> Colors["#678a95"]
+        Piece.N128 -> Colors["#426772"]
+        Piece.N256 -> Colors["#274149"]
+        Piece.N512 -> Colors["#98c5bb"]
+        Piece.N1024 -> Colors["#679c8f"]
+        Piece.N2048 -> Colors["#00604c"]
+        Piece.N4096 -> Colors["#003f2c"]
+        Piece.N8192 -> Colors["#c2aba3"]
+        Piece.N16384 -> Colors["#937063"]
+        Piece.N32768 -> Colors["#734e41"]
+        Piece.N65536 -> Colors["#54352f"]
+        Piece.N131972 -> Colors["#442824"]
     }
 
     override fun pieceText(piece: Piece) = when (piece) {
-        Piece.N2, Piece.N4 -> Colors.BLACK
+        Piece.N2, Piece.N4, Piece.N32, Piece.N64, Piece.N512, Piece.N1024,
+        Piece.N8192, Piece.N16384, Piece.N131972 -> Colors.BLACK
         else -> Colors.WHITE
     }
 }
