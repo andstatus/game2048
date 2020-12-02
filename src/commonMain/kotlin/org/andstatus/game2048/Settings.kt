@@ -1,8 +1,6 @@
 package org.andstatus.game2048
 
 import com.soywiz.klock.DateTime
-import com.soywiz.klogger.Console
-import com.soywiz.klogger.log
 import com.soywiz.korge.service.storage.NativeStorage
 import com.soywiz.korge.view.Stage
 import com.soywiz.korio.util.OS
@@ -60,7 +58,7 @@ fun getStorage(stage: Stage): NativeStorage {
     val storage = NativeStorage(stage.views)
     val keyOpened = "opened"
 
-    Console.log("Platform:${OS.platformName}, \nStorage " +
+    myLog("Platform:${OS.platformName}, \nStorage " +
             (storage.getOrNull(keyOpened)?.let { "last opened: $it" } ?: "is new") +
             "\nStorage keys: ${storage.keys().sorted()}"
     )

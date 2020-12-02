@@ -1,7 +1,5 @@
 package org.andstatus.game2048
 
-import com.soywiz.klogger.Console
-import com.soywiz.klogger.log
 import com.soywiz.korev.Key
 import com.soywiz.korev.PauseEvent
 import com.soywiz.korev.addEventListener
@@ -57,14 +55,14 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private var boardControls: SolidRect by Delegates.notNull()
 
     companion object {
-        suspend fun appEntry(stage: Stage, animateViews: Boolean): GameView {
+        suspend fun initialize(stage: Stage, animateViews: Boolean): GameView {
             loadSettings(stage)
             val stringResources = StringResources.load(defaultLanguage)
             stage.gameWindow.title = stringResources.text("app_name")
 
             val view = GameView(stage, stringResources, animateViews)
             view.font = resourcesVfs["assets/clear_sans.fnt"].readBitmapFont()
-            view.gameColors = ColorTheme.load()
+            view.gameColors = ColorTheme.load(stage)
             view.presenter = Presenter(view)
             view.setupStageBackground()
             view.setupAppBar()
@@ -89,7 +87,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             gameViewLeft = (gameStage.views.virtualWidth - gameViewWidth) / 2
             gameViewTop = 0
         }
-        Console.log("Window:${gameWindowSize}" +
+        myLog("Window:${gameStage.gameWindowSize}" +
                 " -> Virtual:${gameStage.views.virtualWidth}x${gameStage.views.virtualHeight}" +
                 " -> Game:${gameViewWidth}x$gameViewHeight")
 
@@ -222,7 +220,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             onOver {
                 duplicateKeyPressFilter.onSwipeOrOver {
                     val pos1 = this.pos.copy()
-                    Console.log("onOver $buttonPointClicked -> $pos1")
+                    myLog("onOver $buttonPointClicked -> $pos1")
                     buttonPointClicked = pos1
                     handler()
                 }
@@ -300,8 +298,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             ifKey(Key.SPACE) { presenter.onPauseClick() }
             ifKey(Key.M) { presenter.onGameMenuClick() }
             ifKey(Key.BACKSPACE) {
-                Console.log("Closing game window...")
-                gameStage.gameWindow.close()
+                presenter.onCloseGameWindowClick()
             }
         }
 
@@ -321,13 +318,10 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 if (it.size > toShow.size) {
                     val unusedX = it.filterNot { x -> toShow.keys.any { buttonXs[it.positionIndex] == x}}
                             .take(it.size - toShow.size)
-                    //it.filterNot { x -> unusedX.contains(x)}
                     it.filterNot(unusedX::contains)
                 }
                 else it
             }
-
-        Console.log("Last clicked:$buttonPointClicked, Button positions:${xPositions} y:$appBarTop")
 
         toShow.values.zip(xPositions)
         .forEach { (button, x) ->
@@ -524,9 +518,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                         .filter { buttonPointClicked.x != xPos || it != buttonPointClicked.y }
                         .first()
                 barButton("close") {
-                    Console.log("Close clicked")
                     window.removeFromParent()
-                    presenter.showControls()
+                    presenter.onCloseMyWindowClick()
                 }.apply {
                     position(xPos, yPos)
                 }.addTo(window)

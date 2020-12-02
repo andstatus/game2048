@@ -6,28 +6,34 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.util.DisplayMetrics
 import android.view.WindowManager
-import com.soywiz.klogger.Console
-import com.soywiz.klogger.log
+import com.soywiz.korge.view.Stage
+import com.soywiz.korio.android.AndroidCoroutineContext
 import com.soywiz.korio.lang.substr
 import com.soywiz.korma.geom.SizeInt
-import org.andstatus.game2048.MainActivity.Companion.mainActivity
 import org.andstatus.game2048.data.FileProvider
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
+import kotlin.coroutines.CoroutineContext
 
 const val platformSourceFolder = "androidMain"
 
-actual val gameWindowSize: SizeInt get() =
+actual val Stage.gameWindowSize: SizeInt get() =
     mainActivity?.let { context ->
         val metrics = DisplayMetrics()
         (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getRealMetrics(metrics)
         return SizeInt(metrics.widthPixels, metrics.heightPixels)
     } ?: defaultGameWindowSize
 
-actual val isDarkThemeOn: Boolean get() = mainActivity?.let { context ->
+private val Stage.mainActivity: MainActivity? get()=
+    coroutineContext.mainActivity
+
+private val CoroutineContext.mainActivity: MainActivity? get()=
+    get(AndroidCoroutineContext.Key)?.context as MainActivity?
+
+actual val CoroutineContext.isDarkThemeOn: Boolean get() = mainActivity?.let { context ->
     val configuration = context.applicationContext.resources.configuration
     val currentNightMode = configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
     return currentNightMode == Configuration.UI_MODE_NIGHT_YES
@@ -35,8 +41,8 @@ actual val isDarkThemeOn: Boolean get() = mainActivity?.let { context ->
 
 actual val defaultLanguage: String get() = java.util.Locale.getDefault().language
 
-actual fun shareText(actionTitle: String, fileName: String, value: String) {
-    Console.log("$platformSourceFolder, shareText '$fileName' (${value.length} bytes): ${value.substr(0, 500)}...")
+actual fun Stage.shareText(actionTitle: String, fileName: String, value: String) {
+    myLog("$platformSourceFolder, shareText '$fileName' (${value.length} bytes): ${value.substr(0, 500)}...")
     mainActivity?.let { context ->
         if (value.length < 100000) {
             shareShortText(context, actionTitle, fileName, value)
@@ -65,7 +71,7 @@ private fun shareLongText(context: Activity, actionTitle: String, fileName: Stri
             }
         }
     } catch (e: Exception) {
-        Console.log("Error saving ${file.absoluteFile}: ${e.message}")
+        myLog("Error saving ${file.absoluteFile}: ${e.message}")
         return
     }
 
@@ -79,7 +85,9 @@ private fun shareLongText(context: Activity, actionTitle: String, fileName: Stri
     }
 }
 
-actual fun loadJsonGameRecord(consumer: (String) -> Unit) {
-    Console.log("$platformSourceFolder, loadJsonGameRecord")
+actual fun Stage.loadJsonGameRecord(consumer: (String) -> Unit) {
+    myLog("$platformSourceFolder, loadJsonGameRecord")
     mainActivity?.openJsonGameRecord(consumer)
 }
+
+actual fun Stage.closeGameApp() = mainActivity?.finish() ?: Unit

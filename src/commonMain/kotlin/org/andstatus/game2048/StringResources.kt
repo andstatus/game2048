@@ -1,7 +1,5 @@
 package org.andstatus.game2048
 
-import com.soywiz.klogger.Console
-import com.soywiz.klogger.log
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.lang.FileNotFoundException
 import com.soywiz.korio.serialization.xml.Xml
@@ -14,7 +12,7 @@ class StringResources private constructor(private val strings: Map<String, Strin
     companion object {
         suspend fun load(lang: String): StringResources = StringResources(loadLang(lang), loadLang(""))
                 .also {
-                    Console.log("Loaded ${it.strings.size} strings for '$lang' language")
+                    myLog("Loaded ${it.strings.size} strings for '$lang' language")
                 }
 
         private suspend fun loadLang(lang: String): Map<String, String> =

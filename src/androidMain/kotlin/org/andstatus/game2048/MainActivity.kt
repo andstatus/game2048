@@ -3,8 +3,6 @@ package org.andstatus.game2048
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import com.soywiz.klogger.Console
-import com.soywiz.klogger.log
 import com.soywiz.korgw.KorgwActivity
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
@@ -14,11 +12,14 @@ class MainActivity : KorgwActivity() {
 	private var gameRecordConsumer: ((String) -> Unit)? = null
 
 	override suspend fun activityMain() {
-		mainActivity = this
+		myLog("activityMain started")
         main()
-		Console.log("game2048.main ended")
-		mainActivity = null
-		finish()
+		myLog("activityMain ended")
+	}
+
+	override fun finish() {
+		myLog("activityMain finish")
+		super.finish()
 	}
 
 	fun openJsonGameRecord(consumer: (String) -> Unit) {
@@ -30,7 +31,7 @@ class MainActivity : KorgwActivity() {
 	}
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-		Console.log("Got result $resultCode on request $requestCode")
+		myLog("Got result $resultCode on request $requestCode")
 		if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_OPEN_JSON_GAME && gameRecordConsumer != null) {
 			data?.data?.let { uri ->
 				documentUri2String(this, uri)?.let { gameRecordConsumer?.invoke(it) }
@@ -56,12 +57,8 @@ class MainActivity : KorgwActivity() {
 				}
 			}
 		} catch (e: Exception) {
-			Console.log("Error while reading $uri: ${e.message}")
+			myLog("Error while reading $uri: ${e.message}")
 		}
 		return null
-	}
-
-	companion object {
-		var mainActivity: MainActivity? = null
 	}
 }

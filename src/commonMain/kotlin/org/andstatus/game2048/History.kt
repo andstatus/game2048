@@ -2,8 +2,6 @@ package org.andstatus.game2048
 
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.weeks
-import com.soywiz.klogger.Console
-import com.soywiz.klogger.log
 import com.soywiz.korio.serialization.json.toJson
 
 class History() {
@@ -24,7 +22,7 @@ class History() {
 
     init {
         bestScore = settings.storage.getOrNull(keyBest)?.toInt() ?: 0
-        Console.log("Best score: ${bestScore}")
+        myLog("Best score: ${bestScore}")
         currentGame = settings.storage.getOrNull(keyCurrentGame)
                 ?.let { GameRecord.fromJson(it)}
                 ?: GameRecord.newWithBoardAndMoves(Board(), emptyList(), emptyList())
@@ -42,14 +40,14 @@ class History() {
     fun restoreGame(id: Int): GameRecord? =
             settings.storage.getOrNull(keyGame + id)
                 ?.let {
-                    Console.log("gameId:$id, json:$it")
+                    myLog("gameId:$id, json:$it")
                     GameRecord.fromJson(it)
                 }
                 ?.also {
                     if (it.id == id) {
-                        Console.log("Restored game $it")
+                        myLog("Restored game $it")
                     } else {
-                        Console.log("Fixed id $id for Restored game $it")
+                        myLog("Fixed id $id for Restored game $it")
                         it.id = id
                     }
                     currentGame = it
@@ -74,7 +72,7 @@ class History() {
             } else currentGame.id
         onUpdate()
         settings.storage[keyGame + idToStore] = currentGame.toMap().toJson()
-        Console.log((if (isNew) "New" else "Old") + " game saved $currentGame")
+        myLog((if (isNew) "New" else "Old") + " game saved $currentGame")
         loadPrevGames()
     }
 

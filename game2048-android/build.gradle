@@ -49,7 +49,7 @@ android {
         minSdkVersion 24
         targetSdkVersion 29
         versionCode 12
-        versionName '1.2'
+        versionName '1.2.1'
 
         archivesBaseName = "game2048-android-$versionName"
     }

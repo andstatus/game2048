@@ -1,8 +1,6 @@
 package org.andstatus.game2048
 
 import com.soywiz.klock.milliseconds
-import com.soywiz.klogger.Console
-import com.soywiz.klogger.log
 import com.soywiz.korge.animate.Animator
 import com.soywiz.korge.animate.animateSequence
 import com.soywiz.korge.input.SwipeDirection
@@ -227,10 +225,18 @@ class Presenter(private val view: GameView) {
     }
 
     fun onPauseEvent() {
-        Console.log("onPauseEvent")
+        myLog("onPauseEvent")
         model.gameClock.stop()
-        showControls()
         model.history.onUpdate()
+        showControls()
+    }
+
+    fun onCloseGameWindowClick() {
+        logClick("onCloseGameWindow")
+        model.gameClock.stop()
+        model.history.onUpdate()
+        view.gameStage.gameWindow.close()
+        view.gameStage.closeGameApp()
     }
 
     fun onWatchClick() = afterStop {
@@ -278,8 +284,8 @@ class Presenter(private val view: GameView) {
         view.showGameMenu()
     }
 
-    fun onCloseGameMenuClick() {
-        logClick("CloseGameMenu")
+    fun onCloseMyWindowClick() {
+        logClick("CloseMyWindow")
         showControls()
     }
 
@@ -319,20 +325,20 @@ class Presenter(private val view: GameView) {
 
     fun onShareClick() = afterStop {
         logClick("Share")
-        shareText(view.stringResources.text("share"), model.history.currentGame.shortRecord.jsonFileName,
+        view.gameStage.shareText(view.stringResources.text("share"), model.history.currentGame.shortRecord.jsonFileName,
                 model.history.currentGame.toMap().toJson())
     }
 
     fun onLoadClick() = afterStop {
         logClick("Load")
-        loadJsonGameRecord { json ->
+        view.gameStage.loadJsonGameRecord { json ->
             view.gameStage.launch {
-                Console.log("Opened game: ${json.substr(0, 140)}")
+                myLog("Opened game: ${json.substr(0, 140)}")
                 GameRecord.fromJson(json, newId = 0)?.let {
                     // I noticed some kind of KorGe window reset after return from the other activity,
                     //   so let's wait for awhile and redraw everything a bit later...
                     delay(3000)
-                    Console.log("Restored game: $it")
+                    myLog("Restored game: $it")
                     model.history.currentGame = it
                     onToCurrentClick()
                 }
@@ -374,7 +380,7 @@ class Presenter(private val view: GameView) {
     }
 
     private fun logClick(buttonName: String) {
-        Console.log("$buttonName clicked ${clickCounter.value}, mode:${gameMode.mode}")
+        myLog("$buttonName clicked ${clickCounter.value}, mode:${gameMode.mode}")
     }
 
     private fun afterStop(action: () -> Unit) {
@@ -545,18 +551,18 @@ class Presenter(private val view: GameView) {
                     when(move) {
                         is MovePlace -> boardViews[move.first]
                                 ?.remove()
-                                ?: Console.log("No Block at destination during undo: $move")
+                                ?: myLog("No Block at destination during undo: $move")
                         is MoveLoad -> boardViews.load(move.board)
                         is MoveOne -> boardViews[PlacedPiece(move.first.piece, move.destination)]
                                 ?.move(this, move.first.square)
-                                ?: Console.log("No Block at destination during undo: $move")
+                                ?: myLog("No Block at destination during undo: $move")
                         is MoveMerge -> {
                             val destination = move.merged.square
                             val effectiveBlock = boardViews[move.merged]
                             sequence {
                                 block {
                                     effectiveBlock?.remove()
-                                            ?: Console.log("No Block at destination during undo: $move")
+                                            ?: myLog("No Block at destination during undo: $move")
                                 }
                                 parallel {
                                     val secondBlock = boardViews.addBlock(PlacedPiece(move.second.piece, destination))

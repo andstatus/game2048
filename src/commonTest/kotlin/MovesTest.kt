@@ -10,10 +10,12 @@ class MovesTest : ViewsForTesting(log = true) {
 
     @Test
     fun movesTest() = viewsTest {
-        gameView = GameView.appEntry(this, animateViews = false)
+        gameView = GameView.initialize(this, animateViews = false)
 
+        presenter.onPlayClick()
         presenter.composerMove(Board())
         assertEquals(0, presenter.boardViews.blocks.size, modelAndViews())
+
         val square1 = Square(1, 1)
         val piece1 = PlacedPiece(Piece.N2, square1)
         val square2 = Square(1, 2)

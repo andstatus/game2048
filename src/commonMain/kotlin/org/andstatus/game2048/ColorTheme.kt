@@ -1,5 +1,6 @@
 package org.andstatus.game2048
 
+import com.soywiz.korge.view.Stage
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 
@@ -48,7 +49,7 @@ sealed class ColorTheme {
     }
 
     companion object {
-        fun load(): ColorTheme = if (isDarkThemeOn) DarkTheme() else LightTheme()
+        fun load(stage: Stage): ColorTheme = if (stage.coroutineContext.isDarkThemeOn) DarkTheme() else LightTheme()
     }
 }
 
