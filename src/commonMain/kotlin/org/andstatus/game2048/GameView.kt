@@ -393,7 +393,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
                 var xPos = cellMargin
                 rowText(score, xPos)
-                xPos += itemHeight * 1.6
+                xPos += itemHeight * 1.8
                 rowText(lastChanged, xPos)
                 xPos += itemHeight * 4.8
                 rowText(duration, xPos)
@@ -455,7 +455,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
                 var xPos = cellMargin
                 rowText(score, xPos)
-                xPos += itemHeight * 1.6
+                xPos += itemHeight * 1.8
                 rowText(lastChanged, xPos)
                 xPos += itemHeight * 4.8
                 rowText(duration, xPos)
