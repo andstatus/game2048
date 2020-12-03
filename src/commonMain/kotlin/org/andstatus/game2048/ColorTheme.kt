@@ -94,7 +94,7 @@ class DarkTheme: ColorTheme() {
 
     override fun pieceText(piece: Piece) = when (piece) {
         Piece.N2, Piece.N4, Piece.N32, Piece.N64, Piece.N512, Piece.N1024,
-        Piece.N8192, Piece.N16384, Piece.N131972 -> Colors.BLACK
+        Piece.N8192, Piece.N16384 -> Colors.BLACK
         else -> Colors.WHITE
     }
 }

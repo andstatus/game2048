@@ -51,7 +51,10 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private val buttonYs: List<Double>
     private val duplicateKeyPressFilter = DuplicateKeyPressFilter()
 
-    private var appBarButtons: Map<AppBarButtonsEnum, Container> by Delegates.notNull()
+    private class EButton(val enum: AppBarButtonsEnum, val container: Container)
+    private infix fun AppBarButtonsEnum.to(container: Container): EButton = EButton(this, container)
+    private var appBarButtons: List<EButton> by Delegates.notNull()
+
     private var boardControls: SolidRect by Delegates.notNull()
 
     companion object {
@@ -150,7 +153,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         val redoButton = appBarButton("redo", presenter::onRedoClick)
         val gameMenuButton = appBarButton("menu", presenter::onGameMenuClick)
 
-        appBarButtons = mapOf(
+        appBarButtons = listOf(
             AppBarButtonsEnum.PLAY to playButton,
             AppBarButtonsEnum.TO_START to toStartButton,
             AppBarButtonsEnum.BACKWARDS to backwardsButton,
@@ -306,28 +309,35 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     fun showControls(appBarButtonsToShow: List<AppBarButtonsEnum>, playSpeed: Int) {
-        appBarButtons.filter { !appBarButtonsToShow.contains(it.key) }
-            .values
-            .forEach { it.removeFromParent() }
+        appBarButtons.filter { !appBarButtonsToShow.contains(it.enum) }
+            .forEach { it.container.removeFromParent() }
 
-        val toShow = appBarButtons.filter { appBarButtonsToShow.contains(it.key) }
-
-        val xPositions = buttonXs
+        val toShow = appBarButtons.filter { appBarButtonsToShow.contains(it.enum) }
+        val remainingPos = buttonXs
             .filter { buttonPointClicked.y != appBarTop || it != buttonPointClicked.x }
-            .let {
-                if (it.size > toShow.size) {
-                    val unusedX = it.filterNot { x -> toShow.keys.any { buttonXs[it.positionIndex] == x}}
-                            .take(it.size - toShow.size)
-                    it.filterNot(unusedX::contains)
-                }
-                else it
-            }
+            .toMutableList()
+//        myLog("Last clicked:$buttonPointClicked, Button positions:${remainingPos} y:$appBarTop")
 
-        toShow.values.zip(xPositions)
-        .forEach { (button, x) ->
-            button.positionX(x)
-            button.addTo(gameStage)
-        }
+        // Left aligned buttons
+        toShow.filter { it.enum.sortOrder < 0 }
+            .sortedBy { it.enum.sortOrder }
+            .forEach { eb ->
+                remainingPos.firstOrNull()?.let {
+                    eb.container.positionX(it)
+                        .addTo(gameStage)
+                    remainingPos.removeFirst()
+                }
+            }
+        // Others are Right-aligned
+        toShow.filter { it.enum.sortOrder >= 0 }
+            .sortedByDescending { it.enum.sortOrder }
+            .forEach { eb ->
+                remainingPos.lastOrNull()?.let {
+                    eb.container.positionX(it)
+                        .addTo(gameStage)
+                    remainingPos.removeLast()
+                }
+            }
 
         usersMoveNumber.text = presenter.model.usersMoveNumber.toString() +
                 (if (playSpeed < 0) " «" else "") +
