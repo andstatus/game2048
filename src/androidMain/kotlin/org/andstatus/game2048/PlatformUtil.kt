@@ -20,12 +20,12 @@ import kotlin.coroutines.CoroutineContext
 
 const val platformSourceFolder = "androidMain"
 
-actual val Stage.gameWindowSize: SizeInt get() =
+actual val CoroutineContext.gameWindowSize: SizeInt get() =
     mainActivity?.let { context ->
         val metrics = DisplayMetrics()
         (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getRealMetrics(metrics)
         return SizeInt(metrics.widthPixels, metrics.heightPixels)
-    } ?: defaultGameWindowSize
+    } ?: defaultPortraitGameWindowSize
 
 private val Stage.mainActivity: MainActivity? get()=
     coroutineContext.mainActivity

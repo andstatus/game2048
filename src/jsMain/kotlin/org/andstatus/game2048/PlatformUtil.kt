@@ -8,7 +8,7 @@ import kotlin.coroutines.CoroutineContext
 
 const val platformSourceFolder = "jsMain"
 
-actual val Stage.gameWindowSize: SizeInt get() = defaultGameWindowSize
+actual val CoroutineContext.gameWindowSize: SizeInt get() = defaultDesktopGameWindowSize
 
 actual val CoroutineContext.isDarkThemeOn: Boolean get() = false
 

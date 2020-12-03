@@ -81,20 +81,20 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     init {
         if (gameStage.views.virtualWidth < gameStage.views.virtualHeight) {
             gameViewWidth = gameStage.views.virtualWidth
-            gameViewHeight = gameViewWidth * defaultGameWindowSize.height / defaultGameWindowSize.width
+            gameViewHeight = gameViewWidth * defaultPortraitGameWindowSize.height / defaultPortraitGameWindowSize.width
             gameViewLeft = 0
             gameViewTop = (gameStage.views.virtualHeight - gameViewHeight) / 2
         } else {
-            gameViewWidth = gameStage.views.virtualHeight * defaultGameWindowSize.width / defaultGameWindowSize.height
+            gameViewWidth = gameStage.views.virtualHeight * defaultPortraitGameWindowSize.width / defaultPortraitGameWindowSize.height
             gameViewHeight = gameStage.views.virtualHeight
             gameViewLeft = (gameStage.views.virtualWidth - gameViewWidth) / 2
             gameViewTop = 0
         }
-        myLog("Window:${gameStage.gameWindowSize}" +
+        myLog("Window:${gameStage.coroutineContext.gameWindowSize}" +
                 " -> Virtual:${gameStage.views.virtualWidth}x${gameStage.views.virtualHeight}" +
                 " -> Game:${gameViewWidth}x$gameViewHeight")
 
-        gameScale = gameViewWidth.toDouble() / defaultGameWindowSize.width
+        gameScale = gameViewWidth.toDouble() / defaultPortraitGameWindowSize.width
         buttonPadding = 27 * gameScale
         appBarTop = buttonPadding + (gameStage.views.virtualHeight - gameViewHeight) / 2
 
@@ -505,7 +505,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
     fun showHelp(): Container = showWindow("help_title") {
         text(stringResources.text("help"), defaultTextSize, gameColors.labelText, font, TextAlignment.TOP_LEFT) {
-            position(cellMargin, buttonSize + buttonPadding + cellMargin)
+            position(winLeft + cellMargin, winTop + buttonSize + buttonPadding + cellMargin)
         }
     }
 

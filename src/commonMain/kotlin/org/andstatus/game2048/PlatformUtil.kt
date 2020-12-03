@@ -4,7 +4,7 @@ import com.soywiz.korge.view.Stage
 import com.soywiz.korma.geom.SizeInt
 import kotlin.coroutines.CoroutineContext
 
-expect val Stage.gameWindowSize: SizeInt
+expect val CoroutineContext.gameWindowSize: SizeInt
 
 expect val CoroutineContext.isDarkThemeOn: Boolean
 
