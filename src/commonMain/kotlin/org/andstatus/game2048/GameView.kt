@@ -131,7 +131,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     private suspend fun setupAppBar() {
-        val appLogo = Block(Piece.N2048, this, buttonSize).apply {
+        val appLogo = RotatingLogo(this, buttonSize).apply {
             positionY(appBarTop)
         }
         val playButton = appBarButton("play", presenter::onPlayClick)
@@ -215,7 +215,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     /** Workaround for the bug: https://github.com/korlibs/korge-next/issues/56 */
-    private fun Container.customOnClick(handler: () -> Unit) {
+    fun Container.customOnClick(handler: () -> Unit) {
         if (OS.isAndroid) {
             onOver {
                 duplicateKeyPressFilter.onSwipeOrOver {
