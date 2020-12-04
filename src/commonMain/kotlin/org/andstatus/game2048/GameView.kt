@@ -30,7 +30,6 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private val gameScale: Double
 
     private val buttonPadding: Double
-    private val appBarTop: Double
 
     private val buttonSize : Double
     var font: Font by Delegates.notNull()
@@ -102,7 +101,6 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
         gameScale = gameViewHeight.toDouble() / defaultPortraitGameWindowSize.height
         buttonPadding = 27 * gameScale
-        appBarTop = buttonPadding + (gameStage.views.virtualHeight - gameViewHeight) / 2
 
         cellMargin = 15 * gameScale
         buttonRadius = 8 * gameScale
@@ -112,13 +110,14 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         buttonSize = (gameViewWidth - buttonPadding * 6) / 5
         boardWidth = cellSize * settings.boardWidth + allCellMargins
         boardLeft = gameViewLeft + (gameViewWidth - boardWidth) / 2
-        boardTop = appBarTop + buttonSize + buttonPadding + buttonSize + buttonPadding
+
         buttonXs = (0 .. 4).fold(emptyList()) { acc, i ->
             acc + (boardLeft + i * (buttonSize + buttonPadding))
         }
-        buttonYs = (0 .. 6).fold(emptyList()) { acc, i ->
-            acc + (appBarTop + i * (buttonSize + buttonPadding))
+        buttonYs = (0 .. 8).fold(emptyList()) { acc, i ->
+            acc + (buttonPadding + i * (buttonSize + buttonPadding))
         }
+        boardTop = buttonYs[3]
     }
 
     private fun setupStageBackground() {
@@ -142,24 +141,31 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     private suspend fun setupAppBar() {
+        val appBarTop = buttonYs[1]
         val appLogo = RotatingLogo(this, buttonSize).apply {
             positionY(appBarTop)
         }
-        val playButton = appBarButton("play", presenter::onPlayClick)
-        val toStartButton = appBarButton("skip_previous", presenter::onToStartClick)
-        val backwardsButton = appBarButton("backwards", presenter::onBackwardsClick)
-        val stopButton = appBarButton("stop", presenter::onStopClick)
-        val forwardButton = appBarButton("forward", presenter::onForwardClick)
-        val toCurrentButton = appBarButton("skip_next", presenter::onToCurrentClick)
 
-        val watchButton = appBarButton("watch", presenter::onWatchClick)
-        val bookmarkButton = appBarButton("bookmark_border", presenter::onBookmarkClick)
-        val bookmarkedButton = appBarButton("bookmark", presenter::onBookmarkedClick)
-        val pauseButton = appBarButton("pause", presenter::onPauseClick)
-        val restartButton = appBarButton("restart", presenter::onRestartClick)
-        val undoButton = appBarButton("undo", presenter::onUndoClick)
-        val redoButton = appBarButton("redo", presenter::onRedoClick)
-        val gameMenuButton = appBarButton("menu", presenter::onGameMenuClick)
+        suspend fun button(icon: String, handler: () -> Unit): Container =
+            barButton(icon, handler).apply {
+                positionY(appBarTop)
+            }
+
+        val playButton = button("play", presenter::onPlayClick)
+        val toStartButton = button("skip_previous", presenter::onToStartClick)
+        val backwardsButton = button("backwards", presenter::onBackwardsClick)
+        val stopButton = button("stop", presenter::onStopClick)
+        val forwardButton = button("forward", presenter::onForwardClick)
+        val toCurrentButton = button("skip_next", presenter::onToCurrentClick)
+
+        val watchButton = button("watch", presenter::onWatchClick)
+        val bookmarkButton = button("bookmark_border", presenter::onBookmarkClick)
+        val bookmarkedButton = button("bookmark", presenter::onBookmarkedClick)
+        val pauseButton = button("pause", presenter::onPauseClick)
+        val restartButton = button("restart", presenter::onRestartClick)
+        val undoButton = button("undo", presenter::onUndoClick)
+        val redoButton = button("redo", presenter::onRedoClick)
+        val gameMenuButton = button("menu", presenter::onGameMenuClick)
 
         appBarButtons = listOf(
             AppBarButtonsEnum.PLAY to playButton,
@@ -181,11 +187,6 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         )
     }
 
-    private suspend fun appBarButton(icon: String, handler: () -> Unit): Container =
-        barButton(icon, handler).apply {
-            positionY(appBarTop)
-        }
-
     private suspend fun barButton(icon: String, handler: () -> Unit): Container = Container().apply {
         val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
         image(resourcesVfs["assets/$icon.png"].readBitmap()) {
@@ -195,7 +196,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         customOnClick { handler() }
     }
 
-    fun showGameMenu() = showWindow("") {
+    fun showGameMenu() = showWindow("game_actions") {
 
         suspend fun button(buttonEnum: GameMenuButtonsEnum, yInd: Int, handler: () -> Unit) =
                 barButton(buttonEnum.icon) {
@@ -216,13 +217,13 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                     }
                 }
 
-        button(GameMenuButtonsEnum.BOOKMARKS, 0, presenter::onBookmarksClick)
-        button(GameMenuButtonsEnum.RESTORE, 1, presenter::onRestoreClick)
-        button(GameMenuButtonsEnum.RESTART, 2, presenter::onRestartClick)
-        button(GameMenuButtonsEnum.SHARE, 3, presenter::onShareClick)
-        button(GameMenuButtonsEnum.LOAD, 4, presenter::onLoadClick)
-        button(GameMenuButtonsEnum.HELP, 5, presenter::onHelpClick)
-        button(GameMenuButtonsEnum.DELETE, 6, presenter::onDeleteGameClick)
+        button(GameMenuButtonsEnum.BOOKMARKS, 1, presenter::onBookmarksClick)
+        button(GameMenuButtonsEnum.RESTORE, 2, presenter::onRestoreClick)
+        button(GameMenuButtonsEnum.RESTART, 3, presenter::onRestartClick)
+        button(GameMenuButtonsEnum.SHARE, 4, presenter::onShareClick)
+        button(GameMenuButtonsEnum.LOAD, 5, presenter::onLoadClick)
+        button(GameMenuButtonsEnum.HELP, 6, presenter::onHelpClick)
+        button(GameMenuButtonsEnum.DELETE, 7, presenter::onDeleteGameClick)
     }
 
     /** Workaround for the bug: https://github.com/korlibs/korge-next/issues/56 */
@@ -253,7 +254,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
     private fun setupScoreBar() {
         val scoreButtonWidth = (boardWidth - 2 * buttonPadding) / 3
-        val scoreButtonTop = appBarTop + buttonSize + buttonPadding
+        val scoreButtonTop = buttonYs[2]
         val textYPadding = 28 * gameScale
         val scoreLabelSize = cellSize * 0.30
         val scoreTextSize = cellSize * 0.5
@@ -295,16 +296,16 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     private fun setupBoardControls(): SolidRect {
-        val boardView = SolidRect(boardWidth, boardWidth, gameColors.transparent)
+        val controlsArea = SolidRect(boardWidth, boardWidth + buttonSize + buttonPadding, gameColors.transparent)
                 .addTo(gameStage).position(boardLeft, boardTop)
 
-        boardView.onSwipe(20.0) {
+        controlsArea.onSwipe(20.0) {
             duplicateKeyPressFilter.onSwipeOrOver {
                 presenter.onSwipe(it.direction)
             }
         }
 
-        boardView.addUpdater {
+        controlsArea.addUpdater {
             val ifKey = { key: Key, action: () -> Unit ->
                 if (gameStage.views.input.keys[key]) {
                     duplicateKeyPressFilter.onPress(key, action)
@@ -321,7 +322,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             }
         }
 
-        return boardView
+        return controlsArea
     }
 
     fun showControls(appBarButtonsToShow: List<AppBarButtonsEnum>, playSpeed: Int) {
