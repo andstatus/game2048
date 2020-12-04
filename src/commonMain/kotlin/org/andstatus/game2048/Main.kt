@@ -4,6 +4,7 @@ import com.soywiz.korge.Korge
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.SizeInt
 import kotlin.coroutines.coroutineContext
+import kotlin.math.max
 import kotlin.properties.Delegates
 
 val defaultPortraitGameWindowSize = SizeInt(720, 1280)
@@ -15,11 +16,9 @@ var defaultTextSize: Double by Delegates.notNull()
 suspend fun main() {
     val windowSize: SizeInt = coroutineContext.gameWindowSize
     val virtualHeight: Int = defaultPortraitGameWindowSize.height
-    val virtualWidth: Int = if (windowSize.width < windowSize.height) {
-        defaultPortraitGameWindowSize.height * windowSize.width / windowSize.height
-    } else {
-        defaultPortraitGameWindowSize.height * windowSize.height / windowSize.width
-    }
+    val windowProportionalWidth = virtualHeight * windowSize.width / windowSize.height
+    // We will set the width depending on orientation, when we have landscape layout...
+    val virtualWidth = max( windowProportionalWidth, defaultPortraitGameWindowSize.width)
     defaultTextSize = if (virtualHeight == defaultPortraitGameWindowSize.height) defaultPortraitTextSize
         else defaultPortraitTextSize * virtualHeight / defaultPortraitGameWindowSize.height
     val color = if (coroutineContext.isDarkThemeOn) Colors.BLACK else gameDefaultBackgroundColor
