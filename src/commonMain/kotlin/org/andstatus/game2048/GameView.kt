@@ -3,10 +3,7 @@ package org.andstatus.game2048
 import com.soywiz.korev.Key
 import com.soywiz.korev.PauseEvent
 import com.soywiz.korev.addEventListener
-import com.soywiz.korge.input.SwipeDirection
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.input.onOver
-import com.soywiz.korge.input.onSwipe
+import com.soywiz.korge.input.*
 import com.soywiz.korge.ui.TextFormat
 import com.soywiz.korge.ui.TextSkin
 import com.soywiz.korge.ui.uiScrollableArea
@@ -46,7 +43,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     private var score: Text by Delegates.notNull()
     private var bestScore: Text by Delegates.notNull()
 
-    private var buttonPointClicked = Point(0, 0)
+    private val pointNONE = Point(0, 0)
+    private var buttonPointClicked = pointNONE
     private val buttonXs: List<Double>
     private val buttonYs: List<Double>
     private val duplicateKeyPressFilter = DuplicateKeyPressFilter()
@@ -221,12 +219,20 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     fun Container.customOnClick(handler: () -> Unit) {
         if (OS.isAndroid) {
             onOver {
-                duplicateKeyPressFilter.onSwipeOrOver {
-                    val pos1 = this.pos.copy()
-                    myLog("onOver $buttonPointClicked -> $pos1")
-                    buttonPointClicked = pos1
-                    handler()
+                duplicateKeyPressFilter.onSwipeOrOver { myLog("onOver $pos") }
+            }
+            onDown {
+                duplicateKeyPressFilter.onPress(Key.DOWN) {
+                    myLog("onDown $pos")
+                    buttonPointClicked = pos.copy()
                 }
+            }
+            onClick { myLog("onClick $pos}") }
+            onUp {
+                val clicked = buttonPointClicked == pos
+                myLog("onUp $pos " + if(clicked) "- clicked" else "<- $buttonPointClicked")
+                buttonPointClicked = pointNONE
+                if (clicked) handler()
             }
         } else {
             onClick {
@@ -314,7 +320,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
         val toShow = appBarButtons.filter { appBarButtonsToShow.contains(it.enum) }
         val remainingPos = buttonXs
-            .filter { buttonPointClicked.y != appBarTop || it != buttonPointClicked.x }
+//            .filter { buttonPointClicked.y != appBarTop || it != buttonPointClicked.x }
             .toMutableList()
 //        myLog("Last clicked:$buttonPointClicked, Button positions:${remainingPos} y:$appBarTop")
 
@@ -525,7 +531,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             with(gameView) {
                 val xPos = buttonXs[4]
                 val yPos = listOf(buttonYs[0], buttonYs[1])
-                        .filter { buttonPointClicked.x != xPos || it != buttonPointClicked.y }
+//                        .filter { buttonPointClicked.x != xPos || it != buttonPointClicked.y }
                         .first()
                 barButton("close") {
                     window.removeFromParent()
