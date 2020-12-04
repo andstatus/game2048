@@ -78,10 +78,18 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
     init {
         if (gameStage.views.virtualWidth < gameStage.views.virtualHeight) {
-            gameViewWidth = gameStage.views.virtualWidth
-            gameViewHeight = gameViewWidth * defaultPortraitGameWindowSize.height / defaultPortraitGameWindowSize.width
-            gameViewLeft = 0
-            gameViewTop = (gameStage.views.virtualHeight - gameViewHeight) / 2
+            if ( gameStage.views.virtualHeight / gameStage.views.virtualWidth >
+                    defaultPortraitGameWindowSize.height / defaultPortraitGameWindowSize.width) {
+                gameViewWidth = gameStage.views.virtualWidth
+                gameViewHeight = gameViewWidth * defaultPortraitGameWindowSize.height / defaultPortraitGameWindowSize.width
+                gameViewLeft = 0
+                gameViewTop = (gameStage.views.virtualHeight - gameViewHeight) / 2
+            } else {
+                gameViewWidth = gameStage.views.virtualHeight * defaultPortraitGameWindowSize.width / defaultPortraitGameWindowSize.height
+                gameViewHeight = gameStage.views.virtualHeight
+                gameViewLeft = (gameStage.views.virtualWidth - gameViewWidth) / 2
+                gameViewTop = 0
+            }
         } else {
             gameViewWidth = gameStage.views.virtualHeight * defaultPortraitGameWindowSize.width / defaultPortraitGameWindowSize.height
             gameViewHeight = gameStage.views.virtualHeight
@@ -90,9 +98,9 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
         myLog("Window:${gameStage.coroutineContext.gameWindowSize}" +
                 " -> Virtual:${gameStage.views.virtualWidth}x${gameStage.views.virtualHeight}" +
-                " -> Game:${gameViewWidth}x$gameViewHeight")
+                " -> Game:${gameViewWidth}x$gameViewHeight, top:$gameViewTop, left:$gameViewLeft")
 
-        gameScale = gameViewWidth.toDouble() / defaultPortraitGameWindowSize.width
+        gameScale = gameViewHeight.toDouble() / defaultPortraitGameWindowSize.height
         buttonPadding = 27 * gameScale
         appBarTop = buttonPadding + (gameStage.views.virtualHeight - gameViewHeight) / 2
 
@@ -114,7 +122,9 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     private fun setupStageBackground() {
-        gameStage.solidRect(gameViewWidth, gameViewHeight, color = gameColors.stageBackground)
+        gameStage.solidRect(gameViewWidth, gameViewHeight, color = gameColors.stageBackground) {
+            position(gameViewLeft, gameViewTop)
+        }
         gameStage.roundRect(boardWidth, boardWidth, buttonRadius, fill = gameColors.buttonBackground) {
             position(boardLeft, boardTop)
         }

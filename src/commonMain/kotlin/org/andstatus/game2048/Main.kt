@@ -7,24 +7,25 @@ import kotlin.coroutines.coroutineContext
 import kotlin.properties.Delegates
 
 val defaultPortraitGameWindowSize = SizeInt(720, 1280)
-val defaultLandscapeWindowSize = SizeInt(defaultPortraitGameWindowSize.height, defaultPortraitGameWindowSize.width)
 val defaultDesktopGameWindowSize get() = SizeInt(defaultPortraitGameWindowSize.width / 2,
     defaultPortraitGameWindowSize.height / 2)
 const val defaultPortraitTextSize = 64.0
-val defaultLandscapeTextSize = defaultPortraitTextSize  * defaultPortraitGameWindowSize.width /
-        defaultPortraitGameWindowSize.height
 var defaultTextSize: Double by Delegates.notNull()
 
 suspend fun main() {
     val windowSize: SizeInt = coroutineContext.gameWindowSize
-    val virtualWindowSize: SizeInt = if (windowSize.width < windowSize.height) defaultPortraitGameWindowSize
-        else defaultLandscapeWindowSize
-    defaultTextSize = if (virtualWindowSize.width < virtualWindowSize.height) defaultPortraitTextSize
-        else defaultLandscapeTextSize
+    val virtualHeight: Int = defaultPortraitGameWindowSize.height
+    val virtualWidth: Int = if (windowSize.width < windowSize.height) {
+        defaultPortraitGameWindowSize.height * windowSize.width / windowSize.height
+    } else {
+        defaultPortraitGameWindowSize.height * windowSize.height / windowSize.width
+    }
+    defaultTextSize = if (virtualHeight == defaultPortraitGameWindowSize.height) defaultPortraitTextSize
+        else defaultPortraitTextSize * virtualHeight / defaultPortraitGameWindowSize.height
     val color = if (coroutineContext.isDarkThemeOn) Colors.BLACK else gameDefaultBackgroundColor
     Korge(width = windowSize.width, height = windowSize.height,
-        virtualWidth = virtualWindowSize.width, virtualHeight = virtualWindowSize.height,
-        bgcolor = color,
+            virtualWidth = virtualWidth, virtualHeight = virtualHeight,
+            bgcolor = color,
             gameId = "org.andstatus.game2048") {
         GameView.initialize(this, true)
     }
