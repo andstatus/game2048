@@ -164,6 +164,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             AppBarButtonsEnum.RESTART to button("restart", presenter::onRestartClick),
             AppBarButtonsEnum.UNDO to button("undo", presenter::onUndoClick),
             AppBarButtonsEnum.REDO to button("redo", presenter::onRedoClick),
+            AppBarButtonsEnum.REDO_PLACEHOLDER to Container(),
             AppBarButtonsEnum.GAME_MENU to button("menu", presenter::onGameMenuClick),
         )
     }

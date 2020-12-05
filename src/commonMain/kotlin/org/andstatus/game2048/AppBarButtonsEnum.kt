@@ -10,6 +10,7 @@ enum class AppBarButtonsEnum(val sortOrder: Int) {
     RESTART(-1),
     UNDO(3),
     REDO(5),
+    REDO_PLACEHOLDER(5),
     GAME_MENU(10),
 
     PLAY(-4),

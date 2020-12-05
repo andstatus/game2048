@@ -456,9 +456,7 @@ class Presenter(private val view: GameView) {
                 if (canUndo()) {
                     list.add(AppBarButtonsEnum.UNDO)
                 }
-                if (canRedo()) {
-                    list.add(AppBarButtonsEnum.REDO)
-                }
+                list.add(if (canRedo()) AppBarButtonsEnum.REDO else AppBarButtonsEnum.REDO_PLACEHOLDER)
 
                 list.add(AppBarButtonsEnum.GAME_MENU)
             }
