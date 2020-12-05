@@ -141,6 +141,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     private suspend fun setupAppBar() {
+        RotatingLogo(this, buttonSize).apply { position(buttonXs[0], buttonYs[0]) }.addTo(gameStage)
+
         val appBarTop = buttonYs[1]
 
         suspend fun button(icon: String, handler: () -> Unit): Container =
@@ -158,7 +160,6 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             AppBarButtonsEnum.FORWARD_PLACEHOLDER to Container(),
             AppBarButtonsEnum.TO_CURRENT to button("skip_next", presenter::onToCurrentClick),
 
-            AppBarButtonsEnum.APP_LOGO to RotatingLogo(this, buttonSize).apply { positionY(appBarTop) },
             AppBarButtonsEnum.WATCH to button("watch", presenter::onWatchClick),
             AppBarButtonsEnum.BOOKMARK to button("bookmark_border", presenter::onBookmarkClick),
             AppBarButtonsEnum.BOOKMARKED to button("bookmark", presenter::onBookmarkedClick),

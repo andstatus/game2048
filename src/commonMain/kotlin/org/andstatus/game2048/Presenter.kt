@@ -449,8 +449,6 @@ class Presenter(private val view: GameView) {
                     if (!canRedo()) {
                         list.add(AppBarButtonsEnum.RESTART)
                     }
-                } else {
-                    list.add(AppBarButtonsEnum.APP_LOGO)
                 }
 
                 if (canUndo()) {
