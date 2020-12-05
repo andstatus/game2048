@@ -27,15 +27,11 @@ class Presenter(private val view: GameView) {
     val bestScore get() = model.bestScore
     var boardViews = BoardViews(view, settings.boardWidth, settings.boardHeight)
 
-    init {
-        presentGameClock(view.gameStage, model) { view.gameTime }
-    }
-
     private fun presentGameClock(coroutineScope: CoroutineScope, model: Model, textSupplier: () -> Text) {
         coroutineScope.launch {
             while (true) {
-                delay(1000)
                 textSupplier().text = model.gameClock.playedSecondsString
+                delay(1000)
             }
         }
     }
@@ -140,6 +136,7 @@ class Presenter(private val view: GameView) {
     fun onAppEntry() {
         gameMode.mode = if (model.history.currentGame.id == 0) GameModeEnum.PLAY else GameModeEnum.STOP
         model.onAppEntry().present()
+        presentGameClock(view.gameStage, model) { view.gameTime }
         if (model.history.prevGames.isEmpty() && model.history.currentGame.score == 0) {
             view.showHelp()
         }

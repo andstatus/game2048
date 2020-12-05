@@ -40,7 +40,7 @@ class History() {
     fun restoreGame(id: Int): GameRecord? =
             settings.storage.getOrNull(keyGame + id)
                 ?.let {
-                    myLog("gameId:$id, json:$it")
+                    myLog("On restore gameId:$id, json.length:${it.length} ${it.substring(0..200)}...")
                     GameRecord.fromJson(it)
                 }
                 ?.also {
