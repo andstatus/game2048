@@ -20,7 +20,7 @@ class Board(val width: Int = settings.boardWidth,
             var score: Int = 0,
             val dateTime: DateTimeTz = DateTimeTz.nowLocal(),
             val gameClock: GameClock = GameClock(),
-            val moveNumber: Int = 0) {
+            var moveNumber: Int = 0) {
     private val size = width * height
 
     val timeString get() = dateTime.format(SUMMARY_FORMAT)

@@ -1,1 +1,2 @@
-v.1.2 Dark theme for Android 9+. It turns on when system-wide "Dark theme" is turned on in device settings.
+v.1.3 Don't close game window on screen rotation.
+Fun feature: "2048" logo now rotates: on a click it changes to the next game block (4096, 8192, etc.).

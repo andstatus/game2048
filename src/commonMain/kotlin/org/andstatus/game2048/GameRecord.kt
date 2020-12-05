@@ -28,6 +28,10 @@ class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>
                 ShortRecord.fromJson(json, newId)?.let { shortRecord ->
                     val playerMoves: List<PlayerMove> = json.asJsonMap()[keyPlayersMoves]?.asJsonArray()
                             ?.mapNotNull { PlayerMove.fromJson(it) } ?: emptyList()
+                    if (playerMoves.size > shortRecord.finalBoard.moveNumber) {
+                        // Fix for older versions, which didn't store move number
+                        shortRecord.finalBoard.moveNumber = playerMoves.size
+                    }
                     GameRecord(shortRecord, playerMoves)
                 }
     }

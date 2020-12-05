@@ -142,48 +142,29 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
     private suspend fun setupAppBar() {
         val appBarTop = buttonYs[1]
-        val appLogo = RotatingLogo(this, buttonSize).apply {
-            positionY(appBarTop)
-        }
 
         suspend fun button(icon: String, handler: () -> Unit): Container =
             barButton(icon, handler).apply {
                 positionY(appBarTop)
             }
 
-        val playButton = button("play", presenter::onPlayClick)
-        val toStartButton = button("skip_previous", presenter::onToStartClick)
-        val backwardsButton = button("backwards", presenter::onBackwardsClick)
-        val stopButton = button("stop", presenter::onStopClick)
-        val forwardButton = button("forward", presenter::onForwardClick)
-        val toCurrentButton = button("skip_next", presenter::onToCurrentClick)
-
-        val watchButton = button("watch", presenter::onWatchClick)
-        val bookmarkButton = button("bookmark_border", presenter::onBookmarkClick)
-        val bookmarkedButton = button("bookmark", presenter::onBookmarkedClick)
-        val pauseButton = button("pause", presenter::onPauseClick)
-        val restartButton = button("restart", presenter::onRestartClick)
-        val undoButton = button("undo", presenter::onUndoClick)
-        val redoButton = button("redo", presenter::onRedoClick)
-        val gameMenuButton = button("menu", presenter::onGameMenuClick)
-
         appBarButtons = listOf(
-            AppBarButtonsEnum.PLAY to playButton,
-            AppBarButtonsEnum.TO_START to toStartButton,
-            AppBarButtonsEnum.BACKWARDS to backwardsButton,
-            AppBarButtonsEnum.STOP to stopButton,
-            AppBarButtonsEnum.FORWARD to forwardButton,
-            AppBarButtonsEnum.TO_CURRENT to toCurrentButton,
+            AppBarButtonsEnum.PLAY to button("play", presenter::onPlayClick),
+            AppBarButtonsEnum.TO_START to button("skip_previous", presenter::onToStartClick),
+            AppBarButtonsEnum.BACKWARDS to button("backwards", presenter::onBackwardsClick),
+            AppBarButtonsEnum.STOP to button("stop", presenter::onStopClick),
+            AppBarButtonsEnum.FORWARD to button("forward", presenter::onForwardClick),
+            AppBarButtonsEnum.TO_CURRENT to button("skip_next", presenter::onToCurrentClick),
 
-            AppBarButtonsEnum.APP_LOGO to appLogo,
-            AppBarButtonsEnum.WATCH to watchButton,
-            AppBarButtonsEnum.BOOKMARK to bookmarkButton,
-            AppBarButtonsEnum.BOOKMARKED to bookmarkedButton,
-            AppBarButtonsEnum.PAUSE to pauseButton,
-            AppBarButtonsEnum.RESTART to restartButton,
-            AppBarButtonsEnum.UNDO to undoButton,
-            AppBarButtonsEnum.REDO to redoButton,
-            AppBarButtonsEnum.GAME_MENU to gameMenuButton,
+            AppBarButtonsEnum.APP_LOGO to RotatingLogo(this, buttonSize).apply { positionY(appBarTop) },
+            AppBarButtonsEnum.WATCH to button("watch", presenter::onWatchClick),
+            AppBarButtonsEnum.BOOKMARK to button("bookmark_border", presenter::onBookmarkClick),
+            AppBarButtonsEnum.BOOKMARKED to button("bookmark", presenter::onBookmarkedClick),
+            AppBarButtonsEnum.PAUSE to button("pause", presenter::onPauseClick),
+            AppBarButtonsEnum.RESTART to button("restart", presenter::onRestartClick),
+            AppBarButtonsEnum.UNDO to button("undo", presenter::onUndoClick),
+            AppBarButtonsEnum.REDO to button("redo", presenter::onRedoClick),
+            AppBarButtonsEnum.GAME_MENU to button("menu", presenter::onGameMenuClick),
         )
     }
 
@@ -233,10 +214,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 duplicateKeyPressFilter.onSwipeOrOver { myLog("onOver $pos") }
             }
             onDown {
-                duplicateKeyPressFilter.onPress(Key.DOWN) {
-                    myLog("onDown $pos")
-                    buttonPointClicked = pos.copy()
-                }
+                myLog("onDown $pos")
+                buttonPointClicked = pos.copy()
             }
             onClick { myLog("onClick $pos}") }
             onUp {
