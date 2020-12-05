@@ -36,7 +36,7 @@ class Settings(val storage: NativeStorage) {
     }
 }
 
-fun loadSettings(stage: Stage) {
+fun loadSettings(stage: Stage) = myMeasured("Settings loaded") {
     val storage = getStorage(stage)
     settings = Settings(storage).apply {
         storage.getOrNull(keyAllowResultingTileToMerge)?.let{

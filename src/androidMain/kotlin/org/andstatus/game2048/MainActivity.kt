@@ -3,6 +3,7 @@ package org.andstatus.game2048
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Bundle
 import com.soywiz.korgw.KorgwActivity
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
@@ -10,6 +11,11 @@ import java.nio.charset.StandardCharsets
 class MainActivity : KorgwActivity() {
 	private val REQUEST_CODE_OPEN_JSON_GAME = 1
 	private var gameRecordConsumer: ((String) -> Unit)? = null
+
+	override fun onCreate(savedInstanceState: Bundle?) {
+		myLog("onCreate MainActivity")
+		super.onCreate(savedInstanceState)
+	}
 
 	override suspend fun activityMain() {
 		myLog("activityMain started")

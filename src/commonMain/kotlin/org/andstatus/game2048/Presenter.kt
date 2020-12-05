@@ -332,12 +332,13 @@ class Presenter(private val view: GameView) {
             view.gameStage.launch {
                 myLog("Opened game: ${json.substr(0, 140)}")
                 GameRecord.fromJson(json, newId = 0)?.let {
-                    // I noticed some kind of KorGe window reset after return from the other activity,
-                    //   so let's wait for awhile and redraw everything a bit later...
-                    delay(3000)
                     myLog("Restored game: $it")
                     model.history.currentGame = it
                     onToCurrentClick()
+                    model.history.saveCurrent()
+                    // I noticed some kind of KorGe window reset after return from the other activity:
+                    // GLSurfaceView.onSurfaceChanged
+                    // If really needed, we could re-create activity...
                 }
             }
         }
@@ -378,6 +379,7 @@ class Presenter(private val view: GameView) {
 
     private fun logClick(buttonName: String) {
         myLog("$buttonName clicked ${clickCounter.value}, mode:${gameMode.mode}")
+        gameStopWatch.start()
     }
 
     private fun afterStop(action: () -> Unit) {

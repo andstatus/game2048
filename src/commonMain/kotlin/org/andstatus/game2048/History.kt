@@ -29,7 +29,7 @@ class History() {
         loadPrevGames()
     }
 
-    private fun loadPrevGames() {
+    private fun loadPrevGames() = myMeasured("PrevGames loaded") {
         prevGames = gameIdsRange.fold(emptyList(), { acc, ind ->
             settings.storage.getOrNull(keyGame + ind)
                     ?.let { GameRecord.ShortRecord.fromJson(it)}
@@ -67,6 +67,7 @@ class History() {
         if (currentGame.score < 1) return
 
         val isNew = currentGame.id <= 0
+        myLog(("On saving " + if (isNew) "New" else "Old") + " game")
         val idToStore = if (isNew) idForNewGame().also {
                 currentGame.id = it
             } else currentGame.id

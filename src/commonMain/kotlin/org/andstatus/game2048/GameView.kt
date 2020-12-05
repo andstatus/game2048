@@ -61,16 +61,22 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             stage.gameWindow.title = stringResources.text("app_name")
 
             val view = GameView(stage, stringResources, animateViews)
-            view.font = resourcesVfs["assets/clear_sans.fnt"].readBitmapFont()
+            myMeasured("Font loaded") {
+                view.font = resourcesVfs["assets/clear_sans.fnt"].readBitmapFont()
+            }
             view.gameColors = ColorTheme.load(stage)
-            view.presenter = Presenter(view)
+            myMeasured("Presenter created") {
+                view.presenter = Presenter(view)
+            }
             view.setupStageBackground()
             view.setupAppBar()
             view.setupScoreBar()
             view.boardControls = view.setupBoardControls()
 
+            myLog("onAppEntry")
             view.presenter.onAppEntry()
             stage.gameWindow.addEventListener<PauseEvent> { view.presenter.onPauseEvent() }
+            myLog("GameView initialized")
             return view
         }
     }
@@ -95,10 +101,6 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             gameViewLeft = (gameStage.views.virtualWidth - gameViewWidth) / 2
             gameViewTop = 0
         }
-        myLog("Window:${gameStage.coroutineContext.gameWindowSize}" +
-                " -> Virtual:${gameStage.views.virtualWidth}x${gameStage.views.virtualHeight}" +
-                " -> Game:${gameViewWidth}x$gameViewHeight, top:$gameViewTop, left:$gameViewLeft")
-
         gameScale = gameViewHeight.toDouble() / defaultPortraitGameWindowSize.height
         buttonPadding = 27 * gameScale
 
@@ -118,6 +120,10 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             acc + (buttonPadding + i * (buttonSize + buttonPadding))
         }
         boardTop = buttonYs[3]
+
+        myLog("Window:${gameStage.coroutineContext.gameWindowSize}" +
+                " -> Virtual:${gameStage.views.virtualWidth}x${gameStage.views.virtualHeight}" +
+                " -> Game:${gameViewWidth}x$gameViewHeight, top:$gameViewTop, left:$gameViewLeft")
     }
 
     private fun setupStageBackground() {
