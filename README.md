@@ -91,8 +91,9 @@ Additional arguments:
 
  Argument | Description
 ----------|-------------
--Duser.color.theme=dark | switch to the Dark Theme
--Duser.language=ru      | switch to Russian locale
+-Duser.color.theme=dark             | switch to the Dark Theme
+-Duser.language=ru                  | switch to Russian locale
+-Duser.screen.orientation=landscape | landscape screen orientation
 
 # Running instructions from Korge template project
 The implementation uses the [KorGe template project](https://github.com/korlibs/korge-hello-world#readme).
