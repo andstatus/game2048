@@ -17,6 +17,8 @@ enum class AppBarButtonsEnum(val sortOrder: Int) {
     TO_START(2),
     BACKWARDS(3),
     STOP(4),
+    STOP_PLACEHOLDER(4),
     FORWARD(5),
+    FORWARD_PLACEHOLDER(5),
     TO_CURRENT(6),
 }

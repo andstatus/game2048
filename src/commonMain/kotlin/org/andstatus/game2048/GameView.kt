@@ -153,7 +153,9 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             AppBarButtonsEnum.TO_START to button("skip_previous", presenter::onToStartClick),
             AppBarButtonsEnum.BACKWARDS to button("backwards", presenter::onBackwardsClick),
             AppBarButtonsEnum.STOP to button("stop", presenter::onStopClick),
+            AppBarButtonsEnum.STOP_PLACEHOLDER to Container(),
             AppBarButtonsEnum.FORWARD to button("forward", presenter::onForwardClick),
+            AppBarButtonsEnum.FORWARD_PLACEHOLDER to Container(),
             AppBarButtonsEnum.TO_CURRENT to button("skip_next", presenter::onToCurrentClick),
 
             AppBarButtonsEnum.APP_LOGO to RotatingLogo(this, buttonSize).apply { positionY(appBarTop) },
@@ -309,11 +311,13 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         appBarButtons.filter { !appBarButtonsToShow.contains(it.enum) }
             .forEach { it.container.removeFromParent() }
 
-        val toShow = appBarButtons.filter { appBarButtonsToShow.contains(it.enum) }
-        val remainingPos = buttonXs
-//            .filter { buttonPointClicked.y != appBarTop || it != buttonPointClicked.x }
-            .toMutableList()
-//        myLog("Last clicked:$buttonPointClicked, Button positions:${remainingPos} y:$appBarTop")
+        val toShow = appBarButtons.filter { appBarButtonsToShow.contains(it.enum) }.let { list ->
+            list.firstOrNull{ eButton ->  eButton.enum == AppBarButtonsEnum.GAME_MENU}?.let{
+                it.container.position(buttonXs[4], buttonYs[0]).addTo(gameStage)
+                list.filter { it.enum != AppBarButtonsEnum.GAME_MENU }
+            } ?: list
+        }
+        val remainingPos = buttonXs.toMutableList()
 
         // Left aligned buttons
         toShow.filter { it.enum.sortOrder < 0 }
@@ -384,7 +388,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     fun showBookmarks(game: GameRecord) = showWindow("goto_bookmark") {
-        val listTop = winTop + cellMargin + buttonSize + buttonPadding // To avoid unintentional click on the list after previous click
+        val listTop = winTop + cellMargin + buttonSize + buttonPadding
         val nItems = game.shortRecord.bookmarks.size + 1
         val itemHeight = buttonSize * 3 / 4
         val textWidth = winWidth * 2
@@ -445,7 +449,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     fun showGameHistory(prevGames: List<GameRecord.ShortRecord>) = showWindow("restore_game") {
-        val listTop = winTop + cellMargin + buttonSize + buttonPadding // To avoid unintentional click on the list after previous click
+        val listTop = winTop + cellMargin + buttonSize + buttonPadding
         val nItems = prevGames.size
         val itemHeight = buttonSize * 3 / 4
         val textWidth = winWidth * 2
@@ -521,9 +525,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
             with(gameView) {
                 val xPos = buttonXs[4]
-                val yPos = listOf(buttonYs[0], buttonYs[1])
-//                        .filter { buttonPointClicked.x != xPos || it != buttonPointClicked.y }
-                        .first()
+                val yPos = buttonYs[0]
                 barButton("close") {
                     window.removeFromParent()
                     presenter.onCloseMyWindowClick()

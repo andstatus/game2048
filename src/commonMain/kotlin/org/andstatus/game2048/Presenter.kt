@@ -469,7 +469,9 @@ class Presenter(private val view: GameView) {
                         list.add(AppBarButtonsEnum.BACKWARDS)
                     }
                 }
-                if (gameMode.mode != GameModeEnum.STOP) {
+                if (gameMode.mode == GameModeEnum.STOP) {
+                    list.add(AppBarButtonsEnum.STOP_PLACEHOLDER)
+                } else {
                     list.add(AppBarButtonsEnum.STOP)
                 }
                 if (canRedo()) {
@@ -478,6 +480,8 @@ class Presenter(private val view: GameView) {
                     } else {
                         list.add(AppBarButtonsEnum.FORWARD)
                     }
+                } else {
+                    list.add(AppBarButtonsEnum.FORWARD_PLACEHOLDER)
                 }
                 if (gameMode.mode == GameModeEnum.STOP) {
                     list.add(AppBarButtonsEnum.GAME_MENU)
