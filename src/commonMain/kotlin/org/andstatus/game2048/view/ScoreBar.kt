@@ -24,7 +24,7 @@ class ScoreBar(val gameView: GameView): Container() {
 
     init {
         with(gameView) {
-            val scoreButtonWidth = (boardWidth - 2 * buttonPadding) / 3
+            val scoreButtonWidth = (gameView.boardWidth - 2 * buttonPadding) / 3
             val scoreButtonTop = buttonYs[2]
             val textYPadding = 28 * gameScale
             val scoreLabelSize = cellSize * 0.30

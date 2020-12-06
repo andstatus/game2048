@@ -43,6 +43,9 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
     private var appBar: AppBar by Delegates.notNull()
 
+    var boardWidth: Double = 0.0
+    var boardLeft: Double = 0.0
+    var boardTop: Double = 0.0
     var boardView: BoardView by Delegates.notNull()
 
     companion object {

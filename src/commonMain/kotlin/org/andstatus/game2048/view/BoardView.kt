@@ -24,10 +24,11 @@ import org.andstatus.game2048.defaultTextSize
 import org.andstatus.game2048.settings
 
 class BoardView(val gameView: GameView): Container() {
+    private val boardWidth: Double = gameView.boardWidth
     private val controlsArea: SolidRect
 
     init {
-        position(boardLeft, boardTop)
+        position(gameView.boardLeft, gameView.boardTop)
 
         roundRect(boardWidth, boardWidth, buttonRadius, fill = gameView.gameColors.buttonBackground)
         graphics {
