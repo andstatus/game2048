@@ -34,7 +34,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
                 gameClock = GameClock(125),
                 moveNumber = 3)
         currentGame = GameRecord.newWithBoardAndMoves(board, listOf(Board(), board), listOf(move1, move2, move3))
-            onUpdate()
+        saveCurrent()
     }
 
     private fun persistGameRecordTest() {

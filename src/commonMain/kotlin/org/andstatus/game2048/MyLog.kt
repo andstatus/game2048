@@ -7,9 +7,9 @@ val gameStopWatch = Stopwatch().start()
 
 fun myLog(message: Any?) = println("game2048.log ${gameStopWatch.elapsed.milliseconds.toInt()} [${currentThreadId}] $message")
 
-inline fun myMeasured(message: Any?, measuredAction: () -> Unit)  {
-    Stopwatch().start().run {
-        measuredAction()
-        myLog("$message in ${this.elapsed.milliseconds.toInt()} ms")
+inline fun <T> myMeasured(message: Any?, measuredAction: () -> T): T =
+    Stopwatch().start().let { stopWatch ->
+        measuredAction().also {
+            myLog("$message in ${stopWatch.elapsed.milliseconds.toInt()} ms")
+        }
     }
-}

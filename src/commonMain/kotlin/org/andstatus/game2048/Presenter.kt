@@ -224,14 +224,14 @@ class Presenter(private val view: GameView) {
     fun onPauseEvent() {
         myLog("onPauseEvent")
         model.gameClock.stop()
-        model.history.onUpdate()
+        model.saveCurrent()
         showControls()
     }
 
     fun onCloseGameWindowClick() {
         logClick("onCloseGameWindow")
         model.gameClock.stop()
-        model.history.onUpdate()
+        model.saveCurrent()
         view.gameStage.gameWindow.close()
         view.gameStage.closeGameApp()
     }
@@ -332,10 +332,10 @@ class Presenter(private val view: GameView) {
             view.gameStage.launch {
                 myLog("Opened game: ${json.substr(0, 140)}")
                 GameRecord.fromJson(json, newId = 0)?.let {
-                    myLog("Restored game: $it")
+                    myLog("Loaded game: $it")
                     model.history.currentGame = it
                     onToCurrentClick()
-                    model.history.saveCurrent()
+                    model.saveCurrent()
                     // I noticed some kind of KorGe window reset after return from the other activity:
                     // GLSurfaceView.onSurfaceChanged
                     // If really needed, we could re-create activity...

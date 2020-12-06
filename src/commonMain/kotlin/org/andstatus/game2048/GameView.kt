@@ -61,13 +61,11 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             stage.gameWindow.title = stringResources.text("app_name")
 
             val view = GameView(stage, stringResources, animateViews)
-            myMeasured("Font loaded") {
-                view.font = resourcesVfs["assets/clear_sans.fnt"].readBitmapFont()
+            view.font = myMeasured("Font loaded") {
+                resourcesVfs["assets/clear_sans.fnt"].readBitmapFont()
             }
             view.gameColors = ColorTheme.load(stage)
-            myMeasured("Presenter created") {
-                view.presenter = Presenter(view)
-            }
+            view.presenter = myMeasured("Presenter created") { Presenter(view) }
             view.setupStageBackground()
             view.setupAppBar()
             view.setupScoreBar()
