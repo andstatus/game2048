@@ -2,10 +2,6 @@ package org.andstatus.game2048.view
 
 import com.soywiz.korev.PauseEvent
 import com.soywiz.korev.addEventListener
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.input.onDown
-import com.soywiz.korge.input.onOver
-import com.soywiz.korge.input.onUp
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.position
@@ -13,8 +9,6 @@ import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.font.Font
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korio.util.OS
-import com.soywiz.korma.geom.Point
 import org.andstatus.game2048.defaultLanguage
 import org.andstatus.game2048.defaultPortraitGameWindowSize
 import org.andstatus.game2048.gameWindowSize
@@ -43,8 +37,6 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
     var scoreBar: ScoreBar by Delegates.notNull()
 
-    private val pointNONE = Point(0, 0)
-    private var buttonPointClicked = pointNONE
     val buttonXs: List<Double>
     val buttonYs: List<Double>
     val duplicateKeyPressFilter = DuplicateKeyPressFilter()
@@ -131,27 +123,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     /** Workaround for the bug: https://github.com/korlibs/korge-next/issues/56 */
-    fun Container.customOnClick(handler: () -> Unit) {
-        if (OS.isAndroid) {
-            onOver {
-                duplicateKeyPressFilter.onSwipeOrOver { myLog("onOver $pos") }
-            }
-            onDown {
-                myLog("onDown $pos")
-                buttonPointClicked = pos.copy()
-            }
-            onClick { myLog("onClick $pos}") }
-            onUp {
-                val clicked = buttonPointClicked == pos
-                myLog("onUp $pos " + if (clicked) "- clicked" else "<- $buttonPointClicked")
-                buttonPointClicked = pointNONE
-                if (clicked) handler()
-            }
-        } else {
-            onClick {
-                handler()
-            }
-        }
+    fun Container.customOnClick(handler: () -> Unit) = duplicateKeyPressFilter.apply {
+        customOnClick(handler)
     }
 
     fun showControls(appBarButtonsToShow: List<AppBarButtonsEnum>, playSpeed: Int) {
