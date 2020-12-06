@@ -1,6 +1,6 @@
-import org.andstatus.game2048.view.GameView
-import org.andstatus.game2048.presenter.Presenter
 import org.andstatus.game2048.model.Square
+import org.andstatus.game2048.presenter.Presenter
+import org.andstatus.game2048.view.GameView
 import kotlin.properties.Delegates
 
 var gameView: GameView by Delegates.notNull()

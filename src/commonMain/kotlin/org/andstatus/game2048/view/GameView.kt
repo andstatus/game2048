@@ -3,40 +3,64 @@ package org.andstatus.game2048.view
 import com.soywiz.korev.Key
 import com.soywiz.korev.PauseEvent
 import com.soywiz.korev.addEventListener
-import com.soywiz.korge.input.*
+import com.soywiz.korge.input.SwipeDirection
+import com.soywiz.korge.input.onClick
+import com.soywiz.korge.input.onDown
+import com.soywiz.korge.input.onOver
+import com.soywiz.korge.input.onSwipe
+import com.soywiz.korge.input.onUp
 import com.soywiz.korge.ui.TextFormat
 import com.soywiz.korge.ui.TextSkin
-import com.soywiz.korge.ui.uiScrollableArea
 import com.soywiz.korge.ui.uiText
-import com.soywiz.korge.view.*
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SolidRect
+import com.soywiz.korge.view.Stage
+import com.soywiz.korge.view.Text
+import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.addUpdater
+import com.soywiz.korge.view.centerOn
+import com.soywiz.korge.view.centerXBetween
+import com.soywiz.korge.view.centerXOn
+import com.soywiz.korge.view.container
+import com.soywiz.korge.view.graphics
+import com.soywiz.korge.view.image
+import com.soywiz.korge.view.position
+import com.soywiz.korge.view.positionX
+import com.soywiz.korge.view.positionY
+import com.soywiz.korge.view.roundRect
+import com.soywiz.korge.view.size
+import com.soywiz.korge.view.solidRect
+import com.soywiz.korge.view.text
 import com.soywiz.korim.font.Font
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.text.TextAlignment
-import com.soywiz.korio.async.launch
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.vector.roundRect
-import org.andstatus.game2048.*
-import org.andstatus.game2048.model.GameRecord
-import org.andstatus.game2048.presenter.Presenter
+import org.andstatus.game2048.defaultLanguage
+import org.andstatus.game2048.defaultPortraitGameWindowSize
+import org.andstatus.game2048.defaultTextSize
+import org.andstatus.game2048.gameWindowSize
+import org.andstatus.game2048.loadSettings
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
+import org.andstatus.game2048.presenter.Presenter
+import org.andstatus.game2048.settings
 import kotlin.math.abs
-import kotlin.math.max
 import kotlin.properties.Delegates
 
 class GameView(val gameStage: Stage, val stringResources: StringResources, val animateViews: Boolean = true) {
-    private val gameViewLeft: Int
-    private val gameViewTop: Int
-    private val gameViewWidth: Int
-    private val gameViewHeight: Int
+    internal val gameViewLeft: Int
+    internal val gameViewTop: Int
+    internal val gameViewWidth: Int
+    internal val gameViewHeight: Int
     private val gameScale: Double
 
-    private val buttonPadding: Double
+    internal val buttonPadding: Double
 
-    private val buttonSize : Double
+    internal val buttonSize : Double
     var font: Font by Delegates.notNull()
     var gameColors: ColorTheme by Delegates.notNull()
 
@@ -49,9 +73,9 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
     private val pointNONE = Point(0, 0)
     private var buttonPointClicked = pointNONE
-    private val buttonXs: List<Double>
-    private val buttonYs: List<Double>
-    private val duplicateKeyPressFilter = DuplicateKeyPressFilter()
+    internal val buttonXs: List<Double>
+    internal val buttonYs: List<Double>
+    internal val duplicateKeyPressFilter = DuplicateKeyPressFilter()
 
     private class EButton(val enum: AppBarButtonsEnum, val container: Container)
     private infix fun AppBarButtonsEnum.to(container: Container): EButton = EButton(this, container)
@@ -185,7 +209,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         )
     }
 
-    private suspend fun barButton(icon: String, handler: () -> Unit): Container = Container().apply {
+    internal suspend fun barButton(icon: String, handler: () -> Unit): Container = Container().apply {
         val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
         image(resourcesVfs["assets/$icon.png"].readBitmap()) {
             size(buttonSize * 0.6, buttonSize * 0.6)
@@ -194,7 +218,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         customOnClick { handler() }
     }
 
-    fun showGameMenu() = showWindow("game_actions") {
+    fun showGameMenu() = myWindow("game_actions") {
 
         suspend fun button(buttonEnum: GameMenuButtonsEnum, yInd: Int, handler: () -> Unit) =
                 barButton(buttonEnum.icon) {
@@ -407,178 +431,4 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
     }
 
-    fun showBookmarks(game: GameRecord) = showWindow("goto_bookmark") {
-        val listTop = winTop + cellMargin + buttonSize + buttonPadding
-        val nItems = game.shortRecord.bookmarks.size + 1
-        val itemHeight = buttonSize * 3 / 4
-        val textWidth = winWidth * 2
-        val textSize = defaultTextSize
-
-        fun Container.rowText(value: String, xPosition: Double) = text(value, textSize,
-                gameColors.buttonText, font, TextAlignment.MIDDLE_LEFT
-        ) {
-            position(xPosition, itemHeight / 2)
-        }
-
-        fun Container.oneRow(index: Int, score: String, lastChanged: String, duration: String, action: () -> Unit) {
-            container {
-                roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
-                var xPos = cellMargin
-                rowText(score, xPos)
-                xPos += itemHeight * 1.8
-                rowText(lastChanged, xPos)
-                xPos += itemHeight * 4.8
-                rowText(duration, xPos)
-
-                position(0.0, index * (itemHeight + cellMargin))
-                customOnClick { action() }
-            }
-        }
-
-        uiScrollableArea(config = {
-            position(winLeft + cellMargin, listTop)
-            buttonSize = itemHeight
-            width = winWidth - cellMargin * 2
-            contentWidth = textWidth
-            height = winTop + winHeight - listTop - cellMargin
-            contentHeight = max((itemHeight + cellMargin) * (nItems + 1), height)
-        }) {
-            oneRow(0, stringResources.text("score"), stringResources.text("last_changed"),
-                    stringResources.text("duration")) {}
-            with(game.shortRecord.finalBoard) {
-                oneRow(1, score.toString(), timeString,
-                        gameClock.playedSecondsString) {
-                    window.removeFromParent()
-                    presenter.onGoToBookmarkClick(this)
-                }
-            }
-            game.shortRecord.bookmarks.reversed().forEachIndexed {index, board ->
-                oneRow(index + 2, board.score.toString(), board.timeString,
-                        board.gameClock.playedSecondsString) {
-                    window.removeFromParent()
-                    presenter.onGoToBookmarkClick(board)
-                }
-            }
-        }
-
-        addUpdater {
-            duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
-                window.removeFromParent()
-                presenter.showControls()
-            }
-        }
-    }
-
-    fun showGameHistory(prevGames: List<GameRecord.ShortRecord>) = showWindow("restore_game") {
-        val listTop = winTop + cellMargin + buttonSize + buttonPadding
-        val nItems = prevGames.size
-        val itemHeight = buttonSize * 3 / 4
-        val textWidth = winWidth * 2
-        val textSize = defaultTextSize
-
-        fun Container.rowText(value: String, xPosition: Double) = text(value, textSize,
-                gameColors.buttonText, font, TextAlignment.MIDDLE_LEFT
-        ) {
-            position(xPosition, itemHeight / 2)
-        }
-
-        fun Container.oneRow(index: Int, score: String, lastChanged: String, duration: String, id: String,
-                             note: String, action: () -> Unit) {
-            container {
-                roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
-                var xPos = cellMargin
-                rowText(score, xPos)
-                xPos += itemHeight * 1.8
-                rowText(lastChanged, xPos)
-                xPos += itemHeight * 4.8
-                rowText(duration, xPos)
-                xPos += itemHeight * 2.4
-                rowText(id, xPos)
-                if (note.isNotBlank()) {
-                    xPos += itemHeight * 1.2
-                    rowText(note, xPos)
-                }
-
-                position(0.0, index * (itemHeight + cellMargin))
-                customOnClick { action() }
-            }
-        }
-
-        uiScrollableArea(config = {
-            position(winLeft + cellMargin, listTop)
-            buttonSize = itemHeight
-            width = winWidth - cellMargin * 2
-            contentWidth = textWidth
-            height = winTop + winHeight - listTop - cellMargin
-            contentHeight = max((itemHeight + cellMargin) * (nItems + 1), height)
-        }) {
-            oneRow(0, stringResources.text("score"), stringResources.text("last_changed"),
-                    stringResources.text("duration"), stringResources.text("id"),
-                    stringResources.text("note")) {}
-
-            prevGames.sortedByDescending { it.finalBoard.dateTime }.forEachIndexed {index, game ->
-                oneRow(index + 1, game.finalBoard.score.toString(), game.finalBoard.timeString,
-                        game.finalBoard.gameClock.playedSecondsString, game.id.toString(), game.note) {
-                    window.removeFromParent()
-                    presenter.onHistoryItemClick(game.id)
-                }
-            }
-        }
-    }
-
-    fun showHelp(): Container = showWindow("help_title") {
-        text(stringResources.text("help"), defaultTextSize, gameColors.labelText, font, TextAlignment.TOP_LEFT) {
-            position(winLeft + cellMargin, winTop + buttonSize + buttonPadding + cellMargin)
-        }
-    }
-
-    class MyWindow(val gameView: GameView, val titleKey: String) : Container() {
-        val window = this
-        val winLeft = gameView.gameViewLeft.toDouble()
-        val winTop = gameView.gameViewTop.toDouble()
-        val winWidth = gameView.gameViewWidth.toDouble()
-        val winHeight = gameView.gameViewHeight.toDouble()
-
-        suspend fun Container.show() {
-            roundRect(winWidth, winHeight, buttonRadius, stroke = gameView.gameColors.myWindowBorder, strokeThickness = 2.0,
-                    fill = gameView.gameColors.myWindowBackground) {
-                position(winLeft, winTop)
-            }
-
-            with(gameView) {
-                val xPos = buttonXs[4]
-                val yPos = buttonYs[0]
-                barButton("close") {
-                    window.removeFromParent()
-                    presenter.onCloseMyWindowClick()
-                }.apply {
-                    position(xPos, yPos)
-                }.addTo(window)
-
-                if (titleKey.isNotEmpty()) {
-                    text(stringResources.text(titleKey), defaultTextSize, gameColors.labelText, font,
-                        TextAlignment.MIDDLE_CENTER
-                    ) {
-                        position((winLeft + xPos - cellMargin) / 2, winTop + cellMargin + buttonSize / 2)
-                    }
-                }
-
-                addUpdater {
-                    duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
-                        window.removeFromParent()
-                        presenter.showControls()
-                    }
-                }
-            }
-        }
-    }
-
-    private fun showWindow(titleKey: String, action: suspend MyWindow.() -> Unit) =
-            MyWindow(this, titleKey).apply {
-                gameStage.launch {
-                    show()
-                    action()
-                    addTo(gameStage)
-                }
-            }
 }

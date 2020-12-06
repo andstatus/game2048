@@ -3,8 +3,8 @@ package org.andstatus.game2048.view
 import com.soywiz.korge.view.Stage
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
-import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.isDarkThemeOn
+import org.andstatus.game2048.model.Piece
 
 val gameDefaultBackgroundColor = Colors["#fdf7f0"]
 

@@ -1,6 +1,6 @@
 package org.andstatus.game2048.model
 
-import org.andstatus.game2048.*
+import org.andstatus.game2048.settings
 import kotlin.random.Random
 
 class Model {

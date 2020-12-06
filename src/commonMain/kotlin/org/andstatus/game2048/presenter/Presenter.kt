@@ -19,12 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import org.andstatus.game2048.*
 import org.andstatus.game2048.model.*
-import org.andstatus.game2048.gameStopWatch
-import org.andstatus.game2048.myLog
-import org.andstatus.game2048.view.AppBarButtonsEnum
-import org.andstatus.game2048.view.GameView
-import org.andstatus.game2048.view.positionX
-import org.andstatus.game2048.view.positionY
+import org.andstatus.game2048.view.*
 import kotlin.math.abs
 
 class Presenter(private val view: GameView) {
@@ -309,7 +304,7 @@ class Presenter(private val view: GameView) {
     fun onRestoreClick() = afterStop {
         logClick("Restore")
         model.saveCurrent()
-        view.showGameHistory(model.history.prevGames)
+        view.showRestoreGame(model.history.prevGames)
     }
 
     fun onGoToBookmarkClick(board: Board) = afterStop {
