@@ -6,30 +6,17 @@ import com.soywiz.korge.input.onClick
 import com.soywiz.korge.input.onDown
 import com.soywiz.korge.input.onOver
 import com.soywiz.korge.input.onUp
-import com.soywiz.korge.ui.TextFormat
-import com.soywiz.korge.ui.TextSkin
-import com.soywiz.korge.ui.uiText
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Stage
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.centerXBetween
-import com.soywiz.korge.view.container
-import com.soywiz.korge.view.graphics
 import com.soywiz.korge.view.position
-import com.soywiz.korge.view.positionY
 import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.text
 import com.soywiz.korim.font.Font
 import com.soywiz.korim.font.readBitmapFont
-import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.vector.roundRect
 import org.andstatus.game2048.defaultLanguage
 import org.andstatus.game2048.defaultPortraitGameWindowSize
-import org.andstatus.game2048.defaultTextSize
 import org.andstatus.game2048.gameWindowSize
 import org.andstatus.game2048.loadSettings
 import org.andstatus.game2048.myLog
@@ -80,9 +67,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             view.setupStageBackground()
             view.appBar = AppBar(view).apply { view.setupAppBar() }
             view.scoreBar = view.setupScoreBar()
-            view.boardView = BoardView(view).setup()
+            view.boardView = BoardView(view)
 
-            myLog("onAppEntry")
             view.presenter.onAppEntry()
             stage.gameWindow.addEventListener<PauseEvent> { view.presenter.onPauseEvent() }
             myLog("GameView initialized")
@@ -171,45 +157,6 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         appBar.show(appBarButtonsToShow)
         scoreBar.show(playSpeed)
         boardView.setOnTop()
-    }
-
-    fun showGameOver(): Container = gameStage.container {
-        val window = this
-        val format = TextFormat(gameColors.labelText, defaultTextSize.toInt(), font)
-        val skin = TextSkin(
-            normal = format,
-            over = format.copy(gameColors.labelTextOver),
-            down = format.copy(gameColors.labelTextDown)
-        )
-
-        position(boardLeft, boardTop)
-
-        graphics {
-            fill(gameColors.gameOverBackground) {
-                roundRect(0.0, 0.0, boardWidth, boardWidth, buttonRadius)
-            }
-        }
-        text(stringResources.text("game_over"),
-            defaultTextSize, gameColors.labelText, font,
-            TextAlignment.MIDDLE_CENTER
-        ) {
-            position(boardWidth / 2, (boardWidth - textSize) / 2)
-        }
-        uiText(stringResources.text("try_again"), 120.0, 35.0, skin) {
-            centerXBetween(0.0, boardWidth)
-            positionY((boardWidth + textSize) / 2)
-            customOnClick {
-                window.removeFromParent()
-                presenter.restart()
-            }
-        }
-
-        addUpdater {
-            duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
-                window.removeFromParent()
-                presenter.restart()
-            }
-        }
     }
 
 }

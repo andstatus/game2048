@@ -136,7 +136,7 @@ class Presenter(private val view: GameView) {
 
     private var clickCounter = KorAtomicInt(0)
 
-    fun onAppEntry() {
+    fun onAppEntry() = myMeasured("onAppEntry") {
         gameMode.mode = if (model.history.currentGame.id == 0) GameModeEnum.PLAY else GameModeEnum.STOP
         model.onAppEntry().present()
         presentGameClock(view.gameStage, model) { view.scoreBar.gameTime }
@@ -410,7 +410,7 @@ class Presenter(private val view: GameView) {
             boardViews = boardViews
                     .removeGameOver()
                     .copy()
-                    .apply { gameOver = view.showGameOver() }
+                    .apply { gameOver = view.boardView.showGameOver() }
         } else {
             model.userMove(playerMoveEnum).let{
                 if (it.isEmpty()) it else it + model.computerMove()
