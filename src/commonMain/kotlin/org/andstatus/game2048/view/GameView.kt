@@ -77,9 +77,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     internal val buttonYs: List<Double>
     internal val duplicateKeyPressFilter = DuplicateKeyPressFilter()
 
-    private class EButton(val enum: AppBarButtonsEnum, val container: Container)
-    private infix fun AppBarButtonsEnum.to(container: Container): EButton = EButton(this, container)
-    private var appBarButtons: List<EButton> by Delegates.notNull()
+    private var appBar: AppBar by Delegates.notNull()
 
     private var boardControls: SolidRect by Delegates.notNull()
 
@@ -96,7 +94,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             view.gameColors = ColorTheme.load(stage)
             view.presenter = myMeasured("Presenter created") { Presenter(view) }
             view.setupStageBackground()
-            view.setupAppBar()
+            view.appBar = AppBar(view).apply { view.setupAppBar() }
             view.setupScoreBar()
             view.boardControls = view.setupBoardControls()
 
@@ -175,78 +173,6 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 }
             }
         }
-    }
-
-    private suspend fun setupAppBar() {
-        RotatingLogo(this, buttonSize).apply { position(buttonXs[0], buttonYs[0]) }.addTo(gameStage)
-
-        val appBarTop = buttonYs[1]
-
-        suspend fun button(icon: String, handler: () -> Unit): Container =
-            barButton(icon, handler).apply {
-                positionY(appBarTop)
-            }
-
-        appBarButtons = listOf(
-            AppBarButtonsEnum.PLAY to button("play", presenter::onPlayClick),
-            AppBarButtonsEnum.TO_START to button("skip_previous", presenter::onToStartClick),
-            AppBarButtonsEnum.BACKWARDS to button("backwards", presenter::onBackwardsClick),
-            AppBarButtonsEnum.STOP to button("stop", presenter::onStopClick),
-            AppBarButtonsEnum.STOP_PLACEHOLDER to Container(),
-            AppBarButtonsEnum.FORWARD to button("forward", presenter::onForwardClick),
-            AppBarButtonsEnum.FORWARD_PLACEHOLDER to Container(),
-            AppBarButtonsEnum.TO_CURRENT to button("skip_next", presenter::onToCurrentClick),
-
-            AppBarButtonsEnum.WATCH to button("watch", presenter::onWatchClick),
-            AppBarButtonsEnum.BOOKMARK to button("bookmark_border", presenter::onBookmarkClick),
-            AppBarButtonsEnum.BOOKMARKED to button("bookmark", presenter::onBookmarkedClick),
-            AppBarButtonsEnum.PAUSE to button("pause", presenter::onPauseClick),
-            AppBarButtonsEnum.RESTART to button("restart", presenter::onRestartClick),
-            AppBarButtonsEnum.UNDO to button("undo", presenter::onUndoClick),
-            AppBarButtonsEnum.REDO to button("redo", presenter::onRedoClick),
-            AppBarButtonsEnum.REDO_PLACEHOLDER to Container(),
-            AppBarButtonsEnum.GAME_MENU to button("menu", presenter::onGameMenuClick),
-        )
-    }
-
-    internal suspend fun barButton(icon: String, handler: () -> Unit): Container = Container().apply {
-        val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
-        image(resourcesVfs["assets/$icon.png"].readBitmap()) {
-            size(buttonSize * 0.6, buttonSize * 0.6)
-            centerOn(background)
-        }
-        customOnClick { handler() }
-    }
-
-    fun showGameMenu() = myWindow("game_actions") {
-
-        suspend fun button(buttonEnum: GameMenuButtonsEnum, yInd: Int, handler: () -> Unit) =
-                barButton(buttonEnum.icon) {
-                    handler()
-                    window.removeFromParent()
-                }.apply {
-                    position(buttonXs[0], buttonYs[yInd])
-                    addTo(window)
-                    window.container {
-                        text(stringResources.text(buttonEnum.labelKey), defaultTextSize, gameColors.labelText,
-                                font, TextAlignment.MIDDLE_LEFT
-                        ) {
-                            position(buttonXs[1], buttonYs[yInd] + buttonSize / 2)
-                            customOnClick {
-                                handler()
-                                window.removeFromParent()
-                            }
-                        }
-                    }
-                }
-
-        button(GameMenuButtonsEnum.BOOKMARKS, 1, presenter::onBookmarksClick)
-        button(GameMenuButtonsEnum.RESTORE, 2, presenter::onRestoreClick)
-        button(GameMenuButtonsEnum.RESTART, 3, presenter::onRestartClick)
-        button(GameMenuButtonsEnum.SHARE, 4, presenter::onShareClick)
-        button(GameMenuButtonsEnum.LOAD, 5, presenter::onLoadClick)
-        button(GameMenuButtonsEnum.HELP, 6, presenter::onHelpClick)
-        button(GameMenuButtonsEnum.DELETE, 7, presenter::onDeleteGameClick)
     }
 
     /** Workaround for the bug: https://github.com/korlibs/korge-next/issues/56 */
@@ -349,37 +275,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     }
 
     fun showControls(appBarButtonsToShow: List<AppBarButtonsEnum>, playSpeed: Int) {
-        appBarButtons.filter { !appBarButtonsToShow.contains(it.enum) }
-            .forEach { it.container.removeFromParent() }
-
-        val toShow = appBarButtons.filter { appBarButtonsToShow.contains(it.enum) }.let { list ->
-            list.firstOrNull{ eButton ->  eButton.enum == AppBarButtonsEnum.GAME_MENU }?.let{
-                it.container.position(buttonXs[4], buttonYs[0]).addTo(gameStage)
-                list.filter { it.enum != AppBarButtonsEnum.GAME_MENU }
-            } ?: list
-        }
-        val remainingPos = buttonXs.toMutableList()
-
-        // Left aligned buttons
-        toShow.filter { it.enum.sortOrder < 0 }
-            .sortedBy { it.enum.sortOrder }
-            .forEach { eb ->
-                remainingPos.firstOrNull()?.let {
-                    eb.container.positionX(it)
-                        .addTo(gameStage)
-                    remainingPos.removeFirst()
-                }
-            }
-        // Others are Right-aligned
-        toShow.filter { it.enum.sortOrder >= 0 }
-            .sortedByDescending { it.enum.sortOrder }
-            .forEach { eb ->
-                remainingPos.lastOrNull()?.let {
-                    eb.container.positionX(it)
-                        .addTo(gameStage)
-                    remainingPos.removeLast()
-                }
-            }
+        appBar.show(appBarButtonsToShow)
 
         usersMoveNumber.text = presenter.model.usersMoveNumber.toString() +
                 (if (playSpeed < 0) " «" else "") +
