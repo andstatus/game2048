@@ -9,5 +9,5 @@ var boardLeft: Double = 0.0
 var boardTop: Double = 0.0
 var buttonRadius = 0.0
 
-fun Square.positionX() = boardLeft + cellMargin + (cellSize + cellMargin) * x
-fun Square.positionY() = boardTop + cellMargin + (cellSize + cellMargin) * y
+fun Square.positionX() = cellMargin + (cellSize + cellMargin) * x
+fun Square.positionY() = cellMargin + (cellSize + cellMargin) * y

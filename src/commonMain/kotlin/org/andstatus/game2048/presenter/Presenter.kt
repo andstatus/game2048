@@ -139,7 +139,7 @@ class Presenter(private val view: GameView) {
     fun onAppEntry() {
         gameMode.mode = if (model.history.currentGame.id == 0) GameModeEnum.PLAY else GameModeEnum.STOP
         model.onAppEntry().present()
-        presentGameClock(view.gameStage, model) { view.gameTime }
+        presentGameClock(view.gameStage, model) { view.scoreBar.gameTime }
         if (model.history.prevGames.isEmpty() && model.history.currentGame.score == 0) {
             view.showHelp()
         }
