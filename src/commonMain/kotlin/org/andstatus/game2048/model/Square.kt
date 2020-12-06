@@ -1,4 +1,6 @@
-package org.andstatus.game2048
+package org.andstatus.game2048.model
+
+import org.andstatus.game2048.settings
 
 private const val keyX = "x"
 private const val keyY = "y"

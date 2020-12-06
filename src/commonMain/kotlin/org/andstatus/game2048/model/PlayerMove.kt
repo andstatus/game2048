@@ -1,4 +1,4 @@
-package org.andstatus.game2048
+package org.andstatus.game2048.model
 
 private const val keyPlayerEnum = "playerEnum"
 private const val keyPlayersMoveEnum = "moveEnum"
@@ -30,7 +30,7 @@ data class PlayerMove(val player: PlayerEnum, val playerMoveEnum: PlayerMoveEnum
         fun fromJson(json: Any): PlayerMove? {
             val aMap: Map<String, Any> = json.asJsonMap()
             val player = aMap[keyPlayerEnum]?.let { PlayerEnum.fromId(it.toString()) }
-            val playersMoveEnum = aMap[keyPlayersMoveEnum]?.let { PlayerMoveEnum.fromId(it.toString())}
+            val playersMoveEnum = aMap[keyPlayersMoveEnum]?.let { PlayerMoveEnum.fromId(it.toString()) }
             val seconds: Int = aMap[keySeconds] as Int? ?: 0
             val moves: List<Move>? = aMap[keyMoves]?.asJsonArray()?.mapNotNull { Move.fromJson(it) }
             return if (player != null && playersMoveEnum != null && moves != null)

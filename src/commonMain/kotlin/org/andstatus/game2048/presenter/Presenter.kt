@@ -1,4 +1,4 @@
-package org.andstatus.game2048
+package org.andstatus.game2048.presenter
 
 import com.soywiz.klock.milliseconds
 import com.soywiz.korge.animate.Animator
@@ -17,6 +17,14 @@ import com.soywiz.korio.serialization.json.toJson
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import org.andstatus.game2048.*
+import org.andstatus.game2048.model.*
+import org.andstatus.game2048.gameStopWatch
+import org.andstatus.game2048.myLog
+import org.andstatus.game2048.view.AppBarButtonsEnum
+import org.andstatus.game2048.view.GameView
+import org.andstatus.game2048.view.positionX
+import org.andstatus.game2048.view.positionY
 import kotlin.math.abs
 
 class Presenter(private val view: GameView) {

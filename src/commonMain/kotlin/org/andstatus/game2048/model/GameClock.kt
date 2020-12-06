@@ -1,4 +1,4 @@
-package org.andstatus.game2048
+package org.andstatus.game2048.model
 
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
@@ -16,7 +16,7 @@ class GameClock(initialSeconds: Int = 0) {
     }
 
     private val counterRef: KorAtomicRef<Counter> =
-            KorAtomicRef(Counter(false, null, initialSeconds))
+        KorAtomicRef(Counter(false, null, initialSeconds))
 
     fun start() {
         do {

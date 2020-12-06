@@ -1,4 +1,4 @@
-package org.andstatus.game2048
+package org.andstatus.game2048.model
 
 enum class PlayerEnum(val id: String) {
     COMPUTER("computer"),

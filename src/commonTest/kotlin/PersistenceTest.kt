@@ -1,6 +1,8 @@
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korio.serialization.json.toJson
 import org.andstatus.game2048.*
+import org.andstatus.game2048.model.*
+import org.andstatus.game2048.view.GameView
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

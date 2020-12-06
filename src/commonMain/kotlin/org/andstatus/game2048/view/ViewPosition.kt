@@ -1,4 +1,6 @@
-package org.andstatus.game2048
+package org.andstatus.game2048.view
+
+import org.andstatus.game2048.model.Square
 
 var cellMargin: Double = 0.0
 var boardWidth: Double = 0.0

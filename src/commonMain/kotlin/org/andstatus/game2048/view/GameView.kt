@@ -1,4 +1,4 @@
-package org.andstatus.game2048
+package org.andstatus.game2048.view
 
 import com.soywiz.korev.Key
 import com.soywiz.korev.PauseEvent
@@ -18,6 +18,11 @@ import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.vector.roundRect
+import org.andstatus.game2048.*
+import org.andstatus.game2048.model.GameRecord
+import org.andstatus.game2048.presenter.Presenter
+import org.andstatus.game2048.myLog
+import org.andstatus.game2048.myMeasured
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.properties.Delegates
@@ -119,9 +124,11 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         }
         boardTop = buttonYs[3]
 
-        myLog("Window:${gameStage.coroutineContext.gameWindowSize}" +
-                " -> Virtual:${gameStage.views.virtualWidth}x${gameStage.views.virtualHeight}" +
-                " -> Game:${gameViewWidth}x$gameViewHeight, top:$gameViewTop, left:$gameViewLeft")
+        myLog(
+            "Window:${gameStage.coroutineContext.gameWindowSize}" +
+                    " -> Virtual:${gameStage.views.virtualWidth}x${gameStage.views.virtualHeight}" +
+                    " -> Game:${gameViewWidth}x$gameViewHeight, top:$gameViewTop, left:$gameViewLeft"
+        )
     }
 
     private fun setupStageBackground() {
@@ -136,8 +143,10 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             fill(gameColors.cellBackground) {
                 for (x in 0 until settings.boardWidth) {
                     for (y in 0 until settings.boardHeight) {
-                        roundRect(cellMargin + (cellMargin + cellSize) * x, cellMargin + (cellMargin + cellSize) * y,
-                                cellSize, cellSize, buttonRadius)
+                        roundRect(
+                            cellMargin + (cellMargin + cellSize) * x, cellMargin + (cellMargin + cellSize) * y,
+                            cellSize, cellSize, buttonRadius
+                        )
                     }
                 }
             }
@@ -196,7 +205,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                     addTo(window)
                     window.container {
                         text(stringResources.text(buttonEnum.labelKey), defaultTextSize, gameColors.labelText,
-                                font, TextAlignment.MIDDLE_LEFT) {
+                                font, TextAlignment.MIDDLE_LEFT
+                        ) {
                             position(buttonXs[1], buttonYs[yInd] + buttonSize / 2)
                             customOnClick {
                                 handler()
@@ -228,7 +238,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             onClick { myLog("onClick $pos}") }
             onUp {
                 val clicked = buttonPointClicked == pos
-                myLog("onUp $pos " + if(clicked) "- clicked" else "<- $buttonPointClicked")
+                myLog("onUp $pos " + if (clicked) "- clicked" else "<- $buttonPointClicked")
                 buttonPointClicked = pointNONE
                 if (clicked) handler()
             }
@@ -259,7 +269,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             position(boardLeft + (scoreButtonWidth + buttonPadding), scoreButtonTop)
         }
         gameStage.text(stringResources.text("score_upper"), scoreLabelSize, gameColors.buttonLabelText, font,
-                TextAlignment.MIDDLE_CENTER) {
+            TextAlignment.MIDDLE_CENTER
+        ) {
             positionX(bgScore.pos.x + scoreButtonWidth / 2)
             positionY(scoreButtonTop + textYPadding)
         }
@@ -272,7 +283,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             position(boardLeft + (scoreButtonWidth + buttonPadding) * 2, scoreButtonTop)
         }
         gameStage.text(stringResources.text("best"), scoreLabelSize, gameColors.buttonLabelText, font,
-                TextAlignment.MIDDLE_CENTER) {
+            TextAlignment.MIDDLE_CENTER
+        ) {
             positionX(bgBest.pos.x + scoreButtonWidth / 2)
             positionY(scoreButtonTop + textYPadding)
         }
@@ -317,7 +329,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             .forEach { it.container.removeFromParent() }
 
         val toShow = appBarButtons.filter { appBarButtonsToShow.contains(it.enum) }.let { list ->
-            list.firstOrNull{ eButton ->  eButton.enum == AppBarButtonsEnum.GAME_MENU}?.let{
+            list.firstOrNull{ eButton ->  eButton.enum == AppBarButtonsEnum.GAME_MENU }?.let{
                 it.container.position(buttonXs[4], buttonYs[0]).addTo(gameStage)
                 list.filter { it.enum != AppBarButtonsEnum.GAME_MENU }
             } ?: list
@@ -360,9 +372,9 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         val window = this
         val format = TextFormat(gameColors.labelText, defaultTextSize.toInt(), font)
         val skin = TextSkin(
-                normal = format,
-                over = format.copy(gameColors.labelTextOver),
-                down = format.copy(gameColors.labelTextDown)
+            normal = format,
+            over = format.copy(gameColors.labelTextOver),
+            down = format.copy(gameColors.labelTextDown)
         )
 
         position(boardLeft, boardTop)
@@ -372,7 +384,10 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
                 roundRect(0.0, 0.0, boardWidth, boardWidth, buttonRadius)
             }
         }
-        text(stringResources.text("game_over"), defaultTextSize, gameColors.labelText, font, TextAlignment.MIDDLE_CENTER) {
+        text(stringResources.text("game_over"),
+            defaultTextSize, gameColors.labelText, font,
+            TextAlignment.MIDDLE_CENTER
+        ) {
             position(boardWidth / 2, (boardWidth - textSize) / 2)
         }
         uiText(stringResources.text("try_again"), 120.0, 35.0, skin) {
@@ -400,7 +415,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         val textSize = defaultTextSize
 
         fun Container.rowText(value: String, xPosition: Double) = text(value, textSize,
-                gameColors.buttonText, font, TextAlignment.MIDDLE_LEFT) {
+                gameColors.buttonText, font, TextAlignment.MIDDLE_LEFT
+        ) {
             position(xPosition, itemHeight / 2)
         }
 
@@ -461,7 +477,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
         val textSize = defaultTextSize
 
         fun Container.rowText(value: String, xPosition: Double) = text(value, textSize,
-                gameColors.buttonText, font, TextAlignment.MIDDLE_LEFT) {
+                gameColors.buttonText, font, TextAlignment.MIDDLE_LEFT
+        ) {
             position(xPosition, itemHeight / 2)
         }
 
@@ -540,7 +557,8 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
 
                 if (titleKey.isNotEmpty()) {
                     text(stringResources.text(titleKey), defaultTextSize, gameColors.labelText, font,
-                            TextAlignment.MIDDLE_CENTER) {
+                        TextAlignment.MIDDLE_CENTER
+                    ) {
                         position((winLeft + xPos - cellMargin) / 2, winTop + cellMargin + buttonSize / 2)
                     }
                 }

@@ -1,4 +1,4 @@
-package org.andstatus.game2048
+package org.andstatus.game2048.view
 
 /** sortOrder < 0 for left-aligned buttons, >= 0 - for right-aligned */
 enum class AppBarButtonsEnum(val sortOrder: Int) {

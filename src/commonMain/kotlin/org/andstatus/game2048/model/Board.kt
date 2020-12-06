@@ -1,9 +1,10 @@
-package org.andstatus.game2048
+package org.andstatus.game2048.model
 
 import com.soywiz.klock.DateFormat
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.kmem.isOdd
+import org.andstatus.game2048.*
 import kotlin.random.Random
 
 private const val keyMoveNumber = "moveNumber"

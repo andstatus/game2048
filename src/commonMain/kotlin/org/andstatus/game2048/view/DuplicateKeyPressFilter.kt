@@ -1,4 +1,4 @@
-package org.andstatus.game2048
+package org.andstatus.game2048.view
 
 import com.soywiz.klock.DateTime
 import com.soywiz.korev.Key

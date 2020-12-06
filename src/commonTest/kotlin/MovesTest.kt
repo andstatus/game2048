@@ -1,6 +1,10 @@
 import com.soywiz.korge.input.SwipeDirection
 import com.soywiz.korge.tests.ViewsForTesting
-import org.andstatus.game2048.*
+import org.andstatus.game2048.model.Board
+import org.andstatus.game2048.model.Piece
+import org.andstatus.game2048.model.PlacedPiece
+import org.andstatus.game2048.model.Square
+import org.andstatus.game2048.view.GameView
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

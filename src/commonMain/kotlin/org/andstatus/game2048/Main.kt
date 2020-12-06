@@ -3,6 +3,8 @@ package org.andstatus.game2048
 import com.soywiz.korge.Korge
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.SizeInt
+import org.andstatus.game2048.view.GameView
+import org.andstatus.game2048.view.gameDefaultBackgroundColor
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 import kotlin.properties.Delegates

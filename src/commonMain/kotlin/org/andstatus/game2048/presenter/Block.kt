@@ -1,8 +1,11 @@
-package org.andstatus.game2048
+package org.andstatus.game2048.presenter
 
 import com.soywiz.korge.view.*
 import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korma.geom.vector.roundRect
+import org.andstatus.game2048.model.Piece
+import org.andstatus.game2048.model.Square
+import org.andstatus.game2048.view.*
 
 class Block(val piece: Piece, gameView: GameView, size: Double = cellSize) : Container() {
 

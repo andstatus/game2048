@@ -1,8 +1,11 @@
-package org.andstatus.game2048
+package org.andstatus.game2048.model
 
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.weeks
 import com.soywiz.korio.serialization.json.toJson
+import org.andstatus.game2048.*
+import org.andstatus.game2048.myLog
+import org.andstatus.game2048.myMeasured
 
 class History() {
     private val keyBest = "best"

@@ -1,4 +1,4 @@
-package org.andstatus.game2048
+package org.andstatus.game2048.model
 
 import com.soywiz.klock.DateFormat
 import com.soywiz.klock.DateTime
@@ -37,7 +37,7 @@ class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>
     }
 
     class ShortRecord(val note: String, var id: Int, val start: DateTimeTz, val finalBoard: Board,
-        val bookmarks: List<Board>) {
+                      val bookmarks: List<Board>) {
 
         override fun toString(): String = "${finalBoard.score} ${finalBoard.timeString} id:$id"
 

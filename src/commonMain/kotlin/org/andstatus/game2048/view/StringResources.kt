@@ -1,8 +1,9 @@
-package org.andstatus.game2048
+package org.andstatus.game2048.view
 
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.lang.FileNotFoundException
 import com.soywiz.korio.serialization.xml.Xml
+import org.andstatus.game2048.myLog
 
 class StringResources private constructor(private val strings: Map<String, String>,
                                           private val defaultStrings: Map<String, String>) {

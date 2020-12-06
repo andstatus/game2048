@@ -1,4 +1,4 @@
-package org.andstatus.game2048
+package org.andstatus.game2048.model
 
 import com.soywiz.korio.serialization.json.Json
 
