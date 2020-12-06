@@ -221,6 +221,7 @@ class Presenter(private val view: GameView) {
     fun onPauseClick() = afterStop {
         logClick("Pause")
         model.gameClock.stop()
+        model.saveCurrent()
         showControls()
     }
 

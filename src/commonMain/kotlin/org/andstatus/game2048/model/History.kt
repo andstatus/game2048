@@ -5,6 +5,7 @@ import com.soywiz.klock.weeks
 import com.soywiz.korio.serialization.json.toJson
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
+import org.andstatus.game2048.myMeasuredIt
 import org.andstatus.game2048.settings
 
 class History() {
@@ -38,7 +39,7 @@ class History() {
                 ?.let { GameRecord.ShortRecord.fromJson(it) }
                 ?.let { acc + it } ?: acc
         })
-        return this
+        this
     }
 
     fun restoreGame(id: Int): GameRecord? =
@@ -62,14 +63,15 @@ class History() {
         if (currentGame.score < 1) return this
 
         val isNew = currentGame.id <= 0
-        myLog(("On saving " + if (isNew) "New" else "Old") + " game")
-        val idToStore = if (isNew) idForNewGame().also {
-            currentGame.id = it
-        } else currentGame.id
-        updateBestScore()
-        settings.storage[keyCurrentGame] = currentGame.toMap().toJson()
-        settings.storage[keyGame + idToStore] = currentGame.toMap().toJson()
-        myLog((if (isNew) "New" else "Old") + " game saved $currentGame")
+        myMeasuredIt((if (isNew) "New" else "Old") + " game saved") {
+            val idToStore = if (isNew) idForNewGame().also {
+                currentGame.id = it
+            } else currentGame.id
+            updateBestScore()
+            settings.storage[keyCurrentGame] = currentGame.toMap().toJson()
+            settings.storage[keyGame + idToStore] = currentGame.toMap().toJson()
+            currentGame
+        }
         return loadPrevGames()
     }
 

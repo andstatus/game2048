@@ -13,3 +13,10 @@ inline fun <T> myMeasured(message: Any?, measuredAction: () -> T): T =
             myLog("$message in ${stopWatch.elapsed.milliseconds.toInt()} ms")
         }
     }
+
+inline fun <T> myMeasuredIt(message: Any?, measuredAction: () -> T): T =
+    Stopwatch().start().let { stopWatch ->
+        measuredAction().also {
+            myLog("$message in ${stopWatch.elapsed.milliseconds.toInt()} ms: $it")
+        }
+    }
