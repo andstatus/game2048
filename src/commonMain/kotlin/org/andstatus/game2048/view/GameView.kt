@@ -27,27 +27,27 @@ import org.andstatus.game2048.view.AppBar.Companion.setupAppBar
 import kotlin.properties.Delegates
 
 class GameView(val gameStage: Stage, val stringResources: StringResources, val animateViews: Boolean = true) {
-    internal val gameViewLeft: Int
-    internal val gameViewTop: Int
-    internal val gameViewWidth: Int
-    internal val gameViewHeight: Int
-    internal val gameScale: Double
+    val gameViewLeft: Int
+    val gameViewTop: Int
+    val gameViewWidth: Int
+    val gameViewHeight: Int
+    val gameScale: Double
 
-    internal val buttonPadding: Double
+    val buttonPadding: Double
 
-    internal val buttonSize : Double
+    val buttonSize : Double
     var font: Font by Delegates.notNull()
     var gameColors: ColorTheme by Delegates.notNull()
 
     var presenter: Presenter by Delegates.notNull()
 
-    internal var scoreBar: ScoreBar by Delegates.notNull()
+    var scoreBar: ScoreBar by Delegates.notNull()
 
     private val pointNONE = Point(0, 0)
     private var buttonPointClicked = pointNONE
-    internal val buttonXs: List<Double>
-    internal val buttonYs: List<Double>
-    internal val duplicateKeyPressFilter = DuplicateKeyPressFilter()
+    val buttonXs: List<Double>
+    val buttonYs: List<Double>
+    val duplicateKeyPressFilter = DuplicateKeyPressFilter()
 
     private var appBar: AppBar by Delegates.notNull()
 
