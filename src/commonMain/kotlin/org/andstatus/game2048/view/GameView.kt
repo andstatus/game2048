@@ -23,6 +23,7 @@ import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.presenter.Presenter
 import org.andstatus.game2048.settings
+import org.andstatus.game2048.view.AppBar.Companion.setupAppBar
 import kotlin.properties.Delegates
 
 class GameView(val gameStage: Stage, val stringResources: StringResources, val animateViews: Boolean = true) {
@@ -65,7 +66,7 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
             view.gameColors = ColorTheme.load(stage)
             view.presenter = myMeasured("Presenter created") { Presenter(view) }
             view.setupStageBackground()
-            view.appBar = AppBar(view).apply { view.setupAppBar() }
+            view.appBar = view.setupAppBar()
             view.scoreBar = view.setupScoreBar()
             view.boardView = BoardView(view)
 
