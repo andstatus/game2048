@@ -5,6 +5,7 @@ import com.soywiz.klock.DateTime
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.kmem.isOdd
 import org.andstatus.game2048.*
+import kotlin.math.sqrt
 import kotlin.random.Random
 
 private const val keyMoveNumber = "moveNumber"
@@ -15,16 +16,17 @@ private const val keyPlayedSeconds = "playedSeconds"
 
 private val SUMMARY_FORMAT = DateFormat("yyyy-MM-dd HH:mm")
 
-class Board(val width: Int = settings.boardWidth,
-            val height: Int = settings.boardHeight,
+class Board(val width: Int,
+            val height: Int,
             val array: Array<Piece?> = Array(width * height) { null },
             var score: Int = 0,
             val dateTime: DateTimeTz = DateTimeTz.nowLocal(),
             val gameClock: GameClock = GameClock(),
             var moveNumber: Int = 0) {
     private val size = width * height
-
     val timeString get() = dateTime.format(SUMMARY_FORMAT)
+
+    constructor(settings: Settings): this(settings.boardWidth, settings.boardHeight)
 
     val usersMoveNumber: Int get() {
         if (moveNumber < 2 ) return 1
@@ -141,12 +143,13 @@ class Board(val width: Int = settings.boardWidth,
             val aMap: Map<String, Any> = json.asJsonMap()
             val pieces: Array<Piece?>? = aMap[keyPieces]?.asJsonArray()
                     ?.map { Piece.fromId(it as Int) }?.toTypedArray()
+            val boardWidth: Int = pieces?.let { sqrt(it.size.toDouble()).toInt() } ?: 0
             val score: Int? = aMap[keyScore] as Int?
             val dateTime: DateTimeTz? = aMap[keyDateTime]?.let { DateTime.parse(it as String)}
             val playedSeconds: Int = aMap[keyPlayedSeconds] as Int? ?: 0
             val moveNumber: Int = aMap[keyMoveNumber] as Int? ?: 0
             return if (pieces != null && score != null && dateTime != null)
-                Board(settings.boardWidth, settings.boardHeight, pieces, score, dateTime, GameClock(playedSeconds), moveNumber)
+                Board(boardWidth, boardWidth, pieces, score, dateTime, GameClock(playedSeconds), moveNumber)
             else null
         }
 

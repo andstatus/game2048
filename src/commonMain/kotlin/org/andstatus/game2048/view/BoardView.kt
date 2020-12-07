@@ -21,7 +21,6 @@ import com.soywiz.korge.view.text
 import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korma.geom.vector.roundRect
 import org.andstatus.game2048.defaultTextSize
-import org.andstatus.game2048.settings
 
 class BoardView(val gameView: GameView): Container() {
     private val controlsArea: SolidRect

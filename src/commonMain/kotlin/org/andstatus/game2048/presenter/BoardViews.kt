@@ -8,8 +8,11 @@ import org.andstatus.game2048.view.GameView
 
 data class PlacedBlock(val block: Block, val square: Square)
 
-class BoardViews(val gameView: GameView, val width: Int = 4, val height: Int = 4,
-                 val blocks: MutableList<PlacedBlock> = ArrayList()) {
+class BoardViews(
+    val gameView: GameView,
+    val width: Int = gameView.settings.boardWidth, val height: Int = gameView.settings.boardHeight,
+    val blocks: MutableList<PlacedBlock> = ArrayList()
+) {
     private val size = width * height
     var gameOver: Container? = null
 

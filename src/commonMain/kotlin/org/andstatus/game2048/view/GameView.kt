@@ -13,19 +13,23 @@ import com.soywiz.korim.font.Font
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.interpolation.Easing
+import org.andstatus.game2048.Settings
 import org.andstatus.game2048.defaultLanguage
 import org.andstatus.game2048.defaultPortraitGameWindowSize
 import org.andstatus.game2048.gameWindowSize
-import org.andstatus.game2048.loadSettings
 import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.presenter.Presenter
-import org.andstatus.game2048.settings
 import org.andstatus.game2048.view.AppBar.Companion.setupAppBar
 import kotlin.properties.Delegates
 
-class GameView(val gameStage: Stage, val stringResources: StringResources, val animateViews: Boolean = true) {
+class GameView(
+    val gameStage: Stage,
+    val settings: Settings,
+    val stringResources: StringResources,
+    val animateViews: Boolean = true
+) {
     val duplicateKeyPressFilter = DuplicateKeyPressFilter()
 
     val gameViewLeft: Int
@@ -53,12 +57,11 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     var boardView: BoardView by Delegates.notNull()
 
     companion object {
-        suspend fun initialize(stage: Stage, animateViews: Boolean): GameView {
-            loadSettings(stage)
+        suspend fun initialize(stage: Stage, settings: Settings, animateViews: Boolean): GameView {
             val stringResources = StringResources.load(defaultLanguage)
             stage.gameWindow.title = stringResources.text("app_name")
 
-            val view = GameView(stage, stringResources, animateViews)
+            val view = GameView(stage, settings, stringResources, animateViews)
             view.font = myMeasured("Font loaded") {
                 resourcesVfs["assets/clear_sans.fnt"].readBitmapFont()
             }

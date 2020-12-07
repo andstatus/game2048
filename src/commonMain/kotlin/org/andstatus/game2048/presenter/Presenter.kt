@@ -24,11 +24,11 @@ import kotlin.math.abs
 
 class Presenter(private val view: GameView) {
     private val coroutineScope: CoroutineScope get() = view.gameStage
-    val model = Model()
+    val model = Model(view.settings)
     private val moveIsInProgress = KorAtomicBoolean(false)
     val score get() = model.score
     val bestScore get() = model.bestScore
-    var boardViews = BoardViews(view, settings.boardWidth, settings.boardHeight)
+    var boardViews = BoardViews(view)
 
     private fun presentGameClock(coroutineScope: CoroutineScope, model: Model, textSupplier: () -> Text) {
         coroutineScope.launch {

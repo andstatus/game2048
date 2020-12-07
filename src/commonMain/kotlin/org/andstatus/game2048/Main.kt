@@ -28,6 +28,6 @@ suspend fun main() {
             virtualWidth = virtualWidth, virtualHeight = virtualHeight,
             bgcolor = color,
             gameId = "org.andstatus.game2048") {
-        GameView.initialize(this, true)
+        GameView.initialize(this, loadSettings(stage), true)
     }
 }

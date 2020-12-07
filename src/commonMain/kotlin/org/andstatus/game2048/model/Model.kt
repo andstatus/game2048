@@ -1,11 +1,11 @@
 package org.andstatus.game2048.model
 
-import org.andstatus.game2048.settings
+import org.andstatus.game2048.Settings
 import kotlin.random.Random
 
-class Model {
-    val history: History = History()
-    var board: Board = Board()
+class Model(val settings: Settings) {
+    val history: History = History(settings)
+    var board: Board = Board(settings)
 
     val usersMoveNumber: Int get() = board.usersMoveNumber
     val isBookmarked get() = history.currentGame.shortRecord.bookmarks.any { it.moveNumber == board.moveNumber }
@@ -37,7 +37,7 @@ class Model {
     }
 
     fun restart(): List<PlayerMove> {
-        return composerMove(Board()) + PlayerMove.delay() + computerMove()
+        return composerMove(Board(settings)) + PlayerMove.delay() + computerMove()
     }
 
     fun restoreGame(id: Int): List<PlayerMove> {
@@ -54,7 +54,7 @@ class Model {
 
     fun undoToStart(): List<PlayerMove> {
         history.historyIndex = 0
-        return composerMove(Board(), true)
+        return composerMove(Board(settings), true)
     }
 
     fun canRedo(): Boolean {

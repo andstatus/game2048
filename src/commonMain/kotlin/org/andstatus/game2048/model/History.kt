@@ -3,12 +3,12 @@ package org.andstatus.game2048.model
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.weeks
 import com.soywiz.korio.serialization.json.toJson
+import org.andstatus.game2048.Settings
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.myMeasuredIt
-import org.andstatus.game2048.settings
 
-class History() {
+class History(val settings: Settings) {
     private val keyBest = "best"
     private val keyCurrentGame = "current"
     private val keyGame = "game"
@@ -29,7 +29,7 @@ class History() {
         myLog("Best score: ${bestScore}")
         currentGame = settings.storage.getOrNull(keyCurrentGame)
             ?.let { GameRecord.fromJson(it) }
-            ?: GameRecord.newWithBoardAndMoves(Board(), emptyList(), emptyList())
+            ?: GameRecord.newWithBoardAndMoves(Board(settings), emptyList(), emptyList())
         loadPrevGames()
     }
 

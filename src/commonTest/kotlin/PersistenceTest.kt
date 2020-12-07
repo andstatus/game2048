@@ -1,5 +1,6 @@
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korio.serialization.json.toJson
+import org.andstatus.game2048.Settings
 import org.andstatus.game2048.loadSettings
 import org.andstatus.game2048.model.Board
 import org.andstatus.game2048.model.GameClock
@@ -11,7 +12,6 @@ import org.andstatus.game2048.model.PlacedPiece
 import org.andstatus.game2048.model.PlayerMove
 import org.andstatus.game2048.model.PlayerMoveEnum
 import org.andstatus.game2048.model.Square
-import org.andstatus.game2048.settings
 import org.andstatus.game2048.view.GameView
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -22,40 +22,45 @@ class PersistenceTest : ViewsForTesting(log = true) {
 
     @Test
     fun persistenceTest() = viewsTest {
-        loadSettings(this)
+        val settings = loadSettings(this)
         assertEquals(4, settings.boardWidth, "Settings are not initialized")
-        val history = saveTestHistory()
-        gameView = GameView.initialize(this, animateViews = false)
+        val history = saveTestHistory(settings)
+        gameView = GameView.initialize(this, settings, animateViews = false)
 
-        persistGameRecordTest()
+        persistGameRecordTest(settings)
         assertTestHistory(history)
 
         restartTest()
     }
 
-    private fun saveTestHistory() = with (History()) {
+    private fun saveTestHistory(settings: Settings) = with (History(settings)) {
         val placedPiece = PlacedPiece(Piece.N2, Square(1, 2))
         val move1 = PlayerMove.computerMove(placedPiece, 0)
         val move2 = PlayerMove.userMove(PlayerMoveEnum.DOWN, 1, listOf(MoveOne(placedPiece, Square(1, 3))))
         val move3 = PlayerMove.computerMove(PlacedPiece(Piece.N4, Square(2, 1)), 2)
-        val board = Board(array = arrayOf(null, null, null, null,
+        val board = Board(
+            settings.boardWidth, settings.boardHeight,
+            array = arrayOf(
+                null, null, null, null,
                 null, null, null, null,
                 null, null, Piece.N4, null,
-                null, Piece.N2, null, null),
-                score = 2,
-                gameClock = GameClock(125),
-                moveNumber = 3)
-        currentGame = GameRecord.newWithBoardAndMoves(board, listOf(Board(), board), listOf(move1, move2, move3))
+                null, Piece.N2, null, null
+            ),
+            score = 2,
+            gameClock = GameClock(125),
+            moveNumber = 3
+        )
+        currentGame = GameRecord.newWithBoardAndMoves(board, listOf(Board(settings), board), listOf(move1, move2, move3))
         saveCurrent()
     }
 
-    private fun persistGameRecordTest() {
-        persistGameRecordTest2(0)
-        persistGameRecordTest2(1)
-        persistGameRecordTest2(2)
+    private fun persistGameRecordTest(settings: Settings) {
+        persistGameRecordTest2(settings, 0)
+        persistGameRecordTest2(settings, 1)
+        persistGameRecordTest2(settings, 2)
     }
 
-    private fun persistGameRecordTest2(nMoves: Int) {
+    private fun persistGameRecordTest2(settings: Settings, nMoves: Int) {
         val moves = ArrayList<PlayerMove>()
         var nMovesActual = 0
         while (nMovesActual < nMoves) {
@@ -69,7 +74,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
             nMovesActual++
         }
 
-        val gameRecord = GameRecord.newWithBoardAndMoves(Board(), emptyList(), moves)
+        val gameRecord = GameRecord.newWithBoardAndMoves(Board(settings), emptyList(), moves)
         val gameRecordJson = gameRecord.toMap().toJson()
         val message = "nMoves:$nMoves, $gameRecordJson"
 

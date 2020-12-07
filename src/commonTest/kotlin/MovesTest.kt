@@ -1,5 +1,6 @@
 import com.soywiz.korge.input.SwipeDirection
 import com.soywiz.korge.tests.ViewsForTesting
+import org.andstatus.game2048.loadSettings
 import org.andstatus.game2048.model.Board
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.PlacedPiece
@@ -14,10 +15,10 @@ class MovesTest : ViewsForTesting(log = true) {
 
     @Test
     fun movesTest() = viewsTest {
-        gameView = GameView.initialize(this, animateViews = false)
+        gameView = GameView.initialize(this, loadSettings(this), animateViews = false)
 
         presenter.onPlayClick()
-        presenter.composerMove(Board())
+        presenter.composerMove(Board(gameView.settings))
         assertEquals(0, presenter.boardViews.blocks.size, modelAndViews())
 
         val square1 = Square(1, 1)
