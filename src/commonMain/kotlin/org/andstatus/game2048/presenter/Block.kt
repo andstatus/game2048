@@ -10,17 +10,13 @@ import com.soywiz.korma.geom.vector.roundRect
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.view.GameView
-import org.andstatus.game2048.view.buttonRadius
-import org.andstatus.game2048.view.cellSize
-import org.andstatus.game2048.view.positionX
-import org.andstatus.game2048.view.positionY
 
-class Block(val piece: Piece, gameView: GameView, size: Double = cellSize) : Container() {
+class Block(val piece: Piece, val gameView: GameView, size: Double = gameView.cellSize) : Container() {
 
     init {
         graphics {
             fill(gameView.gameColors.pieceBackground(piece)) {
-                roundRect(0.0, 0.0, size, size, buttonRadius)
+                roundRect(0.0, 0.0, size, size, gameView.buttonRadius)
             }
             text(piece.text, piece.textSize(), gameView.gameColors.pieceText(piece),
                     gameView.font, TextAlignment.MIDDLE_CENTER) {
@@ -29,8 +25,11 @@ class Block(val piece: Piece, gameView: GameView, size: Double = cellSize) : Con
         }
     }
 
-    fun addTo(parent: Container, square: Square) = addTo(parent)
-            .position(square.positionX(), square.positionY())
+    fun addTo(parent: Container, square: Square) = addTo(parent).apply {
+        with(gameView) {
+            position(square)
+        }
+    }
 
     private fun Piece.textSize(): Double = when (text.length) {
         1, 2, 3 -> width / 2

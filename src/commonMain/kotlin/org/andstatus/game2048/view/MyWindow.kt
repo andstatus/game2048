@@ -41,12 +41,14 @@ class MyWindow(val gameView: GameView, val titleKey: String) : Container() {
     val winHeight = gameView.gameViewHeight.toDouble()
 
     suspend fun Container.show() {
-        roundRect(winWidth, winHeight, buttonRadius, stroke = gameView.gameColors.myWindowBorder, strokeThickness = 2.0,
-                fill = gameView.gameColors.myWindowBackground) {
-            position(winLeft, winTop)
-        }
-
         with(gameView) {
+            roundRect(
+                winWidth, winHeight, buttonRadius, stroke = gameColors.myWindowBorder,
+                strokeThickness = 2.0, fill = gameColors.myWindowBackground
+            ) {
+                position(winLeft, winTop)
+            }
+
             val xPos = buttonXs[4]
             val yPos = buttonYs[0]
             barButton("close") {

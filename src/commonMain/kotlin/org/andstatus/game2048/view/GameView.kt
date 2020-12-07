@@ -1,18 +1,23 @@
 package org.andstatus.game2048.view
 
+import com.soywiz.klock.TimeSpan
 import com.soywiz.korev.PauseEvent
 import com.soywiz.korev.addEventListener
+import com.soywiz.korge.animate.Animator
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Stage
+import com.soywiz.korge.view.View
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.font.Font
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korma.interpolation.Easing
 import org.andstatus.game2048.defaultLanguage
 import org.andstatus.game2048.defaultPortraitGameWindowSize
 import org.andstatus.game2048.gameWindowSize
 import org.andstatus.game2048.loadSettings
+import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.presenter.Presenter
@@ -21,31 +26,30 @@ import org.andstatus.game2048.view.AppBar.Companion.setupAppBar
 import kotlin.properties.Delegates
 
 class GameView(val gameStage: Stage, val stringResources: StringResources, val animateViews: Boolean = true) {
+    val duplicateKeyPressFilter = DuplicateKeyPressFilter()
+
     val gameViewLeft: Int
     val gameViewTop: Int
     val gameViewWidth: Int
     val gameViewHeight: Int
+
     val gameScale: Double
-
     val buttonPadding: Double
-
+    val cellMargin: Double
+    val buttonRadius: Double
+    val cellSize: Double
     val buttonSize : Double
-    var font: Font by Delegates.notNull()
-    var gameColors: ColorTheme by Delegates.notNull()
-
-    var presenter: Presenter by Delegates.notNull()
-
-    var scoreBar: ScoreBar by Delegates.notNull()
-
+    val boardWidth: Double
+    val boardLeft: Double
     val buttonXs: List<Double>
     val buttonYs: List<Double>
-    val duplicateKeyPressFilter = DuplicateKeyPressFilter()
+    val boardTop: Double
 
+    var font: Font by Delegates.notNull()
+    var gameColors: ColorTheme by Delegates.notNull()
+    var presenter: Presenter by Delegates.notNull()
     private var appBar: AppBar by Delegates.notNull()
-
-    var boardWidth: Double = 0.0
-    var boardLeft: Double = 0.0
-    var boardTop: Double = 0.0
+    var scoreBar: ScoreBar by Delegates.notNull()
     var boardView: BoardView by Delegates.notNull()
 
     companion object {
@@ -129,6 +133,17 @@ class GameView(val gameStage: Stage, val stringResources: StringResources, val a
     fun Container.customOnClick(handler: () -> Unit) = duplicateKeyPressFilter.apply {
         customOnClick(handler)
     }
+
+    fun Container.position(square: Square) {
+        position(square.positionX(), square.positionY())
+    }
+
+    fun Animator.moveTo(view: View, square: Square, time: TimeSpan, easing: Easing) {
+        view.moveTo(square.positionX(), square.positionY(), time, easing)
+    }
+
+    private fun Square.positionX() = cellMargin + (cellSize + cellMargin) * x
+    private fun Square.positionY() = cellMargin + (cellSize + cellMargin) * y
 
     fun showControls(appBarButtonsToShow: List<AppBarButtonsEnum>, playSpeed: Int) {
         appBar.show(appBarButtonsToShow)

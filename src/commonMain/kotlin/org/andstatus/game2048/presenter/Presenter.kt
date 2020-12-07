@@ -522,10 +522,9 @@ class Presenter(private val view: GameView) {
                                 }
                             }
                         }
-                        is MoveDelay -> if (view.animateViews) {
-                            boardViews.blocks.lastOrNull()?.also {
-                                it.block.moveTo(it.square.positionX(), it.square.positionY(),
-                                        gameMode.delayMs.milliseconds, Easing.LINEAR)
+                        is MoveDelay -> with(view) {
+                            if (animateViews) boardViews.blocks.lastOrNull()?.also {
+                                moveTo(it.block, it.square, gameMode.delayMs.milliseconds, Easing.LINEAR)
                             }
                         }
                     }
@@ -575,10 +574,9 @@ class Presenter(private val view: GameView) {
                                 }
                             }
                         }
-                        is MoveDelay -> if (view.animateViews) {
-                            boardViews.blocks.lastOrNull()?.also {
-                                it.block.moveTo(it.square.positionX(), it.square.positionY(),
-                                        gameMode.delayMs.milliseconds, Easing.LINEAR)
+                        is MoveDelay -> with(view) {
+                            if (animateViews) boardViews.blocks.lastOrNull()?.also {
+                                moveTo(it.block, it.square, gameMode.delayMs.milliseconds, Easing.LINEAR)
                             }
                         }
                     }
@@ -591,8 +589,8 @@ class Presenter(private val view: GameView) {
     }
 
     private fun Block.move(animator: Animator, to: Square) {
-        if (view.animateViews) animator.apply {
-            this@move.moveTo(to.positionX(), to.positionY(), gameMode.moveMs.milliseconds, Easing.LINEAR)
+        with(view) {
+            if (animateViews) animator.moveTo(this@move, to, gameMode.moveMs.milliseconds, Easing.LINEAR)
         }
         boardViews[PlacedPiece(piece, to)] = this
     }
