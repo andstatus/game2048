@@ -4,11 +4,13 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.addTo
 import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.centerOn
+import com.soywiz.korge.view.container
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.roundRect
 import com.soywiz.korge.view.size
 import com.soywiz.korge.view.text
+import com.soywiz.korim.color.Colors
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korio.async.launch
@@ -39,6 +41,30 @@ class MyWindow(val gameView: GameView, val titleKey: String) : Container() {
     val winTop = gameView.gameViewTop.toDouble()
     val winWidth = gameView.gameViewWidth.toDouble()
     val winHeight = gameView.gameViewHeight.toDouble()
+
+    suspend fun GameView.wideButton(icon: String, labelKey: String = "", handler: () -> Unit): Container = Container().apply {
+        val borderWidth = 2.0
+        roundRect(winWidth - 2 * buttonPadding, buttonSize, buttonRadius,
+                fill = Colors.TRANSPARENT_BLACK,
+                stroke = gameColors.myWindowBorder, strokeThickness = borderWidth)
+        roundRect(buttonSize, buttonSize - borderWidth * 2, buttonRadius, fill = gameColors.buttonBackground) {
+            position(borderWidth, borderWidth)
+        }
+        image(resourcesVfs["assets/$icon.png"].readBitmap()) {
+            size(buttonSize * 0.6, buttonSize * 0.6)
+            position(buttonSize / 5, buttonSize / 5)
+        }
+        if (labelKey.isNotEmpty()) {
+            container {
+                text(stringResources.text(labelKey), defaultTextSize, gameColors.labelText,
+                    font, TextAlignment.MIDDLE_LEFT
+                ) {
+                    position(buttonSize + buttonPadding, buttonSize / 2)
+                }
+            }
+        }
+        customOnClick { handler() }
+    }
 
     suspend fun Container.show() {
         with(gameView) {

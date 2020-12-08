@@ -48,9 +48,9 @@ class GameView(
     val buttonXs: List<Double>
     val buttonYs: List<Double>
     val boardTop: Double
+    val gameColors: ColorTheme
 
     var font: Font by Delegates.notNull()
-    var gameColors: ColorTheme by Delegates.notNull()
     var presenter: Presenter by Delegates.notNull()
     private var appBar: AppBar by Delegates.notNull()
     var scoreBar: ScoreBar by Delegates.notNull()
@@ -65,9 +65,7 @@ class GameView(
             view.font = myMeasured("Font loaded") {
                 resourcesVfs["assets/clear_sans.fnt"].readBitmapFont()
             }
-            view.gameColors = ColorTheme.load(stage)
             view.presenter = myMeasured("Presenter created") { Presenter(view) }
-            view.setupStageBackground()
             view.appBar = view.setupAppBar()
             view.scoreBar = view.setupScoreBar()
             view.boardView = BoardView(view)
@@ -119,17 +117,15 @@ class GameView(
         }
         boardTop = buttonYs[3]
 
+        gameColors = ColorTheme.load(gameStage, settings)
+        gameStage.solidRect(gameStage.views.virtualWidth, gameStage.views.virtualHeight,
+                color = gameColors.stageBackground)
+
         myLog(
             "Window:${gameStage.coroutineContext.gameWindowSize}" +
                     " -> Virtual:${gameStage.views.virtualWidth}x${gameStage.views.virtualHeight}" +
                     " -> Game:${gameViewWidth}x$gameViewHeight, top:$gameViewTop, left:$gameViewLeft"
         )
-    }
-
-    private fun setupStageBackground() {
-        gameStage.solidRect(gameViewWidth, gameViewHeight, color = gameColors.stageBackground) {
-            position(gameViewLeft, gameViewTop)
-        }
     }
 
     /** Workaround for the bug: https://github.com/korlibs/korge-next/issues/56 */

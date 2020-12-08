@@ -2,7 +2,9 @@
 <resources>
   <string name="app_name">2048 Открытая Забавная Игра</string>
   <string name="best">ЛУЧШИЙ</string>
+  <string name="dark">Тёмная</string>
   <string name="delete_game">Удалить игру</string>
+  <string name="device_default">По умолчанию</string>
   <string name="duration">Длительность</string>
   <string name="game_actions">Действия с игрой</string>
   <string name="game_over">Игра окончена</string>
@@ -23,11 +25,13 @@
 первая победа…</string>
   <string name="id">#</string>
   <string name="last_changed">Изменён</string>
+  <string name="light">Светлая</string>
   <string name="load_game">Загрузить игру</string>
   <string name="note">Примечание</string>
   <string name="restore_game">Восстановить игру</string>
   <string name="score">Счёт</string>
   <string name="score_upper">СЧЁТ</string>
+  <string name="select_theme">Выберите тему</string>
   <string name="share">Поделиться игрой</string>
   <string name="try_again">Попробуйте ещё раз</string>
 </resources>

@@ -3,6 +3,7 @@ package org.andstatus.game2048.view
 import com.soywiz.korge.view.Stage
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import org.andstatus.game2048.Settings
 import org.andstatus.game2048.isDarkThemeOn
 import org.andstatus.game2048.model.Piece
 
@@ -51,7 +52,11 @@ sealed class ColorTheme {
     }
 
     companion object {
-        fun load(stage: Stage): ColorTheme = if (stage.coroutineContext.isDarkThemeOn) DarkTheme() else LightTheme()
+        fun load(stage: Stage, settings: Settings): ColorTheme = when(settings.colorTheme) {
+            ColorThemeEnum.DEVICE_DEFAULT -> if (stage.coroutineContext.isDarkThemeOn) DarkTheme() else LightTheme()
+            ColorThemeEnum.DARK -> DarkTheme()
+            ColorThemeEnum.LIGHT -> LightTheme()
+        }
     }
 }
 

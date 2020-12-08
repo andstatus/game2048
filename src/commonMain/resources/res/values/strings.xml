@@ -2,7 +2,9 @@
 <resources>
   <string name="app_name">2048 Open Fun Game</string>
   <string name="best">BEST</string>
+  <string name="dark">Dark</string>
   <string name="delete_game">Delete game</string>
+  <string name="device_default">Device default</string>
   <string name="duration">Duration</string>
   <string name="game_actions">Game actions</string>
   <string name="game_over">Game Over</string>
@@ -20,11 +22,13 @@ with the highest number.
 Number 2048 is a good first win…</string>
   <string name="id">ID</string>
   <string name="last_changed">Last changed</string>
+  <string name="light">Light</string>
   <string name="load_game">Load game</string>
   <string name="note">Note</string>
   <string name="restore_game">Restore game</string>
   <string name="score">Score</string>
   <string name="score_upper">SCORE</string>
+  <string name="select_theme">Select theme</string>
   <string name="share">Share game</string>
   <string name="try_again">Try again</string>
 </resources>

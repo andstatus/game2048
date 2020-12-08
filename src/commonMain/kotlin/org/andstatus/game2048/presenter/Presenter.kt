@@ -358,6 +358,22 @@ class Presenter(private val view: GameView) {
         showControls()
     }
 
+    suspend fun onSelectColorTheme(colorThemeEnum: ColorThemeEnum) {
+        logClick("onSelectColorTheme $colorThemeEnum")
+        if (colorThemeEnum == view.settings.colorTheme) return
+
+        view.settings.colorTheme = colorThemeEnum
+        restartTheApp()
+    }
+
+    private suspend fun restartTheApp() {
+        model.gameClock.stop()
+        model.saveCurrent()
+        view.settings.save()
+        view.gameStage.removeChildren()
+        GameView.initialize(view.gameStage, view.settings, view.animateViews)
+    }
+
     private fun startAutoPlaying(newMode: GameModeEnum) {
         if (gameMode.mode == newMode) {
             if (newMode == GameModeEnum.BACKWARDS) gameMode.decrementSpeed() else gameMode.incrementSpeed()

@@ -8,4 +8,5 @@ enum class GameMenuButtonsEnum(val icon: String, val labelKey: String) {
     LOAD("load", "load_game"),
     HELP("help", "help_title"),
     DELETE("delete", "delete_game"),
+    SELECT_THEME("palette", "select_theme"),
 }

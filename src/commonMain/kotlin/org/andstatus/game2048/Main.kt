@@ -3,6 +3,7 @@ package org.andstatus.game2048
 import com.soywiz.korge.Korge
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.SizeInt
+import org.andstatus.game2048.view.ColorThemeEnum
 import org.andstatus.game2048.view.GameView
 import org.andstatus.game2048.view.gameDefaultBackgroundColor
 import kotlin.coroutines.coroutineContext
@@ -15,7 +16,9 @@ val defaultDesktopGameWindowSize get() = SizeInt(defaultPortraitGameWindowSize.w
 const val defaultPortraitTextSize = 64.0
 var defaultTextSize: Double by Delegates.notNull()
 
-suspend fun main() {
+suspend fun main() = main(null)
+
+suspend fun main(colorThemeEnum: ColorThemeEnum?) {
     val windowSize: SizeInt = coroutineContext.gameWindowSize
     val virtualHeight: Int = defaultPortraitGameWindowSize.height
     val windowProportionalWidth = virtualHeight * windowSize.width / windowSize.height
@@ -23,7 +26,13 @@ suspend fun main() {
     val virtualWidth = max( windowProportionalWidth, defaultPortraitGameWindowSize.width)
     defaultTextSize = if (virtualHeight == defaultPortraitGameWindowSize.height) defaultPortraitTextSize
         else defaultPortraitTextSize * virtualHeight / defaultPortraitGameWindowSize.height
-    val color = if (coroutineContext.isDarkThemeOn) Colors.BLACK else gameDefaultBackgroundColor
+    val color = colorThemeEnum?.let {
+        when (it) {
+            ColorThemeEnum.DEVICE_DEFAULT -> null
+            ColorThemeEnum.DARK -> Colors.BLACK
+            ColorThemeEnum.LIGHT -> gameDefaultBackgroundColor
+        }
+    } ?: if (coroutineContext.isDarkThemeOn) Colors.BLACK else gameDefaultBackgroundColor
     Korge(width = windowSize.width, height = windowSize.height,
             virtualWidth = virtualWidth, virtualHeight = virtualHeight,
             bgcolor = color,
