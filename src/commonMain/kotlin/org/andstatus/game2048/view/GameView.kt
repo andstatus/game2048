@@ -10,13 +10,13 @@ import com.soywiz.korge.view.View
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.font.Font
-import com.soywiz.korim.font.readBitmapFont
-import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korio.util.OS
 import com.soywiz.korma.interpolation.Easing
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.defaultLanguage
 import org.andstatus.game2048.defaultPortraitGameWindowSize
 import org.andstatus.game2048.gameWindowSize
+import org.andstatus.game2048.model.History
 import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
@@ -27,6 +27,7 @@ import kotlin.properties.Delegates
 class GameView(
     val gameStage: Stage,
     val settings: Settings,
+    val font: Font,
     val stringResources: StringResources,
     val animateViews: Boolean = true
 ) {
@@ -50,22 +51,22 @@ class GameView(
     val boardTop: Double
     val gameColors: ColorTheme
 
-    var font: Font by Delegates.notNull()
     var presenter: Presenter by Delegates.notNull()
     private var appBar: AppBar by Delegates.notNull()
     var scoreBar: ScoreBar by Delegates.notNull()
     var boardView: BoardView by Delegates.notNull()
 
     companion object {
-        suspend fun initialize(stage: Stage, settings: Settings, animateViews: Boolean): GameView {
+        suspend fun initialize(stage: Stage, settings: Settings, font: Font, history: History,
+                               animateViews: Boolean): GameView {
             val stringResources = StringResources.load(defaultLanguage)
-            stage.gameWindow.title = stringResources.text("app_name")
-
-            val view = GameView(stage, settings, stringResources, animateViews)
-            view.font = myMeasured("Font loaded") {
-                resourcesVfs["assets/clear_sans.fnt"].readBitmapFont()
+            if (!OS.isAndroid) {
+                // We set window title in Android via AndroidManifest.xml
+                stage.gameWindow.title = stringResources.text("app_name")
             }
-            view.presenter = myMeasured("Presenter created") { Presenter(view) }
+
+            val view = GameView(stage, settings, font, stringResources, animateViews)
+            view.presenter = myMeasured("Presenter created") { Presenter(view, history) }
             view.appBar = view.setupAppBar()
             view.scoreBar = view.setupScoreBar()
             view.boardView = BoardView(view)
@@ -126,6 +127,11 @@ class GameView(
                     " -> Virtual:${gameStage.views.virtualWidth}x${gameStage.views.virtualHeight}" +
                     " -> Game:${gameViewWidth}x$gameViewHeight, top:$gameViewTop, left:$gameViewLeft"
         )
+    }
+
+    suspend fun reInitialize(): GameView {
+        gameStage.removeChildren()
+        return initialize(gameStage, settings, font, presenter.model.history, animateViews)
     }
 
     /** Workaround for the bug: https://github.com/korlibs/korge-next/issues/56 */

@@ -1,7 +1,9 @@
 import com.soywiz.korge.input.SwipeDirection
 import com.soywiz.korge.tests.ViewsForTesting
-import org.andstatus.game2048.loadSettings
+import org.andstatus.game2048.Settings
+import org.andstatus.game2048.loadFont
 import org.andstatus.game2048.model.Board
+import org.andstatus.game2048.model.History
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.PlacedPiece
 import org.andstatus.game2048.model.Square
@@ -15,7 +17,8 @@ class MovesTest : ViewsForTesting(log = true) {
 
     @Test
     fun movesTest() = viewsTest {
-        gameView = GameView.initialize(this, loadSettings(this), animateViews = false)
+        val settings = Settings.load(stage)
+        gameView = GameView.initialize(stage, settings, loadFont(), History.load(settings), animateViews = false)
 
         presenter.onPlayClick()
         presenter.composerMove(Board(gameView.settings))

@@ -22,9 +22,9 @@ import org.andstatus.game2048.model.*
 import org.andstatus.game2048.view.*
 import kotlin.math.abs
 
-class Presenter(private val view: GameView) {
+class Presenter(private val view: GameView, history: History) {
     private val coroutineScope: CoroutineScope get() = view.gameStage
-    val model = Model(view.settings)
+    val model = Model(history)
     private val moveIsInProgress = KorAtomicBoolean(false)
     val score get() = model.score
     val bestScore get() = model.bestScore
@@ -370,8 +370,7 @@ class Presenter(private val view: GameView) {
         model.gameClock.stop()
         model.saveCurrent()
         view.settings.save()
-        view.gameStage.removeChildren()
-        GameView.initialize(view.gameStage, view.settings, view.animateViews)
+        view.reInitialize()
     }
 
     private fun startAutoPlaying(newMode: GameModeEnum) {

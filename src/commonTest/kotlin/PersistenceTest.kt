@@ -1,7 +1,7 @@
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korio.serialization.json.toJson
 import org.andstatus.game2048.Settings
-import org.andstatus.game2048.loadSettings
+import org.andstatus.game2048.loadFont
 import org.andstatus.game2048.model.Board
 import org.andstatus.game2048.model.GameClock
 import org.andstatus.game2048.model.GameRecord
@@ -22,10 +22,10 @@ class PersistenceTest : ViewsForTesting(log = true) {
 
     @Test
     fun persistenceTest() = viewsTest {
-        val settings = loadSettings(this)
+        val settings = Settings.load(stage)
         assertEquals(4, settings.boardWidth, "Settings are not initialized")
         val history = saveTestHistory(settings)
-        gameView = GameView.initialize(this, settings, animateViews = false)
+        gameView = GameView.initialize(stage, settings, loadFont(), History.load(settings), animateViews = false)
 
         persistGameRecordTest(settings)
         assertTestHistory(history)
@@ -33,7 +33,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         restartTest()
     }
 
-    private fun saveTestHistory(settings: Settings) = with (History(settings)) {
+    private suspend fun saveTestHistory(settings: Settings) = with (History.load(settings)) {
         val placedPiece = PlacedPiece(Piece.N2, Square(1, 2))
         val move1 = PlayerMove.computerMove(placedPiece, 0)
         val move2 = PlayerMove.userMove(PlayerMoveEnum.DOWN, 1, listOf(MoveOne(placedPiece, Square(1, 3))))

@@ -3,43 +3,55 @@ package org.andstatus.game2048.model
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.weeks
 import com.soywiz.korio.serialization.json.toJson
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.myMeasuredIt
 
-class History(val settings: Settings) {
-    private val keyBest = "best"
-    private val keyCurrentGame = "current"
-    private val keyGame = "game"
+private val keyCurrentGame = "current"
+private val keyGame = "game"
 
-    private val gameIdsRange = 1..60
-    private val maxOlderGames = 30
+private val gameIdsRange = 1..60
+private val maxOlderGames = 30
+
+class History(val settings: Settings,
+              var currentGame: GameRecord,
+              var prevGames: List<GameRecord.ShortRecord> = emptyList()) {
+    private val keyBest = "best"
 
     // 1. Info on previous games
-    var bestScore: Int = 0
-    var prevGames: List<GameRecord.ShortRecord> = emptyList()
+    var bestScore: Int = settings.storage.getOrNull(keyBest)?.toInt() ?: 0
 
     // 2. This game, see for the inspiration https://en.wikipedia.org/wiki/Portable_Game_Notation
     var historyIndex = -1
-    var currentGame: GameRecord
 
-    init {
-        bestScore = settings.storage.getOrNull(keyBest)?.toInt() ?: 0
-        myLog("Best score: ${bestScore}")
-        currentGame = settings.storage.getOrNull(keyCurrentGame)
-            ?.let { GameRecord.fromJson(it) }
-            ?: GameRecord.newWithBoardAndMoves(Board(settings), emptyList(), emptyList())
-        loadPrevGames()
+    companion object {
+        suspend fun load(settings: Settings): History = coroutineScope {
+            val dCurrentGame = async {
+                myMeasured("Current game loaded") {
+                    settings.storage.getOrNull(keyCurrentGame)
+                            ?.let { GameRecord.fromJson(it) }
+                            ?: GameRecord.newWithBoardAndMoves(Board(settings), emptyList(), emptyList())
+                }
+            }
+            val dPrevGames = async { loadPrevGames(settings) }
+            History(settings, dCurrentGame.await(), dPrevGames.await())
+        }
+
+        private fun loadPrevGames(settings: Settings): List<GameRecord.ShortRecord> = myMeasured("PrevGames loaded") {
+            gameIdsRange.fold(emptyList(), { acc, ind ->
+                settings.storage.getOrNull(keyGame + ind)
+                        ?.let { GameRecord.ShortRecord.fromJson(it) }
+                        ?.let { acc + it } ?: acc
+            })
+        }
     }
 
-    private fun loadPrevGames(): History = myMeasured("PrevGames loaded") {
-        prevGames = gameIdsRange.fold(emptyList(), { acc, ind ->
-            settings.storage.getOrNull(keyGame + ind)
-                ?.let { GameRecord.ShortRecord.fromJson(it) }
-                ?.let { acc + it } ?: acc
-        })
-        this
+    private fun loadPrevGames(): History {
+        prevGames = loadPrevGames(settings)
+        return this
     }
 
     fun restoreGame(id: Int): GameRecord? =
@@ -102,7 +114,7 @@ class History(val settings: Settings) {
     fun deleteCurrent() {
         if (currentGame.id == 0) return
 
-        settings.storage.remove(keyGame + currentGame.id)
+        settings.storage.native.remove(keyGame + currentGame.id)
         loadPrevGames()
     }
 

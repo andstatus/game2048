@@ -3,8 +3,8 @@ package org.andstatus.game2048.model
 import org.andstatus.game2048.Settings
 import kotlin.random.Random
 
-class Model(val settings: Settings) {
-    val history: History = History(settings)
+class Model(val history: History) {
+    val settings: Settings = history.settings
     var board: Board = Board(settings)
 
     val usersMoveNumber: Int get() = board.usersMoveNumber
