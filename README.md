@@ -71,6 +71,12 @@ in order to ease understanding of implementation logic.
 Game exchange text format created (JSON based) to allow users share  
 and load shared games with all moves and bookmarks.
 
+## Contribution
+
+* Your ideas and suggestions are welcome at [Issues section](https://github.com/andstatus/game2048/issues). 
+* The app is multilingual. Please help to translate the app into your language:
+[2048 Open Fun Game at Crowdin](https://crowdin.com/project/2048-open-fun-game).
+
 <a id="changelog"/>
 
 ## Changelog
