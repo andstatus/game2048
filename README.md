@@ -26,7 +26,8 @@ Number 2048 is a good first win…
 ### Features of "2048 Open Fun Game" that are not present in the original game
 
 * Unlimited and animated Undo and Redo.
-* Dark theme for Android 9+. It turns on when system-wide "Dark theme" is turned on in device settings.
+* Select theme for the app: Device default (for Android 9+), Dark or Light.
+  Dark theme for Android 9+ is turned on by default when system-wide "Dark theme" is turned on in device settings.
 * Bookmarks at the interesting game positions. Return to a bookmark and play again from that place.
 * Move number and game duration shown. The time starts when you make a move.
   It stops when you tap Undo or Pause button.

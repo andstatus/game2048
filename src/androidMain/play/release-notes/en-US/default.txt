@@ -1,1 +1,1 @@
-v.1.4 Fix "Best score" wasn't updated in time
+v.1.5 Select theme for the app: Device default (for Android 9+), Dark or Light.
