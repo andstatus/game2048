@@ -9,9 +9,11 @@ import com.soywiz.korge.view.positionY
 private class EButton(val enum: AppBarButtonsEnum, val container: Container)
 private infix fun AppBarButtonsEnum.to(container: Container): EButton = EButton(this, container)
 
-class AppBar private constructor(val gameView: GameView, private val appBarButtons: List<EButton>) {
+class AppBar private constructor(val gameView: GameView, val logo: RotatingLogo, private val appBarButtons: List<EButton>) {
 
     fun show(appBarButtonsToShow: List<AppBarButtonsEnum>) {
+        logo.addTo(gameView.gameStage)
+
         appBarButtons.filter { !appBarButtonsToShow.contains(it.enum) }
             .forEach { it.container.removeFromParent() }
 
@@ -47,7 +49,7 @@ class AppBar private constructor(val gameView: GameView, private val appBarButto
 
     companion object {
         suspend fun GameView.setupAppBar(): AppBar {
-            RotatingLogo(this, buttonSize).apply { position(buttonXs[0], buttonYs[0]) }.addTo(gameStage)
+            val logo =  RotatingLogo(this, buttonSize).apply { position(buttonXs[0], buttonYs[0]) }
 
             val appBarTop = buttonYs[1]
 
@@ -77,7 +79,7 @@ class AppBar private constructor(val gameView: GameView, private val appBarButto
                 AppBarButtonsEnum.GAME_MENU to button("menu", presenter::onGameMenuClick),
             )
 
-            return AppBar(this, appBarButtons)
+            return AppBar(this, logo, appBarButtons)
         }
     }
 }

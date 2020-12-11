@@ -71,6 +71,8 @@ class GameView(
             view.scoreBar = view.setupScoreBar()
             view.boardView = BoardView(view)
 
+            stage.solidRect(stage.views.virtualWidth, stage.views.virtualHeight,
+                color = view.gameColors.stageBackground)
             view.presenter.onAppEntry()
             stage.gameWindow.addEventListener<PauseEvent> { view.presenter.onPauseEvent() }
             myLog("GameView initialized")
@@ -119,8 +121,6 @@ class GameView(
         boardTop = buttonYs[3]
 
         gameColors = ColorTheme.load(gameStage, settings)
-        gameStage.solidRect(gameStage.views.virtualWidth, gameStage.views.virtualHeight,
-                color = gameColors.stageBackground)
 
         myLog(
             "Window:${gameStage.coroutineContext.gameWindowSize}" +

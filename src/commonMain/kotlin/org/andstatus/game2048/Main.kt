@@ -13,6 +13,7 @@ import org.andstatus.game2048.model.History
 import org.andstatus.game2048.view.ColorThemeEnum
 import org.andstatus.game2048.view.GameView
 import org.andstatus.game2048.view.gameDefaultBackgroundColor
+import org.andstatus.game2048.view.splashScreen
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 import kotlin.properties.Delegates
@@ -59,8 +60,10 @@ suspend fun main(colorThemeEnum: ColorThemeEnum?) {
 }
 
 private suspend fun parallelLoad(coroutineScope: CoroutineScope, stage: Stage) {
+    val splash = stage.splashScreen()
     val font = coroutineScope.async { loadFont() }
     val settings = coroutineScope.async { Settings.load(stage) }
     val history = coroutineScope.async { History.load(settings.await()) }
     GameView.initialize(stage, settings.await(), font.await(), history.await(), true)
+    splash.removeFromParent()
 }
