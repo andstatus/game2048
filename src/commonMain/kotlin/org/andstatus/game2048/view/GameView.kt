@@ -29,7 +29,7 @@ import org.andstatus.game2048.view.AppBar.Companion.setupAppBar
 import kotlin.properties.Delegates
 
 /** @author yvolk@yurivolkov.com */
-fun initializeGameView(stage: Stage, animateViews: Boolean, handler: GameView.() -> Unit = {}) {
+suspend fun initializeGameView(stage: Stage, animateViews: Boolean, handler: suspend GameView.() -> Unit = {}) {
     val scope = if (OS.isWindows) stage else CoroutineScope(stage.coroutineContext + Dispatchers.Default)
     scope.launch {
         val quick = GameViewQuick(stage, animateViews)
@@ -64,7 +64,7 @@ fun initializeGameView(stage: Stage, animateViews: Boolean, handler: GameView.()
         view.gameStage.gameWindow.addEventListener<PauseEvent> { view.presenter.onPauseEvent() }
         myLog("GameView initialized")
         view.handler()
-    }
+    }.join()
 }
 
 class GameView(gameViewQuick: GameViewQuick,
@@ -81,7 +81,7 @@ class GameView(gameViewQuick: GameViewQuick,
     var scoreBar: ScoreBar by Delegates.notNull()
     var boardView: BoardView by Delegates.notNull()
 
-    fun reInitialize(handler: GameView.() -> Unit = {}) {
+    suspend fun reInitialize(handler: suspend GameView.() -> Unit = {}) {
         gameStage.removeChildren()
         initializeGameView(gameStage, animateViews, handler)
     }

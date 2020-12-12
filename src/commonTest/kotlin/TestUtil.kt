@@ -1,16 +1,42 @@
+import com.soywiz.korge.view.Stage
+import com.soywiz.korio.async.launch
+import kotlinx.coroutines.coroutineScope
 import org.andstatus.game2048.model.Square
-import org.andstatus.game2048.presenter.Presenter
+import org.andstatus.game2048.myLog
 import org.andstatus.game2048.view.GameView
-import kotlin.properties.Delegates
+import org.andstatus.game2048.view.initializeGameView
 
-var gameView: GameView by Delegates.notNull()
-val presenter: Presenter get() = gameView.presenter
+// TODO: Make some separate class for this...
+private val uninitializedLazy = lazy { throw IllegalStateException("Value is not initialized yet") }
+private var lazyGameView: Lazy<GameView> = uninitializedLazy
+private var gameView: GameView get() = lazyGameView.value
+    set(value) { lazyGameView = lazyOf(value) }
+fun unsetGameView() {
+    if (lazyGameView.isInitialized()) lazyGameView = uninitializedLazy
+}
+suspend fun Stage.testInitializeGameView(handler: suspend GameView.() -> Unit = {}) {
+    if (lazyGameView.isInitialized()) {
+        gameView.handler()
+        return
+    }
 
-fun presentedPieces() = presenter.boardViews.blocksOnBoard.map { it.firstOrNull()?.piece }
+    coroutineScope {
+        launch {
+            initializeGameView(stage, animateViews = false) {
+                myLog("Initialized in test")
+                gameView = this
+            }
+        }.join()
+        myLog("Initialized after join")
+        gameView.handler()
+    }
+}
 
-fun blocksAt(square: Square) = presenter.boardViews.getAll(square).map { it.piece }
+fun GameView.presentedPieces() = presenter.boardViews.blocksOnBoard.map { it.firstOrNull()?.piece }
 
-fun modelAndViews() =
+fun GameView.blocksAt(square: Square) = presenter.boardViews.getAll(square).map { it.piece }
+
+fun GameView.modelAndViews() =
         "Model:     " + presenter.model.board.array.mapIndexed { ind, piece ->
             ind.toString() + ":" + (piece?.text ?: "-")
         } +
@@ -22,11 +48,11 @@ fun modelAndViews() =
             ind.toString() + ":" + (if (list.isEmpty()) "-" else list.joinToString(transform = { it.piece.text }))
         }
 
-fun currentGameString(): String = "CurrentGame" + presenter.model.history.currentGame.playerMoves
+fun GameView.currentGameString(): String = "CurrentGame" + presenter.model.history.currentGame.playerMoves
         .mapIndexed { ind, playerMove ->
             "\n" + (ind + 1).toString() + ":" + playerMove
         }
 
-fun historyString(): String = with(presenter.model.history) {
+fun GameView.historyString(): String = with(presenter.model.history) {
     "History: index:$historyIndex, moves:${currentGame.playerMoves.size}"
 }

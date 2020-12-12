@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">2048 ඕපන් ෆන් ගේම්</string>
+  <string name="dark">අඳුරු</string>
+  <string name="note">සටහන</string>
+  <string name="score">ලකුණු</string>
+</resources>

@@ -11,7 +11,7 @@ import org.andstatus.game2048.model.PlacedPiece
 import org.andstatus.game2048.model.PlayerMove
 import org.andstatus.game2048.model.PlayerMoveEnum
 import org.andstatus.game2048.model.Square
-import org.andstatus.game2048.view.initializeGameView
+import org.andstatus.game2048.view.GameView
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -21,12 +21,12 @@ class PersistenceTest : ViewsForTesting(log = true) {
 
     @Test
     fun persistenceTest() = viewsTest {
+        unsetGameView()
         val settings = Settings.load(stage)
         assertEquals(4, settings.boardWidth, "Settings are not initialized")
         val history = saveTestHistory(settings)
 
-        initializeGameView(stage, animateViews = false) {
-            gameView = this
+        testInitializeGameView() {
             persistGameRecordTest(settings)
             assertTestHistory(history)
             restartTest()
@@ -54,13 +54,13 @@ class PersistenceTest : ViewsForTesting(log = true) {
         saveCurrent()
     }
 
-    private fun persistGameRecordTest(settings: Settings) {
+    private fun GameView.persistGameRecordTest(settings: Settings) {
         persistGameRecordTest2(settings, 0)
         persistGameRecordTest2(settings, 1)
         persistGameRecordTest2(settings, 2)
     }
 
-    private fun persistGameRecordTest2(settings: Settings, nMoves: Int) {
+    private fun GameView.persistGameRecordTest2(settings: Settings, nMoves: Int) {
         val moves = ArrayList<PlayerMove>()
         var nMovesActual = 0
         while (nMovesActual < nMoves) {
@@ -87,7 +87,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         assertEquals(gameRecord.playerMoves, gameRecordRestored.playerMoves, message)
     }
 
-    private fun assertTestHistory(expected: History) {
+    private fun GameView.assertTestHistory(expected: History) {
         val actual = presenter.model.history
         assertEquals(expected.currentGame.playerMoves, actual.currentGame.playerMoves, modelAndViews())
         assertEquals(expected.currentGame.score, actual.currentGame.score, modelAndViews())
@@ -97,7 +97,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         assertFalse(presenter.canRedo(), modelAndViews())
     }
 
-    private fun restartTest() {
+    private fun GameView.restartTest() {
         presenter.computerMove()
         presenter.computerMove()
         assertTrue(presenter.boardViews.blocks.size > 1, modelAndViews())

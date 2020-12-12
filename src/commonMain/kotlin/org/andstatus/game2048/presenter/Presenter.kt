@@ -354,7 +354,7 @@ class Presenter(private val view: GameView, history: History) {
         view.showHelp()
     }
 
-    fun onSelectColorTheme(colorThemeEnum: ColorThemeEnum) {
+    suspend fun onSelectColorTheme(colorThemeEnum: ColorThemeEnum) {
         logClick("onSelectColorTheme $colorThemeEnum")
         if (colorThemeEnum == view.settings.colorTheme) return
 
@@ -362,7 +362,7 @@ class Presenter(private val view: GameView, history: History) {
         restartTheApp()
     }
 
-    private fun restartTheApp() {
+    private suspend fun restartTheApp() {
         model.gameClock.stop()
         model.saveCurrent()
         view.settings.save()
