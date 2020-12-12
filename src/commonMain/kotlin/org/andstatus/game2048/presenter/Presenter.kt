@@ -22,6 +22,7 @@ import org.andstatus.game2048.model.*
 import org.andstatus.game2048.view.*
 import kotlin.math.abs
 
+/** @author yvolk@yurivolkov.com */
 class Presenter(private val view: GameView, history: History) {
     private val coroutineScope: CoroutineScope get() = view.gameStage
     val model = Model(history)

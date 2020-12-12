@@ -1,19 +1,11 @@
 package org.andstatus.game2048
 
 import com.soywiz.korge.Korge
-import com.soywiz.korge.view.Stage
 import com.soywiz.korim.color.Colors
-import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.SizeInt
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import org.andstatus.game2048.model.History
 import org.andstatus.game2048.view.ColorThemeEnum
-import org.andstatus.game2048.view.GameView
+import org.andstatus.game2048.view.GameView.Companion.initializeGameView
 import org.andstatus.game2048.view.gameDefaultBackgroundColor
-import org.andstatus.game2048.view.splashScreen
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 import kotlin.properties.Delegates
@@ -46,24 +38,6 @@ suspend fun main(colorThemeEnum: ColorThemeEnum?) {
             bgcolor = color,
             gameId = "org.andstatus.game2048") {
         myLog("Stage is ready")
-        if (OS.isWindows) {
-            // This is faster for Android emulator
-            parallelLoad(this, stage)
-        } else {
-            // This is faster for jvmRun and Android devices;
-            // and this doesn't work on Windows, at all.
-            launch(Dispatchers.Default) {
-                parallelLoad(this, stage)
-            }
-        }
+        initializeGameView(true)
     }
-}
-
-private suspend fun parallelLoad(coroutineScope: CoroutineScope, stage: Stage) {
-    val splash = stage.splashScreen()
-    val font = coroutineScope.async { loadFont() }
-    val settings = coroutineScope.async { Settings.load(stage) }
-    val history = coroutineScope.async { History.load(settings.await()) }
-    GameView.initialize(stage, settings.await(), font.await(), history.await(), true)
-    splash.removeFromParent()
 }

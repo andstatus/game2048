@@ -68,7 +68,6 @@ class BoardView(val gameView: GameView): Container() {
                     presenter.onCloseGameWindowClick()
                 }
             }
-            addTo(gameStage)
         }
     }
 

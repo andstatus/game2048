@@ -7,15 +7,19 @@ import com.soywiz.korge.animate.Animator
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.View
+import com.soywiz.korge.view.addTo
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.font.Font
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.interpolation.Easing
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.defaultLanguage
-import org.andstatus.game2048.defaultPortraitGameWindowSize
-import org.andstatus.game2048.gameWindowSize
+import org.andstatus.game2048.loadFont
 import org.andstatus.game2048.model.History
 import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.myLog
@@ -24,32 +28,15 @@ import org.andstatus.game2048.presenter.Presenter
 import org.andstatus.game2048.view.AppBar.Companion.setupAppBar
 import kotlin.properties.Delegates
 
-class GameView(
-    val gameStage: Stage,
-    val settings: Settings,
-    val font: Font,
-    val stringResources: StringResources,
-    val animateViews: Boolean = true
-) {
-    val duplicateKeyPressFilter = DuplicateKeyPressFilter()
+/** @author yvolk@yurivolkov.com */
+class GameView(gameViewQuick: GameViewQuick,
+               val settings: Settings,
+               val font: Font,
+               val stringResources: StringResources,
+               val gameColors: ColorTheme): GameViewBase by gameViewQuick {
 
-    val gameViewLeft: Int
-    val gameViewTop: Int
-    val gameViewWidth: Int
-    val gameViewHeight: Int
-
-    val gameScale: Double
-    val buttonPadding: Double
-    val cellMargin: Double
-    val buttonRadius: Double
-    val cellSize: Double
-    val buttonSize : Double
-    val boardWidth: Double
-    val boardLeft: Double
-    val buttonXs: List<Double>
-    val buttonYs: List<Double>
-    val boardTop: Double
-    val gameColors: ColorTheme
+    val cellSize: Double = (gameViewWidth - cellMargin * (settings.boardWidth + 1) - 2 * buttonPadding) / settings.boardWidth
+    val boardWidth: Double = cellSize * settings.boardWidth + cellMargin * (settings.boardWidth + 1)
 
     var presenter: Presenter by Delegates.notNull()
     private var appBar: AppBar by Delegates.notNull()
@@ -57,81 +44,64 @@ class GameView(
     var boardView: BoardView by Delegates.notNull()
 
     companion object {
-        suspend fun initialize(stage: Stage, settings: Settings, font: Font, history: History,
-                               animateViews: Boolean): GameView {
-            val stringResources = StringResources.load(defaultLanguage)
+        suspend fun Stage.initializeGameView(animateViews: Boolean, handler: GameView.() -> Unit = {}) {
+            val viewQuick = GameViewQuick(stage, animateViews)
+
+            if (OS.isWindows) {
+                // This is faster for Android emulator
+                parallelLoad(this, viewQuick, handler)
+            } else {
+                // This is faster for jvmRun and Android devices;
+                // and this doesn't work on Windows, at all.
+                launch(Dispatchers.Default) {
+                    parallelLoad(this, viewQuick, handler)
+                }
+            }
+        }
+
+        private suspend fun parallelLoad(
+            coroutineScope: CoroutineScope,
+            quick: GameViewQuick,
+            handler: GameView.() -> Unit
+        ) {
+            val splash = quick.gameStage.splashScreen()
+            val font = coroutineScope.async { loadFont() }
+            val settings = coroutineScope.async { Settings.load(quick.gameStage) }
+            val history = coroutineScope.async { History.load(settings.await()) }
+            val gameColors = coroutineScope.async { ColorTheme.load(quick.gameStage, settings.await()) }
+
+            val view = GameView(
+                quick, settings.await(), font.await(), StringResources.load(defaultLanguage), gameColors.await()
+            )
+            quick.gameStage.solidRect(quick.gameStage.views.virtualWidth, quick.gameStage.views.virtualHeight,
+                    color = view.gameColors.stageBackground)
+            splash.addTo(quick.gameStage)
+
             if (!OS.isAndroid) {
                 // We set window title in Android via AndroidManifest.xml
-                stage.gameWindow.title = stringResources.text("app_name")
+                quick.gameStage.gameWindow.title = view.stringResources.text("app_name")
             }
 
-            val view = GameView(stage, settings, font, stringResources, animateViews)
-            view.presenter = myMeasured("Presenter created") { Presenter(view, history) }
-            view.appBar = view.setupAppBar()
-            view.scoreBar = view.setupScoreBar()
-            view.boardView = BoardView(view)
+            view.presenter = myMeasured("Presenter created") { Presenter(view, history.await()) }
+            val appBar = coroutineScope.async { view.setupAppBar() }
+            val scoreBar = coroutineScope.async { view.setupScoreBar() }
+            val boardView = coroutineScope.async { BoardView(view) }
 
-            stage.solidRect(stage.views.virtualWidth, stage.views.virtualHeight,
-                color = view.gameColors.stageBackground)
+            view.appBar = appBar.await()
+            view.scoreBar = scoreBar.await()
+            view.boardView = boardView.await()
+
+            splash.removeFromParent()
             view.presenter.onAppEntry()
-            stage.gameWindow.addEventListener<PauseEvent> { view.presenter.onPauseEvent() }
+            quick.gameStage.gameWindow.addEventListener<PauseEvent> { view.presenter.onPauseEvent() }
             myLog("GameView initialized")
-            return view
+            view.handler()
         }
     }
 
-    init {
-        if (gameStage.views.virtualWidth < gameStage.views.virtualHeight) {
-            if ( gameStage.views.virtualHeight / gameStage.views.virtualWidth >
-                    defaultPortraitGameWindowSize.height / defaultPortraitGameWindowSize.width) {
-                gameViewWidth = gameStage.views.virtualWidth
-                gameViewHeight = gameViewWidth * defaultPortraitGameWindowSize.height / defaultPortraitGameWindowSize.width
-                gameViewLeft = 0
-                gameViewTop = (gameStage.views.virtualHeight - gameViewHeight) / 2
-            } else {
-                gameViewWidth = gameStage.views.virtualHeight * defaultPortraitGameWindowSize.width / defaultPortraitGameWindowSize.height
-                gameViewHeight = gameStage.views.virtualHeight
-                gameViewLeft = (gameStage.views.virtualWidth - gameViewWidth) / 2
-                gameViewTop = 0
-            }
-        } else {
-            gameViewWidth = gameStage.views.virtualHeight * defaultPortraitGameWindowSize.width / defaultPortraitGameWindowSize.height
-            gameViewHeight = gameStage.views.virtualHeight
-            gameViewLeft = (gameStage.views.virtualWidth - gameViewWidth) / 2
-            gameViewTop = 0
-        }
-        gameScale = gameViewHeight.toDouble() / defaultPortraitGameWindowSize.height
-        buttonPadding = 27 * gameScale
-
-        cellMargin = 15 * gameScale
-        buttonRadius = 8 * gameScale
-
-        val allCellMargins = cellMargin * (settings.boardWidth + 1)
-        cellSize = (gameViewWidth - allCellMargins - 2 * buttonPadding) / settings.boardWidth
-        buttonSize = (gameViewWidth - buttonPadding * 6) / 5
-        boardWidth = cellSize * settings.boardWidth + allCellMargins
-        boardLeft = gameViewLeft + (gameViewWidth - boardWidth) / 2
-
-        buttonXs = (0 .. 4).fold(emptyList()) { acc, i ->
-            acc + (boardLeft + i * (buttonSize + buttonPadding))
-        }
-        buttonYs = (0 .. 8).fold(emptyList()) { acc, i ->
-            acc + (buttonPadding + i * (buttonSize + buttonPadding))
-        }
-        boardTop = buttonYs[3]
-
-        gameColors = ColorTheme.load(gameStage, settings)
-
-        myLog(
-            "Window:${gameStage.coroutineContext.gameWindowSize}" +
-                    " -> Virtual:${gameStage.views.virtualWidth}x${gameStage.views.virtualHeight}" +
-                    " -> Game:${gameViewWidth}x$gameViewHeight, top:$gameViewTop, left:$gameViewLeft"
-        )
-    }
-
-    suspend fun reInitialize(): GameView {
+    suspend fun reInitialize(handler: GameView.() -> Unit = {}) {
         gameStage.removeChildren()
-        return initialize(gameStage, settings, font, presenter.model.history, animateViews)
+        gameStage.initializeGameView(animateViews, handler)
     }
 
     /** Workaround for the bug: https://github.com/korlibs/korge-next/issues/56 */

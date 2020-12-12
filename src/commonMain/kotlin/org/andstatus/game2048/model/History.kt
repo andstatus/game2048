@@ -16,6 +16,7 @@ private val keyGame = "game"
 private val gameIdsRange = 1..60
 private val maxOlderGames = 30
 
+/** @author yvolk@yurivolkov.com */
 class History(val settings: Settings,
               var currentGame: GameRecord,
               var prevGames: List<GameRecord.ShortRecord> = emptyList()) {

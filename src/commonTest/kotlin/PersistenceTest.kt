@@ -1,7 +1,6 @@
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korio.serialization.json.toJson
 import org.andstatus.game2048.Settings
-import org.andstatus.game2048.loadFont
 import org.andstatus.game2048.model.Board
 import org.andstatus.game2048.model.GameClock
 import org.andstatus.game2048.model.GameRecord
@@ -12,7 +11,7 @@ import org.andstatus.game2048.model.PlacedPiece
 import org.andstatus.game2048.model.PlayerMove
 import org.andstatus.game2048.model.PlayerMoveEnum
 import org.andstatus.game2048.model.Square
-import org.andstatus.game2048.view.GameView
+import org.andstatus.game2048.view.GameView.Companion.initializeGameView
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -25,12 +24,13 @@ class PersistenceTest : ViewsForTesting(log = true) {
         val settings = Settings.load(stage)
         assertEquals(4, settings.boardWidth, "Settings are not initialized")
         val history = saveTestHistory(settings)
-        gameView = GameView.initialize(stage, settings, loadFont(), History.load(settings), animateViews = false)
 
-        persistGameRecordTest(settings)
-        assertTestHistory(history)
-
-        restartTest()
+        initializeGameView(animateViews = false) {
+            gameView = this
+            persistGameRecordTest(settings)
+            assertTestHistory(history)
+            restartTest()
+        }
     }
 
     private suspend fun saveTestHistory(settings: Settings) = with (History.load(settings)) {

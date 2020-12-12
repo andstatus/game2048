@@ -13,7 +13,7 @@ import com.soywiz.korim.text.TextAlignment
 import kotlin.math.abs
 
 fun GameView.setupScoreBar(): ScoreBar {
-    return ScoreBar(this).addTo(gameStage)
+    return ScoreBar(this)
 }
 
 class ScoreBar(val gameView: GameView): Container() {
@@ -70,6 +70,7 @@ class ScoreBar(val gameView: GameView): Container() {
     }
 
     fun show(playSpeed: Int) {
+        addTo(gameView.gameStage)
         usersMoveNumber.text = gameView.presenter.model.usersMoveNumber.toString() +
                 (if (playSpeed < 0) " «" else "") +
                 (if (playSpeed > 0) " »" else "") +
