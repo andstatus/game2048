@@ -29,6 +29,44 @@ import org.andstatus.game2048.view.AppBar.Companion.setupAppBar
 import kotlin.properties.Delegates
 
 /** @author yvolk@yurivolkov.com */
+fun initializeGameView(stage: Stage, animateViews: Boolean, handler: GameView.() -> Unit = {}) {
+    val scope = if (OS.isWindows) stage else CoroutineScope(stage.coroutineContext + Dispatchers.Default)
+    scope.launch {
+        val quick = GameViewQuick(stage, animateViews)
+        val splash = quick.gameStage.splashScreen()
+        val font = async { loadFont() }
+        val settings = async { Settings.load(quick.gameStage) }
+        val history = async { History.load(settings.await()) }
+        val strings = async { StringResources.load(defaultLanguage) }
+        val gameColors = async { ColorTheme.load(quick.gameStage, settings.await()) }
+
+        quick.gameStage.solidRect(quick.gameStage.views.virtualWidth, quick.gameStage.views.virtualHeight,
+                color = gameColors.await().stageBackground)
+        splash.addTo(quick.gameStage)
+
+        if (!OS.isAndroid) {
+            // We set window title in Android via AndroidManifest.xml
+            quick.gameStage.gameWindow.title = strings.await().text("app_name")
+        }
+
+        val view = GameView(quick, settings.await(), font.await(), strings.await(), gameColors.await())
+        view.presenter = myMeasured("Presenter created") { Presenter(view, history.await()) }
+        val appBar = async { view.setupAppBar() }
+        val scoreBar = async { view.setupScoreBar() }
+        val boardView = async { BoardView(view) }
+
+        view.appBar = appBar.await()
+        view.scoreBar = scoreBar.await()
+        view.boardView = boardView.await()
+
+        splash.removeFromParent()
+        view.presenter.onAppEntry()
+        view.gameStage.gameWindow.addEventListener<PauseEvent> { view.presenter.onPauseEvent() }
+        myLog("GameView initialized")
+        view.handler()
+    }
+}
+
 class GameView(gameViewQuick: GameViewQuick,
                val settings: Settings,
                val font: Font,
@@ -39,69 +77,13 @@ class GameView(gameViewQuick: GameViewQuick,
     val boardWidth: Double = cellSize * settings.boardWidth + cellMargin * (settings.boardWidth + 1)
 
     var presenter: Presenter by Delegates.notNull()
-    private var appBar: AppBar by Delegates.notNull()
+    var appBar: AppBar by Delegates.notNull()
     var scoreBar: ScoreBar by Delegates.notNull()
     var boardView: BoardView by Delegates.notNull()
 
-    companion object {
-        suspend fun Stage.initializeGameView(animateViews: Boolean, handler: GameView.() -> Unit = {}) {
-            val viewQuick = GameViewQuick(stage, animateViews)
-
-            if (OS.isWindows) {
-                // This is faster for Android emulator
-                parallelLoad(this, viewQuick, handler)
-            } else {
-                // This is faster for jvmRun and Android devices;
-                // and this doesn't work on Windows, at all.
-                launch(Dispatchers.Default) {
-                    parallelLoad(this, viewQuick, handler)
-                }
-            }
-        }
-
-        private suspend fun parallelLoad(
-            coroutineScope: CoroutineScope,
-            quick: GameViewQuick,
-            handler: GameView.() -> Unit
-        ) {
-            val splash = quick.gameStage.splashScreen()
-            val font = coroutineScope.async { loadFont() }
-            val settings = coroutineScope.async { Settings.load(quick.gameStage) }
-            val history = coroutineScope.async { History.load(settings.await()) }
-            val gameColors = coroutineScope.async { ColorTheme.load(quick.gameStage, settings.await()) }
-
-            val view = GameView(
-                quick, settings.await(), font.await(), StringResources.load(defaultLanguage), gameColors.await()
-            )
-            quick.gameStage.solidRect(quick.gameStage.views.virtualWidth, quick.gameStage.views.virtualHeight,
-                    color = view.gameColors.stageBackground)
-            splash.addTo(quick.gameStage)
-
-            if (!OS.isAndroid) {
-                // We set window title in Android via AndroidManifest.xml
-                quick.gameStage.gameWindow.title = view.stringResources.text("app_name")
-            }
-
-            view.presenter = myMeasured("Presenter created") { Presenter(view, history.await()) }
-            val appBar = coroutineScope.async { view.setupAppBar() }
-            val scoreBar = coroutineScope.async { view.setupScoreBar() }
-            val boardView = coroutineScope.async { BoardView(view) }
-
-            view.appBar = appBar.await()
-            view.scoreBar = scoreBar.await()
-            view.boardView = boardView.await()
-
-            splash.removeFromParent()
-            view.presenter.onAppEntry()
-            quick.gameStage.gameWindow.addEventListener<PauseEvent> { view.presenter.onPauseEvent() }
-            myLog("GameView initialized")
-            view.handler()
-        }
-    }
-
-    suspend fun reInitialize(handler: GameView.() -> Unit = {}) {
+    fun reInitialize(handler: GameView.() -> Unit = {}) {
         gameStage.removeChildren()
-        gameStage.initializeGameView(animateViews, handler)
+        initializeGameView(gameStage, animateViews, handler)
     }
 
     /** Workaround for the bug: https://github.com/korlibs/korge-next/issues/56 */
@@ -125,5 +107,4 @@ class GameView(gameViewQuick: GameViewQuick,
         scoreBar.show(playSpeed)
         boardView.setOnTop()
     }
-
 }

@@ -4,8 +4,8 @@ import com.soywiz.korge.Korge
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.SizeInt
 import org.andstatus.game2048.view.ColorThemeEnum
-import org.andstatus.game2048.view.GameView.Companion.initializeGameView
 import org.andstatus.game2048.view.gameDefaultBackgroundColor
+import org.andstatus.game2048.view.initializeGameView
 import kotlin.coroutines.coroutineContext
 import kotlin.math.max
 import kotlin.properties.Delegates
@@ -38,6 +38,6 @@ suspend fun main(colorThemeEnum: ColorThemeEnum?) {
             bgcolor = color,
             gameId = "org.andstatus.game2048") {
         myLog("Stage is ready")
-        initializeGameView(true)
+        initializeGameView(this, true)
     }
 }

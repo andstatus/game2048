@@ -4,7 +4,7 @@ import org.andstatus.game2048.model.Board
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.PlacedPiece
 import org.andstatus.game2048.model.Square
-import org.andstatus.game2048.view.GameView.Companion.initializeGameView
+import org.andstatus.game2048.view.initializeGameView
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -14,7 +14,7 @@ class MovesTest : ViewsForTesting(log = true) {
 
     @Test
     fun movesTest() = viewsTest {
-        initializeGameView(animateViews = false) {
+        initializeGameView(stage, animateViews = false) {
             gameView = this
 
             presenter.onPlayClick()

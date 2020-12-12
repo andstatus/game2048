@@ -11,7 +11,7 @@ import org.andstatus.game2048.model.PlacedPiece
 import org.andstatus.game2048.model.PlayerMove
 import org.andstatus.game2048.model.PlayerMoveEnum
 import org.andstatus.game2048.model.Square
-import org.andstatus.game2048.view.GameView.Companion.initializeGameView
+import org.andstatus.game2048.view.initializeGameView
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -25,7 +25,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         assertEquals(4, settings.boardWidth, "Settings are not initialized")
         val history = saveTestHistory(settings)
 
-        initializeGameView(animateViews = false) {
+        initializeGameView(stage, animateViews = false) {
             gameView = this
             persistGameRecordTest(settings)
             assertTestHistory(history)
