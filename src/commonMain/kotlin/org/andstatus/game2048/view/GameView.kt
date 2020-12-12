@@ -34,10 +34,10 @@ suspend fun initializeGameView(stage: Stage, animateViews: Boolean, handler: sus
     scope.launch {
         val quick = GameViewQuick(stage, animateViews)
         val splash = quick.gameStage.splashScreen()
-        val font = async { loadFont() }
+        val strings = async { StringResources.load(defaultLanguage) }
+        val font = async { loadFont(strings.await()) }
         val settings = async { Settings.load(quick.gameStage) }
         val history = async { History.load(settings.await()) }
-        val strings = async { StringResources.load(defaultLanguage) }
         val gameColors = async { ColorTheme.load(quick.gameStage, settings.await()) }
 
         quick.gameStage.solidRect(quick.gameStage.views.virtualWidth, quick.gameStage.views.virtualHeight,

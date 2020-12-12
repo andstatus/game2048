@@ -5,6 +5,7 @@ import com.soywiz.korge.view.Stage
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korio.file.std.resourcesVfs
 import org.andstatus.game2048.view.ColorThemeEnum
+import org.andstatus.game2048.view.StringResources
 
 private const val keyAllowResultingTileToMerge = "allowResultingTileToMerge"
 private const val keyAllowUsersMoveWithoutBlockMoves = "allowUsersMoveWithoutBlockMoves"
@@ -44,6 +45,11 @@ class Settings(val storage: MyStorage) {
     }
 }
 
-suspend fun loadFont() = myMeasured("Font loaded") {
-    resourcesVfs["assets/clear_sans.fnt"].readBitmapFont()
+suspend fun loadFont(strings: StringResources) = myMeasured("Font loaded") {
+    val fontFolder = when(strings.lang) {
+        "zh" -> "noto_sans_sc"
+        "si" -> "abhaya_libre"
+        else -> "clear_sans"
+    }
+    resourcesVfs["assets/fonts/$fontFolder/font.fnt"].readBitmapFont()
 }

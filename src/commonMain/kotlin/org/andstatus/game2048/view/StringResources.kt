@@ -6,25 +6,32 @@ import com.soywiz.korio.lang.indexOfOrNull
 import com.soywiz.korio.serialization.xml.Xml
 import org.andstatus.game2048.myLog
 
-class StringResources private constructor(private val strings: Map<String, String>,
+class StringResources private constructor(val lang: String, val strings: Map<String, String>,
                                           private val defaultStrings: Map<String, String>) {
+
     fun text(key: String): String = strings[key] ?: defaultStrings[key] ?: key
     val hasNonDefaultStrings: Boolean get() = strings.isNotEmpty()
 
     companion object {
-        suspend fun load(lang: String): StringResources = StringResources(loadLang(lang), loadLang(""))
-                .also {
-                    myLog("Loaded ${it.strings.size} strings for '$lang' language")
-                }
+        val existingLangCodes = listOf("", "ru", "si", "zh")
 
-        private suspend fun loadLang(lang: String): Map<String, String> {
+        suspend fun load(lang: String): StringResources {
+            val pairLang = loadLang(lang)
+            val pairDefault = if (pairLang.first.isEmpty()) pairLang else loadLang("")
+            return StringResources(pairLang.first, pairLang.second , pairDefault.second)
+                .also {
+                    myLog("Loaded ${it.strings.size} strings for '${it.lang}' language and ${it.defaultStrings.size} default")
+                }
+        }
+
+        private suspend fun loadLang(lang: String): Pair<String, Map<String, String>> {
             val exact = loadLangFile(lang)
             if (exact.isNotEmpty() || lang.isEmpty()) {
-                return exact
+                return lang to exact
             }
             return lang.indexOfOrNull('-')?.let {
-                loadLangFile(lang.substring(0, it))
-            } ?: exact
+                lang.substring(0, it) to loadLangFile(lang.substring(0, it))
+            } ?: lang to exact
         }
 
         private suspend fun loadLangFile(lang: String): Map<String, String> =

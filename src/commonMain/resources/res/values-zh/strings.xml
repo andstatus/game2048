@@ -10,7 +10,16 @@
   <string name="game_over">游戏结束</string>
   <string name="goto_bookmark">转到书签</string>
   <string name="help_title">游戏指南</string>
-  <string name="help">在游戏区域上下左右滑动，移动所有的方块。当两个数字相同的方块碰撞时，它们会合并为一个数字为两倍的方块，也就是说，2+2 合并成 4，4+4 合并成 8，以此类推。游戏目标是合并出一个数字尽可能大的方块。合并出 2048 是胜利的第一步。</string>
+  <string name="help">在游戏区域上下左右滑动，
+移动所有的方块。
+当两个数字相同的方块碰撞时，
+它们会合并为一个数字为
+两倍的方块，也就是说，2+2
+合并成 4，4+4 合并成 8，
+以此类推。
+游戏目标是合并出一个数字尽可能
+大的方块。
+合并出 2048 是胜利的第一步。</string>
   <string name="id">编号</string>
   <string name="last_changed">最后修改时间</string>
   <string name="light">浅色主题</string>
