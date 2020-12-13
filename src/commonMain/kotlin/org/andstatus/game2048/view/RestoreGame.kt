@@ -14,7 +14,7 @@ import kotlin.math.max
 fun GameView.showRestoreGame(prevGames: List<GameRecord.ShortRecord>) = myWindow("restore_game") {
     val listTop = winTop + cellMargin + buttonSize + buttonPadding
     val nItems = prevGames.size
-    val itemHeight = buttonSize * 3 / 4
+    val itemHeight = buttonSize
     val textWidth = winWidth * 2
     val textSize = defaultTextSize
 
@@ -30,14 +30,14 @@ fun GameView.showRestoreGame(prevGames: List<GameRecord.ShortRecord>) = myWindow
             roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
             var xPos = cellMargin
             rowText(score, xPos)
-            xPos += itemHeight * 1.8
+            xPos += textSize * 2.4
             rowText(lastChanged, xPos)
-            xPos += itemHeight * 4.8
+            xPos += textSize * 6.4
             rowText(duration, xPos)
-            xPos += itemHeight * 2.4
+            xPos += textSize * 3.4
             rowText(id, xPos)
             if (note.isNotBlank()) {
-                xPos += itemHeight * 1.2
+                xPos += textSize * 1.4
                 rowText(note, xPos)
             }
 
@@ -48,7 +48,7 @@ fun GameView.showRestoreGame(prevGames: List<GameRecord.ShortRecord>) = myWindow
 
     uiScrollableArea(config = {
         position(winLeft + cellMargin, listTop)
-        buttonSize = this@showRestoreGame.buttonSize
+        buttonSize = itemHeight
         width = winWidth - cellMargin * 2
         contentWidth = textWidth
         height = winTop + winHeight - listTop - cellMargin

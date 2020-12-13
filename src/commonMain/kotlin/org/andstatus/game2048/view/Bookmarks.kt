@@ -15,7 +15,7 @@ import kotlin.math.max
 fun GameView.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
     val listTop = winTop + cellMargin + buttonSize + buttonPadding
     val nItems = game.shortRecord.bookmarks.size + 1
-    val itemHeight = buttonSize * 3 / 4
+    val itemHeight = buttonSize
     val textWidth = winWidth * 2
     val textSize = defaultTextSize
 
@@ -30,9 +30,9 @@ fun GameView.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
             roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
             var xPos = cellMargin
             rowText(score, xPos)
-            xPos += itemHeight * 1.8
+            xPos += textSize * 2.4
             rowText(lastChanged, xPos)
-            xPos += itemHeight * 4.8
+            xPos += textSize * 6.4
             rowText(duration, xPos)
 
             position(0.0, index * (itemHeight + cellMargin))
@@ -42,7 +42,7 @@ fun GameView.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
 
     uiScrollableArea(config = {
         position(winLeft + cellMargin, listTop)
-        buttonSize = this@showBookmarks.buttonSize
+        buttonSize = itemHeight
         width = winWidth - cellMargin * 2
         contentWidth = textWidth
         height = winTop + winHeight - listTop - cellMargin
