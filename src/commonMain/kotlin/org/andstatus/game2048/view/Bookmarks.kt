@@ -42,7 +42,7 @@ fun GameView.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
 
     uiScrollableArea(config = {
         position(winLeft + cellMargin, listTop)
-        buttonSize = itemHeight
+        buttonSize = this@showBookmarks.buttonSize
         width = winWidth - cellMargin * 2
         contentWidth = textWidth
         height = winTop + winHeight - listTop - cellMargin
