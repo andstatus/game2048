@@ -10,18 +10,10 @@
   <string name="game_over">Koniec gry</string>
   <string name="goto_bookmark">Przejdź do zakładki</string>
   <string name="help_title">Jak grać</string>
-  <string name="help">Przesuń płytkę, aby przesunąć
-wszystkie płytki w lewo, prawo,
-górę lub w dół.
-Gdy dwie płytki o tej samej liczbie
-się dotykają, łączą się one w
-jedną, podwojoną liczbę,
-i. np. 2+2 scala się w 4,
-4+4 scala w 8 i tak dalej.
-Celem jest stworzenie kafelka
-o największej liczbie.
-Liczba 2048 to pierwsza
-dobra wygrana…</string>
+  <string name="help">Przesuń płytkę, aby przesunąć wszystkie płytki w lewo, prawo, górę lub w dół.
+Gdy dwie płytki o tej samej liczbie się dotykają, łączą się one w jedną, podwojoną liczbę, i. np. 2+2 scala się w 4, 4+4 scala w 8 i tak dalej.
+Celem jest stworzenie kafelka o największej liczbie.
+Liczba 2048 to pierwsza dobra wygrana…</string>
   <string name="id">ID</string>
   <string name="last_changed">Ostatnio zmienione</string>
   <string name="light">Jasny</string>

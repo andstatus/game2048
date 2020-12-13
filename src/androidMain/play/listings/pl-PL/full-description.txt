@@ -1,0 +1,31 @@
+"2048 Open Fun Game" to 2048 z zakładkami, automatycznym wznawianiem gry, Historią i innymi zabawnymi funkcjami,
+Open Source, brak reklam.
+
+Jak grać.
+Przesuń płytkę gry, aby poruszać wszystkie kafelki w lewo, w prawo, w górę lub w dół.
+Gdy dwie płytki o tej samej liczbie się dotykają, łączą się one w jeden z podwojoną liczbą,
+na przykład 2+2 w 4, 4+4 łączą się w 8 i tak dalej.
+Celem jest stworzenie kafelka o jak największej liczbie.
+Liczba 2048 to pierwsza dobra wygrana…
+
+Funkcje "2048 Open Fun Game", które nie są obecne w oryginalnej grze:
+
+* Nieograniczone i animowane cofanie i ponawianie ruchów.
+* Wybierz motyw dla aplikacji: Domyślny motyw systemu (dla Androida 9+), Ciemny lub Jasny.
+  Ciemny motyw dla Androida 9+ jest domyślnie włączony, gdy "Ciemny motyw" jest włączony w ustawieniach urządzenia.
+* Zakładki w interesujących momentach gry. Wróć do zakładki i graj ponownie z tego miejsca.
+* Pokaż numer i czas trwania gry. Czas zaczyna się po wykonaniu ruchu.
+  Zatrzymuje się po naciśnięciu przycisku Cofnij lub Wstrzymaj.
+* Tryb "Obserwatora". Automatyczne odtwarzanie bieżącej gry do przodu i do tyłu z dowolną prędkością,
+  zatrzymywanie w dowolnym momencie.
+  Przełącz się na tryb "Gracz" z tego miejsca i kontynuuj odtwarzanie, nadpisywanie historii.
+* Najnowsze gry ze wszystkimi swoimi ruchami, zakładkami i wynikami są przechowywane w historii i mogą być oglądane.
+  Lub możesz zagrać w nie ponownie.
+* Menu gry pozwala na usunięcie bieżącej gry z historii, aby zrestartować grę ("Spróbuj ponownie")
+  lub przywrócić istniejącą grę z listy.
+* Po naciśnięciu przycisku "Spróbuj ponownie" lub przywróceniu istniejącej gry, obecna gra jest automatycznie zapisywana w historii,
+  więc możesz przejrzeć lub kontynuować grę później.
+* Udostępnij grę jako plik, aby można było ją załadować, obejrzeć, a nawet grać w nią na każdym innym urządzeniu.
+* Aplikacja jest wielojęzyczna. Dodaj nowe tłumaczenia na https://crowdin.com/project/2048-open-fun-game
+
+Dla urządzeń z systemem Android 7.0 lub nowszym.

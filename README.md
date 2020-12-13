@@ -53,6 +53,8 @@ Number 2048 is a good first win…
 <img title="Game History of Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/4.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
 <img title="Game Over in Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/5.png" height="400" />
+<img src="doc/images/5x5.png" width="5" />
+<img title="Theme selection in Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/6.png" height="400" />
 </p>
 
 If you found the project useful, please 
