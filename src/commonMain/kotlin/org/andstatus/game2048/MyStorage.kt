@@ -12,13 +12,14 @@ private val keyOpened = "opened"
 class MyStorage(views: Views) {
     val native = NativeStorage(views)
 
-    operator fun get(key: String) = native.get(key)
+    operator fun get(key: String) = native[key]
     operator fun set(key: String, value: String) = native.set(key, value)
     fun getOrNull(key: String): String? = native.getOrNull(key)
 
     fun getBoolean(key: String, default: Boolean): Boolean = native.getOrNull(key)?.let {
         it.toBoolean()
     } ?: default
+    operator fun set(key: String, value: Boolean) = native.set(key, value.toString())
 
     override fun toString(): String =
         "Storage " + (native.getOrNull(keyOpened)?.let { "last opened: $it" } ?: "is new") +

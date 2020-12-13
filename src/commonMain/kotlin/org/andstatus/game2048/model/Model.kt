@@ -14,6 +14,8 @@ class Model(val history: History) {
     val bestScore get() = history.bestScore
     val score get() = board.score
 
+    val gameMode: GameMode get() = history.gameMode
+
     fun onAppEntry(): List<PlayerMove> {
         return if (history.currentGame.score == 0)
             restart()
@@ -22,6 +24,7 @@ class Model(val history: History) {
     }
 
     fun gotoBookmark(board: Board): List<PlayerMove> {
+        gameMode.modeEnum = GameModeEnum.STOP
         history.gotoBookmark(board)
         return composerMove(board, isRedo = true)
     }
@@ -38,6 +41,7 @@ class Model(val history: History) {
     }
 
     fun restart(): List<PlayerMove> {
+        gameMode.modeEnum = GameModeEnum.PLAY
         return composerMove(Board(settings)) + PlayerMove.delay() + computerMove()
     }
 

@@ -12,6 +12,7 @@ import org.andstatus.game2048.myMeasuredIt
 
 private val keyCurrentGame = "current"
 private val keyGame = "game"
+val keyGameMode = "gameMode"
 
 private val gameIdsRange = 1..60
 private val maxOlderGames = 30
@@ -27,6 +28,9 @@ class History(val settings: Settings,
 
     // 2. This game, see for the inspiration https://en.wikipedia.org/wiki/Portable_Game_Notation
     var historyIndex = -1
+    val gameMode: GameMode = GameMode().apply {
+        modeEnum = GameModeEnum.fromId(settings.storage.getOrNull(keyGameMode) ?: "")
+    }
 
     companion object {
         suspend fun load(settings: Settings): History = coroutineScope {
@@ -69,10 +73,12 @@ class History(val settings: Settings,
                     it.id = id
                 }
                 currentGame = it
+                gameMode.modeEnum = GameModeEnum.STOP
                 saveCurrent()
             }
 
     fun saveCurrent(): History {
+        settings.storage[keyGameMode] = gameMode.modeEnum.id
         if (currentGame.score < 1) return this
 
         val isNew = currentGame.id <= 0
