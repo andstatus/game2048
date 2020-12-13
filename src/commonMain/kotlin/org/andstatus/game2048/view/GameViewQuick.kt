@@ -1,6 +1,7 @@
 package org.andstatus.game2048.view
 
 import com.soywiz.korge.view.Stage
+import com.soywiz.korio.concurrent.atomic.KorAtomicInt
 import org.andstatus.game2048.defaultPortraitGameWindowSize
 import org.andstatus.game2048.gameWindowSize
 import org.andstatus.game2048.myLog
@@ -8,6 +9,7 @@ import org.andstatus.game2048.myLog
 interface GameViewBase {
     val gameStage: Stage
     val animateViews: Boolean
+    val id: Int
     val duplicateKeyPressFilter: DuplicateKeyPressFilter
     val gameViewLeft: Int
     val gameViewTop: Int
@@ -26,6 +28,7 @@ interface GameViewBase {
 
 /** The object is initialized instantly */
 class GameViewQuick(override val gameStage: Stage, override val animateViews: Boolean = true) : GameViewBase {
+    override val id: Int = nextIdHolder.addAndGet(1)
     override val duplicateKeyPressFilter = DuplicateKeyPressFilter()
 
     override val gameViewLeft: Int
@@ -85,5 +88,9 @@ class GameViewQuick(override val gameStage: Stage, override val animateViews: Bo
                     " -> Virtual:${gameStage.views.virtualWidth}x${gameStage.views.virtualHeight}" +
                     " -> Game:${gameViewWidth}x$gameViewHeight, top:$gameViewTop, left:$gameViewLeft"
         )
+    }
+
+    companion object {
+        private val nextIdHolder = KorAtomicInt(0)
     }
 }

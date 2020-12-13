@@ -2,6 +2,7 @@ package org.andstatus.game2048.view
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korev.PauseEvent
+import com.soywiz.korev.ResumeEvent
 import com.soywiz.korev.addEventListener
 import com.soywiz.korge.animate.Animator
 import com.soywiz.korge.view.Container
@@ -11,6 +12,7 @@ import com.soywiz.korge.view.addTo
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.font.Font
+import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
@@ -57,7 +59,7 @@ suspend fun initializeGameView(stage: Stage, animateViews: Boolean, handler: sus
         }
 
         val view = GameView(quick, settings.await(), font.await(), strings.await(), gameColors.await())
-        view.presenter = myMeasured("Presenter created") { Presenter(view, history.await()) }
+        view.presenter = myMeasured("Presenter${view.id} created") { Presenter(view, history.await()) }
         val appBar = async { view.setupAppBar() }
         val scoreBar = async { view.setupScoreBar() }
         val boardView = async { BoardView(view) }
@@ -69,7 +71,10 @@ suspend fun initializeGameView(stage: Stage, animateViews: Boolean, handler: sus
         splashThemed.removeFromParent()
         view.presenter.onAppEntry()
         view.gameStage.gameWindow.addEventListener<PauseEvent> { view.presenter.onPauseEvent() }
-        myLog("GameView initialized")
+                .also { view.closeables.add(it) }
+        view.gameStage.gameWindow.addEventListener<ResumeEvent> { view.presenter.onResumeEvent() }
+                .also { view.closeables.add(it) }
+        myLog("GameView${view.id} initialized")
         view.handler()
     }.join()
 }
@@ -78,7 +83,7 @@ class GameView(gameViewQuick: GameViewQuick,
                val settings: Settings,
                val font: Font,
                val stringResources: StringResources,
-               val gameColors: ColorTheme): GameViewBase by gameViewQuick {
+               val gameColors: ColorTheme): GameViewBase by gameViewQuick, Closeable {
 
     val cellSize: Double = (gameViewWidth - cellMargin * (settings.boardWidth + 1) - 2 * buttonPadding) / settings.boardWidth
     val boardWidth: Double = cellSize * settings.boardWidth + cellMargin * (settings.boardWidth + 1)
@@ -88,7 +93,10 @@ class GameView(gameViewQuick: GameViewQuick,
     var scoreBar: ScoreBar by Delegates.notNull()
     var boardView: BoardView by Delegates.notNull()
 
+    val closeables = mutableListOf<Closeable>()
+
     suspend fun reInitialize(handler: suspend GameView.() -> Unit = {}) {
+        this.close()
         initializeGameView(gameStage, animateViews, handler)
     }
 
@@ -112,5 +120,9 @@ class GameView(gameViewQuick: GameViewQuick,
         appBar.show(appBarButtonsToShow)
         scoreBar.show(playSpeed)
         boardView.setOnTop()
+    }
+
+    override fun close() {
+        closeables.forEach { it.close() }
     }
 }
