@@ -30,6 +30,7 @@ import kotlin.properties.Delegates
 
 /** @author yvolk@yurivolkov.com */
 suspend fun initializeGameView(stage: Stage, animateViews: Boolean, handler: suspend GameView.() -> Unit = {}) {
+    stage.removeChildren()
     val scope = if (OS.isWindows) stage else CoroutineScope(stage.coroutineContext + Dispatchers.Default)
     scope.launch {
         val quick = GameViewQuick(stage, animateViews)
@@ -88,7 +89,6 @@ class GameView(gameViewQuick: GameViewQuick,
     var boardView: BoardView by Delegates.notNull()
 
     suspend fun reInitialize(handler: suspend GameView.() -> Unit = {}) {
-        gameStage.removeChildren()
         initializeGameView(gameStage, animateViews, handler)
     }
 
