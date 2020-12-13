@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">2048 Otwarta Gra</string>
+  <string name="best">NAJLEPSZE</string>
+  <string name="dark">Ciemny</string>
+  <string name="delete_game">Usuń grę</string>
+  <string name="device_default">Domyślny urządzenia</string>
+  <string name="duration">Czas trwania</string>
+  <string name="game_actions">Tryby gry</string>
+  <string name="game_over">Koniec gry</string>
+  <string name="goto_bookmark">Przejdź do zakładki</string>
+  <string name="help_title">Jak grać</string>
+  <string name="help">Przesuń płytkę, aby przesunąć
+wszystkie płytki w lewo, prawo,
+górę lub w dół.
+Gdy dwie płytki o tej samej liczbie
+się dotykają, łączą się one w
+jedną, podwojoną liczbę,
+i. np. 2+2 scala się w 4,
+4+4 scala w 8 i tak dalej.
+Celem jest stworzenie kafelka
+o największej liczbie.
+Liczba 2048 to pierwsza
+dobra wygrana…</string>
+  <string name="id">ID</string>
+  <string name="last_changed">Ostatnio zmienione</string>
+  <string name="light">Jasny</string>
+  <string name="load_game">Załaduj grę</string>
+  <string name="note">Uwaga</string>
+  <string name="restore_game">Przywróć grę</string>
+  <string name="score">Wynik</string>
+  <string name="score_upper">WYNIK</string>
+  <string name="select_theme">Wybierz motyw</string>
+  <string name="share">Udostępnij grę</string>
+  <string name="try_again">Spróbuj ponownie</string>
+</resources>

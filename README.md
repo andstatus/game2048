@@ -41,6 +41,7 @@ Number 2048 is a good first win…
 * When you tap "Try again" button or restore existing game, current game is automatically saved to the history,
   so you can review or continue to play it later.
 * Share a game as a file, so it can be loaded, watched and even played on any other device.
+* The app is multilingual. Please add new translations [2048 Open Fun Game at Crowdin](https://crowdin.com/project/2048-open-fun-game)
 
 <p>
 <img title="Main screen of Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/1.png" height="400" />
