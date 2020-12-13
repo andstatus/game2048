@@ -102,10 +102,6 @@ class Presenter(private val view: GameView, history: History) {
 
     fun onRestartClick() = afterStop {
         logClick("Restart")
-        restart()
-    }
-
-    fun restart() = afterStop {
         model.saveCurrent()
         model.restart().present()
     }

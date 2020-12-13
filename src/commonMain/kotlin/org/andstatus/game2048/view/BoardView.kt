@@ -102,16 +102,9 @@ class BoardView(val gameView: GameView): Container() {
             uiText(stringResources.text("try_again"), 120.0, 35.0, skin) {
                 centerXBetween(0.0, boardWidth)
                 positionY((boardWidth + textSize) / 2)
-                window.customOnClick {
+                customOnClick {
                     window.removeFromParent()
-                    presenter.restart()
-                }
-            }
-
-            addUpdater {
-                duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
-                    window.removeFromParent()
-                    presenter.restart()
+                    presenter.onRestartClick()
                 }
             }
         }
