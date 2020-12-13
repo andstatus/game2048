@@ -24,7 +24,7 @@ class Settings(val storage: MyStorage) {
     var allowUndo = storage.getBoolean(keyAllowUndo,true)
     var boardWidth = 4
     var boardHeight = boardWidth
-    var colorTheme: ColorThemeEnum = ColorThemeEnum.load(storage.getOrNull(keyColorTheme))
+    var colorThemeEnum: ColorThemeEnum = ColorThemeEnum.load(storage.getOrNull(keyColorTheme))
 
     companion object {
         fun load(stage: Stage): Settings = MyStorage.load(stage).let { storage ->
@@ -36,7 +36,7 @@ class Settings(val storage: MyStorage) {
         storage.native.setBoolean(keyAllowResultingTileToMerge, allowResultingTileToMerge)
                 .setBoolean(keyAllowUsersMoveWithoutBlockMoves, allowUsersMoveWithoutBlockMoves)
                 .setBoolean(keyAllowUndo, allowUndo)
-                .set(keyColorTheme, colorTheme.labelKey)
+                .set(keyColorTheme, colorThemeEnum.labelKey)
     }
 
     private fun NativeStorage.setBoolean(key: String, value: Boolean): NativeStorage {

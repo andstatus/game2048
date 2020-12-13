@@ -33,16 +33,22 @@ suspend fun initializeGameView(stage: Stage, animateViews: Boolean, handler: sus
     val scope = if (OS.isWindows) stage else CoroutineScope(stage.coroutineContext + Dispatchers.Default)
     scope.launch {
         val quick = GameViewQuick(stage, animateViews)
-        val splash = quick.gameStage.splashScreen()
+        val splashDefault = stage.splashScreen(ColorThemeEnum.deviceDefault(stage))
         val strings = async { StringResources.load(defaultLanguage) }
         val font = async { loadFont(strings.await()) }
         val settings = async { Settings.load(quick.gameStage) }
         val history = async { History.load(settings.await()) }
         val gameColors = async { ColorTheme.load(quick.gameStage, settings.await()) }
 
+        val splashThemed = if (settings.await().colorThemeEnum == ColorThemeEnum.deviceDefault(stage))
+            splashDefault else stage.splashScreen(settings.await().colorThemeEnum)
         quick.gameStage.solidRect(quick.gameStage.views.virtualWidth, quick.gameStage.views.virtualHeight,
                 color = gameColors.await().stageBackground)
-        splash.addTo(quick.gameStage)
+
+        splashThemed.addTo(stage)
+        if (splashThemed != splashDefault) {
+            splashDefault.removeFromParent()
+        }
 
         if (!OS.isAndroid) {
             // We set window title in Android via AndroidManifest.xml
@@ -59,7 +65,7 @@ suspend fun initializeGameView(stage: Stage, animateViews: Boolean, handler: sus
         view.scoreBar = scoreBar.await()
         view.boardView = boardView.await()
 
-        splash.removeFromParent()
+        splashThemed.removeFromParent()
         view.presenter.onAppEntry()
         view.gameStage.gameWindow.addEventListener<PauseEvent> { view.presenter.onPauseEvent() }
         myLog("GameView initialized")

@@ -356,9 +356,9 @@ class Presenter(private val view: GameView, history: History) {
 
     suspend fun onSelectColorTheme(colorThemeEnum: ColorThemeEnum) {
         logClick("onSelectColorTheme $colorThemeEnum")
-        if (colorThemeEnum == view.settings.colorTheme) return
+        if (colorThemeEnum == view.settings.colorThemeEnum) return
 
-        view.settings.colorTheme = colorThemeEnum
+        view.settings.colorThemeEnum = colorThemeEnum
         restartTheApp()
     }
 

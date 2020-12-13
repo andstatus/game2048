@@ -8,3 +8,4 @@
 *.json
 local.properties
 /korge.keystore
+/doc/assets/fonts/bmfont.bmfc
