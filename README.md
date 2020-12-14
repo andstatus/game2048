@@ -44,13 +44,13 @@ Number 2048 is a good first win…
 * The app is multilingual. Please add new translations [2048 Open Fun Game at Crowdin](https://crowdin.com/project/2048-open-fun-game)
 
 <p>
-<img title="Main screen of Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/1.png" height="400" />
+<img title="Main screen of Game2048 app. Play mode. You see Bookmark and Pause buttons" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/1.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Dark Theme of Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/2.png" height="400" />
+<img title="Dark Theme of Game2048 app. Watch mode. Now watching the game movements backwards. To the left: 'Game pad' button to switch to Play mode" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/2.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Game menu of Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/3.png" height="400" />
+<img title="Game actions menu of Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/3.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Game History of Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/4.png" height="400" />
+<img title="Restore game, then watch or play it. Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/4.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
 <img title="Game Over in Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/5.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
