@@ -7,10 +7,10 @@ import org.andstatus.game2048.view.ColorThemeEnum
 import org.andstatus.game2048.view.gameDefaultBackgroundColor
 import org.andstatus.game2048.view.gameView
 import kotlin.coroutines.coroutineContext
-import kotlin.math.max
 import kotlin.properties.Delegates
 
 val defaultPortraitGameWindowSize = SizeInt(720, 1280)
+val defaultPortraitRatio : Double = defaultPortraitGameWindowSize.width.toDouble() / defaultPortraitGameWindowSize.height
 val defaultDesktopGameWindowSize get() = SizeInt(defaultPortraitGameWindowSize.width / 2,
     defaultPortraitGameWindowSize.height / 2)
 const val defaultPortraitTextSize = 64.0
@@ -20,10 +20,17 @@ suspend fun main() = main(null)
 
 suspend fun main(colorThemeEnum: ColorThemeEnum?) {
     val windowSize: SizeInt = coroutineContext.gameWindowSize
-    val virtualHeight: Int = defaultPortraitGameWindowSize.height
-    val windowProportionalWidth = virtualHeight * windowSize.width / windowSize.height
-    // We will set the width depending on orientation, when we have landscape layout...
-    val virtualWidth = max( windowProportionalWidth, defaultPortraitGameWindowSize.width)
+    val windowRatio = windowSize.width.toDouble() /  windowSize.height
+    val virtualWidth: Int
+    val virtualHeight: Int
+    // TODO: We will set the width depending on orientation, when we have landscape layout...
+    if (windowRatio >= defaultPortraitRatio) {
+        virtualHeight = defaultPortraitGameWindowSize.height
+        virtualWidth = (virtualHeight * windowRatio).toInt()
+    } else {
+        virtualWidth = defaultPortraitGameWindowSize.width
+        virtualHeight = (virtualWidth / windowRatio).toInt()
+    }
     defaultTextSize = if (virtualHeight == defaultPortraitGameWindowSize.height) defaultPortraitTextSize
         else defaultPortraitTextSize * virtualHeight / defaultPortraitGameWindowSize.height
     val color = colorThemeEnum?.let {

@@ -42,7 +42,7 @@ suspend fun gameView(stage: Stage, animateViews: Boolean, handler: suspend GameV
 
 private fun CoroutineScope.initialize(stage: Stage, animateViews: Boolean, handler: suspend GameView.() -> Unit = {}) = launch {
     val quick = GameViewQuick(stage, animateViews)
-    val splashDefault = stage.splashScreen(ColorThemeEnum.deviceDefault(stage))
+    val splashDefault = stage.splashScreen(quick, ColorThemeEnum.deviceDefault(stage))
     val strings = async { StringResources.load(defaultLanguage) }
     val font = async { loadFont(strings.await()) }
     val settings = async { Settings.load(stage) }
@@ -50,7 +50,7 @@ private fun CoroutineScope.initialize(stage: Stage, animateViews: Boolean, handl
     val gameColors = async { ColorTheme.load(stage, settings.await()) }
 
     val splashThemed = if (settings.await().colorThemeEnum == ColorThemeEnum.deviceDefault(stage))
-        splashDefault else stage.splashScreen(settings.await().colorThemeEnum)
+        splashDefault else stage.splashScreen(quick, settings.await().colorThemeEnum)
     stage.solidRect(stage.views.virtualWidth, stage.views.virtualHeight,
             color = gameColors.await().stageBackground)
 

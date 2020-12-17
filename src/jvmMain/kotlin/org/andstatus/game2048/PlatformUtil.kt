@@ -9,9 +9,11 @@ import kotlin.coroutines.CoroutineContext
 const val platformSourceFolder = "jvmMain"
 
 actual val CoroutineContext.gameWindowSize: SizeInt get() =
-    if (System.getProperty("user.screen.orientation") == "landscape")
-        SizeInt(defaultPortraitGameWindowSize.height, defaultPortraitGameWindowSize.width)
-    else defaultDesktopGameWindowSize
+    when (System.getProperty("user.screen.orientation")) {
+        "landscape" -> SizeInt(defaultPortraitGameWindowSize.height, defaultPortraitGameWindowSize.width)
+        "tall" -> SizeInt(defaultDesktopGameWindowSize.width, defaultDesktopGameWindowSize.height + 64)
+        else -> defaultDesktopGameWindowSize
+    }
 
 actual val CoroutineContext.isDarkThemeOn: Boolean get() = System.getProperty("user.color.theme") == "dark"
 

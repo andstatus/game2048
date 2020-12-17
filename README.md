@@ -104,8 +104,8 @@ Additional arguments:
  Argument | Description
 ----------|-------------
 -Duser.color.theme=dark             | switch to the Dark Theme
--Duser.language=ru                  | switch to Russian locale
--Duser.screen.orientation=landscape | landscape screen orientation
+-Duser.language=ru                  | switch to Russian locale ("zh" - to Chinese Simplified)
+-Duser.screen.orientation=landscape | landscape screen orientation ("tall" - taller screen)
 
 # Running instructions from Korge template project
 The implementation uses the [KorGe template project](https://github.com/korlibs/korge-hello-world#readme).

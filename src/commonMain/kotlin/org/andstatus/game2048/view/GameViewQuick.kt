@@ -3,6 +3,7 @@ package org.andstatus.game2048.view
 import com.soywiz.korge.view.Stage
 import com.soywiz.korio.concurrent.atomic.KorAtomicInt
 import org.andstatus.game2048.defaultPortraitGameWindowSize
+import org.andstatus.game2048.defaultPortraitRatio
 import org.andstatus.game2048.gameWindowSize
 import org.andstatus.game2048.myLog
 
@@ -47,26 +48,20 @@ class GameViewQuick(override val gameStage: Stage, override val animateViews: Bo
     override val boardTop: Double
 
     init {
-        if (gameStage.views.virtualWidth < gameStage.views.virtualHeight) {
-            if ( gameStage.views.virtualHeight / gameStage.views.virtualWidth >
-                    defaultPortraitGameWindowSize.height / defaultPortraitGameWindowSize.width) {
-                gameViewWidth = gameStage.views.virtualWidth
-                gameViewHeight = gameViewWidth * defaultPortraitGameWindowSize.height / defaultPortraitGameWindowSize.width
-                gameViewLeft = 0
-                gameViewTop = (gameStage.views.virtualHeight - gameViewHeight) / 2
-            } else {
-                gameViewWidth = gameStage.views.virtualHeight * defaultPortraitGameWindowSize.width / defaultPortraitGameWindowSize.height
-                gameViewHeight = gameStage.views.virtualHeight
-                gameViewLeft = (gameStage.views.virtualWidth - gameViewWidth) / 2
-                gameViewTop = 0
-            }
-        } else {
-            gameViewWidth = gameStage.views.virtualHeight * defaultPortraitGameWindowSize.width / defaultPortraitGameWindowSize.height
+        val windowRatio = gameStage.views.virtualWidth.toDouble() /  gameStage.views.virtualHeight
+        if (windowRatio >= defaultPortraitRatio) {
             gameViewHeight = gameStage.views.virtualHeight
+            gameViewWidth = (gameViewHeight * defaultPortraitRatio).toInt()
             gameViewLeft = (gameStage.views.virtualWidth - gameViewWidth) / 2
             gameViewTop = 0
+            gameScale = gameViewHeight.toDouble() / defaultPortraitGameWindowSize.height
+        } else {
+            gameViewWidth = gameStage.views.virtualWidth
+            gameViewHeight = (gameViewWidth / defaultPortraitRatio).toInt()
+            gameViewLeft = 0
+            gameViewTop = (gameStage.views.virtualHeight - gameViewHeight) / 2
+            gameScale = gameViewWidth.toDouble() / defaultPortraitGameWindowSize.width
         }
-        gameScale = gameViewHeight.toDouble() / defaultPortraitGameWindowSize.height
         buttonPadding = 27 * gameScale
 
         cellMargin = 15 * gameScale
@@ -79,12 +74,12 @@ class GameViewQuick(override val gameStage: Stage, override val animateViews: Bo
             acc + (boardLeft + i * (buttonSize + buttonPadding))
         }
         buttonYs = (0 .. 8).fold(emptyList()) { acc, i ->
-            acc + (buttonPadding + i * (buttonSize + buttonPadding))
+            acc + (gameViewTop + buttonPadding + i * (buttonSize + buttonPadding))
         }
         boardTop = buttonYs[3]
 
         myLog(
-            "Window:${gameStage.coroutineContext.gameWindowSize}" +
+            "Window:${gameStage.coroutineContext.gameWindowSize.width}x${gameStage.coroutineContext.gameWindowSize.height}" +
                     " -> Virtual:${gameStage.views.virtualWidth}x${gameStage.views.virtualHeight}" +
                     " -> Game:${gameViewWidth}x$gameViewHeight, top:$gameViewTop, left:$gameViewLeft"
         )

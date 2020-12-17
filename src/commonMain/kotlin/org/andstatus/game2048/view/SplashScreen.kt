@@ -8,12 +8,11 @@ import com.soywiz.korge.view.position
 import com.soywiz.korge.view.size
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korui.layout.MathEx
 
-suspend fun Stage.splashScreen(colorThemeEnum: ColorThemeEnum): Container = container {
+suspend fun Stage.splashScreen(quick: GameViewQuick, colorThemeEnum: ColorThemeEnum): Container = container {
     val suffix = if (colorThemeEnum == ColorThemeEnum.DARK) "dark" else "light"
     image(resourcesVfs["assets/splash_$suffix.png"].readBitmap()) {
-        val size1 = MathEx.min(views.virtualWidth, views.virtualHeight) * 0.4
+        val size1 = quick.gameViewWidth * 0.4
         size(size1, size1)
         position((views.virtualWidth - size1) / 2, (views.virtualHeight - size1) / 2)
     }
