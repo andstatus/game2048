@@ -18,6 +18,7 @@ import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.defaultLanguage
@@ -31,52 +32,56 @@ import org.andstatus.game2048.view.AppBar.Companion.setupAppBar
 import kotlin.properties.Delegates
 
 /** @author yvolk@yurivolkov.com */
-suspend fun initializeGameView(stage: Stage, animateViews: Boolean, handler: suspend GameView.() -> Unit = {}) {
+suspend fun gameView(stage: Stage, animateViews: Boolean, handler: suspend GameView.() -> Unit = {}) {
     stage.removeChildren()
-    val scope = if (OS.isWindows) stage else CoroutineScope(stage.coroutineContext + Dispatchers.Default)
-    scope.launch {
-        val quick = GameViewQuick(stage, animateViews)
-        val splashDefault = stage.splashScreen(ColorThemeEnum.deviceDefault(stage))
-        val strings = async { StringResources.load(defaultLanguage) }
-        val font = async { loadFont(strings.await()) }
-        val settings = async { Settings.load(quick.gameStage) }
-        val history = async { History.load(settings.await()) }
-        val gameColors = async { ColorTheme.load(quick.gameStage, settings.await()) }
+    coroutineScope {
+        val scope: CoroutineScope = if (OS.isWindows) this else CoroutineScope(coroutineContext + Dispatchers.Default)
+        scope.initialize(stage, animateViews, handler)
+    }
+}
 
-        val splashThemed = if (settings.await().colorThemeEnum == ColorThemeEnum.deviceDefault(stage))
-            splashDefault else stage.splashScreen(settings.await().colorThemeEnum)
-        quick.gameStage.solidRect(quick.gameStage.views.virtualWidth, quick.gameStage.views.virtualHeight,
-                color = gameColors.await().stageBackground)
+private fun CoroutineScope.initialize(stage: Stage, animateViews: Boolean, handler: suspend GameView.() -> Unit = {}) = launch {
+    val quick = GameViewQuick(stage, animateViews)
+    val splashDefault = stage.splashScreen(ColorThemeEnum.deviceDefault(stage))
+    val strings = async { StringResources.load(defaultLanguage) }
+    val font = async { loadFont(strings.await()) }
+    val settings = async { Settings.load(stage) }
+    val history = async { History.load(settings.await()) }
+    val gameColors = async { ColorTheme.load(stage, settings.await()) }
 
-        splashThemed.addTo(stage)
-        if (splashThemed != splashDefault) {
-            splashDefault.removeFromParent()
-        }
+    val splashThemed = if (settings.await().colorThemeEnum == ColorThemeEnum.deviceDefault(stage))
+        splashDefault else stage.splashScreen(settings.await().colorThemeEnum)
+    stage.solidRect(stage.views.virtualWidth, stage.views.virtualHeight,
+            color = gameColors.await().stageBackground)
 
-        if (!OS.isAndroid) {
-            // We set window title in Android via AndroidManifest.xml
-            quick.gameStage.gameWindow.title = strings.await().text("app_name")
-        }
+    splashThemed.addTo(stage)
+    if (splashThemed != splashDefault) {
+        splashDefault.removeFromParent()
+    }
 
-        val view = GameView(quick, settings.await(), font.await(), strings.await(), gameColors.await())
-        view.presenter = myMeasured("Presenter${view.id} created") { Presenter(view, history.await()) }
-        val appBar = async { view.setupAppBar() }
-        val scoreBar = async { view.setupScoreBar() }
-        val boardView = async { BoardView(view) }
+    if (!OS.isAndroid) {
+        // We set window title in Android via AndroidManifest.xml
+        stage.gameWindow.title = strings.await().text("app_name")
+    }
 
-        view.appBar = appBar.await()
-        view.scoreBar = scoreBar.await()
-        view.boardView = boardView.await()
+    val view = GameView(quick, settings.await(), font.await(), strings.await(), gameColors.await())
+    view.presenter = myMeasured("Presenter${view.id} created") { Presenter(view, history.await()) }
+    val appBar = async { view.setupAppBar() }
+    val scoreBar = async { view.setupScoreBar() }
+    val boardView = async { BoardView(view) }
 
-        splashThemed.removeFromParent()
-        view.presenter.onAppEntry()
-        view.gameStage.gameWindow.addEventListener<PauseEvent> { view.presenter.onPauseEvent() }
-                .also { view.closeables.add(it) }
-        view.gameStage.gameWindow.addEventListener<ResumeEvent> { view.presenter.onResumeEvent() }
-                .also { view.closeables.add(it) }
-        myLog("GameView${view.id} initialized")
-        view.handler()
-    }.join()
+    view.appBar = appBar.await()
+    view.scoreBar = scoreBar.await()
+    view.boardView = boardView.await()
+
+    splashThemed.removeFromParent()
+    view.presenter.onAppEntry()
+    view.gameStage.gameWindow.addEventListener<PauseEvent> { view.presenter.onPauseEvent() }
+            .also { view.closeables.add(it) }
+    view.gameStage.gameWindow.addEventListener<ResumeEvent> { view.presenter.onResumeEvent() }
+            .also { view.closeables.add(it) }
+    myLog("GameView${view.id} initialized")
+    view.handler()
 }
 
 class GameView(gameViewQuick: GameViewQuick,
@@ -97,7 +102,7 @@ class GameView(gameViewQuick: GameViewQuick,
 
     suspend fun reInitialize(handler: suspend GameView.() -> Unit = {}) {
         this.close()
-        initializeGameView(gameStage, animateViews, handler)
+        gameView(gameStage, animateViews, handler)
     }
 
     /** Workaround for the bug: https://github.com/korlibs/korge-next/issues/56 */

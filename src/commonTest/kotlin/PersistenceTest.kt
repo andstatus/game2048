@@ -103,7 +103,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         assertTrue(presenter.boardViews.blocks.size > 1, modelAndViews())
         assertTrue(presenter.model.history.currentGame.playerMoves.size > 1, currentGameString())
 
-        presenter.restart()
+        presenter.onRestartClick()
         assertEquals(1, presenter.boardViews.blocks.size, modelAndViews())
         assertEquals( 1, presenter.model.board.array.count { it != null }, modelAndViews())
         assertEquals(1, presenter.model.history.currentGame.playerMoves.size, currentGameString())

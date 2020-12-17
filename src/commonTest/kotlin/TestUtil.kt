@@ -1,10 +1,8 @@
 import com.soywiz.korge.view.Stage
-import com.soywiz.korio.async.launch
-import kotlinx.coroutines.coroutineScope
 import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.view.GameView
-import org.andstatus.game2048.view.initializeGameView
+import org.andstatus.game2048.view.gameView
 
 // TODO: Make some separate class for this...
 private val uninitializedLazy = lazy { throw IllegalStateException("Value is not initialized yet") }
@@ -20,16 +18,12 @@ suspend fun Stage.testInitializeGameView(handler: suspend GameView.() -> Unit = 
         return
     }
 
-    coroutineScope {
-        launch {
-            initializeGameView(stage, animateViews = false) {
-                myLog("Initialized in test")
-                gameView = this
-            }
-        }.join()
-        myLog("Initialized after join")
-        gameView.handler()
+    gameView(stage, animateViews = false) {
+        myLog("Initialized in test")
+        gameView = this
     }
+    myLog("Initialized after 'gameView' function ended")
+    gameView.handler()
 }
 
 fun GameView.presentedPieces() = presenter.boardViews.blocksOnBoard.map { it.firstOrNull()?.piece }
