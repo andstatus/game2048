@@ -11,7 +11,7 @@ import org.andstatus.game2048.defaultTextSize
 import org.andstatus.game2048.model.GameRecord
 import kotlin.math.max
 
-fun GameView.showRestoreGame(prevGames: List<GameRecord.ShortRecord>) = myWindow("restore_game") {
+fun ViewData.showRestoreGame(prevGames: List<GameRecord.ShortRecord>) = myWindow("restore_game") {
     val listTop = winTop + cellMargin + buttonSize + buttonPadding
     val nItems = prevGames.size
     val itemHeight = buttonSize

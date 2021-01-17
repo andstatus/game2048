@@ -4,13 +4,13 @@ import com.soywiz.korge.view.Container
 import org.andstatus.game2048.model.Board
 import org.andstatus.game2048.model.PlacedPiece
 import org.andstatus.game2048.model.Square
-import org.andstatus.game2048.view.GameView
+import org.andstatus.game2048.view.ViewData
 
 data class PlacedBlock(val block: Block, val square: Square)
 
 class BoardViews(
-    val gameView: GameView,
-    val width: Int = gameView.settings.boardWidth, val height: Int = gameView.settings.boardHeight,
+    val viewData: ViewData,
+    val width: Int = viewData.settings.boardWidth, val height: Int = viewData.settings.boardHeight,
     val blocks: MutableList<PlacedBlock> = ArrayList()
 ) {
     private val size = width * height
@@ -65,12 +65,12 @@ class BoardViews(
         return this
     }
 
-    fun copy() = BoardViews(gameView, width, height, blocks).apply {
+    fun copy() = BoardViews(viewData, width, height, blocks).apply {
         gameOver = this@BoardViews.gameOver
     }
 
-    fun addBlock(destination: PlacedPiece): Block = Block(destination.piece, gameView)
-            .addTo(gameView.mainView.boardView, destination.square)
+    fun addBlock(destination: PlacedPiece): Block = Block(destination.piece, viewData)
+            .addTo(viewData.mainView.boardView, destination.square)
             .also { set(destination, it) }
 
     fun removeBlock(block: Block): Block? =

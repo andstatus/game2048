@@ -9,24 +9,24 @@ import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korma.geom.vector.roundRect
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.Square
-import org.andstatus.game2048.view.GameView
+import org.andstatus.game2048.view.ViewData
 
-class Block(val piece: Piece, val gameView: GameView, size: Double = gameView.cellSize) : Container() {
+class Block(val piece: Piece, val viewData: ViewData, size: Double = viewData.cellSize) : Container() {
 
     init {
         graphics {
-            fill(gameView.gameColors.pieceBackground(piece)) {
-                roundRect(0.0, 0.0, size, size, gameView.buttonRadius)
+            fill(viewData.gameColors.pieceBackground(piece)) {
+                roundRect(0.0, 0.0, size, size, viewData.buttonRadius)
             }
-            text(piece.text, piece.textSize(), gameView.gameColors.pieceText(piece),
-                    gameView.font, TextAlignment.MIDDLE_CENTER) {
+            text(piece.text, piece.textSize(), viewData.gameColors.pieceText(piece),
+                    viewData.font, TextAlignment.MIDDLE_CENTER) {
                 position(size / 2, size / 2)
             }
         }
     }
 
     fun addTo(parent: Container, square: Square) = addTo(parent).apply {
-        with(gameView) {
+        with(viewData) {
             position(square)
         }
     }

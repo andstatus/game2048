@@ -12,19 +12,19 @@ import com.soywiz.korge.view.text
 import com.soywiz.korim.text.TextAlignment
 import kotlin.math.abs
 
-fun GameView.setupScoreBar(): ScoreBar {
+fun ViewData.setupScoreBar(): ScoreBar {
     return ScoreBar(this)
 }
 
-class ScoreBar(val gameView: GameView): Container() {
+class ScoreBar(val viewData: ViewData): Container() {
     val gameTime: Text
     val usersMoveNumber: Text
     var score: Text
     val bestScore: Text
 
     init {
-        with(gameView) {
-            val scoreButtonWidth = (gameView.boardWidth - 2 * buttonPadding) / 3
+        with(viewData) {
+            val scoreButtonWidth = (viewData.boardWidth - 2 * buttonPadding) / 3
             val scoreButtonTop = buttonYs[2]
             val textYPadding = 28 * gameScale
             val scoreLabelSize = cellSize * 0.30
@@ -71,11 +71,11 @@ class ScoreBar(val gameView: GameView): Container() {
 
     fun show(parent: Container, playSpeed: Int) {
         addTo(parent)
-        usersMoveNumber.text = gameView.presenter.model.usersMoveNumber.toString() +
+        usersMoveNumber.text = viewData.presenter.model.usersMoveNumber.toString() +
                 (if (playSpeed < 0) " «" else "") +
                 (if (playSpeed > 0) " »" else "") +
                 (if (playSpeed != 0) abs(playSpeed) else "")
-        bestScore.text = gameView.presenter.bestScore.toString()
-        score.text = gameView.presenter.score.toString()
+        bestScore.text = viewData.presenter.bestScore.toString()
+        score.text = viewData.presenter.score.toString()
     }
 }

@@ -7,7 +7,7 @@ import org.andstatus.game2048.defaultPortraitRatio
 import org.andstatus.game2048.gameWindowSize
 import org.andstatus.game2048.myLog
 
-interface GameViewBase {
+interface ViewDataBase {
     val gameStage: Stage
     val animateViews: Boolean
     val id: Int
@@ -28,7 +28,7 @@ interface GameViewBase {
 }
 
 /** The object is initialized instantly */
-class GameViewQuick(override val gameStage: Stage, override val animateViews: Boolean = true) : GameViewBase {
+class ViewDataQuick(override val gameStage: Stage, override val animateViews: Boolean = true) : ViewDataBase {
     override val id: Int = nextIdHolder.addAndGet(1)
     override val duplicateKeyPressFilter = DuplicateKeyPressFilter()
 

@@ -5,7 +5,7 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.SizeInt
 import org.andstatus.game2048.view.ColorThemeEnum
 import org.andstatus.game2048.view.gameDefaultBackgroundColor
-import org.andstatus.game2048.view.gameView
+import org.andstatus.game2048.view.viewData
 import kotlin.coroutines.coroutineContext
 import kotlin.properties.Delegates
 
@@ -45,6 +45,6 @@ suspend fun main(colorThemeEnum: ColorThemeEnum?) {
             bgcolor = color,
             gameId = "org.andstatus.game2048") {
         myLog("Stage is ready")
-        gameView(this, true)
+        viewData(this, true)
     }
 }

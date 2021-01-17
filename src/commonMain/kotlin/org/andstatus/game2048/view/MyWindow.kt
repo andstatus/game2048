@@ -17,7 +17,7 @@ import com.soywiz.korio.async.launch
 import com.soywiz.korio.file.std.resourcesVfs
 import org.andstatus.game2048.defaultTextSize
 
-suspend fun GameView.barButton(icon: String, handler: () -> Unit): Container = Container().apply {
+suspend fun ViewData.barButton(icon: String, handler: () -> Unit): Container = Container().apply {
     val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
     image(resourcesVfs["assets/$icon.png"].readBitmap()) {
         size(buttonSize * 0.6, buttonSize * 0.6)
@@ -26,7 +26,7 @@ suspend fun GameView.barButton(icon: String, handler: () -> Unit): Container = C
     customOnClick { handler() }
 }
 
-fun GameView.myWindow(titleKey: String, action: suspend MyWindow.() -> Unit) =
+fun ViewData.myWindow(titleKey: String, action: suspend MyWindow.() -> Unit) =
     MyWindow(this, titleKey).apply {
         gameStage.launch {
             show()
@@ -35,14 +35,14 @@ fun GameView.myWindow(titleKey: String, action: suspend MyWindow.() -> Unit) =
         }
     }
 
-class MyWindow(val gameView: GameView, val titleKey: String) : Container() {
+class MyWindow(val viewData: ViewData, val titleKey: String) : Container() {
     val window = this
-    val winLeft = gameView.gameViewLeft.toDouble()
-    val winTop = gameView.gameViewTop.toDouble()
-    val winWidth = gameView.gameViewWidth.toDouble()
-    val winHeight = gameView.gameViewHeight.toDouble()
+    val winLeft = viewData.gameViewLeft.toDouble()
+    val winTop = viewData.gameViewTop.toDouble()
+    val winWidth = viewData.gameViewWidth.toDouble()
+    val winHeight = viewData.gameViewHeight.toDouble()
 
-    suspend fun GameView.wideButton(icon: String, labelKey: String = "", handler: () -> Unit): Container = Container().apply {
+    suspend fun ViewData.wideButton(icon: String, labelKey: String = "", handler: () -> Unit): Container = Container().apply {
         val borderWidth = 2.0
         roundRect(winWidth - 2 * buttonPadding, buttonSize, buttonRadius,
                 fill = Colors.TRANSPARENT_BLACK,
@@ -67,7 +67,7 @@ class MyWindow(val gameView: GameView, val titleKey: String) : Container() {
     }
 
     suspend fun Container.show() {
-        with(gameView) {
+        with(viewData) {
             roundRect(
                 winWidth, winHeight, buttonRadius, stroke = gameColors.myWindowBorder,
                 strokeThickness = 2.0, fill = gameColors.myWindowBackground

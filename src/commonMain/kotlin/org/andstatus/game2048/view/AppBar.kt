@@ -9,7 +9,7 @@ import com.soywiz.korge.view.positionY
 private class EButton(val enum: AppBarButtonsEnum, val container: Container)
 private infix fun AppBarButtonsEnum.to(container: Container): EButton = EButton(this, container)
 
-class AppBar private constructor(val gameView: GameView, val logo: RotatingLogo, private val appBarButtons: List<EButton>) {
+class AppBar private constructor(val viewData: ViewData, val logo: RotatingLogo, private val appBarButtons: List<EButton>) {
 
     fun show(parent: Container, appBarButtonsToShow: List<AppBarButtonsEnum>) {
         logo.addTo(parent)
@@ -19,11 +19,11 @@ class AppBar private constructor(val gameView: GameView, val logo: RotatingLogo,
 
         val toShow = appBarButtons.filter { appBarButtonsToShow.contains(it.enum) }.let { list ->
             list.firstOrNull{ eButton ->  eButton.enum == AppBarButtonsEnum.GAME_MENU }?.let{
-                it.container.position(gameView.buttonXs[4], gameView.buttonYs[0]).addTo(parent)
+                it.container.position(viewData.buttonXs[4], viewData.buttonYs[0]).addTo(parent)
                 list.filter { it.enum != AppBarButtonsEnum.GAME_MENU }
             } ?: list
         }
-        val remainingPos = gameView.buttonXs.toMutableList()
+        val remainingPos = viewData.buttonXs.toMutableList()
 
         // Left aligned buttons
         toShow.filter { it.enum.sortOrder < 0 }
@@ -48,7 +48,7 @@ class AppBar private constructor(val gameView: GameView, val logo: RotatingLogo,
     }
 
     companion object {
-        suspend fun GameView.setupAppBar(): AppBar {
+        suspend fun ViewData.setupAppBar(): AppBar {
             val logo =  RotatingLogo(this, buttonSize).apply { position(buttonXs[0], buttonYs[0]) }
 
             val appBarTop = buttonYs[1]

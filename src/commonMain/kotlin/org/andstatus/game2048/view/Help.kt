@@ -4,7 +4,7 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.position
 import org.andstatus.game2048.defaultTextSize
 
-fun GameView.showHelp(): Container = myWindow("help_title") {
+fun ViewData.showHelp(): Container = myWindow("help_title") {
     wrappableText(stringResources.text("help"), winWidth - 2 * cellMargin , defaultTextSize,
         gameColors.labelText, font, Gravity.LEFT) {
         position(winLeft + cellMargin, winTop + buttonSize + buttonPadding + cellMargin)

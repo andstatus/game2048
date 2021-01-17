@@ -3,7 +3,7 @@ package org.andstatus.game2048.view
 import com.soywiz.korge.view.addTo
 import com.soywiz.korge.view.position
 
-fun GameView.showGameMenu() = myWindow("game_actions") {
+fun ViewData.showGameMenu() = myWindow("game_actions") {
 
     suspend fun button(buttonEnum: GameMenuButtonsEnum, yInd: Int, handler: () -> Unit) =
         wideButton(buttonEnum.icon, buttonEnum.labelKey) {

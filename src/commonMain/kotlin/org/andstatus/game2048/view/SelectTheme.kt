@@ -8,7 +8,7 @@ import com.soywiz.korio.async.delay
 import com.soywiz.korio.async.launch
 import org.andstatus.game2048.Settings
 
-fun GameView.selectTheme(settings: Settings) = myWindow("select_theme") {
+fun ViewData.selectTheme(settings: Settings) = myWindow("select_theme") {
     var selected = settings.colorThemeEnum
     var buttons: List<Container> = emptyList()
 

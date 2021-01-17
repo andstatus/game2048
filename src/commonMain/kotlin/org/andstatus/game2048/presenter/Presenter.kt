@@ -38,14 +38,14 @@ import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.shareText
 import org.andstatus.game2048.view.AppBarButtonsEnum
 import org.andstatus.game2048.view.ColorThemeEnum
-import org.andstatus.game2048.view.GameView
+import org.andstatus.game2048.view.ViewData
 import org.andstatus.game2048.view.showBookmarks
 import org.andstatus.game2048.view.showGameMenu
 import org.andstatus.game2048.view.showHelp
 import org.andstatus.game2048.view.showRestoreGame
 
 /** @author yvolk@yurivolkov.com */
-class Presenter(private val view: GameView, history: History) {
+class Presenter(private val view: ViewData, history: History) {
     private val coroutineScope: CoroutineScope get() = view.gameStage
     val model = Model(history)
     private val moveIsInProgress = KorAtomicBoolean(false)

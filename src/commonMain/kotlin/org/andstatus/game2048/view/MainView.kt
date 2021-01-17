@@ -15,11 +15,11 @@ class MainView private constructor(
         appBar.show(this, appBarButtonsToShow)
         scoreBar.show(this, playSpeed)
         boardView.setOnTop(this)
-        this.addTo(appBar.gameView.gameStage)
+        this.addTo(appBar.viewData.gameStage)
     }
 
     companion object {
-        suspend fun GameView.setupMainView(coroutineScope: CoroutineScope): MainView {
+        suspend fun ViewData.setupMainView(coroutineScope: CoroutineScope): MainView {
             with(coroutineScope) {
                 val appBar = async { setupAppBar() }
                 val scoreBar = async { setupScoreBar() }

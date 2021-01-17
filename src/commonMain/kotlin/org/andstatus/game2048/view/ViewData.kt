@@ -32,7 +32,7 @@ import org.andstatus.game2048.view.MainView.Companion.setupMainView
 import kotlin.properties.Delegates
 
 /** @author yvolk@yurivolkov.com */
-suspend fun gameView(stage: Stage, animateViews: Boolean, handler: suspend GameView.() -> Unit = {}) {
+suspend fun viewData(stage: Stage, animateViews: Boolean, handler: suspend ViewData.() -> Unit = {}) {
     stage.removeChildren()
     coroutineScope {
         val scope: CoroutineScope = if (OS.isWindows) this else CoroutineScope(coroutineContext + Dispatchers.Default)
@@ -40,8 +40,8 @@ suspend fun gameView(stage: Stage, animateViews: Boolean, handler: suspend GameV
     }
 }
 
-private fun CoroutineScope.initialize(stage: Stage, animateViews: Boolean, handler: suspend GameView.() -> Unit = {}) = launch {
-    val quick = GameViewQuick(stage, animateViews)
+private fun CoroutineScope.initialize(stage: Stage, animateViews: Boolean, handler: suspend ViewData.() -> Unit = {}) = launch {
+    val quick = ViewDataQuick(stage, animateViews)
     val splashDefault = stage.splashScreen(quick, ColorThemeEnum.deviceDefault(stage))
     val strings = async { StringResources.load(defaultLanguage) }
     val font = async { loadFont(strings.await()) }
@@ -64,7 +64,7 @@ private fun CoroutineScope.initialize(stage: Stage, animateViews: Boolean, handl
         stage.gameWindow.title = strings.await().text("app_name")
     }
 
-    val view = GameView(quick, settings.await(), font.await(), strings.await(), gameColors.await())
+    val view = ViewData(quick, settings.await(), font.await(), strings.await(), gameColors.await())
     view.presenter = myMeasured("Presenter${view.id} created") { Presenter(view, history.await()) }
     view.mainView = myMeasured("MainView${view.id} created") { view.setupMainView(this) }
 
@@ -78,11 +78,11 @@ private fun CoroutineScope.initialize(stage: Stage, animateViews: Boolean, handl
     view.handler()
 }
 
-class GameView(gameViewQuick: GameViewQuick,
+class ViewData(viewDataQuick: ViewDataQuick,
                val settings: Settings,
                val font: Font,
                val stringResources: StringResources,
-               val gameColors: ColorTheme): GameViewBase by gameViewQuick, Closeable {
+               val gameColors: ColorTheme): ViewDataBase by viewDataQuick, Closeable {
 
     val cellSize: Double = (gameViewWidth - cellMargin * (settings.boardWidth + 1) - 2 * buttonPadding) / settings.boardWidth
     val boardWidth: Double = cellSize * settings.boardWidth + cellMargin * (settings.boardWidth + 1)
@@ -92,9 +92,9 @@ class GameView(gameViewQuick: GameViewQuick,
 
     val closeables = mutableListOf<Closeable>()
 
-    suspend fun reInitialize(handler: suspend GameView.() -> Unit = {}) {
+    suspend fun reInitialize(handler: suspend ViewData.() -> Unit = {}) {
         this.close()
-        gameView(gameStage, animateViews, handler)
+        viewData(gameStage, animateViews, handler)
     }
 
     /** Workaround for the bug: https://github.com/korlibs/korge-next/issues/56 */

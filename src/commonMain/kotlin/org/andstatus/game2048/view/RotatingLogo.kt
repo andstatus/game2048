@@ -5,22 +5,22 @@ import com.soywiz.korge.view.addTo
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.presenter.Block
 
-class RotatingLogo(val gameView: GameView, val buttonSize: Double): Container() {
+class RotatingLogo(val viewData: ViewData, val buttonSize: Double): Container() {
     var piece: Piece = Piece.N2048
 
     init {
         setBlock()
-        with(gameView) {
+        with(viewData) {
             this@RotatingLogo.customOnClick {
                 piece = piece.next()
                 setBlock()
-                gameView.presenter.showMainView()
+                viewData.presenter.showMainView()
             }
         }
     }
 
     private fun setBlock() {
         this.removeChildren()
-        Block(piece, gameView, buttonSize).addTo(this)
+        Block(piece, viewData, buttonSize).addTo(this)
     }
 }

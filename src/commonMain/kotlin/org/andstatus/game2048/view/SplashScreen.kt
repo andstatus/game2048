@@ -9,7 +9,7 @@ import com.soywiz.korge.view.size
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.std.resourcesVfs
 
-suspend fun Stage.splashScreen(quick: GameViewQuick, colorThemeEnum: ColorThemeEnum): Container = container {
+suspend fun Stage.splashScreen(quick: ViewDataQuick, colorThemeEnum: ColorThemeEnum): Container = container {
     val suffix = if (colorThemeEnum == ColorThemeEnum.DARK) "dark" else "light"
     image(resourcesVfs["assets/splash_$suffix.png"].readBitmap()) {
         val size1 = quick.gameViewWidth * 0.4

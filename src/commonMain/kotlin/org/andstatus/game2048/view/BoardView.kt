@@ -22,11 +22,11 @@ import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korma.geom.vector.roundRect
 import org.andstatus.game2048.defaultTextSize
 
-class BoardView(val gameView: GameView): Container() {
+class BoardView(val viewData: ViewData): Container() {
     private val controlsArea: SolidRect
 
     init {
-        with(gameView) {
+        with(viewData) {
             position(boardLeft, boardTop)
 
             roundRect(boardWidth, boardWidth, buttonRadius, fill = gameColors.buttonBackground)
@@ -79,7 +79,7 @@ class BoardView(val gameView: GameView): Container() {
 
     fun showGameOver(): Container = container {
         val window = this
-        with(gameView) {
+        with(viewData) {
             val gameColors = gameColors
             val format = TextFormat(gameColors.labelText, defaultTextSize.toInt(), font)
             val skin = TextSkin(

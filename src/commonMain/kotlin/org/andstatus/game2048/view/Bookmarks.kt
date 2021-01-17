@@ -12,7 +12,7 @@ import org.andstatus.game2048.defaultTextSize
 import org.andstatus.game2048.model.GameRecord
 import kotlin.math.max
 
-fun GameView.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
+fun ViewData.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
     val listTop = winTop + cellMargin + buttonSize + buttonPadding
     val nItems = game.shortRecord.bookmarks.size + 1
     val itemHeight = buttonSize

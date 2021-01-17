@@ -11,7 +11,7 @@ import org.andstatus.game2048.model.PlacedPiece
 import org.andstatus.game2048.model.PlayerMove
 import org.andstatus.game2048.model.PlayerMoveEnum
 import org.andstatus.game2048.model.Square
-import org.andstatus.game2048.view.GameView
+import org.andstatus.game2048.view.ViewData
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -54,13 +54,13 @@ class PersistenceTest : ViewsForTesting(log = true) {
         saveCurrent()
     }
 
-    private fun GameView.persistGameRecordTest(settings: Settings) {
+    private fun ViewData.persistGameRecordTest(settings: Settings) {
         persistGameRecordTest2(settings, 0)
         persistGameRecordTest2(settings, 1)
         persistGameRecordTest2(settings, 2)
     }
 
-    private fun GameView.persistGameRecordTest2(settings: Settings, nMoves: Int) {
+    private fun ViewData.persistGameRecordTest2(settings: Settings, nMoves: Int) {
         val moves = ArrayList<PlayerMove>()
         var nMovesActual = 0
         while (nMovesActual < nMoves) {
@@ -87,7 +87,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         assertEquals(gameRecord.playerMoves, gameRecordRestored.playerMoves, message)
     }
 
-    private fun GameView.assertTestHistory(expected: History) {
+    private fun ViewData.assertTestHistory(expected: History) {
         val actual = presenter.model.history
         assertEquals(expected.currentGame.playerMoves, actual.currentGame.playerMoves, modelAndViews())
         assertEquals(expected.currentGame.score, actual.currentGame.score, modelAndViews())
@@ -97,7 +97,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         assertFalse(presenter.canRedo(), modelAndViews())
     }
 
-    private fun GameView.restartTest() {
+    private fun ViewData.restartTest() {
         presenter.computerMove()
         presenter.computerMove()
         assertTrue(presenter.boardViews.blocks.size > 1, modelAndViews())
