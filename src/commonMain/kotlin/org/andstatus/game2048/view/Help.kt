@@ -9,4 +9,8 @@ fun GameView.showHelp(): Container = myWindow("help_title") {
         gameColors.labelText, font, Gravity.LEFT) {
         position(winLeft + cellMargin, winTop + buttonSize + buttonPadding + cellMargin)
     }
+    customOnClick {
+        this.removeFromParent()
+        presenter.onCloseMyWindowClick()
+    }
 }
