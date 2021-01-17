@@ -69,8 +69,8 @@ class ScoreBar(val gameView: GameView): Container() {
         }
     }
 
-    fun show(playSpeed: Int) {
-        addTo(gameView.gameStage)
+    fun show(parent: Container, playSpeed: Int) {
+        addTo(parent)
         usersMoveNumber.text = gameView.presenter.model.usersMoveNumber.toString() +
                 (if (playSpeed < 0) " «" else "") +
                 (if (playSpeed > 0) " »" else "") +

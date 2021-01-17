@@ -14,7 +14,7 @@ class RotatingLogo(val gameView: GameView, val buttonSize: Double): Container() 
             this@RotatingLogo.customOnClick {
                 piece = piece.next()
                 setBlock()
-                gameView.presenter.showControls()
+                gameView.presenter.showMainView()
             }
         }
     }

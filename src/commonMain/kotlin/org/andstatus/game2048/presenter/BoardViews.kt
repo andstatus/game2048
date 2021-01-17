@@ -70,7 +70,7 @@ class BoardViews(
     }
 
     fun addBlock(destination: PlacedPiece): Block = Block(destination.piece, gameView)
-            .addTo(gameView.boardView, destination.square)
+            .addTo(gameView.mainView.boardView, destination.square)
             .also { set(destination, it) }
 
     fun removeBlock(block: Block): Block? =

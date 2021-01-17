@@ -28,7 +28,7 @@ import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.presenter.Presenter
-import org.andstatus.game2048.view.AppBar.Companion.setupAppBar
+import org.andstatus.game2048.view.MainView.Companion.setupMainView
 import kotlin.properties.Delegates
 
 /** @author yvolk@yurivolkov.com */
@@ -66,13 +66,7 @@ private fun CoroutineScope.initialize(stage: Stage, animateViews: Boolean, handl
 
     val view = GameView(quick, settings.await(), font.await(), strings.await(), gameColors.await())
     view.presenter = myMeasured("Presenter${view.id} created") { Presenter(view, history.await()) }
-    val appBar = async { view.setupAppBar() }
-    val scoreBar = async { view.setupScoreBar() }
-    val boardView = async { BoardView(view) }
-
-    view.appBar = appBar.await()
-    view.scoreBar = scoreBar.await()
-    view.boardView = boardView.await()
+    view.mainView = myMeasured("MainView${view.id} created") { view.setupMainView(this) }
 
     splashThemed.removeFromParent()
     view.presenter.onAppEntry()
@@ -94,9 +88,7 @@ class GameView(gameViewQuick: GameViewQuick,
     val boardWidth: Double = cellSize * settings.boardWidth + cellMargin * (settings.boardWidth + 1)
 
     var presenter: Presenter by Delegates.notNull()
-    var appBar: AppBar by Delegates.notNull()
-    var scoreBar: ScoreBar by Delegates.notNull()
-    var boardView: BoardView by Delegates.notNull()
+    var mainView: MainView by Delegates.notNull()
 
     val closeables = mutableListOf<Closeable>()
 
@@ -120,12 +112,6 @@ class GameView(gameViewQuick: GameViewQuick,
 
     private fun Square.positionX() = cellMargin + (cellSize + cellMargin) * x
     private fun Square.positionY() = cellMargin + (cellSize + cellMargin) * y
-
-    fun showControls(appBarButtonsToShow: List<AppBarButtonsEnum>, playSpeed: Int) {
-        appBar.show(appBarButtonsToShow)
-        scoreBar.show(playSpeed)
-        boardView.setOnTop()
-    }
 
     override fun close() {
         closeables.forEach { it.close() }

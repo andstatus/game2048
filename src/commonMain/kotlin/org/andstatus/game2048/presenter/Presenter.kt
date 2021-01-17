@@ -66,8 +66,9 @@ class Presenter(private val view: GameView, history: History) {
 
     fun onAppEntry() = myMeasured("onAppEntry") {
         model.onAppEntry().present()
-        presentGameClock(view.gameStage, model) { view.scoreBar.gameTime }
+        presentGameClock(view.gameStage, model) { view.mainView.scoreBar.gameTime }
         if (model.history.prevGames.isEmpty() && model.history.currentGame.score == 0) {
+            view.mainView.removeFromParent()
             view.showHelp()
         }
     }
@@ -107,22 +108,25 @@ class Presenter(private val view: GameView, history: History) {
     }
 
     fun onSwipe(swipeDirection: SwipeDirection) {
-        when(gameMode.modeEnum) {
+        when (gameMode.modeEnum) {
             GameModeEnum.BACKWARDS, GameModeEnum.FORWARD, GameModeEnum.STOP -> {
                 when (swipeDirection) {
                     SwipeDirection.LEFT -> startAutoPlaying(GameModeEnum.BACKWARDS)
                     SwipeDirection.RIGHT -> startAutoPlaying(GameModeEnum.FORWARD)
                     SwipeDirection.BOTTOM -> onStopClick()
-                    else -> {}
+                    else -> {
+                    }
                 }
             }
             GameModeEnum.PLAY -> {
-                userMove(when (swipeDirection) {
-                    SwipeDirection.LEFT -> PlayerMoveEnum.LEFT
-                    SwipeDirection.RIGHT -> PlayerMoveEnum.RIGHT
-                    SwipeDirection.TOP -> PlayerMoveEnum.UP
-                    SwipeDirection.BOTTOM -> PlayerMoveEnum.DOWN
-                })
+                userMove(
+                    when (swipeDirection) {
+                        SwipeDirection.LEFT -> PlayerMoveEnum.LEFT
+                        SwipeDirection.RIGHT -> PlayerMoveEnum.RIGHT
+                        SwipeDirection.TOP -> PlayerMoveEnum.UP
+                        SwipeDirection.BOTTOM -> PlayerMoveEnum.DOWN
+                    }
+                )
             }
         }
 
@@ -131,27 +135,27 @@ class Presenter(private val view: GameView, history: History) {
     fun onBookmarkClick() = afterStop {
         logClick("Bookmark")
         model.createBookmark()
-        showControls()
+        showMainView()
     }
 
     fun onBookmarkedClick() = afterStop {
         logClick("Bookmarked")
         model.deleteBookmark()
-        showControls()
+        showMainView()
     }
 
     fun onPauseClick() = afterStop {
         logClick("Pause")
         model.gameClock.stop()
         model.saveCurrent()
-        showControls()
+        showMainView()
     }
 
     fun onPauseEvent() {
         myLog("onPauseEvent${view.id}")
         model.gameClock.stop()
         model.saveCurrent()
-        showControls()
+        showMainView()
     }
 
     fun onCloseGameWindowClick() {
@@ -165,13 +169,13 @@ class Presenter(private val view: GameView, history: History) {
     fun onWatchClick() = afterStop {
         logClick("Watch")
         gameMode.modeEnum = GameModeEnum.STOP
-        showControls()
+        showMainView()
     }
 
     fun onPlayClick() = afterStop {
         logClick("Play")
         gameMode.modeEnum = GameModeEnum.PLAY
-        showControls()
+        showMainView()
     }
 
     fun onBackwardsClick() {
@@ -182,7 +186,7 @@ class Presenter(private val view: GameView, history: History) {
     fun onStopClick() = afterStop {
         logClick("Stop")
         gameMode.modeEnum = GameModeEnum.STOP
-        showControls()
+        showMainView()
     }
 
     fun onForwardClick() {
@@ -204,12 +208,13 @@ class Presenter(private val view: GameView, history: History) {
     fun onGameMenuClick() = afterStop {
         logClick("GameMenu")
         model.gameClock.stop()
+        view.mainView.removeFromParent()
         view.showGameMenu()
     }
 
     fun onCloseMyWindowClick() {
         logClick("CloseMyWindow")
-        showControls()
+        showMainView()
     }
 
     fun onDeleteGameClick() = afterStop {
@@ -245,8 +250,10 @@ class Presenter(private val view: GameView, history: History) {
 
     fun onShareClick() = afterStop {
         logClick("Share")
-        view.gameStage.shareText(view.stringResources.text("share"), model.history.currentGame.shortRecord.jsonFileName,
-                model.history.currentGame.toMap().toJson())
+        view.gameStage.shareText(
+            view.stringResources.text("share"), model.history.currentGame.shortRecord.jsonFileName,
+            model.history.currentGame.toMap().toJson()
+        )
     }
 
     fun onLoadClick() = afterStop {
@@ -294,17 +301,18 @@ class Presenter(private val view: GameView, history: History) {
             afterStop {
                 val startCount = clickCounter.incrementAndGet()
                 gameMode.modeEnum = newMode
-                showControls()
+                showMainView()
                 coroutineScope.launch {
                     while (startCount == clickCounter.value &&
-                            if (gameMode.modeEnum == GameModeEnum.BACKWARDS) canUndo() else canRedo()) {
+                        if (gameMode.modeEnum == GameModeEnum.BACKWARDS) canUndo() else canRedo()
+                    ) {
                         if (gameMode.speed != 0) {
                             if (gameMode.modeEnum == GameModeEnum.BACKWARDS) undo() else redo()
                         }
                         delay(gameMode.delayMs.toLong())
                     }
                     gameMode.stop()
-                    showControls()
+                    showMainView()
                 }
             }
         }
@@ -337,11 +345,11 @@ class Presenter(private val view: GameView, history: History) {
         if (model.noMoreMoves()) {
             onPresentEnd()
             boardViews = boardViews
-                    .removeGameOver()
-                    .copy()
-                    .apply { gameOver = view.boardView.showGameOver() }
+                .removeGameOver()
+                .copy()
+                .apply { gameOver = view.mainView.boardView.showGameOver() }
         } else {
-            model.userMove(playerMoveEnum).let{
+            model.userMove(playerMoveEnum).let {
                 if (it.isEmpty()) it else it + model.computerMove()
             }.present()
         }
@@ -358,17 +366,17 @@ class Presenter(private val view: GameView, history: History) {
     }
 
     private fun onPresentEnd() {
-        showControls()
+        showMainView()
         moveIsInProgress.value = false
     }
 
-    fun showControls() {
-        view.showControls(buttonsToShow(), gameMode.speed)
+    fun showMainView() {
+        view.mainView.show(buttonsToShow(), gameMode.speed)
     }
 
     private fun buttonsToShow(): List<AppBarButtonsEnum> {
         val list = ArrayList<AppBarButtonsEnum>()
-        when(gameMode.modeEnum) {
+        when (gameMode.modeEnum) {
             GameModeEnum.PLAY -> {
                 if (model.gameClock.started) {
                     list.add(AppBarButtonsEnum.PAUSE)
@@ -428,7 +436,7 @@ class Presenter(private val view: GameView, history: History) {
         view.gameStage.animateSequence {
             parallel {
                 playerMove.moves.forEach { move ->
-                    when(move) {
+                    when (move) {
                         is MovePlace -> boardViews.addBlock(move.first)
                         is MoveLoad -> boardViews.load(move.board)
                         is MoveOne -> boardViews[move.first]?.move(this, move.destination)
@@ -447,7 +455,7 @@ class Presenter(private val view: GameView, history: History) {
                                 }
                                 sequenceLazy {
                                     if (view.animateViews) boardViews[move.merged]
-                                            ?.let { animateResultingBlock(this, it) }
+                                        ?.let { animateResultingBlock(this, it) }
                                 }
                             }
                         }
@@ -479,21 +487,21 @@ class Presenter(private val view: GameView, history: History) {
         view.gameStage.animateSequence {
             parallel {
                 playerMove.moves.asReversed().forEach { move ->
-                    when(move) {
+                    when (move) {
                         is MovePlace -> boardViews[move.first]
-                                ?.remove()
-                                ?: myLog("No Block at destination during undo: $move")
+                            ?.remove()
+                            ?: myLog("No Block at destination during undo: $move")
                         is MoveLoad -> boardViews.load(move.board)
                         is MoveOne -> boardViews[PlacedPiece(move.first.piece, move.destination)]
-                                ?.move(this, move.first.square)
-                                ?: myLog("No Block at destination during undo: $move")
+                            ?.move(this, move.first.square)
+                            ?: myLog("No Block at destination during undo: $move")
                         is MoveMerge -> {
                             val destination = move.merged.square
                             val effectiveBlock = boardViews[move.merged]
                             sequence {
                                 block {
                                     effectiveBlock?.remove()
-                                            ?: myLog("No Block at destination during undo: $move")
+                                        ?: myLog("No Block at destination during undo: $move")
                                 }
                                 parallel {
                                     val secondBlock = boardViews.addBlock(PlacedPiece(move.second.piece, destination))
@@ -535,18 +543,18 @@ class Presenter(private val view: GameView, history: History) {
         val scaleChange = 0.1
         val shift = block.scaledWidth * scaleChange / 2
         animator.tween(
-                block::x[x - shift],
-                block::y[y - shift],
-                block::scale[scale + scaleChange],
-                time = gameMode.resultingBlockMs.milliseconds,
-                easing = Easing.LINEAR
+            block::x[x - shift],
+            block::y[y - shift],
+            block::scale[scale + scaleChange],
+            time = gameMode.resultingBlockMs.milliseconds,
+            easing = Easing.LINEAR
         )
         animator.tween(
-                block::x[x],
-                block::y[y],
-                block::scale[scale],
-                time = gameMode.resultingBlockMs.milliseconds,
-                easing = Easing.LINEAR
+            block::x[x],
+            block::y[y],
+            block::scale[scale],
+            time = gameMode.resultingBlockMs.milliseconds,
+            easing = Easing.LINEAR
         )
     }
 

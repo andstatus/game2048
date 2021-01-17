@@ -69,7 +69,7 @@ fun GameView.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
     addUpdater {
         duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
             window.removeFromParent()
-            presenter.showControls()
+            presenter.showMainView()
         }
     }
 }

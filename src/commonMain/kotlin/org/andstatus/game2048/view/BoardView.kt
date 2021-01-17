@@ -72,9 +72,9 @@ class BoardView(val gameView: GameView): Container() {
     }
 
     /** Ensure the view is on the top to receive onSwipe events */
-    fun setOnTop() {
+    fun setOnTop(parent: Container) {
         controlsArea.addTo(this)
-        this.addTo(gameView.gameStage)
+        this.addTo(parent)
     }
 
     fun showGameOver(): Container = container {

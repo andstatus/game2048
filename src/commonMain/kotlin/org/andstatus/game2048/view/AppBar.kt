@@ -11,15 +11,15 @@ private infix fun AppBarButtonsEnum.to(container: Container): EButton = EButton(
 
 class AppBar private constructor(val gameView: GameView, val logo: RotatingLogo, private val appBarButtons: List<EButton>) {
 
-    fun show(appBarButtonsToShow: List<AppBarButtonsEnum>) {
-        logo.addTo(gameView.gameStage)
+    fun show(parent: Container, appBarButtonsToShow: List<AppBarButtonsEnum>) {
+        logo.addTo(parent)
 
         appBarButtons.filter { !appBarButtonsToShow.contains(it.enum) }
             .forEach { it.container.removeFromParent() }
 
         val toShow = appBarButtons.filter { appBarButtonsToShow.contains(it.enum) }.let { list ->
             list.firstOrNull{ eButton ->  eButton.enum == AppBarButtonsEnum.GAME_MENU }?.let{
-                it.container.position(gameView.buttonXs[4], gameView.buttonYs[0]).addTo(gameView.gameStage)
+                it.container.position(gameView.buttonXs[4], gameView.buttonYs[0]).addTo(parent)
                 list.filter { it.enum != AppBarButtonsEnum.GAME_MENU }
             } ?: list
         }
@@ -31,7 +31,7 @@ class AppBar private constructor(val gameView: GameView, val logo: RotatingLogo,
             .forEach { eb ->
                 remainingPos.firstOrNull()?.let {
                     eb.container.positionX(it)
-                        .addTo(gameView.gameStage)
+                        .addTo(parent)
                     remainingPos.removeFirst()
                 }
             }
@@ -41,7 +41,7 @@ class AppBar private constructor(val gameView: GameView, val logo: RotatingLogo,
             .forEach { eb ->
                 remainingPos.lastOrNull()?.let {
                     eb.container.positionX(it)
-                        .addTo(gameView.gameStage)
+                        .addTo(parent)
                     remainingPos.removeLast()
                 }
             }
