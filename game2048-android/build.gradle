@@ -16,7 +16,6 @@ repositories {
 }
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 android {
     lintOptions {
         disable("GradleCompatible")
@@ -45,7 +44,7 @@ android {
         minSdkVersion 24
         targetSdkVersion 29
         versionCode 17
-        versionName '1.7.0'
+        versionName '1.7.0.1'
 
         archivesBaseName = "game2048-android-$versionName"
     }
