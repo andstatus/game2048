@@ -18,7 +18,9 @@ class GameMode() {
     val speed get() = data.value.speed
     val absSpeed get() = abs(data.value.speed)
 
-    val autoPlaying get() = modeEnum == GameModeEnum.BACKWARDS || modeEnum == GameModeEnum.FORWARD
+    val autoPlaying get() = modeEnum == GameModeEnum.BACKWARDS ||
+            modeEnum == GameModeEnum.FORWARD ||
+            modeEnum == GameModeEnum.AI_PLAY
 
     var modeEnum : GameModeEnum
         get() = data.value.modeEnum
@@ -28,7 +30,7 @@ class GameMode() {
                 when(value) {
                     GameModeEnum.BACKWARDS -> -1
                     GameModeEnum.FORWARD -> 1
-                    GameModeEnum.STOP, GameModeEnum.PLAY -> 0
+                    GameModeEnum.STOP, GameModeEnum.PLAY, GameModeEnum.AI_PLAY -> 0
                 }
             )
         }

@@ -62,11 +62,9 @@ class BoardView(val viewData: ViewData): Container() {
                 ifKey(Key.RIGHT) { presenter.onSwipe(SwipeDirection.RIGHT) }
                 ifKey(Key.UP) { presenter.onSwipe(SwipeDirection.TOP) }
                 ifKey(Key.DOWN) { presenter.onSwipe(SwipeDirection.BOTTOM) }
-                ifKey(Key.SPACE) { presenter.onPauseClick() }
-                ifKey(Key.M) { presenter.onGameMenuClick() }
-                ifKey(Key.BACKSPACE) {
-                    presenter.onCloseGameWindowClick()
-                }
+                ifKey(Key.SPACE, presenter::onPauseClick)
+                ifKey(Key.M, presenter::onGameMenuClick)
+                ifKey(Key.BACKSPACE, presenter::onCloseGameWindowClick)
             }
         }
     }

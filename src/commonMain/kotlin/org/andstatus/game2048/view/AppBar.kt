@@ -2,84 +2,100 @@ package org.andstatus.game2048.view
 
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.position
 import com.soywiz.korge.view.positionX
 import com.soywiz.korge.view.positionY
+import org.andstatus.game2048.view.AppBarButtonsEnum.BACKWARDS
+import org.andstatus.game2048.view.AppBarButtonsEnum.BOOKMARK
+import org.andstatus.game2048.view.AppBarButtonsEnum.BOOKMARKED
+import org.andstatus.game2048.view.AppBarButtonsEnum.BOOKMARK_PLACEHOLDER
+import org.andstatus.game2048.view.AppBarButtonsEnum.FORWARD
+import org.andstatus.game2048.view.AppBarButtonsEnum.FORWARD_PLACEHOLDER
+import org.andstatus.game2048.view.AppBarButtonsEnum.GAME_MENU
+import org.andstatus.game2048.view.AppBarButtonsEnum.PAUSE
+import org.andstatus.game2048.view.AppBarButtonsEnum.PLAY
+import org.andstatus.game2048.view.AppBarButtonsEnum.REDO
+import org.andstatus.game2048.view.AppBarButtonsEnum.REDO_PLACEHOLDER
+import org.andstatus.game2048.view.AppBarButtonsEnum.RESTART
+import org.andstatus.game2048.view.AppBarButtonsEnum.STOP
+import org.andstatus.game2048.view.AppBarButtonsEnum.STOP_PLACEHOLDER
+import org.andstatus.game2048.view.AppBarButtonsEnum.TO_CURRENT
+import org.andstatus.game2048.view.AppBarButtonsEnum.TO_START
+import org.andstatus.game2048.view.AppBarButtonsEnum.UNDO
+import org.andstatus.game2048.view.AppBarButtonsEnum.WATCH
 
-private class EButton(val enum: AppBarButtonsEnum, val container: Container)
-private infix fun AppBarButtonsEnum.to(container: Container): EButton = EButton(this, container)
+class EButton(val enum: AppBarButtonsEnum, val container: Container = Container())
 
-class AppBar private constructor(val viewData: ViewData, val logo: RotatingLogo, private val appBarButtons: List<EButton>) {
+private suspend fun ViewData.eButton(enum: AppBarButtonsEnum, icon: String, handler: () -> Unit): EButton =
+    EButton(enum, this.barButton(icon, handler))
+
+class AppBar private constructor(val viewData: ViewData, private val appBarButtons: List<EButton>) {
 
     fun show(parent: Container, appBarButtonsToShow: List<AppBarButtonsEnum>) {
-        logo.addTo(parent)
+        val (toShowAll, toRemove) = appBarButtons.partition { appBarButtonsToShow.contains(it.enum) }
+        toRemove.forEach { it.container.removeFromParent() }
 
-        appBarButtons.filter { !appBarButtonsToShow.contains(it.enum) }
-            .forEach { it.container.removeFromParent() }
+        (0 .. 1).forEach { row ->
+            val toShow = toShowAll.filter { eButton -> eButton.enum.row == row }
+            val remainingPos = viewData.buttonXs.toMutableList()
 
-        val toShow = appBarButtons.filter { appBarButtonsToShow.contains(it.enum) }.let { list ->
-            list.firstOrNull{ eButton ->  eButton.enum == AppBarButtonsEnum.GAME_MENU }?.let{
-                it.container.position(viewData.buttonXs[4], viewData.buttonYs[0]).addTo(parent)
-                list.filter { it.enum != AppBarButtonsEnum.GAME_MENU }
-            } ?: list
+            // Left aligned buttons
+            toShow.filter { it.enum.sortOrder < 0 }
+                .sortedBy { it.enum.sortOrder }
+                .forEach { eb ->
+                    remainingPos.firstOrNull()?.let {
+                        eb.container.positionX(it)
+                            .addTo(parent)
+                        remainingPos.removeFirst()
+                    }
+                }
+            // Others are Right-aligned
+            toShow.filter { it.enum.sortOrder >= 0 }
+                .sortedByDescending { it.enum.sortOrder }
+                .forEach { eb ->
+                    remainingPos.lastOrNull()?.let {
+                        eb.container.positionX(it)
+                            .addTo(parent)
+                        remainingPos.removeLast()
+                    }
+                }
         }
-        val remainingPos = viewData.buttonXs.toMutableList()
-
-        // Left aligned buttons
-        toShow.filter { it.enum.sortOrder < 0 }
-            .sortedBy { it.enum.sortOrder }
-            .forEach { eb ->
-                remainingPos.firstOrNull()?.let {
-                    eb.container.positionX(it)
-                        .addTo(parent)
-                    remainingPos.removeFirst()
-                }
-            }
-        // Others are Right-aligned
-        toShow.filter { it.enum.sortOrder >= 0 }
-            .sortedByDescending { it.enum.sortOrder }
-            .forEach { eb ->
-                remainingPos.lastOrNull()?.let {
-                    eb.container.positionX(it)
-                        .addTo(parent)
-                    remainingPos.removeLast()
-                }
-            }
     }
 
     companion object {
         suspend fun ViewData.setupAppBar(): AppBar {
-            val logo =  RotatingLogo(this, buttonSize).apply { position(buttonXs[0], buttonYs[0]) }
 
-            val appBarTop = buttonYs[1]
+            suspend fun AppBarButtonsEnum.button(icon: String, handler: () -> Unit): EButton =
+                EButton(this, this@setupAppBar.barButton(icon, handler))
+            fun AppBarButtonsEnum.button(): EButton = EButton(this)
 
-            suspend fun button(icon: String, handler: () -> Unit): Container =
-                barButton(icon, handler).apply {
-                    positionY(appBarTop)
-                }
+            val buttons: List<EButton> = listOf(
+                rotatingLogo(this, buttonSize),
+                GAME_MENU.button("menu", presenter::onGameMenuClick),
 
-            val appBarButtons: List<EButton> = listOf(
-                AppBarButtonsEnum.PLAY to button("play", presenter::onPlayClick),
-                AppBarButtonsEnum.TO_START to button("skip_previous", presenter::onToStartClick),
-                AppBarButtonsEnum.BACKWARDS to button("backwards", presenter::onBackwardsClick),
-                AppBarButtonsEnum.STOP to button("stop", presenter::onStopClick),
-                AppBarButtonsEnum.STOP_PLACEHOLDER to Container(),
-                AppBarButtonsEnum.FORWARD to button("forward", presenter::onForwardClick),
-                AppBarButtonsEnum.FORWARD_PLACEHOLDER to Container(),
-                AppBarButtonsEnum.TO_CURRENT to button("skip_next", presenter::onToCurrentClick),
+                PLAY.button("play", presenter::onPlayClick),
+                TO_START.button("skip_previous", presenter::onToStartClick),
+                BACKWARDS.button("backwards", presenter::onBackwardsClick),
+                STOP.button("stop", presenter::onStopClick),
+                STOP_PLACEHOLDER.button(),
+                FORWARD.button("forward", presenter::onForwardClick),
+                FORWARD_PLACEHOLDER.button(),
+                TO_CURRENT.button("skip_next", presenter::onToCurrentClick),
 
-                AppBarButtonsEnum.WATCH to button("watch", presenter::onWatchClick),
-                AppBarButtonsEnum.BOOKMARK to button("bookmark_border", presenter::onBookmarkClick),
-                AppBarButtonsEnum.BOOKMARKED to button("bookmark", presenter::onBookmarkedClick),
-                AppBarButtonsEnum.PAUSE to button("pause", presenter::onPauseClick),
-                AppBarButtonsEnum.RESTART to button("restart", presenter::onRestartClick),
-                AppBarButtonsEnum.UNDO to button("undo", presenter::onUndoClick),
-                AppBarButtonsEnum.REDO to button("redo", presenter::onRedoClick),
-                AppBarButtonsEnum.REDO_PLACEHOLDER to Container(),
-                AppBarButtonsEnum.GAME_MENU to button("menu", presenter::onGameMenuClick),
+                WATCH.button("watch", presenter::onWatchClick),
+                BOOKMARK.button("bookmark_border", presenter::onBookmarkClick),
+                BOOKMARKED.button("bookmark", presenter::onBookmarkedClick),
+                BOOKMARK_PLACEHOLDER.button(),
+                PAUSE.button("pause", presenter::onPauseClick),
+                RESTART.button("restart", presenter::onRestartClick),
+                UNDO.button("undo", presenter::onUndoClick),
+                REDO.button("redo", presenter::onRedoClick),
+                REDO_PLACEHOLDER.button(),
             )
+            buttons.forEach {
+                it.container.positionY(buttonYs[it.enum.row])
+            }
 
-            return AppBar(this, logo, appBarButtons)
+            return AppBar(this, buttons)
         }
     }
 }

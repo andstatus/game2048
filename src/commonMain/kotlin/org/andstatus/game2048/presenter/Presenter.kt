@@ -111,8 +111,8 @@ class Presenter(private val view: ViewData, history: History) {
         when (gameMode.modeEnum) {
             GameModeEnum.BACKWARDS, GameModeEnum.FORWARD, GameModeEnum.STOP -> {
                 when (swipeDirection) {
-                    SwipeDirection.LEFT -> startAutoPlaying(GameModeEnum.BACKWARDS)
-                    SwipeDirection.RIGHT -> startAutoPlaying(GameModeEnum.FORWARD)
+                    SwipeDirection.LEFT -> startAutoReplay(GameModeEnum.BACKWARDS)
+                    SwipeDirection.RIGHT -> startAutoReplay(GameModeEnum.FORWARD)
                     SwipeDirection.BOTTOM -> onStopClick()
                     else -> {
                     }
@@ -127,6 +127,9 @@ class Presenter(private val view: ViewData, history: History) {
                         SwipeDirection.BOTTOM -> PlayerMoveEnum.DOWN
                     }
                 )
+            }
+            GameModeEnum.AI_PLAY -> {
+                onPlayClick()
             }
         }
 
@@ -180,7 +183,7 @@ class Presenter(private val view: ViewData, history: History) {
 
     fun onBackwardsClick() {
         logClick("Backwards")
-        startAutoPlaying(GameModeEnum.BACKWARDS)
+        startAutoReplay(GameModeEnum.BACKWARDS)
     }
 
     fun onStopClick() = afterStop {
@@ -191,7 +194,7 @@ class Presenter(private val view: ViewData, history: History) {
 
     fun onForwardClick() {
         logClick("Forward")
-        startAutoPlaying(GameModeEnum.FORWARD)
+        startAutoReplay(GameModeEnum.FORWARD)
     }
 
     fun onToStartClick() = afterStop {
@@ -294,7 +297,7 @@ class Presenter(private val view: ViewData, history: History) {
         view.reInitialize()
     }
 
-    private fun startAutoPlaying(newMode: GameModeEnum) {
+    private fun startAutoReplay(newMode: GameModeEnum) {
         if (gameMode.modeEnum == newMode) {
             if (newMode == GameModeEnum.BACKWARDS) gameMode.decrementSpeed() else gameMode.incrementSpeed()
         } else if (if (newMode == GameModeEnum.BACKWARDS) canUndo() else canRedo()) {
@@ -376,6 +379,7 @@ class Presenter(private val view: ViewData, history: History) {
 
     private fun buttonsToShow(): List<AppBarButtonsEnum> {
         val list = ArrayList<AppBarButtonsEnum>()
+        list.add(AppBarButtonsEnum.APP_LOGO)
         when (gameMode.modeEnum) {
             GameModeEnum.PLAY -> {
                 if (model.gameClock.started) {
@@ -383,11 +387,15 @@ class Presenter(private val view: ViewData, history: History) {
                     list.add(
                         if (model.isBookmarked) AppBarButtonsEnum.BOOKMARKED else AppBarButtonsEnum.BOOKMARK
                     )
-                } else if (model.history.currentGame.playerMoves.size > 1) {
-                    if (model.isBookmarked) {
-                        list.add(AppBarButtonsEnum.BOOKMARKED)
+                } else {
+                    if (model.history.currentGame.playerMoves.size > 1) {
+                        if (model.isBookmarked) {
+                            list.add(AppBarButtonsEnum.BOOKMARKED)
+                        } else {
+                            list.add(AppBarButtonsEnum.WATCH)
+                        }
                     } else {
-                        list.add(AppBarButtonsEnum.WATCH)
+                        list.add(AppBarButtonsEnum.BOOKMARK_PLACEHOLDER)
                     }
                     if (!canRedo()) {
                         list.add(AppBarButtonsEnum.RESTART)
@@ -400,6 +408,9 @@ class Presenter(private val view: ViewData, history: History) {
                 list.add(if (canRedo()) AppBarButtonsEnum.REDO else AppBarButtonsEnum.REDO_PLACEHOLDER)
 
                 list.add(AppBarButtonsEnum.GAME_MENU)
+            }
+            GameModeEnum.AI_PLAY -> {
+                list.add(AppBarButtonsEnum.PLAY)
             }
             else -> {
                 list.add(AppBarButtonsEnum.PLAY)
