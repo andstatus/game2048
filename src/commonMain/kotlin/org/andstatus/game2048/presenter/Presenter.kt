@@ -16,6 +16,7 @@ import com.soywiz.korio.serialization.json.toJson
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import org.andstatus.game2048.ai.AiPlayer
 import org.andstatus.game2048.closeGameApp
 import org.andstatus.game2048.gameStopWatch
 import org.andstatus.game2048.loadJsonGameRecord
@@ -48,6 +49,7 @@ import org.andstatus.game2048.view.showRestoreGame
 class Presenter(private val view: ViewData, history: History) {
     private val coroutineScope: CoroutineScope get() = view.gameStage
     val model = Model(history)
+    val aiPlayer = AiPlayer(history.settings)
     private val moveIsInProgress = KorAtomicBoolean(false)
     val score get() = model.score
     val bestScore get() = model.bestScore
@@ -93,9 +95,7 @@ class Presenter(private val view: ViewData, history: History) {
     fun onAiStartClicked() {
         logClick("AiStart")
         gameMode.aiEnabled = true
-        gameMode.modeEnum = GameModeEnum.AI_PLAY
-        model.gameClock.start()
-        showMainView()
+        startAiPlay()
     }
 
     fun onAiStopClicked() {
@@ -351,6 +351,25 @@ class Presenter(private val view: ViewData, history: History) {
                     gameMode.stop()
                     showMainView()
                 }
+            }
+        }
+    }
+
+    private fun startAiPlay() {
+        afterStop {
+            val startCount = clickCounter.incrementAndGet()
+            gameMode.modeEnum = GameModeEnum.AI_PLAY
+            model.gameClock.start()
+            showMainView()
+            coroutineScope.launch {
+                while (startCount == clickCounter.value && !model.noMoreMoves()
+                    && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
+                    if (!moveIsInProgress.value) aiPlayer.nextMove(model.board).let {
+                        userMove(it)
+                    }
+                    delay(gameMode.delayMs.toLong())
+                }
+                onAiStopClicked()
             }
         }
     }
