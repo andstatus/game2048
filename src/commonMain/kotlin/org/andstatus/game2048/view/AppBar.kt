@@ -4,6 +4,10 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.addTo
 import com.soywiz.korge.view.positionX
 import com.soywiz.korge.view.positionY
+import org.andstatus.game2048.view.AppBarButtonsEnum.AI_OFF
+import org.andstatus.game2048.view.AppBarButtonsEnum.AI_ON
+import org.andstatus.game2048.view.AppBarButtonsEnum.AI_START
+import org.andstatus.game2048.view.AppBarButtonsEnum.AI_STOP
 import org.andstatus.game2048.view.AppBarButtonsEnum.BACKWARDS
 import org.andstatus.game2048.view.AppBarButtonsEnum.BOOKMARK
 import org.andstatus.game2048.view.AppBarButtonsEnum.BOOKMARKED
@@ -64,32 +68,37 @@ class AppBar private constructor(val viewData: ViewData, private val appBarButto
     companion object {
         suspend fun ViewData.setupAppBar(): AppBar {
 
-            suspend fun AppBarButtonsEnum.button(icon: String, handler: () -> Unit): EButton =
-                EButton(this, this@setupAppBar.barButton(icon, handler))
+            suspend fun AppBarButtonsEnum.button(handler: () -> Unit): EButton =
+                EButton(this, this@setupAppBar.barButton(this.icon, handler))
             fun AppBarButtonsEnum.button(): EButton = EButton(this)
 
             val buttons: List<EButton> = listOf(
                 rotatingLogo(this, buttonSize),
-                GAME_MENU.button("menu", presenter::onGameMenuClick),
+                AI_OFF.button(presenter::onNoMagicClicked),
+                AI_ON.button(presenter::onMagicClicked),
 
-                PLAY.button("play", presenter::onPlayClick),
-                TO_START.button("skip_previous", presenter::onToStartClick),
-                BACKWARDS.button("backwards", presenter::onBackwardsClick),
-                STOP.button("stop", presenter::onStopClick),
-                STOP_PLACEHOLDER.button(),
-                FORWARD.button("forward", presenter::onForwardClick),
-                FORWARD_PLACEHOLDER.button(),
-                TO_CURRENT.button("skip_next", presenter::onToCurrentClick),
+                RESTART.button(presenter::onRestartClick),
+                GAME_MENU.button(presenter::onGameMenuClick),
 
-                WATCH.button("watch", presenter::onWatchClick),
-                BOOKMARK.button("bookmark_border", presenter::onBookmarkClick),
-                BOOKMARKED.button("bookmark", presenter::onBookmarkedClick),
+                PLAY.button(presenter::onPlayClick),
+                BOOKMARK.button(presenter::onBookmarkClick),
+                BOOKMARKED.button(presenter::onBookmarkedClick),
                 BOOKMARK_PLACEHOLDER.button(),
-                PAUSE.button("pause", presenter::onPauseClick),
-                RESTART.button("restart", presenter::onRestartClick),
-                UNDO.button("undo", presenter::onUndoClick),
-                REDO.button("redo", presenter::onRedoClick),
+                PAUSE.button(presenter::onPauseClick),
+                AI_STOP.button(presenter::onAiStopClicked),
+                AI_START.button(presenter::onAiStartClicked),
+                UNDO.button(presenter::onUndoClick),
+                REDO.button(presenter::onRedoClick),
                 REDO_PLACEHOLDER.button(),
+
+                WATCH.button(presenter::onWatchClick),
+                TO_START.button(presenter::onToStartClick),
+                BACKWARDS.button(presenter::onBackwardsClick),
+                STOP.button(presenter::onStopClick),
+                STOP_PLACEHOLDER.button(),
+                FORWARD.button(presenter::onForwardClick),
+                FORWARD_PLACEHOLDER.button(),
+                TO_CURRENT.button(presenter::onToCurrentClick),
             )
             buttons.forEach {
                 it.container.positionY(buttonYs[it.enum.row])

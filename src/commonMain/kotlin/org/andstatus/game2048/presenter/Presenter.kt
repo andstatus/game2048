@@ -73,6 +73,39 @@ class Presenter(private val view: ViewData, history: History) {
         }
     }
 
+    fun onNoMagicClicked() {
+        logClick("NoMagic")
+        gameMode.aiEnabled = true
+        showMainView()
+    }
+
+    fun onMagicClicked() {
+        logClick("Magic")
+        gameMode.aiEnabled = false
+        if (gameMode.modeEnum != GameModeEnum.PLAY) {
+            model.gameClock.stop()
+            gameMode.modeEnum = GameModeEnum.PLAY
+            model.saveCurrent()
+        }
+        showMainView()
+    }
+
+    fun onAiStartClicked() {
+        logClick("AiStart")
+        gameMode.aiEnabled = true
+        gameMode.modeEnum = GameModeEnum.AI_PLAY
+        model.gameClock.start()
+        showMainView()
+    }
+
+    fun onAiStopClicked() {
+        logClick("AiStop")
+        model.gameClock.stop()
+        gameMode.modeEnum = GameModeEnum.PLAY
+        model.saveCurrent()
+        showMainView()
+    }
+
     fun canUndo(): Boolean = model.canUndo()
 
     fun canRedo(): Boolean = model.canRedo()
@@ -129,7 +162,7 @@ class Presenter(private val view: ViewData, history: History) {
                 )
             }
             GameModeEnum.AI_PLAY -> {
-                onPlayClick()
+                onAiStopClicked()
             }
         }
 
@@ -171,13 +204,14 @@ class Presenter(private val view: ViewData, history: History) {
 
     fun onWatchClick() = afterStop {
         logClick("Watch")
-        gameMode.modeEnum = GameModeEnum.STOP
+        gameMode.modeEnum = GameModeEnum.PLAY
         showMainView()
     }
 
     fun onPlayClick() = afterStop {
         logClick("Play")
-        gameMode.modeEnum = GameModeEnum.PLAY
+        gameMode.modeEnum = GameModeEnum.STOP
+        gameMode.aiEnabled = false
         showMainView()
     }
 
@@ -379,27 +413,30 @@ class Presenter(private val view: ViewData, history: History) {
 
     private fun buttonsToShow(): List<AppBarButtonsEnum> {
         val list = ArrayList<AppBarButtonsEnum>()
-        list.add(AppBarButtonsEnum.APP_LOGO)
         when (gameMode.modeEnum) {
             GameModeEnum.PLAY -> {
+                list.add(AppBarButtonsEnum.PLAY)
+                list.add(
+                    if (gameMode.aiEnabled) AppBarButtonsEnum.AI_ON else AppBarButtonsEnum.AI_OFF
+                )
                 if (model.gameClock.started) {
                     list.add(AppBarButtonsEnum.PAUSE)
                     list.add(
                         if (model.isBookmarked) AppBarButtonsEnum.BOOKMARKED else AppBarButtonsEnum.BOOKMARK
                     )
                 } else {
-                    if (model.history.currentGame.playerMoves.size > 1) {
-                        if (model.isBookmarked) {
-                            list.add(AppBarButtonsEnum.BOOKMARKED)
-                        } else {
-                            list.add(AppBarButtonsEnum.WATCH)
-                        }
+                    list.add(AppBarButtonsEnum.APP_LOGO)
+                    if (model.history.currentGame.playerMoves.size > 1 && model.isBookmarked) {
+                        list.add(AppBarButtonsEnum.BOOKMARKED)
                     } else {
                         list.add(AppBarButtonsEnum.BOOKMARK_PLACEHOLDER)
                     }
                     if (!canRedo()) {
                         list.add(AppBarButtonsEnum.RESTART)
                     }
+                }
+                if (gameMode.aiEnabled) {
+                    list.add(AppBarButtonsEnum.AI_START)
                 }
 
                 if (canUndo()) {
@@ -411,9 +448,12 @@ class Presenter(private val view: ViewData, history: History) {
             }
             GameModeEnum.AI_PLAY -> {
                 list.add(AppBarButtonsEnum.PLAY)
+                list.add(AppBarButtonsEnum.AI_ON)
+                list.add(AppBarButtonsEnum.BOOKMARK_PLACEHOLDER)
+                list.add(AppBarButtonsEnum.AI_STOP)
             }
             else -> {
-                list.add(AppBarButtonsEnum.PLAY)
+                list.add(AppBarButtonsEnum.WATCH)
                 if (canUndo()) {
                     if (gameMode.speed == -gameMode.maxSpeed) {
                         list.add(AppBarButtonsEnum.TO_START)
@@ -422,6 +462,7 @@ class Presenter(private val view: ViewData, history: History) {
                     }
                 }
                 if (gameMode.modeEnum == GameModeEnum.STOP) {
+                    list.add(AppBarButtonsEnum.APP_LOGO)
                     list.add(AppBarButtonsEnum.STOP_PLACEHOLDER)
                 } else {
                     list.add(AppBarButtonsEnum.STOP)

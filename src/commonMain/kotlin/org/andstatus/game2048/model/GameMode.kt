@@ -5,14 +5,14 @@ import kotlin.math.abs
 
 /** @author yvolk@yurivolkov.com */
 class GameMode() {
-    private data class GameModeData(val modeEnum: GameModeEnum, val speed: Int)
+    private data class GameModeData(val modeEnum: GameModeEnum, val speed: Int, val aiEnabled: Boolean)
 
     val maxSpeed = 6
     private val data = KorAtomicRef(initialData())
 
     fun stop() {
         val old = data.value
-        data.compareAndSet(old, GameModeData(GameModeEnum.STOP, 0))
+        data.compareAndSet(old, GameModeData(GameModeEnum.STOP, 0, old.aiEnabled))
     }
 
     val speed get() = data.value.speed
@@ -25,41 +25,50 @@ class GameMode() {
     var modeEnum : GameModeEnum
         get() = data.value.modeEnum
         set(value) {
+            val old = data.value
             data.value = GameModeData(
                 value,
                 when(value) {
                     GameModeEnum.BACKWARDS -> -1
                     GameModeEnum.FORWARD -> 1
                     GameModeEnum.STOP, GameModeEnum.PLAY, GameModeEnum.AI_PLAY -> 0
-                }
+                },
+                old.aiEnabled
             )
         }
 
-    private fun initialData() = GameModeData(GameModeEnum.STOP, 0)
+    var aiEnabled: Boolean
+        get() = data.value.aiEnabled
+        set(value) {
+            val old = data.value
+            data.compareAndSet(old, GameModeData(old.modeEnum, old.speed, value))
+        }
+
+    private fun initialData() = GameModeData(GameModeEnum.STOP, 0, false)
 
     fun incrementSpeed() {
-        val value = data.value
-        if (value.speed < maxSpeed) {
-            val newSpeed = value.speed + 1
+        val old = data.value
+        if (old.speed < maxSpeed) {
+            val newSpeed = old.speed + 1
             val newMode = when (newSpeed) {
                 in Int.MIN_VALUE .. -1 -> GameModeEnum.BACKWARDS
                 0 -> GameModeEnum.STOP
                 else -> GameModeEnum.FORWARD
             }
-            data.compareAndSet(value, GameModeData(newMode, newSpeed))
+            data.compareAndSet(old, GameModeData(newMode, newSpeed, old.aiEnabled))
         }
     }
 
     fun decrementSpeed() {
-        val value = data.value
-        if (value.speed > -maxSpeed) {
-            val newSpeed = value.speed - 1
+        val old = data.value
+        if (old.speed > -maxSpeed) {
+            val newSpeed = old.speed - 1
             val newMode = when (newSpeed) {
                 in Int.MIN_VALUE .. -1 -> GameModeEnum.BACKWARDS
                 0 -> GameModeEnum.STOP
                 else -> GameModeEnum.FORWARD
             }
-            data.compareAndSet(value, GameModeData(newMode, newSpeed))
+            data.compareAndSet(old, GameModeData(newMode, newSpeed, old.aiEnabled))
         }
     }
 
