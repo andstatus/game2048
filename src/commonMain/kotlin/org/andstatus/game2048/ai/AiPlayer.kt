@@ -11,7 +11,18 @@ class AiPlayer(val settings: Settings) {
     val model = GameModel(settings) { _, _ -> }
 
     fun nextMove(board: Board): PlayerMoveEnum {
-        return allowedRandomMove(board)
+        return moveWithMaxScore(board)
+        //return allowedRandomMove(board)
+    }
+
+    private fun moveWithMaxScore(board: Board): PlayerMoveEnum {
+        model.composerMove(board)
+        return (0..3).map { PlayerMoveEnum.values()[it]}
+            .map(model::calcMove)
+            .filter { it.moves.isNotEmpty() }
+            .maxByOrNull{ it.moves.sumBy{ it.points() }}
+            ?.playerMoveEnum
+            ?: allowedRandomMove(board)
     }
 
     private fun allowedRandomMove(board: Board): PlayerMoveEnum {
