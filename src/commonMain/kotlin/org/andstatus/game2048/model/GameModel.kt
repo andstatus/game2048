@@ -39,7 +39,7 @@ class GameModel(val settings: Settings, val onMoveHandler: (PlayerMove, Board) -
         }
     }
 
-    private fun calcMove(playerMoveEnum: PlayerMoveEnum): PlayerMove {
+    fun calcMove(playerMoveEnum: PlayerMoveEnum): PlayerMove {
         val board = this.board.forNextMove()
         val moves = mutableListOf<Move>()
         val direction = playerMoveEnum.reverseDirection()
