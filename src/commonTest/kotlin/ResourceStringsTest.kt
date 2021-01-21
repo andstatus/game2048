@@ -9,7 +9,7 @@ class ResourceStringsTest : ViewsForTesting(log = true) {
 
     @Test
     fun resourceStringsTest() = viewsTest {
-        testInitializeGameView() {
+        initializeViewDataInTest() {
             testLanguageFallback()
             collectCharacterCodes()
         }

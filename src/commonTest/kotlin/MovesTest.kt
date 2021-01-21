@@ -12,8 +12,8 @@ import kotlin.test.assertTrue
 class MovesTest : ViewsForTesting(log = true) {
 
     @Test
-    fun movesTest() = viewsTest { testInitializeGameView() {
-        this.presenter.onPlayClick()
+    fun movesTest() = viewsTest { initializeViewDataInTest() {
+        this.presenter.onWatchClick()
         this.presenter.composerMove(Board(this.settings))
         assertEquals(0, this.presenter.boardViews.blocks.size, this.modelAndViews())
         val square1 = Square(1, 1)

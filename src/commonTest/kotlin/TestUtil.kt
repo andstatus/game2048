@@ -12,7 +12,7 @@ private var viewData: ViewData get() = lazyViewData.value
 fun unsetGameView() {
     if (lazyViewData.isInitialized()) lazyViewData = uninitializedLazy
 }
-suspend fun Stage.testInitializeGameView(handler: suspend ViewData.() -> Unit = {}) {
+suspend fun Stage.initializeViewDataInTest(handler: suspend ViewData.() -> Unit = {}) {
     if (lazyViewData.isInitialized()) {
         viewData.handler()
         return

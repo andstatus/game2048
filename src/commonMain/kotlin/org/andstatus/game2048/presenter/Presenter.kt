@@ -389,9 +389,9 @@ class Presenter(private val view: ViewData, history: History) {
         }
     }
 
-    fun composerMove(board: Board) = model.composerMove(board).present()
+    fun composerMove(board: Board) = model.composerMove(board, false).present()
 
-    fun computerMove() = model.computerMove().present()
+    fun computerMove() = model.randomComputerMove().present()
 
     fun computerMove(placedPiece: PlacedPiece) = model.computerMove(placedPiece).present()
 
@@ -406,7 +406,7 @@ class Presenter(private val view: ViewData, history: History) {
                 .apply { gameOver = view.mainView.boardView.showGameOver() }
         } else {
             model.userMove(playerMoveEnum).let {
-                if (it.isEmpty()) it else it + model.computerMove()
+                if (it.isEmpty()) it else it + model.randomComputerMove()
             }.present()
         }
     }
