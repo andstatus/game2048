@@ -1,1 +1,1 @@
-v.1.8. Small improvements.
+v.1.9. The simplest Artificial Intelligence added. Each button for its turning on, starting and stopping contains three stars.
