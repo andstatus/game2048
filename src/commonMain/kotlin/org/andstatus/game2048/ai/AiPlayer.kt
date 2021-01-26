@@ -3,7 +3,6 @@ package org.andstatus.game2048.ai
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.model.Board
 import org.andstatus.game2048.model.GameModel
-import org.andstatus.game2048.model.MovesAndModel
 import org.andstatus.game2048.model.PlayerMoveEnum
 import org.andstatus.game2048.model.PlayerMoveEnum.Companion.UserMoves
 import kotlin.random.Random
@@ -15,7 +14,7 @@ class AiPlayer(val settings: Settings) {
         when(settings.aiAlgorithm) {
             AiAlgorithm.RANDOM -> allowedRandomMove(board)
             AiAlgorithm.MAX_SCORE_OF_NEXT_MOVE -> moveWithMaxScore(board)
-            AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(board, 4)
+            AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(board, 10)
             AiAlgorithm.MAX_FREE_OF_N_MOVES -> maxFreeNMoves(board, 8)
     }
 
@@ -33,34 +32,44 @@ class AiPlayer(val settings: Settings) {
 
     private fun maxScoreNMoves(board: Board, nMoves: Int): PlayerMoveEnum {
         return playNMoves(board, nMoves)
-            .maxByOrNull { it.model.score }
-            ?.moves
-            ?.firstOrNull()
-            ?.playerMoveEnum
+            .maxByOrNull(this::meanScoreForList)
+            ?.key
             ?: allowedRandomMove(board)
+    }
+
+    private fun maxScoreForList(entry: Map.Entry<PlayerMoveEnum, List<GameModel>>): Int {
+        return entry.value.map(GameModel::score).maxOrNull() ?: 0
+    }
+
+    private fun meanScoreForList(entry: Map.Entry<PlayerMoveEnum, List<GameModel>>): Int {
+        return entry.value.sumBy(GameModel::score) / entry.value.size
     }
 
     private fun maxFreeNMoves(board: Board, nMoves: Int): PlayerMoveEnum {
         return playNMoves(board, nMoves)
-            .minByOrNull { it.model.board.array.filterNotNull().size }
-            ?.moves
-            ?.firstOrNull()
-            ?.playerMoveEnum
+            .minByOrNull { it.value.sumBy { it.board.piecesCount() } / it.value.size }
+            ?.key
             ?: allowedRandomMove(board)
     }
 
-    private fun playNMoves(board: Board, nMoves: Int): List<MovesAndModel> {
-        var listOfMm = playMoves(fromBoard(board))
+    private fun playNMoves(board: Board, nMoves: Int): Map<PlayerMoveEnum, List<GameModel>> {
+        var models: Map<PlayerMoveEnum, List<GameModel>> = playUserMoves(fromBoard(board)).fold(HashMap()) { map, mm ->
+            mm.moves.firstOrNull()?.let {
+                map.put(it.playerMoveEnum, listOf(mm.model))
+                map
+            } ?: map
+        }
         (2..nMoves).forEach {
-            listOfMm = listOfMm.flatMap { mm ->
-                playMoves(mm.model)
-                    .map { mm2 -> MovesAndModel(mm.moves, mm2.model) }
+            models = models.mapValues {
+                it.value.flatMap { model ->
+                    playUserMoves(model)
+                }.map { it.model }
             }
         }
-        return listOfMm
+        return models
     }
 
-    private fun playMoves(model: GameModel) = UserMoves
+    private fun playUserMoves(model: GameModel) = UserMoves
         .map(model::calcMove)
         .filter { it.moves.isNotEmpty() }
         .map(model::play)

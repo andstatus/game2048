@@ -39,7 +39,7 @@ class Board(val width: Int,
     }
 
     fun getRandomFreeSquare(): Square? =
-        (size - count { true }).let {
+        (size - piecesCount()).let {
             if (it == 0) null else findFreeSquare(Random.nextInt(it))
         }
 
@@ -69,6 +69,8 @@ class Board(val width: Int,
         }
         return acc
     }
+
+    fun piecesCount(): Int = count { _ -> true}
 
     private inline fun count(predicate: (PlacedPiece) -> Boolean): Int =
         fold(0) { acc, p: PlacedPiece -> if(predicate(p)) acc + 1 else acc }
