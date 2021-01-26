@@ -5,6 +5,7 @@ import com.soywiz.korge.service.storage.NativeStorage
 import com.soywiz.korge.service.storage.get
 import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.Views
+import com.soywiz.korio.lang.parseInt
 import com.soywiz.korio.util.OS
 
 private val keyOpened = "opened"
@@ -20,6 +21,13 @@ class MyStorage(views: Views) {
         it.toBoolean()
     } ?: default
     operator fun set(key: String, value: Boolean) = native.set(key, value.toString())
+
+    fun getInt(key: String, default: Int): Int = try {
+        native.getOrNull(key)?.parseInt() ?: default
+    } catch (e: Exception) {
+        default
+    }
+    operator fun set(key: String, value: Int) = native.set(key, value.toString())
 
     override fun toString(): String =
         "Storage " + (native.getOrNull(keyOpened)?.let { "last opened: $it" } ?: "is new") +

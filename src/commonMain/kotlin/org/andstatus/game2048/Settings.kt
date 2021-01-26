@@ -4,6 +4,7 @@ import com.soywiz.korge.service.storage.NativeStorage
 import com.soywiz.korge.view.Stage
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korio.file.std.resourcesVfs
+import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.view.ColorThemeEnum
 import org.andstatus.game2048.view.StringResources
 
@@ -17,6 +18,7 @@ and the game in browser: https://play2048.co/
 For now you can modify settings in the "game.storage" file. */
 class Settings(val storage: MyStorage) {
     val keyColorTheme = "colorTheme"
+    val keyAiAlgorithm = "aiAlgorithm"
 
     // false: The resulting tile cannot merge with another tile again in the same move
     var allowResultingTileToMerge = storage.getBoolean(keyAllowResultingTileToMerge, false)
@@ -25,6 +27,7 @@ class Settings(val storage: MyStorage) {
     var boardWidth = 4
     var boardHeight = boardWidth
     var colorThemeEnum: ColorThemeEnum = ColorThemeEnum.load(storage.getOrNull(keyColorTheme))
+    var aiAlgorithm: AiAlgorithm = AiAlgorithm.load(storage.getOrNull(keyAiAlgorithm))
 
     companion object {
         fun load(stage: Stage): Settings = MyStorage.load(stage).let { storage ->

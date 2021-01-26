@@ -18,6 +18,7 @@ enum class PlayerMoveEnum(val id: String) {
     }
 
     companion object {
+        val UserMoves get() = listOf(LEFT, RIGHT, UP, DOWN)
         fun fromId(value: String): PlayerMoveEnum? = values().firstOrNull { it.id == value}
     }
 }

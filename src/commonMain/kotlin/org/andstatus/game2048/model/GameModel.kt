@@ -4,21 +4,24 @@ import org.andstatus.game2048.Settings
 import kotlin.random.Random
 
 /** @author yvolk@yurivolkov.com */
-class GameModel(val settings: Settings, val onMoveHandler: (PlayerMove, Board) -> Unit) {
-    var board: Board = Board(settings)
-
+class GameModel(val settings: Settings, val board: Board, val onMoveHandler: (PlayerMove, Board) -> Unit) {
     val usersMoveNumber: Int get() = board.usersMoveNumber
     val gameClock get() = board.gameClock
     val score get() = board.score
 
+    constructor(settings: Settings, onMoveHandler: (PlayerMove, Board) -> Unit) :
+            this(settings, Board(settings), onMoveHandler)
+
+    fun Board.nextModel() = GameModel(settings, this, onMoveHandler)
+
     fun composerMove(board: Board, isRedo: Boolean = false) =
             listOf(PlayerMove.composerMove(board)).play(isRedo)
 
-    fun randomComputerMove(): List<PlayerMove> {
-        return calcPlacedRandomBlock()?.let { computerMove(it) } ?: emptyList()
+    fun randomComputerMove(): MovesAndModel {
+        return calcPlacedRandomBlock()?.let { computerMove(it) } ?: MovesAndModel(emptyList(), this)
     }
 
-    fun computerMove(placedPiece: PlacedPiece): List<PlayerMove> {
+    fun computerMove(placedPiece: PlacedPiece): MovesAndModel {
         return placedPiece.let { listOf(PlayerMove.computerMove(it, gameClock.playedSeconds)).play() }
     }
 
@@ -28,13 +31,13 @@ class GameModel(val settings: Settings, val onMoveHandler: (PlayerMove, Board) -
                 PlacedPiece(piece, square)
             }
 
-    fun userMove(playerMoveEnum: PlayerMoveEnum): List<PlayerMove> {
+    fun userMove(playerMoveEnum: PlayerMoveEnum): MovesAndModel {
         return calcMove(playerMoveEnum).let {
             if (it.moves.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) {
                 gameClock.start()
                 listOf(it).play()
             } else {
-                emptyList()
+                MovesAndModel(emptyList(), this)
             }
         }
     }
@@ -72,13 +75,15 @@ class GameModel(val settings: Settings, val onMoveHandler: (PlayerMove, Board) -
         return PlayerMove.userMove(playerMoveEnum, gameClock.playedSeconds, moves)
     }
 
-    fun List<PlayerMove>.play(isRedo: Boolean = false): List<PlayerMove> {
+    fun play(move: PlayerMove): MovesAndModel = listOf(move).play(false)
+
+    fun List<PlayerMove>.play(isRedo: Boolean = false): MovesAndModel {
+        var newBoard = board
         forEach { playerMove ->
-            board = play(playerMove, isRedo, board).also { newBoard ->
-                if (!isRedo) onMoveHandler(playerMove, newBoard)
-            }
+            newBoard = play(playerMove, isRedo, newBoard)
+            if (!isRedo) onMoveHandler(playerMove, newBoard)
         }
-        return this
+        return MovesAndModel(this, GameModel(settings, newBoard, onMoveHandler))
     }
 
     private fun play(playerMove: PlayerMove, isRedo: Boolean = false, oldBoard: Board): Board {
@@ -107,9 +112,12 @@ class GameModel(val settings: Settings, val onMoveHandler: (PlayerMove, Board) -
         return board
     }
 
-    fun playReversed(moves: List<PlayerMove>): List<PlayerMove> {
-        moves.asReversed().forEach { board = playReversed(it, board) }
-        return moves
+    fun playReversed(moves: List<PlayerMove>): MovesAndModel {
+        var newBoard = board
+        moves.asReversed().forEach {
+            newBoard = playReversed(it, newBoard)
+        }
+        return MovesAndModel(moves, newBoard.nextModel())
     }
 
     private fun playReversed(playerMove: PlayerMove, oldBoard: Board): Board {

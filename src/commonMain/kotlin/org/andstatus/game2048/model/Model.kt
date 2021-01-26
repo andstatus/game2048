@@ -5,7 +5,7 @@ import org.andstatus.game2048.Settings
 /** @author yvolk@yurivolkov.com */
 class Model(val history: History) {
     val settings: Settings = history.settings
-    val gameModel = GameModel(settings) {
+    var gameModel = GameModel(settings) {
             playerMove, newBoard -> history.add(playerMove, newBoard)
     }
     val board: Board get() = gameModel.board
@@ -31,7 +31,7 @@ class Model(val history: History) {
         return composerMove(board, true)
     }
 
-    val composerMove = gameModel::composerMove
+    fun composerMove(board: Board, isRedo: Boolean = false) = gameModel.composerMove(board, isRedo).toMoves()
 
     fun createBookmark() {
         history.createBookmark()
@@ -57,7 +57,7 @@ class Model(val history: History) {
     }
 
     fun undo(): List<PlayerMove> = history.undo()?.let {
-        gameModel.playReversed(listOf(it))
+        gameModel.playReversed(listOf(it)).toMoves()
     } ?: emptyList()
 
     fun undoToStart(): List<PlayerMove> {
@@ -76,16 +76,21 @@ class Model(val history: History) {
         return composerMove(history.currentGame.shortRecord.finalBoard, true)
     }
 
-    val randomComputerMove = gameModel::randomComputerMove
-    val computerMove = gameModel::computerMove
-    val userMove = gameModel::userMove
+    fun randomComputerMove() = gameModel.randomComputerMove().toMoves()
+    fun computerMove(placedPiece: PlacedPiece) = gameModel.computerMove(placedPiece).toMoves()
+    fun userMove(playerMoveEnum: PlayerMoveEnum) = gameModel.userMove(playerMoveEnum).toMoves()
 
     private fun List<PlayerMove>.play(isRedo: Boolean = false): List<PlayerMove> {
         with(gameModel) {
-            return play(isRedo)
+            return play(isRedo).toMoves()
         }
     }
 
-    val noMoreMoves = gameModel::noMoreMoves
+    fun MovesAndModel.toMoves(): List<PlayerMove> {
+        gameModel = model
+        return moves
+    }
+
+    fun noMoreMoves() = gameModel.noMoreMoves()
 
 }

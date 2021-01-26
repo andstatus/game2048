@@ -1,5 +1,6 @@
 package org.andstatus.game2048.presenter
 
+import com.soywiz.klock.Stopwatch
 import com.soywiz.klock.milliseconds
 import com.soywiz.korge.animate.Animator
 import com.soywiz.korge.animate.animateSequence
@@ -364,10 +365,12 @@ class Presenter(private val view: ViewData, history: History) {
             coroutineScope.launch {
                 while (startCount == clickCounter.value && !model.noMoreMoves()
                     && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
-                    if (!moveIsInProgress.value) aiPlayer.nextMove(model.board).let {
-                        userMove(it)
+                    Stopwatch().start().let { stopWatch ->
+                        if (!moveIsInProgress.value) aiPlayer.nextMove(model.board).let {
+                            userMove(it)
+                        }
+                        delay(gameMode.delayMs.toLong() - stopWatch.elapsed.millisecondsLong)
                     }
-                    delay(gameMode.delayMs.toLong())
                 }
                 onAiStopClicked()
             }
