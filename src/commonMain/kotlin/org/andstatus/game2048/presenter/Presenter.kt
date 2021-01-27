@@ -163,7 +163,13 @@ class Presenter(private val view: ViewData, history: History) {
                 )
             }
             GameModeEnum.AI_PLAY -> {
-                onAiStopClicked()
+                when (swipeDirection) {
+                    SwipeDirection.LEFT -> gameMode.decrementSpeed()
+                    SwipeDirection.RIGHT -> gameMode.incrementSpeed()
+                    else -> {
+                        onAiStopClicked()
+                    }
+                }
             }
         }
 

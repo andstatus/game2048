@@ -15,9 +15,9 @@ class AiPlayer(val settings: Settings) {
         when(settings.aiAlgorithm) {
             AiAlgorithm.RANDOM -> allowedRandomMove(board)
             AiAlgorithm.MAX_SCORE_OF_NEXT_MOVE -> moveWithMaxScore(board)
-            AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(board, 6)
+            AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(board, 10)
             AiAlgorithm.MAX_FREE_OF_N_MOVES -> maxFreeNMoves(board, 8)
-            AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlay(board)
+            AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlay(board, 50)
         }
 
     private fun fromBoard(board: Board): GameModel = GameModel(settings, board) { _, _ -> }
@@ -34,7 +34,7 @@ class AiPlayer(val settings: Settings) {
 
     private fun maxScoreNMoves(board: Board, nMoves: Int): PlayerMoveEnum {
         return playNMoves(board, nMoves)
-            .maxByOrNull(this::maxScoreForList)
+            .maxByOrNull(this::meanScoreForList)
             ?.key
             ?: allowedRandomMove(board)
     }
@@ -71,17 +71,25 @@ class AiPlayer(val settings: Settings) {
         return models
     }
 
-    private fun longestRandomPlay(board: Board): PlayerMoveEnum {
-        val models: Map<PlayerMoveEnum, GameModel> = playUserMoves(fromBoard(board))
-            .fold(HashMap<PlayerMoveEnum, GameModel>()) { map, mm ->
+    private fun longestRandomPlay(board: Board, nAttempts: Int): PlayerMoveEnum {
+        val firstMoves: Map<PlayerMoveEnum, GameModel> = playUserMoves(fromBoard(board))
+            .map(this::playComputerMove)
+            .fold(HashMap()) { map, mm ->
                 mm.moves.firstOrNull()?.let {
                     map.put(it.playerMoveEnum, mm.model)
                     map
                 } ?: map
             }
-            .mapValues { playRandomTillEnd(it.value) }
 
-        return models.maxByOrNull { it.value.usersMoveNumber }?.key ?: allowedRandomMove(board)
+        val moveToWeight = firstMoves.mapValues { entry ->
+            val attempts: ArrayList<GameModel> = ArrayList()
+            repeat(nAttempts) {
+                attempts.add(playRandomTillEnd(entry.value))
+            }
+            attempts.sumBy { it.score } / attempts.size
+        }
+
+        return moveToWeight.maxByOrNull { it.value }?.key ?: allowedRandomMove(board)
     }
 
     private fun playRandomTillEnd(modelIn: GameModel): GameModel {
@@ -100,7 +108,6 @@ class AiPlayer(val settings: Settings) {
         .map(model::calcMove)
         .filter { it.moves.isNotEmpty() }
         .map(model::play)
-        .map(this::playComputerMove)
 
     private fun playComputerMove(mm: MovesAndModel): MovesAndModel {
         return mm.model.randomComputerMove().let { MovesAndModel(mm.moves, it.model) }

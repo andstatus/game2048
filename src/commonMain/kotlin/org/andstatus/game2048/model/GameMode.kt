@@ -50,11 +50,7 @@ class GameMode() {
         val old = data.value
         if (old.speed < maxSpeed) {
             val newSpeed = old.speed + 1
-            val newMode = when (newSpeed) {
-                in Int.MIN_VALUE .. -1 -> GameModeEnum.BACKWARDS
-                0 -> GameModeEnum.STOP
-                else -> GameModeEnum.FORWARD
-            }
+            val newMode = newGameMode(newSpeed)
             data.compareAndSet(old, GameModeData(newMode, newSpeed, old.aiEnabled))
         }
     }
@@ -63,12 +59,20 @@ class GameMode() {
         val old = data.value
         if (old.speed > -maxSpeed) {
             val newSpeed = old.speed - 1
-            val newMode = when (newSpeed) {
-                in Int.MIN_VALUE .. -1 -> GameModeEnum.BACKWARDS
-                0 -> GameModeEnum.STOP
-                else -> GameModeEnum.FORWARD
-            }
+            val newMode = newGameMode(newSpeed)
             data.compareAndSet(old, GameModeData(newMode, newSpeed, old.aiEnabled))
+        }
+    }
+
+    private fun newGameMode(newSpeed: Int) = when (modeEnum) {
+        GameModeEnum.AI_PLAY -> when (newSpeed) {
+            in Int.MIN_VALUE..0 -> GameModeEnum.PLAY
+            else -> modeEnum
+        }
+        else -> when (newSpeed) {
+            in Int.MIN_VALUE..-1 -> GameModeEnum.BACKWARDS
+            0 -> GameModeEnum.STOP
+            else -> GameModeEnum.FORWARD
         }
     }
 

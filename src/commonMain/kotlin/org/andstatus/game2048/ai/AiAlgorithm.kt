@@ -9,6 +9,6 @@ enum class AiAlgorithm(val id: String) {
 
     companion object {
         fun load(value: String?): AiAlgorithm = AiAlgorithm.values()
-            .firstOrNull { it.toString() == value } ?: MAX_SCORE_OF_N_MOVES
+            .firstOrNull { it.toString() == value } ?: LONGEST_RANDOM_PLAY
     }
 }
