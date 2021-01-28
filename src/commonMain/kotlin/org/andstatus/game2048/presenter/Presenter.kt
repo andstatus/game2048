@@ -86,9 +86,8 @@ class Presenter(private val view: ViewData, history: History) {
         logClick("Magic")
         gameMode.aiEnabled = false
         if (gameMode.modeEnum != GameModeEnum.PLAY) {
-            model.gameClock.stop()
             gameMode.modeEnum = GameModeEnum.PLAY
-            model.saveCurrent()
+            pauseGame()
         }
         showMainView()
     }
@@ -101,9 +100,8 @@ class Presenter(private val view: ViewData, history: History) {
 
     fun onAiStopClicked() {
         logClick("AiStop")
-        model.gameClock.stop()
         gameMode.modeEnum = GameModeEnum.PLAY
-        model.saveCurrent()
+        pauseGame()
         showMainView()
     }
 
@@ -119,7 +117,7 @@ class Presenter(private val view: ViewData, history: History) {
     fun undo() {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
-        model.gameClock.stop()
+        pauseGame()
         boardViews.removeGameOver() // TODO: make this a move...
         (model.undo() + listOf(PlayerMove.delay()) + model.undo()).presentReversed()
     }
@@ -154,12 +152,12 @@ class Presenter(private val view: ViewData, history: History) {
             }
             GameModeEnum.PLAY -> {
                 userMove(
-                    when (swipeDirection) {
-                        SwipeDirection.LEFT -> PlayerMoveEnum.LEFT
-                        SwipeDirection.RIGHT -> PlayerMoveEnum.RIGHT
-                        SwipeDirection.TOP -> PlayerMoveEnum.UP
-                        SwipeDirection.BOTTOM -> PlayerMoveEnum.DOWN
-                    }
+                        when (swipeDirection) {
+                            SwipeDirection.LEFT -> PlayerMoveEnum.LEFT
+                            SwipeDirection.RIGHT -> PlayerMoveEnum.RIGHT
+                            SwipeDirection.TOP -> PlayerMoveEnum.UP
+                            SwipeDirection.BOTTOM -> PlayerMoveEnum.DOWN
+                        }
                 )
             }
             GameModeEnum.AI_PLAY -> {
@@ -189,22 +187,19 @@ class Presenter(private val view: ViewData, history: History) {
 
     fun onPauseClick() = afterStop {
         logClick("Pause")
-        model.gameClock.stop()
-        model.saveCurrent()
+        pauseGame()
         showMainView()
     }
 
     fun onPauseEvent() {
         myLog("onPauseEvent${view.id}")
-        model.gameClock.stop()
-        model.saveCurrent()
+        pauseGame()
         showMainView()
     }
 
     fun onCloseGameWindowClick() {
         logClick("onCloseGameWindow")
-        model.gameClock.stop()
-        model.saveCurrent()
+        pauseGame()
         view.gameStage.gameWindow.close()
         view.gameStage.closeGameApp()
     }
@@ -251,7 +246,7 @@ class Presenter(private val view: ViewData, history: History) {
 
     fun onGameMenuClick() = afterStop {
         logClick("GameMenu")
-        model.gameClock.stop()
+        pauseGame()
         view.mainView.removeFromParent()
         view.showGameMenu()
     }
@@ -295,8 +290,8 @@ class Presenter(private val view: ViewData, history: History) {
     fun onShareClick() = afterStop {
         logClick("Share")
         view.gameStage.shareText(
-            view.stringResources.text("share"), model.history.currentGame.shortRecord.jsonFileName,
-            model.history.currentGame.toMap().toJson()
+                view.stringResources.text("share"), model.history.currentGame.shortRecord.jsonFileName,
+                model.history.currentGame.toMap().toJson()
         )
     }
 
@@ -332,10 +327,14 @@ class Presenter(private val view: ViewData, history: History) {
     }
 
     private suspend fun restartTheApp() {
-        model.gameClock.stop()
-        model.saveCurrent()
+        pauseGame()
         view.settings.save()
         view.reInitialize()
+    }
+
+    fun pauseGame() {
+        clickCounter.incrementAndGet()
+        model.pauseGame()
     }
 
     private fun startAutoReplay(newMode: GameModeEnum) {
@@ -372,10 +371,11 @@ class Presenter(private val view: ViewData, history: History) {
                 while (startCount == clickCounter.value && !model.noMoreMoves()
                     && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
                     Stopwatch().start().let { stopWatch ->
-                        if (!moveIsInProgress.value) aiPlayer.nextMove(model.board).let {
-                            userMove(it)
+                        val nextMove = aiPlayer.nextMove(model.board)
+                        if (startCount == clickCounter.value && !moveIsInProgress.value) {
+                            userMove(nextMove)
+                            delay(gameMode.delayMs.toLong() - stopWatch.elapsed.millisecondsLong)
                         }
-                        delay(gameMode.delayMs.toLong() - stopWatch.elapsed.millisecondsLong)
                     }
                 }
                 onAiStopClicked()

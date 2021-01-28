@@ -50,6 +50,15 @@ class Model(val history: History) {
         return history.restoreGame(id)?.let { redoToCurrent() } ?: emptyList()
     }
 
+    fun pauseGame() {
+        gameClock.stop()
+        gameMode.modeEnum = when(gameMode.modeEnum) {
+            GameModeEnum.PLAY, GameModeEnum.AI_PLAY -> GameModeEnum.PLAY
+            else -> GameModeEnum.STOP
+        }
+        saveCurrent()
+    }
+
     fun saveCurrent() = history.saveCurrent()
 
     fun canUndo(): Boolean {
