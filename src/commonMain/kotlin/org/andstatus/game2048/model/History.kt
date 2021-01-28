@@ -29,7 +29,12 @@ class History(val settings: Settings,
     // 2. This game, see for the inspiration https://en.wikipedia.org/wiki/Portable_Game_Notation
     var historyIndex = -1
     val gameMode: GameMode = GameMode().apply {
-        modeEnum = GameModeEnum.fromId(settings.storage.getOrNull(keyGameMode) ?: "")
+        modeEnum = GameModeEnum.fromId(settings.storage.getOrNull(keyGameMode) ?: "").let {
+            when(it) {
+                GameModeEnum.AI_PLAY, GameModeEnum.PLAY -> GameModeEnum.PLAY
+                else -> GameModeEnum.STOP
+            }
+        }
     }
 
     companion object {
