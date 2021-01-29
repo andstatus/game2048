@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+  <string name="ai_random">Случайный ход</string>
+  <string name="ai_max_score_one">Макс. счёт 1 ход</string>
+  <string name="ai_max_empty_n">Максимум пустых блоков</string>
+  <string name="ai_max_score_n">Макс. счёт N ходов</string>
+  <string name="ai_longest_random">Длинная случайная игра</string>
   <string name="app_name">2048 Открытая Забавная Игра</string>
   <string name="best">ЛУЧШИЙ</string>
   <string name="dark">Тёмная</string>
@@ -22,6 +27,7 @@
   <string name="restore_game">Восстановить игру</string>
   <string name="score">Счёт</string>
   <string name="score_upper">СЧЁТ</string>
+  <string name="select_ai_algorithm">Выберите ИИ алгоритм</string>
   <string name="select_theme">Выберите тему</string>
   <string name="share">Поделиться игрой</string>
   <string name="try_again">Попробуйте ещё раз</string>

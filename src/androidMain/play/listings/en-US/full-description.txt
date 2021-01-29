@@ -1,4 +1,4 @@
-"2048 Open Fun Game" is 2048 game with Bookmarks, Auto Replay, History and other fun features,
+"2048 Open Fun Game" is 2048 game with AI, Bookmarks, Auto Replay, History and other fun features,
 Open Source, no ads.
 
 How to play.
@@ -13,6 +13,9 @@ Features of "2048 Open Fun Game" that are not present in the original game:
 * Unlimited and animated Undo and Redo.
 * Select theme for the app: Device default (for Android 9+), Dark or Light.
   Dark theme for Android 9+ is turned on by default when system-wide "Dark theme" is turned on in device settings.
+* Turn on AI (Artificial Intelligence) mode and let the AI play for you.
+  Increase or decrease AI player speed. Stop it and continue playing yourself.
+  Choose one of several AI algorithms, see how they play and compare them.
 * Bookmarks at the interesting game positions. Return to a bookmark and play again from that place.
 * Move number and game duration shown. The time starts when you make a move.
   It stops when you tap Undo or Pause button.

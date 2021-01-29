@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="ai_random">1. Random move</string>
-  <string name="ai_max_score_one">2. Max score one move</string>
-  <string name="ai_max_empty_n">3. Max empty blocks</string>
-  <string name="ai_max_score_n">4. Max score N moves</string>
-  <string name="ai_longest_random">5. Longest random play</string>
+  <string name="ai_random">Random move</string>
+  <string name="ai_max_score_one">Max score one move</string>
+  <string name="ai_max_empty_n">Max empty blocks</string>
+  <string name="ai_max_score_n">Max score N moves</string>
+  <string name="ai_longest_random">Longest random play</string>
   <string name="app_name">2048 Open Fun Game</string>
   <string name="best">BEST</string>
   <string name="dark">Dark</string>

@@ -1,1 +1,1 @@
-v.1.9. The simplest Artificial Intelligence added. Each button for its turning on, starting and stopping contains three stars.
+v.1.10. Choose one of five Artificial Intelligence modes. Increase or decrease AI player speed.
