@@ -111,13 +111,13 @@ class Presenter(private val view: ViewData, history: History) {
 
     fun onUndoClick() = afterStop {
         logClick("Undo")
+        model.gameClock.stop()
         undo()
     }
 
     fun undo() {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
-        pauseGame()
         boardViews.removeGameOver() // TODO: make this a move...
         (model.undo() + listOf(PlayerMove.delay()) + model.undo()).presentReversed()
     }
@@ -349,6 +349,7 @@ class Presenter(private val view: ViewData, history: History) {
                     while (startCount == clickCounter.value &&
                         if (gameMode.modeEnum == GameModeEnum.BACKWARDS) canUndo() else canRedo()
                     ) {
+                        while(moveIsInProgress.value) delay(20)
                         if (gameMode.speed != 0) {
                             if (gameMode.modeEnum == GameModeEnum.BACKWARDS) undo() else redo()
                         }
@@ -370,13 +371,13 @@ class Presenter(private val view: ViewData, history: History) {
             coroutineScope.launch {
                 while (startCount == clickCounter.value && !model.noMoreMoves()
                     && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
-                    Stopwatch().start().let { stopWatch ->
-                        val nextMove = aiPlayer.nextMove(model.board)
-                        if (startCount == clickCounter.value && !moveIsInProgress.value) {
-                            userMove(nextMove)
+                    while(moveIsInProgress.value) delay(20)
+                    val nextMove = Stopwatch().start().let { stopWatch ->
+                        aiPlayer.nextMove(model.board).also {
                             delay(gameMode.delayMs.toLong() - stopWatch.elapsed.millisecondsLong)
                         }
                     }
+                    if (!moveIsInProgress.value) userMove(nextMove)
                 }
                 onAiStopClicked()
             }
