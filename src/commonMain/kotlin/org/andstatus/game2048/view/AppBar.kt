@@ -4,6 +4,7 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.addTo
 import com.soywiz.korge.view.positionX
 import com.soywiz.korge.view.positionY
+import org.andstatus.game2048.view.AppBarButtonsEnum.AI_FORWARD
 import org.andstatus.game2048.view.AppBarButtonsEnum.AI_OFF
 import org.andstatus.game2048.view.AppBarButtonsEnum.AI_ON
 import org.andstatus.game2048.view.AppBarButtonsEnum.AI_START
@@ -87,6 +88,7 @@ class AppBar private constructor(val viewData: ViewData, private val appBarButto
                 PAUSE.button(presenter::onPauseClick),
                 AI_STOP.button(presenter::onAiStopClicked),
                 AI_START.button(presenter::onAiStartClicked),
+                AI_FORWARD.button(presenter::onAiForwardClicked),
                 UNDO.button(presenter::onUndoClick),
                 REDO.button(presenter::onRedoClick),
                 REDO_PLACEHOLDER.button(),

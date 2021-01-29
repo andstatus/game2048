@@ -105,6 +105,10 @@ class Presenter(private val view: ViewData, history: History) {
         showMainView()
     }
 
+    fun onAiForwardClicked() {
+        gameMode.incrementSpeed()
+    }
+
     fun canUndo(): Boolean = model.canUndo()
 
     fun canRedo(): Boolean = model.canRedo()
@@ -480,6 +484,7 @@ class Presenter(private val view: ViewData, history: History) {
                 list.add(AppBarButtonsEnum.AI_ON)
                 list.add(AppBarButtonsEnum.BOOKMARK_PLACEHOLDER)
                 list.add(AppBarButtonsEnum.AI_STOP)
+                list.add(AppBarButtonsEnum.AI_FORWARD)
             }
             else -> {
                 list.add(AppBarButtonsEnum.WATCH)
