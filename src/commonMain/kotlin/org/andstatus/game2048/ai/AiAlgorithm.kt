@@ -1,14 +1,16 @@
 package org.andstatus.game2048.ai
 
 enum class AiAlgorithm(val id: String) {
-    RANDOM("random"),
-    MAX_SCORE_OF_NEXT_MOVE("max_next_one"),
-    MAX_SCORE_OF_N_MOVES("max_next_n"),
-    MAX_FREE_OF_N_MOVES("max_free_n"),
-    LONGEST_RANDOM_PLAY("longest_random");
+    RANDOM("ai_random"),
+    MAX_SCORE_OF_ONE_MOVE("ai_max_score_one"),
+    MAX_EMPTY_BLOCKS_OF_N_MOVES("ai_max_empty_n"),
+    MAX_SCORE_OF_N_MOVES("ai_max_score_n"),
+    LONGEST_RANDOM_PLAY("ai_longest_random");
+
+    val labelKey: String get() = id
 
     companion object {
-        fun load(value: String?): AiAlgorithm = AiAlgorithm.values()
+        fun load(value: String?): AiAlgorithm = values()
             .firstOrNull { it.toString() == value } ?: LONGEST_RANDOM_PLAY
     }
 }

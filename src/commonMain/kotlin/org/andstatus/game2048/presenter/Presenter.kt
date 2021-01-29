@@ -17,6 +17,7 @@ import com.soywiz.korio.serialization.json.toJson
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.ai.AiPlayer
 import org.andstatus.game2048.closeGameApp
 import org.andstatus.game2048.gameStopWatch
@@ -107,6 +108,11 @@ class Presenter(private val view: ViewData, history: History) {
 
     fun onAiForwardClicked() {
         gameMode.incrementSpeed()
+    }
+
+    fun onSelectAiAlgorithm(selected: AiAlgorithm) {
+        model.settings.aiAlgorithm = selected
+        showMainView()
     }
 
     fun canUndo(): Boolean = model.canUndo()
@@ -250,9 +256,9 @@ class Presenter(private val view: ViewData, history: History) {
 
     fun onGameMenuClick() = afterStop {
         logClick("GameMenu")
-        pauseGame()
         view.mainView.removeFromParent()
-        view.showGameMenu()
+        view.showGameMenu(model.gameMode.aiEnabled)
+        pauseGame()
     }
 
     fun onCloseMyWindowClick() {

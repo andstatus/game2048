@@ -14,9 +14,9 @@ class AiPlayer(val settings: Settings) {
     fun nextMove(board: Board): PlayerMoveEnum =
         when(settings.aiAlgorithm) {
             AiAlgorithm.RANDOM -> allowedRandomMove(board)
-            AiAlgorithm.MAX_SCORE_OF_NEXT_MOVE -> moveWithMaxScore(board)
+            AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> moveWithMaxScore(board)
+            AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(board, 8)
             AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(board, 10)
-            AiAlgorithm.MAX_FREE_OF_N_MOVES -> maxFreeNMoves(board, 8)
             AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlay(board, 50)
         }
 
@@ -47,7 +47,7 @@ class AiPlayer(val settings: Settings) {
         return if (entry.value.isEmpty()) 0 else entry.value.sumBy(GameModel::score) / entry.value.size
     }
 
-    private fun maxFreeNMoves(board: Board, nMoves: Int): PlayerMoveEnum {
+    private fun maxEmptyBlocksNMoves(board: Board, nMoves: Int): PlayerMoveEnum {
         return playNMoves(board, nMoves)
             .minByOrNull { it.value.sumBy { it.board.piecesCount() } / it.value.size }
             ?.key
