@@ -91,8 +91,10 @@ class ViewData(viewDataQuick: ViewDataQuick,
     var mainView: MainView by Delegates.notNull()
 
     val closeables = mutableListOf<Closeable>()
+    var closed = false
 
     suspend fun reInitialize(handler: suspend ViewData.() -> Unit = {}) {
+        closed = true
         this.close()
         viewData(gameStage, animateViews, handler)
     }

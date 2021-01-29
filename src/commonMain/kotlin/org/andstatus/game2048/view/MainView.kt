@@ -12,6 +12,8 @@ class MainView private constructor(
     val boardView: BoardView) : Container() {
 
     fun show(appBarButtonsToShow: List<AppBarButtonsEnum>, playSpeed: Int) {
+        if (appBar.viewData.closed) return
+
         appBar.show(this, appBarButtonsToShow)
         scoreBar.show(this, playSpeed)
         boardView.setOnTop(this)
