@@ -1,6 +1,6 @@
 # 2048 Open Fun Game
 
-2048 game with Bookmarks, Auto Replay, History and other fun features,
+2048 game with AI, Bookmarks, Auto Replay, History and other fun features,
 Open Source, no ads
 
 This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatform implementation
@@ -28,6 +28,9 @@ Number 2048 is a good first win…
 * Unlimited and animated Undo and Redo.
 * Select theme for the app: Device default (for Android 9+), Dark or Light.
   Dark theme for Android 9+ is turned on by default when system-wide "Dark theme" is turned on in device settings.
+* Turn on AI (Artificial Intelligence) mode and let the AI play for you.
+  Increase or decrease AI player speed. Stop it and continue playing yourself.
+  Choose one of several AI algorithms, see how they play and compare them.
 * Bookmarks at the interesting game positions. Return to a bookmark and play again from that place.
 * Move number and game duration shown. The time starts when you make a move.
   It stops when you tap Undo or Pause button.
@@ -57,6 +60,8 @@ Number 2048 is a good first win…
 <img title="Game Over in Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/6.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
 <img title="Theme selection in Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/7.png" height="400" />
+<img src="doc/images/5x5.png" width="5" />
+<img title="AI algorithm selection in Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/8.png" height="400" />
 </p>
 
 If you found the project useful, please 
