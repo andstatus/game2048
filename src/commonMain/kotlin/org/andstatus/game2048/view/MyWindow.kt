@@ -43,7 +43,7 @@ class MyWindow(val viewData: ViewData, val titleKey: String) : Container() {
 
     suspend fun ViewData.wideButton(icon: String, labelKey: String = "", handler: () -> Unit): Container = Container().apply {
         val borderWidth = 2.0
-        roundRect(winWidth - 2 * buttonPadding, buttonSize, buttonRadius,
+        roundRect(winWidth - 2 * buttonMargin, buttonSize, buttonRadius,
                 fill = Colors.TRANSPARENT_BLACK,
                 stroke = gameColors.myWindowBorder, strokeThickness = borderWidth)
         roundRect(buttonSize, buttonSize - borderWidth * 2, buttonRadius, fill = gameColors.buttonBackground) {

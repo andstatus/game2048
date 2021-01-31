@@ -6,7 +6,7 @@ import com.soywiz.korge.view.position
 fun ViewData.showHelp(): Container = myWindow("help_title") {
     wrappableText(stringResources.text("help"), winWidth - 2 * cellMargin , defaultTextSize,
         gameColors.labelText, font, Gravity.LEFT) {
-        position(winLeft + cellMargin, winTop + buttonSize + buttonPadding + cellMargin)
+        position(winLeft + cellMargin, winTop + buttonSize + buttonMargin + cellMargin)
     }
     customOnClick {
         this.removeFromParent()

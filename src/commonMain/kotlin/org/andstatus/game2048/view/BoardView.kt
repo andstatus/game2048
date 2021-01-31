@@ -42,7 +42,7 @@ class BoardView(val viewData: ViewData): Container() {
                 }
             }
 
-            controlsArea = solidRect(boardWidth, boardWidth + buttonSize + buttonPadding,
+            controlsArea = solidRect(boardWidth, boardWidth + buttonSize + buttonMargin,
                 gameColors.transparent)
 
             controlsArea.onSwipe(20.0) {

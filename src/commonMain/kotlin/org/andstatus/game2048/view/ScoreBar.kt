@@ -24,7 +24,7 @@ class ScoreBar(val viewData: ViewData): Container() {
 
     init {
         with(viewData) {
-            val scoreButtonWidth = (viewData.boardWidth - 2 * buttonPadding) / 3
+            val scoreButtonWidth = (viewData.boardWidth - 2 * buttonMargin) / 3
             val scoreButtonTop = buttonYs[2]
             val textYPadding = 28 * gameScale
             val scoreLabelSize = cellSize * 0.30
@@ -40,7 +40,7 @@ class ScoreBar(val viewData: ViewData): Container() {
             }
 
             val bgScore = roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
-                position(boardLeft + (scoreButtonWidth + buttonPadding), scoreButtonTop)
+                position(boardLeft + (scoreButtonWidth + buttonMargin), scoreButtonTop)
             }
             text(stringResources.text("score_upper"), scoreLabelSize, gameColors.buttonLabelText, font,
                 TextAlignment.MIDDLE_CENTER
@@ -54,7 +54,7 @@ class ScoreBar(val viewData: ViewData): Container() {
             }
 
             val bgBest = roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
-                position(boardLeft + (scoreButtonWidth + buttonPadding) * 2, scoreButtonTop)
+                position(boardLeft + (scoreButtonWidth + buttonMargin) * 2, scoreButtonTop)
             }
             text(stringResources.text("best"), scoreLabelSize, gameColors.buttonLabelText, font,
                 TextAlignment.MIDDLE_CENTER

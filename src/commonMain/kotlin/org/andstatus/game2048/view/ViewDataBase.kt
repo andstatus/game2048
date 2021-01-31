@@ -19,7 +19,7 @@ interface ViewDataBase {
     val gameViewHeight: Int
     val gameScale: Double
     val defaultTextSize: Double
-    val buttonPadding: Double
+    val buttonMargin: Double
     val cellMargin: Double
     val buttonRadius: Double
     val buttonSize : Double
@@ -41,7 +41,7 @@ class ViewDataQuick(override val gameStage: Stage, override val animateViews: Bo
 
     override val gameScale: Double
     override val defaultTextSize: Double
-    override val buttonPadding: Double
+    override val buttonMargin: Double
     override val cellMargin: Double
     override val buttonRadius: Double
     override val buttonSize : Double
@@ -68,19 +68,19 @@ class ViewDataQuick(override val gameStage: Stage, override val animateViews: Bo
         defaultTextSize = if (gameViewHeight == defaultPortraitGameWindowSize.height) defaultPortraitTextSize
         else defaultPortraitTextSize * gameViewHeight / defaultPortraitGameWindowSize.height
 
-        buttonPadding = 27 * gameScale
+        buttonMargin = 27 * gameScale
 
         cellMargin = 15 * gameScale
         buttonRadius = 8 * gameScale
 
-        buttonSize = (gameViewWidth - buttonPadding * 6) / 5
-        boardLeft = gameViewLeft + buttonPadding
+        buttonSize = (gameViewWidth - buttonMargin * 6) / 5
+        boardLeft = gameViewLeft + buttonMargin
 
         buttonXs = (0 .. 4).fold(emptyList()) { acc, i ->
-            acc + (boardLeft + i * (buttonSize + buttonPadding))
+            acc + (boardLeft + i * (buttonSize + buttonMargin))
         }
         buttonYs = (0 .. 8).fold(emptyList()) { acc, i ->
-            acc + (gameViewTop + buttonPadding + i * (buttonSize + buttonPadding))
+            acc + (gameViewTop + buttonMargin + i * (buttonSize + buttonMargin))
         }
         boardTop = buttonYs[3]
 
