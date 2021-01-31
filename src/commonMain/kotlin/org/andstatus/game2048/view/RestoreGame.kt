@@ -33,7 +33,7 @@ fun ViewData.showRestoreGame(prevGames: List<GameRecord.ShortRecord>) = myWindow
             rowText(lastChanged, xPos)
             xPos += textSize * 6.4
             rowText(duration, xPos)
-            xPos += textSize * 3.4
+            xPos += textSize * 4.6
             rowText(id, xPos)
             if (note.isNotBlank()) {
                 xPos += textSize * 1.4
