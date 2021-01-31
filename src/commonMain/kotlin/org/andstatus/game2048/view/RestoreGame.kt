@@ -7,7 +7,6 @@ import com.soywiz.korge.view.position
 import com.soywiz.korge.view.roundRect
 import com.soywiz.korge.view.text
 import com.soywiz.korim.text.TextAlignment
-import org.andstatus.game2048.defaultTextSize
 import org.andstatus.game2048.model.GameRecord
 import kotlin.math.max
 
@@ -49,9 +48,9 @@ fun ViewData.showRestoreGame(prevGames: List<GameRecord.ShortRecord>) = myWindow
     uiScrollableArea(config = {
         position(winLeft + cellMargin, listTop)
         buttonSize = itemHeight
-        width = winWidth - cellMargin * 2
+        scaledWidth = winWidth - cellMargin * 2
         contentWidth = textWidth
-        height = winTop + winHeight - listTop - cellMargin
+        scaledHeight = winTop + winHeight - listTop - cellMargin
         contentHeight = max((itemHeight + cellMargin) * (nItems + 1), height)
     }) {
         oneRow(0, stringResources.text("score"), stringResources.text("last_changed"),

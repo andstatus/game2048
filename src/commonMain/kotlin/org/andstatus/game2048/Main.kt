@@ -7,14 +7,12 @@ import org.andstatus.game2048.view.ColorThemeEnum
 import org.andstatus.game2048.view.gameDefaultBackgroundColor
 import org.andstatus.game2048.view.viewData
 import kotlin.coroutines.coroutineContext
-import kotlin.properties.Delegates
 
 val defaultPortraitGameWindowSize = SizeInt(720, 1280)
 val defaultPortraitRatio : Double = defaultPortraitGameWindowSize.width.toDouble() / defaultPortraitGameWindowSize.height
 val defaultDesktopGameWindowSize get() = SizeInt(defaultPortraitGameWindowSize.width / 2,
     defaultPortraitGameWindowSize.height / 2)
 const val defaultPortraitTextSize = 64.0
-var defaultTextSize: Double by Delegates.notNull()
 
 suspend fun main() = main(null)
 
@@ -31,8 +29,6 @@ suspend fun main(colorThemeEnum: ColorThemeEnum?) {
         virtualWidth = defaultPortraitGameWindowSize.width
         virtualHeight = (virtualWidth / windowRatio).toInt()
     }
-    defaultTextSize = if (virtualHeight == defaultPortraitGameWindowSize.height) defaultPortraitTextSize
-        else defaultPortraitTextSize * virtualHeight / defaultPortraitGameWindowSize.height
     val color = colorThemeEnum?.let {
         when (it) {
             ColorThemeEnum.DEVICE_DEFAULT -> null

@@ -15,7 +15,6 @@ import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korio.async.launch
 import com.soywiz.korio.file.std.resourcesVfs
-import org.andstatus.game2048.defaultTextSize
 
 suspend fun ViewData.barButton(icon: String, handler: () -> Unit): Container = Container().apply {
     val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)

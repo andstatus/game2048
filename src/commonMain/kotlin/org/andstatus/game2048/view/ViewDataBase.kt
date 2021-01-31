@@ -4,6 +4,7 @@ import com.soywiz.korge.view.Stage
 import com.soywiz.korio.concurrent.atomic.KorAtomicInt
 import org.andstatus.game2048.defaultPortraitGameWindowSize
 import org.andstatus.game2048.defaultPortraitRatio
+import org.andstatus.game2048.defaultPortraitTextSize
 import org.andstatus.game2048.gameWindowSize
 import org.andstatus.game2048.myLog
 
@@ -17,6 +18,7 @@ interface ViewDataBase {
     val gameViewWidth: Int
     val gameViewHeight: Int
     val gameScale: Double
+    val defaultTextSize: Double
     val buttonPadding: Double
     val cellMargin: Double
     val buttonRadius: Double
@@ -38,6 +40,7 @@ class ViewDataQuick(override val gameStage: Stage, override val animateViews: Bo
     override val gameViewHeight: Int
 
     override val gameScale: Double
+    override val defaultTextSize: Double
     override val buttonPadding: Double
     override val cellMargin: Double
     override val buttonRadius: Double
@@ -62,6 +65,9 @@ class ViewDataQuick(override val gameStage: Stage, override val animateViews: Bo
             gameViewTop = (gameStage.views.virtualHeight - gameViewHeight) / 2
             gameScale = gameViewWidth.toDouble() / defaultPortraitGameWindowSize.width
         }
+        defaultTextSize = if (gameViewHeight == defaultPortraitGameWindowSize.height) defaultPortraitTextSize
+        else defaultPortraitTextSize * gameViewHeight / defaultPortraitGameWindowSize.height
+
         buttonPadding = 27 * gameScale
 
         cellMargin = 15 * gameScale
