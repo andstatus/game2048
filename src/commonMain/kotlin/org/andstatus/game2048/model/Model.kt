@@ -19,7 +19,7 @@ class Model(val history: History) {
     val gameMode: GameMode get() = history.gameMode
 
     fun onAppEntry(): List<PlayerMove> {
-        return if (history.currentGame.score == 0)
+        return if (history.currentGame.id == 0)
             restart()
         else
             composerMove(history.currentGame.shortRecord.finalBoard, true)

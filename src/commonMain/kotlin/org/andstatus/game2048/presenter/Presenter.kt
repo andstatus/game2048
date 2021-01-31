@@ -71,7 +71,7 @@ class Presenter(private val view: ViewData, history: History) {
     fun onAppEntry() = myMeasured("onAppEntry") {
         model.onAppEntry().present()
         presentGameClock(view.gameStage, model) { view.mainView.scoreBar.gameTime }
-        if (model.history.prevGames.isEmpty() && model.history.currentGame.score == 0) {
+        if (model.history.prevGames.isEmpty() && model.history.currentGame.id == 0) {
             view.mainView.removeFromParent()
             view.showHelp()
         }

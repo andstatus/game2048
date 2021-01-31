@@ -84,9 +84,15 @@ class History(val settings: Settings,
 
     fun saveCurrent(): History {
         settings.storage[keyGameMode] = gameMode.modeEnum.id
-        if (currentGame.score < 1) return this
-
         val isNew = currentGame.id <= 0
+
+        if (isNew && currentGame.score < 1) {
+            // Store only the latest game without score
+            prevGames.filter { it.finalBoard.score < 1 }.forEach {
+                settings.storage.native.remove(keyGame + it.id)
+            }
+        }
+
         myMeasuredIt((if (isNew) "New" else "Old") + " game saved") {
             val idToStore = if (isNew) idForNewGame().also {
                 currentGame.id = it
