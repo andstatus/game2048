@@ -17,7 +17,7 @@ class AiPlayer(val settings: Settings) {
             AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> moveWithMaxScore(board)
             AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(board, 8)
             AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(board, 10)
-            AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlay(board, 50)
+            AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(board, 50)
         }
 
     private fun fromBoard(board: Board): GameModel = GameModel(settings, board) { _, _ -> }
@@ -69,6 +69,25 @@ class AiPlayer(val settings: Settings) {
             }
         }
         return models
+    }
+
+    private fun longestRandomPlayAdaptive(board: Board, nAttemptsInitial: Int): PlayerMoveEnum {
+// Not as well as below
+//        val x: Piece = board.array.filterNotNull().maxOrNull() ?: Piece.N2
+//        val nAttempts = nAttemptsInitial * when {
+//            x < Piece.N1024 -> 1
+//            x < Piece.N2048 -> 2
+//            else -> 4
+//        }
+
+        val nAttempts = nAttemptsInitial * when(board.array.size - board.piecesCount()) {
+            in 0..4 -> 8
+            in 5..7 -> 4
+            in 8..11 -> 2
+            else -> 1
+        }
+
+        return longestRandomPlay(board, nAttempts)
     }
 
     private fun longestRandomPlay(board: Board, nAttempts: Int): PlayerMoveEnum {
