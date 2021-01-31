@@ -30,17 +30,9 @@ class ScoreBar(val viewData: ViewData): Container() {
             val scoreLabelSize = cellSize * 0.30
             val scoreTextSize = cellSize * 0.5
 
-            gameTime = text("00:00:00", scoreLabelSize, gameColors.labelText, font, TextAlignment.MIDDLE_CENTER) {
-                positionX(boardLeft + scoreButtonWidth / 2)
-                positionY(scoreButtonTop + textYPadding)
-            }
-            usersMoveNumber = text("", scoreTextSize, gameColors.labelText, font, TextAlignment.MIDDLE_CENTER) {
-                centerXOn(gameTime)
-                positionY(scoreButtonTop + scoreLabelSize + textYPadding)
-            }
-
+            var posX = boardLeft
             val bgScore = roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
-                position(boardLeft + (scoreButtonWidth + buttonMargin), scoreButtonTop)
+                position(posX, scoreButtonTop)
             }
             text(stringResources.text("score_upper"), scoreLabelSize, gameColors.buttonLabelText, font,
                 TextAlignment.MIDDLE_CENTER
@@ -53,8 +45,9 @@ class ScoreBar(val viewData: ViewData): Container() {
                 positionY(scoreButtonTop + scoreLabelSize + textYPadding)
             }
 
+            posX += scoreButtonWidth + buttonMargin
             val bgBest = roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
-                position(boardLeft + (scoreButtonWidth + buttonMargin) * 2, scoreButtonTop)
+                position(posX, scoreButtonTop)
             }
             text(stringResources.text("best"), scoreLabelSize, gameColors.buttonLabelText, font,
                 TextAlignment.MIDDLE_CENTER
@@ -66,6 +59,17 @@ class ScoreBar(val viewData: ViewData): Container() {
                 centerXOn(bgBest)
                 positionY(scoreButtonTop + scoreLabelSize + textYPadding)
             }
+
+            posX += scoreButtonWidth + buttonMargin
+            gameTime = text("00:00:00", scoreLabelSize, gameColors.labelText, font, TextAlignment.MIDDLE_CENTER) {
+                positionX(posX + scoreButtonWidth / 2)
+                positionY(scoreButtonTop + textYPadding)
+            }
+            usersMoveNumber = text("", scoreTextSize, gameColors.labelText, font, TextAlignment.MIDDLE_CENTER) {
+                centerXOn(gameTime)
+                positionY(scoreButtonTop + scoreLabelSize + textYPadding)
+            }
+
         }
     }
 
