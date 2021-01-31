@@ -58,7 +58,7 @@ class MyWindow(val viewData: ViewData, val titleKey: String) : Container() {
                 text(stringResources.text(labelKey), defaultTextSize, gameColors.labelText,
                     font, TextAlignment.MIDDLE_LEFT
                 ) {
-                    position(buttonSize + buttonPadding, buttonSize / 2)
+                    position(buttonSize + cellMargin, buttonSize / 2)
                 }
             }
         }
