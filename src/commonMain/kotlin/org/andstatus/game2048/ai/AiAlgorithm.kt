@@ -10,7 +10,7 @@ enum class AiAlgorithm(val id: String) {
     val labelKey: String get() = id
 
     companion object {
-        fun load(value: String?): AiAlgorithm = values()
-            .firstOrNull { it.toString() == value } ?: LONGEST_RANDOM_PLAY
+        fun load(id: String?): AiAlgorithm = values()
+            .firstOrNull { it.id == id } ?: LONGEST_RANDOM_PLAY
     }
 }

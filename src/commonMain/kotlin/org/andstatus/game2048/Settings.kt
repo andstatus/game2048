@@ -40,7 +40,7 @@ class Settings(val storage: MyStorage) {
                 .setBoolean(keyAllowUsersMoveWithoutBlockMoves, allowUsersMoveWithoutBlockMoves)
                 .setBoolean(keyAllowUndo, allowUndo)
                 .set(keyColorTheme, colorThemeEnum.labelKey)
-        storage.native.set(keyAiAlgorithm, aiAlgorithm.labelKey)
+        storage.native.set(keyAiAlgorithm, aiAlgorithm.id)
     }
 
     private fun NativeStorage.setBoolean(key: String, value: Boolean): NativeStorage {

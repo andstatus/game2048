@@ -110,8 +110,9 @@ class Presenter(private val view: ViewData, history: History) {
         gameMode.incrementSpeed()
     }
 
-    fun onSelectAiAlgorithm(selected: AiAlgorithm) {
+    fun onAiAlgorithmSelect(selected: AiAlgorithm) {
         model.settings.aiAlgorithm = selected
+        view.settings.save()
         showMainView()
     }
 
@@ -333,12 +334,12 @@ class Presenter(private val view: ViewData, history: History) {
         if (colorThemeEnum == view.settings.colorThemeEnum) return
 
         view.settings.colorThemeEnum = colorThemeEnum
+        view.settings.save()
         restartTheApp()
     }
 
     private suspend fun restartTheApp() {
         pauseGame()
-        view.settings.save()
         view.reInitialize()
     }
 

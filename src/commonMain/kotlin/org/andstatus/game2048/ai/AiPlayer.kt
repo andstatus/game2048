@@ -13,8 +13,8 @@ import kotlin.random.nextInt
 
 class AiPlayer(val settings: Settings) {
 
-    private class MoveAndScore(val moveEnum: PlayerMoveEnum, val score: Int) {
-        constructor(playerMove: PlayerMove): this(playerMove.playerMoveEnum, playerMove.points())
+    private class MoveAndScore(val moveEnum: PlayerMoveEnum, val referenceScore: Int, val maxScore: Int) {
+        constructor(playerMove: PlayerMove): this(playerMove.playerMoveEnum, playerMove.points(), 0)
     }
 
     fun nextMove(model: GameModel): AiResult {
@@ -23,11 +23,11 @@ class AiPlayer(val settings: Settings) {
             val mas: MoveAndScore =  when(settings.aiAlgorithm) {
                 AiAlgorithm.RANDOM -> MoveAndScore(allowedRandomMove(board))
                 AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> MoveAndScore(moveWithMaxScore(board))
-                AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> MoveAndScore(maxEmptyBlocksNMoves(board, 8))
+                AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(board, 8)
                 AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(board, 10)
                 AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(board, 50)
             }
-            AiResult(mas.moveEnum, mas.score, stopWatch.elapsed.millisecondsInt)
+            AiResult(mas.moveEnum, mas.referenceScore, mas.maxScore, stopWatch.elapsed.millisecondsInt)
         }
     }
 
@@ -47,7 +47,7 @@ class AiPlayer(val settings: Settings) {
             .let { map ->
                 map.maxByOrNull(this::meanScoreForList)
                 ?.let {
-                    MoveAndScore(it.key, meanScoreForList(it))
+                    MoveAndScore(it.key, meanScoreForList(it), it.value.map{ it.score}.maxOrNull() ?: 0)
                 }
             }
             ?: MoveAndScore(allowedRandomMove(board))
@@ -61,27 +61,34 @@ class AiPlayer(val settings: Settings) {
         return if (entry.value.isEmpty()) 0 else entry.value.sumBy(GameModel::score) / entry.value.size
     }
 
-    private fun maxEmptyBlocksNMoves(board: Board, nMoves: Int): PlayerMove {
+    private fun maxEmptyBlocksNMoves(board: Board, nMoves: Int): MoveAndScore {
         return playNMoves(board, nMoves)
-            .minByOrNull { it.value.sumBy { it.board.piecesCount() } / it.value.size }
-            ?.key
-            ?.let {
-                fromBoard(board).calcMove(it)
+            .minByOrNull {
+                if (it.value.isEmpty()) 0 else it.value.sumBy { it.board.piecesCount() } / it.value.size
             }
-            ?: allowedRandomMove(board)
+            ?.let { entry ->
+                MoveAndScore(entry.key,
+                    if(entry.value.isEmpty()) 0 else entry.value.sumBy { it.score } / entry.value.size,
+                    entry.value.map { it.score }.maxOrNull() ?: 0
+                )
+            }
+            ?: MoveAndScore(allowedRandomMove(board))
     }
 
     private fun playNMoves(board: Board, nMoves: Int): Map<PlayerMoveEnum, List<GameModel>> {
-        var models: Map<PlayerMoveEnum, List<GameModel>> = playUserMoves(fromBoard(board)).fold(HashMap()) { map, mm ->
-            mm.moves.firstOrNull()?.let {
-                map.put(it.playerMoveEnum, listOf(mm.model))
-                map
-            } ?: map
-        }
+        var models: Map<PlayerMoveEnum, List<GameModel>> = playUserMoves(fromBoard(board))
+            .map(this::playComputerMove)
+            .fold(HashMap()) { aMap, mm ->
+                mm.moves.firstOrNull()?.let {
+                    aMap.put(it.playerMoveEnum, listOf(mm.model))
+                    aMap
+                } ?: aMap
+            }
         (2..nMoves).forEach {
             models = models.mapValues {
                 it.value.flatMap { model ->
                     playUserMoves(model)
+                        .map(this::playComputerMove)
                 }.map { it.model }
             }
         }
@@ -110,14 +117,17 @@ class AiPlayer(val settings: Settings) {
             }
 
         val list = firstMoves.map { entry ->
-            val attempts: ArrayList<GameModel> = ArrayList()
+            val attempts: MutableList<GameModel> = ArrayList()
             repeat(nAttempts) {
                 attempts.add(playRandomTillEnd(entry.value))
             }
-            MoveAndScore(entry.key, attempts.sumBy { it.score } / attempts.size)
+            MoveAndScore(entry.key,
+                attempts.sumBy { it.score } / attempts.size,
+                attempts.map{ it.score}.maxOrNull() ?: 0
+            )
         }
 
-        return list.maxByOrNull { it.score } ?: MoveAndScore(allowedRandomMove(board))
+        return list.maxByOrNull { it.referenceScore } ?: MoveAndScore(allowedRandomMove(board))
     }
 
     private fun playRandomTillEnd(modelIn: GameModel): GameModel {

@@ -33,13 +33,13 @@ class StatusBar(val viewData: ViewData): Container() {
             }
 
             posX += scoreButtonWidth + buttonMargin
-            text(stringResources.text("score_upper"), scoreLabelSize, gameColors.buttonLabelText, font,
+            text(stringResources.text("score_upper"), scoreLabelSize, gameColors.labelText, font,
                 TextAlignment.MIDDLE_CENTER
             ) {
                 positionX(posX + scoreButtonWidth / 2)
                 positionY(barTop + textYPadding)
             }
-            scoreProjected = text("", scoreLabelSize, gameColors.buttonText, font, TextAlignment.MIDDLE_CENTER) {
+            scoreProjected = text("", scoreLabelSize, gameColors.labelText, font, TextAlignment.MIDDLE_CENTER) {
                 positionX(posX + scoreButtonWidth / 2)
                 positionY(barTop + scoreLabelSize + textYPadding)
             }
@@ -67,8 +67,14 @@ class StatusBar(val viewData: ViewData): Container() {
             }
 
             moveSuggested.text = move.symbol
-            scoreProjected.text = score.toString()
-            timeTaken.text = takenMillis.toString()
+            scoreProjected.text =  if (maxScore > referenceScore) {
+                "$referenceScore - $maxScore"
+            } else if (referenceScore == 0) {
+                "-"
+            } else {
+                referenceScore.toString()
+            }
+            timeTaken.text = if (takenMillis == 0) "-" else takenMillis.toString()
         }
         addTo(parent)
     }

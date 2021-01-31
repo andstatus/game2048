@@ -40,7 +40,7 @@ fun ViewData.selectAiAlgorithm(settings: Settings) = myWindow("select_ai_algorit
         gameStage.launch {
             showOptions {}
             delay(100.milliseconds)
-            presenter.onSelectAiAlgorithm(selected)
+            presenter.onAiAlgorithmSelect(selected)
             window.removeFromParent()
         }
     }
