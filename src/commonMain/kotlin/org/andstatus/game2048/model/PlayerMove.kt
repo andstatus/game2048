@@ -14,6 +14,8 @@ data class PlayerMove(val player: PlayerEnum, val playerMoveEnum: PlayerMoveEnum
         keyMoves to moves.map{ it.toMap() }
     )
 
+    fun points(): Int = moves.map { it.points() }.sum()
+
     companion object{
         fun composerMove(board: Board) =
                 PlayerMove(PlayerEnum.COMPOSER, PlayerMoveEnum.LOAD, board.gameClock.playedSeconds, listOf(MoveLoad(board)))

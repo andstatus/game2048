@@ -1,13 +1,13 @@
 package org.andstatus.game2048.model
 
-enum class PlayerMoveEnum(val id: String) {
-    LEFT("left"),
-    RIGHT("right"),
-    UP("up"),
-    DOWN("down"),
-    PLACE("place"),
-    LOAD("load"),
-    DELAY("delay");
+enum class PlayerMoveEnum(val id: String, val symbol: String) {
+    LEFT("left", "←"),
+    RIGHT("right", "→"),
+    UP("up", "↑"),
+    DOWN("down", "↓"),
+    PLACE("place", ""),
+    LOAD("load", ""),
+    DELAY("delay", "");
 
     fun reverseDirection(): Direction = when(this) {
         LEFT -> Direction.RIGHT

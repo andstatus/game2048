@@ -383,11 +383,11 @@ class Presenter(private val view: ViewData, history: History) {
                     && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
                     while(moveIsInProgress.value) delay(20)
                     val nextMove = Stopwatch().start().let { stopWatch ->
-                        aiPlayer.nextMove(model.board).also {
+                        aiPlayer.nextMove(model.gameModel).also {
                             delay(gameMode.delayMs.toLong() - stopWatch.elapsed.millisecondsLong)
                         }
                     }
-                    if (!moveIsInProgress.value) userMove(nextMove)
+                    if (!moveIsInProgress.value) userMove(nextMove.move)
                 }
                 onAiStopClicked()
             }
@@ -447,7 +447,10 @@ class Presenter(private val view: ViewData, history: History) {
     }
 
     fun showMainView() {
-        view.mainView.show(buttonsToShow(), gameMode.speed)
+        val aiResult = if (gameMode.aiEnabled && gameMode.modeEnum == GameModeEnum.PLAY) {
+            aiPlayer.nextMove(model.gameModel)
+        } else null
+        view.mainView.show(buttonsToShow(), gameMode.speed, aiResult)
     }
 
     private fun buttonsToShow(): List<AppBarButtonsEnum> {
