@@ -5,9 +5,7 @@ import org.andstatus.game2048.Settings
 /** @author yvolk@yurivolkov.com */
 class Model(val history: History) {
     val settings: Settings = history.settings
-    var gameModel = GameModel(settings) {
-            playerMove, newBoard -> history.add(playerMove, newBoard)
-    }
+    var gameModel = GameModel(settings)
     val board: Board get() = gameModel.board
 
     val usersMoveNumber: Int get() = board.usersMoveNumber
@@ -31,7 +29,7 @@ class Model(val history: History) {
         return composerMove(board, true)
     }
 
-    fun composerMove(board: Board, isRedo: Boolean = false) = gameModel.composerMove(board, isRedo).toMoves()
+    fun composerMove(board: Board, isRedo: Boolean = false) = gameModel.composerMove(board, isRedo).update(isRedo)
 
     fun createBookmark() {
         history.createBookmark()
@@ -66,7 +64,7 @@ class Model(val history: History) {
     }
 
     fun undo(): List<PlayerMove> = history.undo()?.let {
-        gameModel.playReversed(listOf(it)).toMoves()
+        gameModel.playReversed(it).update(true)
     } ?: emptyList()
 
     fun undoToStart(): List<PlayerMove> {
@@ -78,26 +76,33 @@ class Model(val history: History) {
         return history.canRedo()
     }
 
-    fun redo(): List<PlayerMove> = history.redo()?.let { listOf(it).play(true) } ?: emptyList()
+    fun redo(): List<PlayerMove> = history.redo()?.let {
+        MoveAndModel(it, gameModel.play(it, true)).update(true)
+    } ?: emptyList()
 
     fun redoToCurrent(): List<PlayerMove> {
         history.historyIndex = -1
         return composerMove(history.currentGame.shortRecord.finalBoard, true)
     }
 
-    fun randomComputerMove() = gameModel.randomComputerMove().toMoves()
-    fun computerMove(placedPiece: PlacedPiece) = gameModel.computerMove(placedPiece).toMoves()
-    fun userMove(playerMoveEnum: PlayerMoveEnum) = gameModel.userMove(playerMoveEnum).toMoves()
+    fun randomComputerMove() = gameModel.randomComputerMove().update()
 
-    private fun List<PlayerMove>.play(isRedo: Boolean = false): List<PlayerMove> {
-        with(gameModel) {
-            return play(isRedo).toMoves()
+    fun computerMove(placedPiece: PlacedPiece) = gameModel.computerMove(placedPiece).update()
+
+    fun userMove(playerMoveEnum: PlayerMoveEnum): List<PlayerMove> = gameModel.userMove(playerMoveEnum).let {
+        if (it.move.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) {
+            it.update(false)
+        } else {
+            emptyList()
         }
     }
 
-    fun MovesAndModel.toMoves(): List<PlayerMove> {
+    private fun MoveAndModel.update(isRedo: Boolean = false): List<PlayerMove> {
+        if (!isRedo) {
+            history.add(move, model.board)
+        }
         gameModel = model
-        return moves
+        return if(move.isEmpty()) emptyList() else listOf(move)
     }
 
     fun noMoreMoves() = gameModel.noMoreMoves()

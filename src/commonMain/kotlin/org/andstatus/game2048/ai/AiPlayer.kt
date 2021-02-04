@@ -32,7 +32,7 @@ class AiPlayer(val settings: Settings) {
         }
     }
 
-    private fun fromBoard(board: Board): GameModel = GameModel(settings, board) { _, _ -> }
+    private fun fromBoard(board: Board): GameModel = GameModel(settings, board)
 
     private fun moveWithMaxScore(board: Board): PlayerMove {
         val model = fromBoard(board)
@@ -123,7 +123,7 @@ class AiPlayer(val settings: Settings) {
         while (!model.noMoreMoves()) {
             model = allowedRandomMove(model.board)
                 .let(model::play)
-                .model.randomComputerMove()
+                .randomComputerMove()
                 .model
         }
         return model
@@ -134,7 +134,7 @@ class AiPlayer(val settings: Settings) {
             model.calcMove(move)
                 .takeIf { it.moves.isNotEmpty() }
                 ?.let(model::play)
-                ?.model?.randomComputerMove()
+                ?.randomComputerMove()
                 ?.let { MoveAndModel(move, it.model) }
         }
 

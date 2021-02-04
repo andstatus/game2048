@@ -7,7 +7,11 @@ enum class PlayerMoveEnum(val id: String, val symbol: String) {
     DOWN("down", "↓"),
     PLACE("place", ""),
     LOAD("load", ""),
-    DELAY("delay", "");
+    DELAY("delay", ""),
+    EMPTY("empty", ""),
+    ;
+
+    fun isEmpty() = this == EMPTY
 
     fun reverseDirection(): Direction = when(this) {
         LEFT -> Direction.RIGHT

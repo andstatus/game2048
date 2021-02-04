@@ -14,9 +14,14 @@ data class PlayerMove(val player: PlayerEnum, val playerMoveEnum: PlayerMoveEnum
         keyMoves to moves.map{ it.toMap() }
     )
 
+    fun isEmpty() = playerMoveEnum.isEmpty()
+    fun isNotEmpty() = !isEmpty()
+
     fun points(): Int = moves.map { it.points() }.sum()
 
     companion object{
+        val emptyMove = PlayerMove(PlayerEnum.COMPOSER, PlayerMoveEnum.EMPTY, 0, emptyList())
+
         fun composerMove(board: Board) =
                 PlayerMove(PlayerEnum.COMPOSER, PlayerMoveEnum.LOAD, board.gameClock.playedSeconds, listOf(MoveLoad(board)))
 

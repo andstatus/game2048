@@ -4,25 +4,29 @@ import org.andstatus.game2048.Settings
 import kotlin.random.Random
 
 /** @author yvolk@yurivolkov.com */
-class GameModel(val settings: Settings, val board: Board, val onMoveHandler: (PlayerMove, Board) -> Unit) {
+class GameModel(val settings: Settings, val board: Board) {
     val usersMoveNumber: Int get() = board.usersMoveNumber
     val gameClock get() = board.gameClock
     val score get() = board.score
 
-    constructor(settings: Settings, onMoveHandler: (PlayerMove, Board) -> Unit) :
-            this(settings, Board(settings), onMoveHandler)
+    constructor(settings: Settings) : this(settings, Board(settings))
 
-    fun Board.nextModel() = GameModel(settings, this, onMoveHandler)
+    fun Board.nextModel() = GameModel(settings, this)
 
-    fun composerMove(board: Board, isRedo: Boolean = false) =
-            listOf(PlayerMove.composerMove(board)).play(isRedo)
-
-    fun randomComputerMove(): MovesAndModel {
-        return calcPlacedRandomBlock()?.let { computerMove(it) } ?: MovesAndModel(emptyList(), this)
+    fun composerMove(board: Board, isRedo: Boolean = false): MoveAndModel {
+        val move = PlayerMove.composerMove(board)
+        return MoveAndModel(move, play(move, isRedo))
     }
 
-    fun computerMove(placedPiece: PlacedPiece): MovesAndModel {
-        return placedPiece.let { listOf(PlayerMove.computerMove(it, gameClock.playedSeconds)).play() }
+    fun randomComputerMove(): MoveAndModel {
+        return calcPlacedRandomBlock()?.let { computerMove(it) } ?: MoveAndModel(PlayerMove.emptyMove, this)
+    }
+
+    fun computerMove(placedPiece: PlacedPiece): MoveAndModel {
+        return placedPiece.let {
+            val move = PlayerMove.computerMove(it, gameClock.playedSeconds)
+            MoveAndModel(move, play(move, false))
+        }
     }
 
     private fun calcPlacedRandomBlock(): PlacedPiece?  =
@@ -31,13 +35,13 @@ class GameModel(val settings: Settings, val board: Board, val onMoveHandler: (Pl
                 PlacedPiece(piece, square)
             }
 
-    fun userMove(playerMoveEnum: PlayerMoveEnum): MovesAndModel {
+    fun userMove(playerMoveEnum: PlayerMoveEnum): MoveAndModel {
         return calcMove(playerMoveEnum).let {
-            if (it.moves.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) {
+            if (it.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) {
                 gameClock.start()
-                listOf(it).play()
+                MoveAndModel(it, play(it, false))
             } else {
-                MovesAndModel(emptyList(), this)
+                MoveAndModel(PlayerMove.emptyMove, this)
             }
         }
     }
@@ -75,75 +79,56 @@ class GameModel(val settings: Settings, val board: Board, val onMoveHandler: (Pl
         return PlayerMove.userMove(playerMoveEnum, gameClock.playedSeconds, moves)
     }
 
-    fun play(move: PlayerMove): MovesAndModel = listOf(move).play(false)
-
-    fun List<PlayerMove>.play(isRedo: Boolean = false): MovesAndModel {
-        var newBoard = board
-        forEach { playerMove ->
-            newBoard = play(playerMove, isRedo, newBoard)
-            if (!isRedo) onMoveHandler(playerMove, newBoard)
-        }
-        return MovesAndModel(this, GameModel(settings, newBoard, onMoveHandler))
-    }
-
-    private fun play(playerMove: PlayerMove, isRedo: Boolean = false, oldBoard: Board): Board {
-        var board = if (isRedo) oldBoard.forAutoPlaying(playerMove.seconds, true) else oldBoard.forNextMove()
+    fun play(playerMove: PlayerMove, isRedo: Boolean = false): GameModel {
+        var newBoard = if (isRedo) board.forAutoPlaying(playerMove.seconds, true) else board.forNextMove()
         playerMove.moves.forEach { move ->
-            board.score += move.points()
+            newBoard.score += move.points()
             when(move) {
                 is MovePlace -> {
-                    board[move.first.square] = move.first.piece
+                    newBoard[move.first.square] = move.first.piece
                 }
                 is MoveLoad -> {
-                    board = move.board.copy()
+                    newBoard = move.board.copy()
                 }
                 is MoveOne -> {
-                    board[move.first.square] = null
-                    board[move.destination] = move.first.piece
+                    newBoard[move.first.square] = null
+                    newBoard[move.destination] = move.first.piece
                 }
                 is MoveMerge -> {
-                    board[move.first.square] = null
-                    board[move.second.square] = null
-                    board[move.merged.square] = move.merged.piece
+                    newBoard[move.first.square] = null
+                    newBoard[move.second.square] = null
+                    newBoard[move.merged.square] = move.merged.piece
                 }
                 is MoveDelay -> Unit
             }
         }
-        return board
+        return GameModel(settings, newBoard)
     }
 
-    fun playReversed(moves: List<PlayerMove>): MovesAndModel {
-        var newBoard = board
-        moves.asReversed().forEach {
-            newBoard = playReversed(it, newBoard)
-        }
-        return MovesAndModel(moves, newBoard.nextModel())
-    }
-
-    private fun playReversed(playerMove: PlayerMove, oldBoard: Board): Board {
-        var board = oldBoard.forAutoPlaying(playerMove.seconds, false)
+    fun playReversed(playerMove: PlayerMove): MoveAndModel {
+        var newBoard = board.forAutoPlaying(playerMove.seconds, false)
         playerMove.moves.asReversed().forEach { move ->
-            board.score -= move.points()
+            newBoard.score -= move.points()
             when(move) {
                 is MovePlace -> {
-                    board[move.first.square] = null
+                    newBoard[move.first.square] = null
                 }
                 is MoveLoad -> {
-                    board = move.board
+                    newBoard = move.board
                 }
                 is MoveOne -> {
-                    board[move.destination] = null
-                    board[move.first.square] = move.first.piece
+                    newBoard[move.destination] = null
+                    newBoard[move.first.square] = move.first.piece
                 }
                 is MoveMerge -> {
-                    board[move.merged.square] = null
-                    board[move.second.square] = move.second.piece
-                    board[move.first.square] = move.first.piece
+                    newBoard[move.merged.square] = null
+                    newBoard[move.second.square] = move.second.piece
+                    newBoard[move.first.square] = move.first.piece
                 }
                 is MoveDelay -> Unit
             }
         }
-        return board
+        return MoveAndModel(playerMove, newBoard.nextModel())
     }
 
     fun noMoreMoves() = board.noMoreMoves()
