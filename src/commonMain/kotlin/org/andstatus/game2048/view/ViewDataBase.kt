@@ -2,6 +2,8 @@ package org.andstatus.game2048.view
 
 import com.soywiz.korge.view.Stage
 import com.soywiz.korio.concurrent.atomic.KorAtomicInt
+import com.soywiz.korio.concurrent.atomic.incrementAndGet
+import com.soywiz.korio.util.OS
 import org.andstatus.game2048.defaultPortraitGameWindowSize
 import org.andstatus.game2048.defaultPortraitRatio
 import org.andstatus.game2048.defaultPortraitTextSize
@@ -31,7 +33,7 @@ interface ViewDataBase {
 
 /** The object is initialized instantly */
 class ViewDataQuick(override val gameStage: Stage, override val animateViews: Boolean = true) : ViewDataBase {
-    override val id: Int = nextIdHolder.addAndGet(1)
+    override val id: Int = nextId()
     override val duplicateKeyPressFilter = DuplicateKeyPressFilter()
 
     override val gameViewLeft: Int
@@ -93,5 +95,7 @@ class ViewDataQuick(override val gameStage: Stage, override val animateViews: Bo
 
     companion object {
         private val nextIdHolder = KorAtomicInt(0)
+        // Workaround for kotlin.native.concurrent.InvalidMutabilityException, see https://github.com/korlibs/korge-next/issues/154
+        fun nextId(): Int = if (OS.isNative) 1 else nextIdHolder.incrementAndGet()
     }
 }
