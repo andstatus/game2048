@@ -12,7 +12,7 @@ import kotlin.random.nextInt
 
 class AiPlayer(val settings: Settings) {
 
-    private class MoveAndModel(val moveEnum: PlayerMoveEnum, val model: GameModel)
+    private class FirstMove(val moveEnum: PlayerMoveEnum, val model: GameModel)
 
     private class MoveAndScore(val moveEnum: PlayerMoveEnum, val referenceScore: Int, val maxScore: Int) {
         constructor(playerMove: PlayerMove): this(playerMove.playerMoveEnum, playerMove.points(), 0)
@@ -32,7 +32,7 @@ class AiPlayer(val settings: Settings) {
         }
     }
 
-    private fun fromBoard(board: Board): GameModel = GameModel(settings, board)
+    private fun fromBoard(board: Board): GameModel = GameModel(settings, PlayerMove.emptyMove, board)
 
     private fun moveWithMaxScore(board: Board): PlayerMove {
         val model = fromBoard(board)
@@ -81,7 +81,7 @@ class AiPlayer(val settings: Settings) {
             moveToModels = moveToModels.mapValues {
                 it.value.flatMap { model ->
                     playUserMoves(model)
-                        .map(MoveAndModel::model)
+                        .map(FirstMove::model)
                 }
             }
         }
@@ -100,7 +100,7 @@ class AiPlayer(val settings: Settings) {
     }
 
     private fun longestRandomPlay(board: Board, nAttempts: Int): MoveAndScore {
-        val firstMoves: List<MoveAndModel> = playUserMoves(fromBoard(board))
+        val firstMoves: List<FirstMove> = playUserMoves(fromBoard(board))
 
         val list: List<MoveAndScore> = firstMoves.map { firstMove ->
             val attempts: MutableList<GameModel> = ArrayList()
@@ -124,18 +124,17 @@ class AiPlayer(val settings: Settings) {
             model = allowedRandomMove(model.board)
                 .let(model::play)
                 .randomComputerMove()
-                .model
         }
         return model
     }
 
-    private fun playUserMoves(model: GameModel): List<MoveAndModel> = UserMoves
+    private fun playUserMoves(model: GameModel): List<FirstMove> = UserMoves
         .mapNotNull { move ->
             model.calcMove(move)
                 .takeIf { it.moves.isNotEmpty() }
                 ?.let(model::play)
                 ?.randomComputerMove()
-                ?.let { MoveAndModel(move, it.model) }
+                ?.let { FirstMove(move, it) }
         }
 
     private fun allowedRandomMove(board: Board): PlayerMove {

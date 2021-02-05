@@ -50,7 +50,7 @@ class Model(val history: History) {
 
     fun pauseGame() {
         gameClock.stop()
-        gameMode.modeEnum = when(gameMode.modeEnum) {
+        gameMode.modeEnum = when (gameMode.modeEnum) {
             GameModeEnum.PLAY, GameModeEnum.AI_PLAY -> GameModeEnum.PLAY
             else -> GameModeEnum.STOP
         }
@@ -77,7 +77,7 @@ class Model(val history: History) {
     }
 
     fun redo(): List<PlayerMove> = history.redo()?.let {
-        MoveAndModel(it, gameModel.play(it, true)).update(true)
+        gameModel.play(it, true).update(true)
     } ?: emptyList()
 
     fun redoToCurrent(): List<PlayerMove> {
@@ -90,19 +90,19 @@ class Model(val history: History) {
     fun computerMove(placedPiece: PlacedPiece) = gameModel.computerMove(placedPiece).update()
 
     fun userMove(playerMoveEnum: PlayerMoveEnum): List<PlayerMove> = gameModel.userMove(playerMoveEnum).let {
-        if (it.move.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) {
+        if (it.prevMove.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) {
             it.update(false)
         } else {
             emptyList()
         }
     }
 
-    private fun MoveAndModel.update(isRedo: Boolean = false): List<PlayerMove> {
+    private fun GameModel.update(isRedo: Boolean = false): List<PlayerMove> {
         if (!isRedo) {
-            history.add(move, model.board)
+            history.add(prevMove, board)
         }
-        gameModel = model
-        return if(move.isEmpty()) emptyList() else listOf(move)
+        gameModel = this
+        return if (prevMove.isEmpty()) emptyList() else listOf(prevMove)
     }
 
     fun noMoreMoves() = gameModel.noMoreMoves()

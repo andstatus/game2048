@@ -4,44 +4,44 @@ import org.andstatus.game2048.Settings
 import kotlin.random.Random
 
 /** @author yvolk@yurivolkov.com */
-class GameModel(val settings: Settings, val board: Board) {
+class GameModel(val settings: Settings, val prevMove: PlayerMove, val board: Board) {
     val usersMoveNumber: Int get() = board.usersMoveNumber
     val gameClock get() = board.gameClock
     val score get() = board.score
 
-    constructor(settings: Settings) : this(settings, Board(settings))
+    constructor(settings: Settings) : this(settings, PlayerMove.emptyMove, Board(settings))
 
-    fun Board.nextModel() = GameModel(settings, this)
+    fun PlayerMove.nextModel(board: Board) = GameModel(settings, this, board)
 
-    fun composerMove(board: Board, isRedo: Boolean = false): MoveAndModel {
+    fun composerMove(board: Board, isRedo: Boolean = false): GameModel {
         val move = PlayerMove.composerMove(board)
-        return MoveAndModel(move, play(move, isRedo))
+        return play(move, isRedo)
     }
 
-    fun randomComputerMove(): MoveAndModel {
-        return calcPlacedRandomBlock()?.let { computerMove(it) } ?: MoveAndModel(PlayerMove.emptyMove, this)
+    fun randomComputerMove(): GameModel {
+        return calcPlacedRandomBlock()?.let { computerMove(it) } ?: PlayerMove.emptyMove.nextModel(board)
     }
 
-    fun computerMove(placedPiece: PlacedPiece): MoveAndModel {
+    fun computerMove(placedPiece: PlacedPiece): GameModel {
         return placedPiece.let {
             val move = PlayerMove.computerMove(it, gameClock.playedSeconds)
-            MoveAndModel(move, play(move, false))
+            play(move, false)
         }
     }
 
-    private fun calcPlacedRandomBlock(): PlacedPiece?  =
-            board.getRandomFreeSquare()?.let {square ->
-                val piece = if (Random.nextDouble() < 0.9) Piece.N2 else Piece.N4
-                PlacedPiece(piece, square)
-            }
+    private fun calcPlacedRandomBlock(): PlacedPiece? =
+        board.getRandomFreeSquare()?.let { square ->
+            val piece = if (Random.nextDouble() < 0.9) Piece.N2 else Piece.N4
+            PlacedPiece(piece, square)
+        }
 
-    fun userMove(playerMoveEnum: PlayerMoveEnum): MoveAndModel {
+    fun userMove(playerMoveEnum: PlayerMoveEnum): GameModel {
         return calcMove(playerMoveEnum).let {
             if (it.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) {
                 gameClock.start()
-                MoveAndModel(it, play(it, false))
+                play(it, false)
             } else {
-                MoveAndModel(PlayerMove.emptyMove, this)
+                PlayerMove.emptyMove.nextModel(board)
             }
         }
     }
@@ -83,7 +83,7 @@ class GameModel(val settings: Settings, val board: Board) {
         var newBoard = if (isRedo) board.forAutoPlaying(playerMove.seconds, true) else board.forNextMove()
         playerMove.moves.forEach { move ->
             newBoard.score += move.points()
-            when(move) {
+            when (move) {
                 is MovePlace -> {
                     newBoard[move.first.square] = move.first.piece
                 }
@@ -102,14 +102,14 @@ class GameModel(val settings: Settings, val board: Board) {
                 is MoveDelay -> Unit
             }
         }
-        return GameModel(settings, newBoard)
+        return playerMove.nextModel(newBoard)
     }
 
-    fun playReversed(playerMove: PlayerMove): MoveAndModel {
+    fun playReversed(playerMove: PlayerMove): GameModel {
         var newBoard = board.forAutoPlaying(playerMove.seconds, false)
         playerMove.moves.asReversed().forEach { move ->
             newBoard.score -= move.points()
-            when(move) {
+            when (move) {
                 is MovePlace -> {
                     newBoard[move.first.square] = null
                 }
@@ -128,7 +128,7 @@ class GameModel(val settings: Settings, val board: Board) {
                 is MoveDelay -> Unit
             }
         }
-        return MoveAndModel(playerMove, newBoard.nextModel())
+        return playerMove.nextModel(newBoard)
     }
 
     fun noMoreMoves() = board.noMoreMoves()
