@@ -3,6 +3,7 @@ package org.andstatus.game2048.model
 import com.soywiz.klock.DateFormat
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.DateTimeTz
+import org.andstatus.game2048.Settings
 
 private const val keyNote = "note"
 private const val keyId = "id"
@@ -24,10 +25,10 @@ class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>
         fun newWithBoardAndMoves(board: Board, bookmarks: List<Board>, playerMoves: List<PlayerMove>) =
                 GameRecord(ShortRecord("", 0, board.dateTime, board, bookmarks), playerMoves)
 
-        fun fromJson(json: Any, newId: Int? = null): GameRecord? =
-                ShortRecord.fromJson(json, newId)?.let { shortRecord ->
+        fun fromJson(settings: Settings, json: Any, newId: Int? = null): GameRecord? =
+                ShortRecord.fromJson(settings, json, newId)?.let { shortRecord ->
                     val playerMoves: List<PlayerMove> = json.asJsonMap()[keyPlayersMoves]?.asJsonArray()
-                            ?.mapNotNull { PlayerMove.fromJson(it) } ?: emptyList()
+                            ?.mapNotNull { PlayerMove.fromJson(settings, it) } ?: emptyList()
                     if (playerMoves.size > shortRecord.finalBoard.moveNumber) {
                         // Fix for older versions, which didn't store move number
                         shortRecord.finalBoard.moveNumber = playerMoves.size
@@ -56,14 +57,14 @@ class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>
         companion object {
             val FILENAME_FORMAT = DateFormat("yyyy-MM-dd-HH-mm")
 
-            fun fromJson(json: Any, newId: Int? = null): ShortRecord? {
+            fun fromJson(settings: Settings, json: Any, newId: Int? = null): ShortRecord? {
                 val aMap: Map<String, Any> = json.asJsonMap()
                 val note: String = aMap[keyNote] as String? ?: ""
                 val id = newId ?: aMap[keyId]?.let { it as Int } ?: 0
                 val start: DateTimeTz? = aMap[keyStart]?.let { DateTime.parse(it as String) }
-                val finalBoard: Board? = aMap[keyFinalBoard]?.let { Board.fromJson(it) }
+                val finalBoard: Board? = aMap[keyFinalBoard]?.let { Board.fromJson(settings, it) }
                 val bookmarks: List<Board> = json.asJsonMap()[keyBookmarks]?.asJsonArray()
-                        ?.mapNotNull { Board.fromJson(it) } ?: emptyList()
+                        ?.mapNotNull { Board.fromJson(settings, it) } ?: emptyList()
                 return if (start != null && finalBoard != null)
                     ShortRecord(note, id, start, finalBoard, bookmarks)
                 else null

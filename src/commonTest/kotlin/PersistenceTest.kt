@@ -34,12 +34,13 @@ class PersistenceTest : ViewsForTesting(log = true) {
     }
 
     private suspend fun saveTestHistory(settings: Settings) = with (History.load(settings)) {
-        val placedPiece = PlacedPiece(Piece.N2, Square(1, 2))
+        val placedPiece = PlacedPiece(Piece.N2, settings.squares.toSquare(1, 2))
         val move1 = PlayerMove.computerMove(placedPiece, 0)
-        val move2 = PlayerMove.userMove(PlayerMoveEnum.DOWN, 1, listOf(MoveOne(placedPiece, Square(1, 3))))
-        val move3 = PlayerMove.computerMove(PlacedPiece(Piece.N4, Square(2, 1)), 2)
+        val move2 = PlayerMove.userMove(PlayerMoveEnum.DOWN, 1, listOf(MoveOne(placedPiece,
+            settings.squares.toSquare(1, 3))))
+        val move3 = PlayerMove.computerMove(PlacedPiece(Piece.N4, settings.squares.toSquare(2, 1)), 2)
         val board = Board(
-            settings.boardWidth, settings.boardHeight,
+            settings,
             array = arrayOf(
                 null, null, null, null,
                 null, null, null, null,
@@ -65,8 +66,8 @@ class PersistenceTest : ViewsForTesting(log = true) {
         var nMovesActual = 0
         while (nMovesActual < nMoves) {
             val square = when (nMovesActual) {
-                1 -> Square(2, 2)
-                else -> Square(1, 3)
+                1 -> settings.squares.toSquare(2, 2)
+                else -> settings.squares.toSquare(1, 3)
             }
             val move = PlayerMove.computerMove(PlacedPiece(Piece.N2, square), 0)
             assertTrue(move.toMap().keys.size > 2, move.toMap().toString())
@@ -81,7 +82,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         if (nMoves > 0) {
             assertTrue(gameRecordJson.contains("place"), message)
         }
-        val gameRecordRestored = GameRecord.fromJson(gameRecordJson)
+        val gameRecordRestored = GameRecord.fromJson(settings, gameRecordJson)
         assertTrue(gameRecordRestored != null, message)
 
         assertEquals(gameRecord.playerMoves, gameRecordRestored.playerMoves, message)

@@ -46,7 +46,7 @@ class BoardViews(
     private fun Int.toSquare(): Square? {
         if (this < 0 || this >= size) return null
         val x: Int = this % width
-        return Square(x, (this - x) / width)
+        return viewData.settings.squares.toSquare(x, (this - x) / width)
     }
 
     fun load(board: Board) {

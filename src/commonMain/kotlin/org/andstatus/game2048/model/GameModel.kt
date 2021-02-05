@@ -51,14 +51,14 @@ class GameModel(val settings: Settings, val prevMove: PlayerMove, val board: Boa
         val newBoard = this.board.forNextMove()
         val moves = mutableListOf<Move>()
         val direction = playerMoveEnum.reverseDirection()
-        var square: Square? = newBoard.firstSquareToIterate(direction)
+        var square: Square? = settings.squares.firstSquareToIterate(direction)
         while (square != null) {
-            val found = square.nextPlacedPieceInThe(direction, newBoard)
+            val found = settings.squares.nextPlacedPieceInThe(square, direction, newBoard)
             if (found == null) {
-                square = square.nextToIterate(direction, newBoard)
+                square = square.nextToIterate(direction)
             } else {
                 newBoard[found.square] = null
-                val next = found.square.nextInThe(direction, newBoard)?.nextPlacedPieceInThe(direction, newBoard)
+                val next = settings.squares.nextPlacedPieceInThe(found.square, direction, newBoard)
                 if (next != null && found.piece == next.piece) {
                     // merge equal blocks
                     val merged = found.piece.next()
@@ -68,7 +68,7 @@ class GameModel(val settings: Settings, val prevMove: PlayerMove, val board: Boa
                         newBoard.score += it.points()
                     }
                     if (!settings.allowResultingTileToMerge) {
-                        square = square.nextToIterate(direction, newBoard)
+                        square = square.nextToIterate(direction)
                     }
                 } else {
                     if (found.square != square) {
@@ -77,7 +77,7 @@ class GameModel(val settings: Settings, val prevMove: PlayerMove, val board: Boa
                         }
                     }
                     newBoard[square] = found.piece
-                    square = square.nextToIterate(direction, newBoard)
+                    square = square.nextToIterate(direction)
                 }
             }
         }

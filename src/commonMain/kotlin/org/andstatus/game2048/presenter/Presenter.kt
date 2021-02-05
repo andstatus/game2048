@@ -311,7 +311,7 @@ class Presenter(private val view: ViewData, history: History) {
         view.gameStage.loadJsonGameRecord { json ->
             view.gameStage.launch {
                 myLog("Opened game: ${json.substr(0, 140)}")
-                GameRecord.fromJson(json, newId = 0)?.let {
+                GameRecord.fromJson(model.settings, json, newId = 0)?.let {
                     myLog("Loaded game: $it")
                     model.history.currentGame = it
                     model.saveCurrent()

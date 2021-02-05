@@ -42,7 +42,7 @@ class History(val settings: Settings,
             val dCurrentGame = async {
                 myMeasured("Current game loaded") {
                     settings.storage.getOrNull(keyCurrentGame)
-                            ?.let { GameRecord.fromJson(it) }
+                            ?.let { GameRecord.fromJson(settings, it) }
                             ?: GameRecord.newWithBoardAndMoves(Board(settings), emptyList(), emptyList())
                 }
             }
@@ -53,7 +53,7 @@ class History(val settings: Settings,
         private fun loadPrevGames(settings: Settings): List<GameRecord.ShortRecord> = myMeasured("PrevGames loaded") {
             gameIdsRange.fold(emptyList(), { acc, ind ->
                 settings.storage.getOrNull(keyGame + ind)
-                        ?.let { GameRecord.ShortRecord.fromJson(it) }
+                        ?.let { GameRecord.ShortRecord.fromJson(settings, it) }
                         ?.let { acc + it } ?: acc
             })
         }
@@ -68,7 +68,7 @@ class History(val settings: Settings,
         settings.storage.getOrNull(keyGame + id)
             ?.let {
                 myLog("On restore gameId:$id, json.length:${it.length} ${it.substring(0..200)}...")
-                GameRecord.fromJson(it)
+                GameRecord.fromJson(settings, it)
             }
             ?.also {
                 if (it.id == id) {

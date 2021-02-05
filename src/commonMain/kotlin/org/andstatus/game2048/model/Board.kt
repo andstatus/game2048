@@ -4,7 +4,7 @@ import com.soywiz.klock.DateFormat
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.kmem.isOdd
-import org.andstatus.game2048.*
+import org.andstatus.game2048.Settings
 import kotlin.math.sqrt
 import kotlin.random.Random
 
@@ -16,26 +16,22 @@ private const val keyPlayedSeconds = "playedSeconds"
 
 private val SUMMARY_FORMAT = DateFormat("yyyy-MM-dd HH:mm")
 
-class Board(val width: Int,
-            val height: Int,
-            val array: Array<Piece?> = Array(width * height) { null },
-            var score: Int = 0,
-            val dateTime: DateTimeTz = DateTimeTz.nowLocal(),
-            val gameClock: GameClock = GameClock(),
-            var moveNumber: Int = 0) {
+class Board(
+    val settings: Settings,
+    val array: Array<Piece?> = Array(settings.squares.size) { null },
+    var score: Int = 0,
+    val dateTime: DateTimeTz = DateTimeTz.nowLocal(),
+    val gameClock: GameClock = GameClock(),
+    var moveNumber: Int = 0
+) {
+    val width: Int = settings.squares.width
+    val height: Int = settings.squares.height
     private val size = width * height
     val timeString get() = dateTime.format(SUMMARY_FORMAT)
-
-    constructor(settings: Settings): this(settings.boardWidth, settings.boardHeight)
 
     val usersMoveNumber: Int get() {
         if (moveNumber < 2 ) return 1
         return (if (moveNumber.isOdd) (moveNumber + 1) else (moveNumber + 2)) / 2
-    }
-
-    fun firstSquareToIterate(direction: Direction) = when (direction) {
-        Direction.LEFT, Direction.UP -> Square(width - 1, height - 1)
-        Direction.RIGHT, Direction.DOWN -> Square(0, 0)
     }
 
     fun getRandomFreeSquare(): Square? =
@@ -77,8 +73,7 @@ class Board(val width: Int,
 
     private fun Int.toSquare(): Square? {
         if (this < 0 || this >= size) return null
-        val x: Int = this % width
-        return Square(x, (this - x) / width)
+        return settings.squares.toSquare(this)
     }
 
     fun noMoreMoves(): Boolean {
@@ -100,23 +95,17 @@ class Board(val width: Int,
     }
 
     private fun PlacedPiece.hasMoveInThe(direction: Direction): Boolean {
-        return square.nextInThe(direction, this@Board)
+        return square.nextInThe(direction)
                 ?.let { square ->
                     get(square)?.let {it == piece} ?: true
                 }
                 ?: false
     }
 
-    operator fun get(square: Square): Piece? = square.toInd()?.let { array[it] }
+    operator fun get(square: Square): Piece? = array[square.ind]
 
     operator fun set(square: Square, value: Piece?) {
-        square.toInd()?.let { array[it] = value }
-    }
-
-    private fun Square.toInd(): Int? {
-        return if (x < 0 || y < 0 || x >= width || y >= height)
-            null
-        else x + y * width
+        array[square.ind] = value
     }
 
     fun save() = IntArray(size) { array[it]?.id ?: 0 }
@@ -133,15 +122,18 @@ class Board(val width: Int,
         ind.toString() + ":" + (piece ?: "-")
     } + ", score:$score, time:${dateTime.format(DateFormat.FORMAT1)}"
 
-    fun copy() = Board(width, height, array.copyOf(), score, dateTime, gameClock.copy(), moveNumber)
-    fun forAutoPlaying(seconds: Int, isForward: Boolean) = Board(width, height, array.copyOf(), score, dateTime,
-            if (seconds == 0) gameClock.copy() else GameClock(seconds), moveNumber + (if (isForward) 1 else -1))
-    fun forNextMove() = Board(width, height, array.copyOf(), score, DateTimeTz.nowLocal(), gameClock,
-            moveNumber + 1)
+    fun copy() = Board(settings, array.copyOf(), score, dateTime, gameClock.copy(), moveNumber)
+    fun forAutoPlaying(seconds: Int, isForward: Boolean) = Board(
+        settings, array.copyOf(), score,
+        dateTime, if (seconds == 0) gameClock.copy() else GameClock(seconds), moveNumber + (if (isForward) 1 else -1)
+    )
+    fun forNextMove() = Board(settings, array.copyOf(), score, DateTimeTz.nowLocal(), gameClock,
+        moveNumber + 1
+    )
 
     companion object {
 
-        fun fromJson(json: Any): Board? {
+        fun fromJson(settings: Settings, json: Any): Board? {
             val aMap: Map<String, Any> = json.asJsonMap()
             val pieces: Array<Piece?>? = aMap[keyPieces]?.asJsonArray()
                     ?.map { Piece.fromId(it as Int) }?.toTypedArray()
@@ -150,8 +142,8 @@ class Board(val width: Int,
             val dateTime: DateTimeTz? = aMap[keyDateTime]?.let { DateTime.parse(it as String)}
             val playedSeconds: Int = aMap[keyPlayedSeconds] as Int? ?: 0
             val moveNumber: Int = aMap[keyMoveNumber] as Int? ?: 0
-            return if (pieces != null && score != null && dateTime != null)
-                Board(boardWidth, boardWidth, pieces, score, dateTime, GameClock(playedSeconds), moveNumber)
+            return if (pieces != null && score != null && dateTime != null && boardWidth == settings.squares.width)
+                Board(settings, pieces, score, dateTime, GameClock(playedSeconds), moveNumber)
             else null
         }
 
