@@ -39,6 +39,7 @@ class MovesTest : ViewsForTesting(log = true) {
         assertEquals(2, this.presenter.boardViews.blocks.size, this.modelAndViews())
         val board2 = this.presenter.model.board.copy()
         val piecesOnBoardViews2 = this.presentedPieces()
+        assertEquals(2, board2.score, this.modelAndViews())
         assertEquals(board2.array.asList(), piecesOnBoardViews2, this.modelAndViews())
         assertTrue(this.presenter.canUndo(), this.historyString())
         this.presenter.undo()

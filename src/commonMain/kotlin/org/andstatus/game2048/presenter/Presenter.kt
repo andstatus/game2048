@@ -419,21 +419,22 @@ class Presenter(private val view: ViewData, history: History) {
     private fun userMove(playerMoveEnum: PlayerMoveEnum) {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
-        if (model.noMoreMoves()) {
+        model.userMove(playerMoveEnum).let {
+            if (it.isEmpty()) it else it + model.randomComputerMove()
+        }.present()
+    }
+
+    private fun List<PlayerMove>.present(index: Int = 0) {
+        if (isEmpty()) {
             onPresentEnd()
             boardViews = boardViews
                 .removeGameOver()
                 .copy()
-                .apply { gameOver = view.mainView.boardView.showGameOver() }
-        } else {
-            model.userMove(playerMoveEnum).let {
-                if (it.isEmpty()) it else it + model.randomComputerMove()
-            }.present()
-        }
-    }
-
-    private fun List<PlayerMove>.present(index: Int = 0) {
-        if (index < size) {
+                .apply {
+                    gameOver = view.mainView.boardView.showGameOver()
+                    pauseGame()
+                }
+        } else if (index < size) {
             present(this[index]) {
                 present(index + 1)
             }

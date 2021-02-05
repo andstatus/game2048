@@ -37,46 +37,50 @@ class GameModel(val settings: Settings, val prevMove: PlayerMove, val board: Boa
 
     fun userMove(playerMoveEnum: PlayerMoveEnum): GameModel {
         return calcMove(playerMoveEnum).let {
-            if (it.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) {
+            if (it.prevMove.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) {
                 gameClock.start()
-                play(it, false)
+                it
             } else {
                 PlayerMove.emptyMove.nextModel(board)
             }
         }
     }
 
-    fun calcMove(playerMoveEnum: PlayerMoveEnum): PlayerMove {
-        val board = this.board.forNextMove()
+    fun calcMove(playerMoveEnum: PlayerMoveEnum): GameModel {
+        val newBoard = this.board.forNextMove()
         val moves = mutableListOf<Move>()
         val direction = playerMoveEnum.reverseDirection()
-        var square: Square? = board.firstSquareToIterate(direction)
+        var square: Square? = newBoard.firstSquareToIterate(direction)
         while (square != null) {
-            val found = square.nextPlacedPieceInThe(direction, board)
+            val found = square.nextPlacedPieceInThe(direction, newBoard)
             if (found == null) {
-                square = square.nextToIterate(direction, board)
+                square = square.nextToIterate(direction, newBoard)
             } else {
-                board[found.square] = null
-                val next = found.square.nextInThe(direction, board)?.nextPlacedPieceInThe(direction, board)
+                newBoard[found.square] = null
+                val next = found.square.nextInThe(direction, newBoard)?.nextPlacedPieceInThe(direction, newBoard)
                 if (next != null && found.piece == next.piece) {
                     // merge equal blocks
                     val merged = found.piece.next()
-                    board[square] = merged
-                    board[next.square] = null
-                    moves += MoveMerge(found, next, PlacedPiece(merged, square))
+                    newBoard[square] = merged
+                    newBoard[next.square] = null
+                    moves += MoveMerge(found, next, PlacedPiece(merged, square)).also {
+                        newBoard.score += it.points()
+                    }
                     if (!settings.allowResultingTileToMerge) {
-                        square = square.nextToIterate(direction, board)
+                        square = square.nextToIterate(direction, newBoard)
                     }
                 } else {
                     if (found.square != square) {
-                        moves += MoveOne(found, square)
+                        moves += MoveOne(found, square).also {
+                            newBoard.score += it.points()
+                        }
                     }
-                    board[square] = found.piece
-                    square = square.nextToIterate(direction, board)
+                    newBoard[square] = found.piece
+                    square = square.nextToIterate(direction, newBoard)
                 }
             }
         }
-        return PlayerMove.userMove(playerMoveEnum, gameClock.playedSeconds, moves)
+        return PlayerMove.userMove(playerMoveEnum, gameClock.playedSeconds, moves).nextModel(newBoard)
     }
 
     fun play(playerMove: PlayerMove, isRedo: Boolean = false): GameModel {

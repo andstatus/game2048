@@ -15,7 +15,7 @@ class AiPlayer(val settings: Settings) {
     private class FirstMove(val moveEnum: PlayerMoveEnum, val model: GameModel)
 
     private class MoveAndScore(val moveEnum: PlayerMoveEnum, val referenceScore: Int, val maxScore: Int) {
-        constructor(playerMove: PlayerMove): this(playerMove.playerMoveEnum, playerMove.points(), 0)
+        constructor(gameModel: GameModel): this(gameModel.prevMove.playerMoveEnum, gameModel.prevMove.points(), 0)
     }
 
     fun nextMove(model: GameModel): AiResult {
@@ -34,12 +34,12 @@ class AiPlayer(val settings: Settings) {
 
     private fun fromBoard(board: Board): GameModel = GameModel(settings, PlayerMove.emptyMove, board)
 
-    private fun moveWithMaxScore(board: Board): PlayerMove {
+    private fun moveWithMaxScore(board: Board): GameModel {
         val model = fromBoard(board)
         return  UserMoves
             .map(model::calcMove)
-            .filter { it.moves.isNotEmpty() }
-            .maxByOrNull{ it.moves.sumBy{ it.points() }}
+            .filter { it.prevMove.isNotEmpty() }
+            .maxByOrNull{ it.prevMove.points() }
             ?: allowedRandomMove(board)
     }
 
@@ -122,7 +122,6 @@ class AiPlayer(val settings: Settings) {
         var model = modelIn
         while (!model.noMoreMoves()) {
             model = allowedRandomMove(model.board)
-                .let(model::play)
                 .randomComputerMove()
         }
         return model
@@ -131,19 +130,18 @@ class AiPlayer(val settings: Settings) {
     private fun playUserMoves(model: GameModel): List<FirstMove> = UserMoves
         .mapNotNull { move ->
             model.calcMove(move)
-                .takeIf { it.moves.isNotEmpty() }
-                ?.let(model::play)
+                .takeIf { it.prevMove.isNotEmpty() }
                 ?.randomComputerMove()
                 ?.let { FirstMove(move, it) }
         }
 
-    private fun allowedRandomMove(board: Board): PlayerMove {
+    private fun allowedRandomMove(board: Board): GameModel {
         val model = fromBoard(board)
         if (settings.allowUsersMoveWithoutBlockMoves) return randomMove().let(model::calcMove)
 
         while (!model.noMoreMoves()) {
             randomMove().let(model::calcMove).let {
-                if (it.moves.isNotEmpty()) return it
+                if (it.prevMove.isNotEmpty()) return it
             }
         }
         return randomMove().let(model::calcMove)
