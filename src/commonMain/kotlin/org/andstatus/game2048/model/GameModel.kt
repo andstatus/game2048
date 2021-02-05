@@ -1,6 +1,7 @@
 package org.andstatus.game2048.model
 
 import org.andstatus.game2048.Settings
+import org.andstatus.game2048.model.PlayerMoveEnum.Companion.UserMoves
 import kotlin.random.Random
 
 /** @author yvolk@yurivolkov.com */
@@ -11,7 +12,10 @@ class GameModel(val settings: Settings, val prevMove: PlayerMove, val board: Boa
 
     constructor(settings: Settings) : this(settings, PlayerMove.emptyMove, Board(settings))
 
-    fun PlayerMove.nextModel(board: Board) = GameModel(settings, this, board)
+    fun PlayerMove.nextModel(board: Board) = when {
+        this.isNotEmpty() && (moves.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) -> this
+        else -> PlayerMove.emptyMove
+    }.let { GameModel(settings, it, board) }
 
     fun composerMove(board: Board, isRedo: Boolean = false): GameModel {
         val move = PlayerMove.composerMove(board)
@@ -19,7 +23,7 @@ class GameModel(val settings: Settings, val prevMove: PlayerMove, val board: Boa
     }
 
     fun randomComputerMove(): GameModel {
-        return calcPlacedRandomBlock()?.let { computerMove(it) } ?: PlayerMove.emptyMove.nextModel(board)
+        return calcPlacedRandomBlock()?.let { computerMove(it) } ?: nextEmpty()
     }
 
     fun computerMove(placedPiece: PlacedPiece): GameModel {
@@ -36,17 +40,14 @@ class GameModel(val settings: Settings, val prevMove: PlayerMove, val board: Boa
         }
 
     fun userMove(playerMoveEnum: PlayerMoveEnum): GameModel {
-        return calcMove(playerMoveEnum).let {
-            if (it.prevMove.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) {
-                gameClock.start()
-                it
-            } else {
-                PlayerMove.emptyMove.nextModel(board)
-            }
+        return calcUserMove(playerMoveEnum).also {
+            if (it.prevMove.isNotEmpty()) gameClock.start()
         }
     }
 
-    fun calcMove(playerMoveEnum: PlayerMoveEnum): GameModel {
+    fun calcUserMove(playerMoveEnum: PlayerMoveEnum): GameModel {
+        if (!UserMoves.contains(playerMoveEnum)) return nextEmpty()
+
         val newBoard = this.board.forNextMove()
         val moves = mutableListOf<Move>()
         val direction = playerMoveEnum.reverseDirection()
@@ -82,6 +83,8 @@ class GameModel(val settings: Settings, val prevMove: PlayerMove, val board: Boa
         }
         return PlayerMove.userMove(playerMoveEnum, gameClock.playedSeconds, moves).nextModel(newBoard)
     }
+
+    fun nextEmpty() = PlayerMove.emptyMove.nextModel(board)
 
     fun play(playerMove: PlayerMove, isRedo: Boolean = false): GameModel {
         var newBoard = if (isRedo) board.forAutoPlaying(playerMove.seconds, true) else board.forNextMove()

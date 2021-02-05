@@ -14,7 +14,7 @@ data class PlayerMove(val player: PlayerEnum, val playerMoveEnum: PlayerMoveEnum
         keyMoves to moves.map{ it.toMap() }
     )
 
-    fun isEmpty() = playerMoveEnum.isEmpty() || moves.isEmpty()
+    fun isEmpty() = playerMoveEnum.isEmpty()
     fun isNotEmpty() = !isEmpty()
 
     fun points(): Int = moves.map { it.points() }.sum()

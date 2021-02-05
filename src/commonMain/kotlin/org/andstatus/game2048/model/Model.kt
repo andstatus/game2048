@@ -49,6 +49,8 @@ class Model(val history: History) {
     }
 
     fun pauseGame() {
+        if (!gameClock.started) return
+
         gameClock.stop()
         gameMode.modeEnum = when (gameMode.modeEnum) {
             GameModeEnum.PLAY, GameModeEnum.AI_PLAY -> GameModeEnum.PLAY
@@ -89,16 +91,10 @@ class Model(val history: History) {
 
     fun computerMove(placedPiece: PlacedPiece) = gameModel.computerMove(placedPiece).update()
 
-    fun userMove(playerMoveEnum: PlayerMoveEnum): List<PlayerMove> = gameModel.userMove(playerMoveEnum).let {
-        if (it.prevMove.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) {
-            it.update(false)
-        } else {
-            emptyList()
-        }
-    }
+    fun userMove(playerMoveEnum: PlayerMoveEnum): List<PlayerMove> = gameModel.userMove(playerMoveEnum).update()
 
     private fun GameModel.update(isRedo: Boolean = false): List<PlayerMove> {
-        if (!isRedo) {
+        if (!isRedo && prevMove.isNotEmpty()) {
             history.add(prevMove, board)
         }
         gameModel = this

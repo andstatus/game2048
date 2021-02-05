@@ -2,13 +2,10 @@ package org.andstatus.game2048.ai
 
 import com.soywiz.klock.Stopwatch
 import org.andstatus.game2048.Settings
-import org.andstatus.game2048.model.Board
 import org.andstatus.game2048.model.GameModel
 import org.andstatus.game2048.model.PlayerMove
 import org.andstatus.game2048.model.PlayerMoveEnum
 import org.andstatus.game2048.model.PlayerMoveEnum.Companion.UserMoves
-import kotlin.random.Random
-import kotlin.random.nextInt
 
 class AiPlayer(val settings: Settings) {
 
@@ -19,45 +16,41 @@ class AiPlayer(val settings: Settings) {
     }
 
     fun nextMove(model: GameModel): AiResult {
-        val board: Board = model.board
         return Stopwatch().start().let { stopWatch ->
             val mas: MoveAndScore =  when(settings.aiAlgorithm) {
-                AiAlgorithm.RANDOM -> MoveAndScore(allowedRandomMove(board))
-                AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> MoveAndScore(moveWithMaxScore(board))
-                AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(board, 8)
-                AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(board, 10)
-                AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(board, 50)
+                AiAlgorithm.RANDOM -> MoveAndScore(allowedRandomMove(model))
+                AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> MoveAndScore(moveWithMaxScore(model))
+                AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(model, 8)
+                AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(model, 10)
+                AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(model, 50)
             }
             AiResult(mas.moveEnum, mas.referenceScore, mas.maxScore, stopWatch.elapsed.millisecondsInt)
         }
     }
 
-    private fun fromBoard(board: Board): GameModel = GameModel(settings, PlayerMove.emptyMove, board)
-
-    private fun moveWithMaxScore(board: Board): GameModel {
-        val model = fromBoard(board)
+    private fun moveWithMaxScore(model: GameModel): GameModel {
         return  UserMoves
-            .map(model::calcMove)
+            .map(model::calcUserMove)
             .filter { it.prevMove.isNotEmpty() }
             .maxByOrNull{ it.prevMove.points() }
-            ?: allowedRandomMove(board)
+            ?: allowedRandomMove(model)
     }
 
-    private fun maxScoreNMoves(board: Board, nMoves: Int): MoveAndScore {
-        return playNMoves(board, nMoves)
+    private fun maxScoreNMoves(model: GameModel, nMoves: Int): MoveAndScore {
+        return playNMoves(model, nMoves)
             .maxByOrNull(this::meanScoreForList)
             ?.let {
                 MoveAndScore(it.key, meanScoreForList(it), it.value.map{ it.score}.maxOrNull() ?: 0)
             }
-            ?: MoveAndScore(allowedRandomMove(board))
+            ?: MoveAndScore(allowedRandomMove(model))
     }
 
     private fun meanScoreForList(entry: Map.Entry<PlayerMoveEnum, List<GameModel>>): Int {
         return if (entry.value.isEmpty()) 0 else entry.value.sumBy(GameModel::score) / entry.value.size
     }
 
-    private fun maxEmptyBlocksNMoves(board: Board, nMoves: Int): MoveAndScore {
-        return playNMoves(board, nMoves)
+    private fun maxEmptyBlocksNMoves(model: GameModel, nMoves: Int): MoveAndScore {
+        return playNMoves(model, nMoves)
             .minByOrNull {
                 if (it.value.isEmpty()) 0 else it.value.sumBy { it.board.piecesCount() } / it.value.size
             }
@@ -67,11 +60,11 @@ class AiPlayer(val settings: Settings) {
                     entry.value.map { it.score }.maxOrNull() ?: 0
                 )
             }
-            ?: MoveAndScore(allowedRandomMove(board))
+            ?: MoveAndScore(allowedRandomMove(model))
     }
 
-    private fun playNMoves(board: Board, nMoves: Int): Map<PlayerMoveEnum, List<GameModel>> {
-        var moveToModels: Map<PlayerMoveEnum, List<GameModel>> = playUserMoves(fromBoard(board))
+    private fun playNMoves(model: GameModel, nMoves: Int): Map<PlayerMoveEnum, List<GameModel>> {
+        var moveToModels: Map<PlayerMoveEnum, List<GameModel>> = playUserMoves(model)
             .fold(HashMap()) { aMap, mm ->
                 aMap.apply {
                     put(mm.moveEnum, listOf(mm.model))
@@ -88,19 +81,19 @@ class AiPlayer(val settings: Settings) {
         return moveToModels
     }
 
-    private fun longestRandomPlayAdaptive(board: Board, nAttemptsInitial: Int): MoveAndScore {
-        val nAttempts = nAttemptsInitial * when(board.array.size - board.piecesCount()) {
+    private fun longestRandomPlayAdaptive(model: GameModel, nAttemptsInitial: Int): MoveAndScore {
+        val nAttempts = nAttemptsInitial * when(model.board.array.size - model.board.piecesCount()) {
             in 0..5 -> 64
             in 6..7 -> 16
             in 8..11 -> 4
             else -> 1
         }
 
-        return longestRandomPlay(board, nAttempts)
+        return longestRandomPlay(model, nAttempts)
     }
 
-    private fun longestRandomPlay(board: Board, nAttempts: Int): MoveAndScore {
-        val firstMoves: List<FirstMove> = playUserMoves(fromBoard(board))
+    private fun longestRandomPlay(model: GameModel, nAttempts: Int): MoveAndScore {
+        val firstMoves: List<FirstMove> = playUserMoves(model)
 
         val list: List<MoveAndScore> = firstMoves.map { firstMove ->
             val attempts: MutableList<GameModel> = ArrayList()
@@ -115,38 +108,33 @@ class AiPlayer(val settings: Settings) {
             )
         }
 
-        return list.maxByOrNull { it.referenceScore } ?: MoveAndScore(allowedRandomMove(board))
+        return list.maxByOrNull { it.referenceScore } ?: MoveAndScore(allowedRandomMove(model))
     }
 
     private fun playRandomTillEnd(modelIn: GameModel): GameModel {
         var model = modelIn
-        while (!model.noMoreMoves()) {
-            model = allowedRandomMove(model.board)
-                .randomComputerMove()
-        }
+        do {
+            model = allowedRandomMove(model)
+            if (model.prevMove.isNotEmpty()) {
+                model = model.randomComputerMove()
+            }
+        } while (model.prevMove.isNotEmpty())
         return model
     }
 
     private fun playUserMoves(model: GameModel): List<FirstMove> = UserMoves
         .mapNotNull { move ->
-            model.calcMove(move)
+            model.calcUserMove(move)
                 .takeIf { it.prevMove.isNotEmpty() }
                 ?.randomComputerMove()
                 ?.let { FirstMove(move, it) }
         }
 
-    private fun allowedRandomMove(board: Board): GameModel {
-        val model = fromBoard(board)
-        if (settings.allowUsersMoveWithoutBlockMoves) return randomMove().let(model::calcMove)
-
-        while (!model.noMoreMoves()) {
-            randomMove().let(model::calcMove).let {
-                if (it.prevMove.isNotEmpty()) return it
-            }
+    private fun allowedRandomMove(model: GameModel): GameModel {
+        UserMoves.shuffled().map(model::calcUserMove).forEach {
+            if (it.prevMove.isNotEmpty()) return it
         }
-        return randomMove().let(model::calcMove)
+        return PlayerMove.emptyMove.let(model::play)
     }
-
-    private fun randomMove() = UserMoves[Random.nextInt(0..3)]
 
 }

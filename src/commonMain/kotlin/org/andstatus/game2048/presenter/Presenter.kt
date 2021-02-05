@@ -122,7 +122,7 @@ class Presenter(private val view: ViewData, history: History) {
 
     fun onUndoClick() = afterStop {
         logClick("Undo")
-        model.gameClock.stop()
+        pauseGame()
         undo()
     }
 
@@ -130,7 +130,7 @@ class Presenter(private val view: ViewData, history: History) {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
         boardViews.removeGameOver() // TODO: make this a move...
-        (model.undo() + listOf(PlayerMove.delay()) + model.undo()).presentReversed()
+        (model.undo() + PlayerMove.delay() + model.undo()).presentReversed()
     }
 
     fun onRedoClick() = afterStop {
@@ -146,7 +146,7 @@ class Presenter(private val view: ViewData, history: History) {
 
     fun onRestartClick() = afterStop {
         logClick("Restart")
-        model.saveCurrent()
+        model.pauseGame()
         model.restart().present()
     }
 
@@ -280,7 +280,7 @@ class Presenter(private val view: ViewData, history: History) {
 
     fun onRestoreClick() = afterStop {
         logClick("Restore")
-        model.saveCurrent()
+        model.pauseGame()
         view.showRestoreGame(model.history.prevGames)
     }
 
@@ -377,7 +377,6 @@ class Presenter(private val view: ViewData, history: History) {
         afterStop {
             val startCount = clickCounter.incrementAndGet()
             gameMode.modeEnum = GameModeEnum.AI_PLAY
-            model.gameClock.start()
             showMainView()
             coroutineScope.launch {
                 while (startCount == clickCounter.value && !model.noMoreMoves()
