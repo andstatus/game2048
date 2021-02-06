@@ -5,7 +5,6 @@ import com.soywiz.klock.DateTime
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.kmem.isOdd
 import org.andstatus.game2048.Settings
-import kotlin.math.sqrt
 import kotlin.random.Random
 
 private const val keyMoveNumber = "moveNumber"
@@ -24,9 +23,6 @@ class Board(
     val gameClock: GameClock = GameClock(),
     var moveNumber: Int = 0
 ) {
-    val width: Int = settings.squares.width
-    val height: Int = settings.squares.height
-    private val size = width * height
     val timeString get() = dateTime.format(SUMMARY_FORMAT)
 
     val usersMoveNumber: Int get() {
@@ -34,81 +30,52 @@ class Board(
         return (if (moveNumber.isOdd) (moveNumber + 1) else (moveNumber + 2)) / 2
     }
 
-    fun getRandomFreeSquare(): Square? =
-        (size - piecesCount()).let {
-            if (it == 0) null else findFreeSquare(Random.nextInt(it))
-        }
+    fun getRandomFreeSquare(): Square? = freeCount().let {
+        if (it == 0) null else findFreeSquare(Random.nextInt(it))
+    }
 
     private fun findFreeSquare(freeIndToFind: Int): Square? {
         var freeInd = -1
-        for (ind in 0..size) {
-            if (array[ind] == null) {
+        settings.squares.array.forEach { square ->
+            if (array[square.ind] == null ) {
                 freeInd++
-                if (freeInd == freeIndToFind) return ind.toSquare()
+                if (freeInd == freeIndToFind) return square
             }
         }
         return null
     }
 
-    fun pieces(): List<PlacedPiece> = fold(ArrayList(0)) { list, placedPiece ->
-        list.apply { add(placedPiece) }
+    fun pieces(): List<PlacedPiece> = settings.squares.array.mapNotNull { square ->
+        array[square.ind]?.let { piece -> PlacedPiece(piece, square) }
     }
 
-    private inline fun <R> fold(initial: R, operation: (R, PlacedPiece) -> R): R {
-        var acc: R = initial
-        array.forEachIndexed { ind, nullableBlock ->
-            ind.toSquare()?.let { square ->
-                nullableBlock?.let { piece ->
-                    acc = operation(acc, PlacedPiece(piece, square))
-                }
-            }
-        }
-        return acc
-    }
-
-    fun piecesCount(): Int = count { _ -> true}
-
-    private inline fun count(predicate: (PlacedPiece) -> Boolean): Int =
-        fold(0) { acc, p: PlacedPiece -> if(predicate(p)) acc + 1 else acc }
-
-    private fun Int.toSquare(): Square? {
-        if (this < 0 || this >= size) return null
-        return settings.squares.toSquare(this)
-    }
+    fun freeCount(): Int = array.count { it == null }
 
     fun noMoreMoves(): Boolean {
-        array.forEachIndexed { ind, nullableBlock ->
-            ind.toSquare()?.let { square ->
-                nullableBlock?.let { block ->
-                    if (PlacedPiece(block, square).hasMove()) return false
-                } ?: return false
-            }
+        settings.squares.array.forEach { square ->
+            array[square.ind]?.let { piece ->
+                if (square.hasMove(piece)) return false
+            } ?: return false
         }
         return true
     }
 
-    private fun PlacedPiece.hasMove(): Boolean {
-        return hasMoveInThe(Direction.LEFT) ||
-                hasMoveInThe(Direction.RIGHT) ||
-                hasMoveInThe(Direction.UP) ||
-                hasMoveInThe(Direction.DOWN)
+    private fun Square.hasMove(piece: Piece): Boolean {
+        return hasMoveInThe(piece, Direction.LEFT) ||
+                hasMoveInThe(piece, Direction.RIGHT) ||
+                hasMoveInThe(piece, Direction.UP) ||
+                hasMoveInThe(piece, Direction.DOWN)
     }
 
-    private fun PlacedPiece.hasMoveInThe(direction: Direction): Boolean {
-        return square.nextInThe(direction)
-                ?.let { square ->
-                    get(square)?.let {it == piece} ?: true
-                }
-                ?: false
-    }
+    private fun Square.hasMoveInThe(piece: Piece, direction: Direction): Boolean = nextInThe(direction)
+        ?.let { square -> get(square)?.let { it == piece } ?: true }
+        ?: false
 
     operator fun get(square: Square): Piece? = array[square.ind]
 
     operator fun set(square: Square, value: Piece?) {
         array[square.ind] = value
     }
-
-    fun save() = IntArray(size) { array[it]?.id ?: 0 }
 
     fun toMap(): Map<String, Any> = mapOf(
             keyMoveNumber to moveNumber,
@@ -137,12 +104,12 @@ class Board(
             val aMap: Map<String, Any> = json.asJsonMap()
             val pieces: Array<Piece?>? = aMap[keyPieces]?.asJsonArray()
                     ?.map { Piece.fromId(it as Int) }?.toTypedArray()
-            val boardWidth: Int = pieces?.let { sqrt(it.size.toDouble()).toInt() } ?: 0
+            val size: Int = pieces?.size ?: 0
             val score: Int? = aMap[keyScore] as Int?
             val dateTime: DateTimeTz? = aMap[keyDateTime]?.let { DateTime.parse(it as String)}
             val playedSeconds: Int = aMap[keyPlayedSeconds] as Int? ?: 0
             val moveNumber: Int = aMap[keyMoveNumber] as Int? ?: 0
-            return if (pieces != null && score != null && dateTime != null && boardWidth == settings.squares.width)
+            return if (pieces != null && score != null && dateTime != null && size == settings.squares.size)
                 Board(settings, pieces, score, dateTime, GameClock(playedSeconds), moveNumber)
             else null
         }
