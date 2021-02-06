@@ -19,7 +19,7 @@ fun rotatingLogo(viewData: ViewData, buttonSize: Double): EButton {
         container.customOnClick {
             piece = piece.next()
             setBlock()
-            viewData.presenter.showMainView()
+            viewData.presenter.updateMainView()
         }
     }
     return EButton(AppBarButtonsEnum.APP_LOGO, container)

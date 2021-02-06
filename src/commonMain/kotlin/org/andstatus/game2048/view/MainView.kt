@@ -24,7 +24,7 @@ class MainView private constructor(
     }
 
     fun showStatusBar(aiResult: AiResult?) {
-        if (appBar.viewData.closed) return
+        if (appBar.viewData.closed || this.parent == null) return
 
         statusBar.show(this, aiResult)
         this.addTo(appBar.viewData.gameStage)

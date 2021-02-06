@@ -35,7 +35,7 @@ fun CoroutineScope.aiPlayLoop(presenter: Presenter, startCount: Int) = launch {
                     delay(gameMode.delayMs.toLong() - stopWatch.elapsed.millisecondsLong)
                 }
             }
-            if (!moveIsInProgress.value && model.gameModel === model1) {
+            if (!moveIsInProgress.value && model.gameModel === model1 && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
                 view.gameStage.launch {
                     userMove(nextMove.move)
                 }.join()

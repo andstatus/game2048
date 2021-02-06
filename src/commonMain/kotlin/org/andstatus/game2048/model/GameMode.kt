@@ -31,7 +31,8 @@ class GameMode() {
                 when(value) {
                     GameModeEnum.BACKWARDS -> -1
                     GameModeEnum.FORWARD -> 1
-                    GameModeEnum.STOP, GameModeEnum.PLAY, GameModeEnum.AI_PLAY -> 0
+                    GameModeEnum.AI_PLAY -> 1
+                    GameModeEnum.STOP, GameModeEnum.PLAY -> 0
                 },
                 old.aiEnabled
             )
