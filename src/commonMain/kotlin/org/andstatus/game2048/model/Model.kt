@@ -1,9 +1,10 @@
 package org.andstatus.game2048.model
 
+import kotlinx.coroutines.CoroutineScope
 import org.andstatus.game2048.Settings
 
 /** @author yvolk@yurivolkov.com */
-class Model(val history: History) {
+class Model(private val coroutineScope: CoroutineScope, val history: History) {
     val settings: Settings = history.settings
     var gameModel = GameModel(settings)
     val board: Board get() = gameModel.board
@@ -59,7 +60,7 @@ class Model(val history: History) {
         saveCurrent()
     }
 
-    fun saveCurrent() = history.saveCurrent()
+    fun saveCurrent() = history.saveCurrent(coroutineScope)
 
     fun canUndo(): Boolean {
         return history.canUndo()

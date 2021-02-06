@@ -3,8 +3,10 @@ package org.andstatus.game2048.model
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.weeks
 import com.soywiz.korio.serialization.json.toJson
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
@@ -82,7 +84,7 @@ class History(val settings: Settings,
                 saveCurrent()
             }
 
-    fun saveCurrent(): History {
+    fun saveCurrent(coroutineScope: CoroutineScope? = null): History {
         settings.storage[keyGameMode] = gameMode.modeEnum.id
         val isNew = currentGame.id <= 0
 
@@ -102,7 +104,14 @@ class History(val settings: Settings,
             settings.storage[keyGame + idToStore] = currentGame.toMap().toJson()
             currentGame
         }
-        return loadPrevGames()
+        return if (coroutineScope == null) {
+            loadPrevGames()
+        } else {
+            coroutineScope.launch {
+                loadPrevGames()
+            }
+            this
+        }
     }
 
     private fun updateBestScore() {

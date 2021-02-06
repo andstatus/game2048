@@ -1,6 +1,5 @@
 package org.andstatus.game2048.presenter
 
-import com.soywiz.klock.Stopwatch
 import com.soywiz.klock.milliseconds
 import com.soywiz.korge.animate.Animator
 import com.soywiz.korge.animate.animateSequence
@@ -14,8 +13,10 @@ import com.soywiz.korio.concurrent.atomic.KorAtomicInt
 import com.soywiz.korio.concurrent.atomic.incrementAndGet
 import com.soywiz.korio.lang.substr
 import com.soywiz.korio.serialization.json.toJson
+import com.soywiz.korio.util.OS
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.ai.AiPlayer
@@ -48,16 +49,17 @@ import org.andstatus.game2048.view.showHelp
 import org.andstatus.game2048.view.showRestoreGame
 
 /** @author yvolk@yurivolkov.com */
-class Presenter(private val view: ViewData, history: History) {
-    private val coroutineScope: CoroutineScope get() = view.gameStage
-    val model = Model(history)
+class Presenter(val view: ViewData, history: History) {
+    private val multithreadedCoroutineScope: CoroutineScope get() = if (OS.isWindows) view.gameStage
+        else CoroutineScope(view.gameStage.coroutineContext + Dispatchers.Default)
+    val model = Model(multithreadedCoroutineScope, history)
     val aiPlayer = AiPlayer(history.settings)
-    private val moveIsInProgress = KorAtomicBoolean(false)
+    val moveIsInProgress = KorAtomicBoolean(false)
     val score get() = model.score
     val bestScore get() = model.bestScore
     var boardViews = BoardViews(view)
-    private val gameMode get() = model.gameMode
-    private var clickCounter = KorAtomicInt(0)
+    val gameMode get() = model.gameMode
+    var clickCounter = KorAtomicInt(0)
 
     private fun presentGameClock(coroutineScope: CoroutineScope, model: Model, textSupplier: () -> Text) {
         coroutineScope.launch {
@@ -129,7 +131,7 @@ class Presenter(private val view: ViewData, history: History) {
     fun undo() {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
-        boardViews.removeGameOver() // TODO: make this a move...
+        boardViews.hideGameOver()
         (model.undo() + PlayerMove.delay() + model.undo()).presentReversed()
     }
 
@@ -246,7 +248,7 @@ class Presenter(private val view: ViewData, history: History) {
 
     fun onToStartClick() = afterStop {
         logClick("ToStart")
-        boardViews.removeGameOver() // TODO: make this a move...
+        boardViews.hideGameOver()
         (model.undoToStart() + listOf(PlayerMove.delay()) + model.redo()).present()
     }
 
@@ -356,7 +358,7 @@ class Presenter(private val view: ViewData, history: History) {
                 val startCount = clickCounter.incrementAndGet()
                 gameMode.modeEnum = newMode
                 showMainView()
-                coroutineScope.launch {
+                multithreadedCoroutineScope.launch {
                     while (startCount == clickCounter.value &&
                         if (gameMode.modeEnum == GameModeEnum.BACKWARDS) canUndo() else canRedo()
                     ) {
@@ -378,19 +380,7 @@ class Presenter(private val view: ViewData, history: History) {
             val startCount = clickCounter.incrementAndGet()
             gameMode.modeEnum = GameModeEnum.AI_PLAY
             showMainView()
-            coroutineScope.launch {
-                while (startCount == clickCounter.value && !model.noMoreMoves()
-                    && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
-                    while(moveIsInProgress.value) delay(20)
-                    val nextMove = Stopwatch().start().let { stopWatch ->
-                        aiPlayer.nextMove(model.gameModel).also {
-                            delay(gameMode.delayMs.toLong() - stopWatch.elapsed.millisecondsLong)
-                        }
-                    }
-                    if (!moveIsInProgress.value) userMove(nextMove.move)
-                }
-                onAiStopClicked()
-            }
+            multithreadedCoroutineScope.aiPlayLoop(this, startCount)
         }
     }
 
@@ -401,7 +391,7 @@ class Presenter(private val view: ViewData, history: History) {
 
     private fun afterStop(action: () -> Unit) {
         val startCount = clickCounter.incrementAndGet()
-        coroutineScope.launch {
+        multithreadedCoroutineScope.launch {
             while (gameMode.autoPlaying && startCount == clickCounter.value) {
                 delay(100)
             }
@@ -415,9 +405,10 @@ class Presenter(private val view: ViewData, history: History) {
 
     fun computerMove(placedPiece: PlacedPiece) = model.computerMove(placedPiece).present()
 
-    private fun userMove(playerMoveEnum: PlayerMoveEnum) {
+    fun userMove(playerMoveEnum: PlayerMoveEnum) {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
+        view.mainView.showStatusBar(null)
         model.userMove(playerMoveEnum).let {
             if (it.isEmpty()) it else it + model.randomComputerMove()
         }.present()
@@ -426,13 +417,15 @@ class Presenter(private val view: ViewData, history: History) {
     private fun List<PlayerMove>.present(index: Int = 0) {
         if (isEmpty()) {
             onPresentEnd()
-            boardViews = boardViews
-                .removeGameOver()
-                .copy()
-                .apply {
-                    gameOver = view.mainView.boardView.showGameOver()
-                    pauseGame()
-                }
+            if (model.noMoreMoves()) {
+                boardViews = boardViews
+                        .hideGameOver()
+                        .copy()
+                        .apply {
+                            view.mainView.boardView.showGameOver()
+                            pauseGame()
+                        }
+            }
         } else if (index < size) {
             present(this[index]) {
                 present(index + 1)
@@ -448,10 +441,11 @@ class Presenter(private val view: ViewData, history: History) {
     }
 
     fun showMainView() {
-        val aiResult = if (gameMode.aiEnabled && gameMode.modeEnum == GameModeEnum.PLAY) {
-            aiPlayer.nextMove(model.gameModel)
-        } else null
-        view.mainView.show(buttonsToShow(), gameMode.speed, aiResult)
+        view.mainView.show(buttonsToShow(), gameMode.speed, null)
+        if (gameMode.aiEnabled && gameMode.modeEnum == GameModeEnum.PLAY) {
+            multithreadedCoroutineScope.showAiTip(this)
+            myLog("After AI Launch")
+        }
     }
 
     private fun buttonsToShow(): List<AppBarButtonsEnum> {

@@ -23,6 +23,7 @@ import com.soywiz.korma.geom.vector.roundRect
 
 class BoardView(val viewData: ViewData): Container() {
     private val controlsArea: SolidRect
+    private val gameOver: Container
 
     init {
         with(viewData) {
@@ -65,16 +66,30 @@ class BoardView(val viewData: ViewData): Container() {
                 ifKey(Key.M, presenter::onGameMenuClick)
                 ifKey(Key.BACKSPACE, presenter::onCloseGameWindowClick)
             }
+
+            gameOver = getGameOver()
         }
     }
 
     /** Ensure the view is on the top to receive onSwipe events */
     fun setOnTop(parent: Container) {
-        controlsArea.addTo(this)
+        if (gameOver.parent == null) {
+            controlsArea.addTo(this)
+        } else {
+            gameOver.addTo(this)
+        }
         this.addTo(parent)
     }
 
-    fun showGameOver(): Container = container {
+    fun showGameOver() {
+        gameOver.addTo(this)
+    }
+
+    fun hideGameOver() {
+        gameOver.removeFromParent()
+    }
+
+    fun getGameOver(): Container = Container().apply {
         val window = this
         with(viewData) {
             val gameColors = gameColors

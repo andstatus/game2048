@@ -1,6 +1,5 @@
 package org.andstatus.game2048.presenter
 
-import com.soywiz.korge.view.Container
 import org.andstatus.game2048.model.Board
 import org.andstatus.game2048.model.PlacedPiece
 import org.andstatus.game2048.model.Square
@@ -14,7 +13,6 @@ class BoardViews(
     val blocks: MutableList<PlacedBlock> = ArrayList()
 ) {
     private val size = width * height
-    var gameOver: Container? = null
 
     val blocksOnBoard: List<List<Block>>
         get() = IntRange(0, width * height - 1).map { it.toSquare() }
@@ -50,7 +48,7 @@ class BoardViews(
     }
 
     fun load(board: Board) {
-        removeGameOver()
+        hideGameOver()
         blocks.forEach { it.block.removeFromParent() }
         blocks.clear()
 
@@ -59,15 +57,12 @@ class BoardViews(
         }
     }
 
-    fun removeGameOver(): BoardViews {
-        gameOver?.removeFromParent()
-        gameOver = null
+    fun hideGameOver(): BoardViews {
+        viewData.mainView.boardView.hideGameOver()
         return this
     }
 
-    fun copy() = BoardViews(viewData, width, height, blocks).apply {
-        gameOver = this@BoardViews.gameOver
-    }
+    fun copy() = BoardViews(viewData, width, height, blocks)
 
     fun addBlock(destination: PlacedPiece): Block = Block(destination.piece, viewData)
             .addTo(viewData.mainView.boardView, destination.square)

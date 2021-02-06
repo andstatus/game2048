@@ -7,6 +7,7 @@ import org.andstatus.game2048.model.PlayerMove
 import org.andstatus.game2048.model.PlayerMoveEnum
 import org.andstatus.game2048.model.PlayerMoveEnum.Companion.UserMoves
 
+/** @author yvolk@yurivolkov.com */
 class AiPlayer(val settings: Settings) {
 
     private class FirstMove(val moveEnum: PlayerMoveEnum, val model: GameModel)
@@ -83,9 +84,9 @@ class AiPlayer(val settings: Settings) {
 
     private fun longestRandomPlayAdaptive(model: GameModel, nAttemptsInitial: Int): MoveAndScore {
         val nAttempts = nAttemptsInitial * when(model.board.array.size - model.board.piecesCount()) {
-            in 0..5 -> 64
-            in 6..7 -> 16
-            in 8..11 -> 4
+            in 0..5 -> 8
+            in 6..8 -> 4
+            in 9..11 -> 2
             else -> 1
         }
 

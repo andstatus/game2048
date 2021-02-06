@@ -23,6 +23,13 @@ class MainView private constructor(
         this.addTo(appBar.viewData.gameStage)
     }
 
+    fun showStatusBar(aiResult: AiResult?) {
+        if (appBar.viewData.closed) return
+
+        statusBar.show(this, aiResult)
+        this.addTo(appBar.viewData.gameStage)
+    }
+
     companion object {
         suspend fun ViewData.setupMainView(coroutineScope: CoroutineScope): MainView {
             with(coroutineScope) {
