@@ -235,6 +235,7 @@ class Presenter(val view: ViewData, history: History) {
         logClick("Play")
         gameMode.modeEnum = GameModeEnum.STOP
         gameMode.aiEnabled = false
+        pauseGame()
         updateMainView()
     }
 
