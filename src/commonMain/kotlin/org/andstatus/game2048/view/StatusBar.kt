@@ -61,6 +61,8 @@ class StatusBar(val viewData: ViewData): Container() {
     }
 
     fun show(parent: Container, aiResult: AiResult?) {
+        if (viewData.closed) return
+
         with(aiResult) {
             if (this == null || move == PlayerMoveEnum.EMPTY) {
                 removeFromParent()

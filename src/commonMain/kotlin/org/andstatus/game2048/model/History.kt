@@ -48,8 +48,7 @@ class History(val settings: Settings,
                             ?: GameRecord.newWithBoardAndMoves(Board(settings), emptyList(), emptyList())
                 }
             }
-            val dPrevGames = async { loadPrevGames(settings) }
-            History(settings, dCurrentGame.await(), dPrevGames.await())
+            History(settings, dCurrentGame.await())
         }
 
         private fun loadPrevGames(settings: Settings): List<GameRecord.ShortRecord> = myMeasured("PrevGames loaded") {
@@ -61,7 +60,7 @@ class History(val settings: Settings,
         }
     }
 
-    private fun loadPrevGames(): History {
+    fun loadPrevGames(): History {
         prevGames = loadPrevGames(settings)
         return this
     }

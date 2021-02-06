@@ -47,6 +47,9 @@ private fun CoroutineScope.initialize(stage: Stage, animateViews: Boolean, handl
     val font = async { loadFont(strings.await()) }
     val settings = async { Settings.load(stage) }
     val history = async { History.load(settings.await()) }
+    launch {
+        history.await().loadPrevGames()
+    }
     val gameColors = async { ColorTheme.load(stage, settings.await()) }
 
     val splashThemed = if (settings.await().colorThemeEnum == ColorThemeEnum.deviceDefault(stage))

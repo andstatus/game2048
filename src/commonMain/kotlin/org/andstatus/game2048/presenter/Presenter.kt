@@ -337,10 +337,6 @@ class Presenter(val view: ViewData, history: History) {
 
         view.settings.colorThemeEnum = colorThemeEnum
         view.settings.save()
-        restartTheApp()
-    }
-
-    private suspend fun restartTheApp() {
         pauseGame()
         view.reInitialize()
     }
@@ -649,7 +645,7 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     fun onResumeEvent() {
-        myLog("OnResume")
+        logClick("onResumeEvent")
         with(view) {
             gameStage.launch {
                 reInitialize()
