@@ -9,81 +9,81 @@ private const val keyMerged = "merged"
 private const val keyDestination = "destination"
 private const val keyBoard = "board"
 
-sealed class Move(val moveEnum: MoveEnum) {
+sealed class PieceMove(val pieceMoveEnum: PieceMoveEnum) {
     open fun points() = 0
 
     fun toMap(): Map<String, Any> = when(this) {
-        is MoveOne -> mapOf(
-                    keyMoveEnum to moveEnum.id,
+        is PieceMoveOne -> mapOf(
+                    keyMoveEnum to pieceMoveEnum.id,
                     keyFirst to first.toMap(),
                     keyDestination to destination.toMap()
             )
-        is MoveMerge -> mapOf(
-                keyMoveEnum to moveEnum.id,
+        is PieceMoveMerge -> mapOf(
+                keyMoveEnum to pieceMoveEnum.id,
                 keyFirst to first.toMap(),
                 keySecond to second.toMap(),
                 keyMerged to merged.toMap()
         )
-        is MovePlace -> mapOf(
-                keyMoveEnum to moveEnum.id,
+        is PieceMovePlace -> mapOf(
+                keyMoveEnum to pieceMoveEnum.id,
                 keyFirst to first.toMap()
         )
-        is MoveLoad -> mapOf(
-                keyMoveEnum to moveEnum.id,
+        is PieceMoveLoad -> mapOf(
+                keyMoveEnum to pieceMoveEnum.id,
                 keyBoard to board.toMap()
         )
-        is MoveDelay -> emptyMap()
+        is PieceMoveDelay -> emptyMap()
     }
 
     companion object {
-        fun fromJson(settings: Settings, json: Any): Move? {
+        fun fromJson(settings: Settings, json: Any): PieceMove? {
             val aMap: Map<String, Any> = json.asJsonMap()
-            val moveEnum = aMap[keyMoveEnum]?.let { MoveEnum.fromId(it as String) }
+            val moveEnum = aMap[keyMoveEnum]?.let { PieceMoveEnum.fromId(it as String) }
             return when(moveEnum) {
-                MoveEnum.ONE -> {
+                PieceMoveEnum.ONE -> {
                     val first = aMap[keyFirst]?.let { PlacedPiece.fromJson(settings, it) }
                     val destination = aMap[keyDestination]?.let { Square.fromJson(settings, it) }
                     return if (first != null && destination != null)
-                        MoveOne(first, destination)
+                        PieceMoveOne(first, destination)
                     else
                         null;
                 }
-                MoveEnum.MERGE -> {
+                PieceMoveEnum.MERGE -> {
                     val first = aMap[keyFirst]?.let { PlacedPiece.fromJson(settings, it) }
                     val second = aMap[keySecond]?.let { PlacedPiece.fromJson(settings, it) }
                     val merged = aMap[keyMerged]?.let { PlacedPiece.fromJson(settings, it) }
                     return if (first != null && second != null && merged != null)
-                        MoveMerge(first,second, merged)
+                        PieceMoveMerge(first,second, merged)
                     else
                         null;
                 }
-                MoveEnum.PLACE -> {
+                PieceMoveEnum.PLACE -> {
                     val first = aMap[keyFirst]?.let { PlacedPiece.fromJson(settings, it) }
                     return if (first != null)
-                        MovePlace(first)
+                        PieceMovePlace(first)
                     else
                         null;
                 }
-                MoveEnum.LOAD -> {
+                PieceMoveEnum.LOAD -> {
                     val board = aMap[keyBoard]?.let { Board.fromJson(settings, it) }
                     return if (board != null)
-                        MoveLoad(board)
+                        PieceMoveLoad(board)
                     else
                         null;
                 }
-                MoveEnum.DELAY -> null
+                PieceMoveEnum.DELAY -> null
                 null -> null
             }
         }
     }
 }
 
-data class MoveOne(val first: PlacedPiece, val destination: Square) : Move(MoveEnum.ONE)
-data class MoveMerge(val first: PlacedPiece, val second: PlacedPiece, val merged: PlacedPiece) : Move(MoveEnum.MERGE) {
+data class PieceMoveOne(val first: PlacedPiece, val destination: Square) : PieceMove(PieceMoveEnum.ONE)
+data class PieceMoveMerge(val first: PlacedPiece, val second: PlacedPiece, val merged: PlacedPiece) : PieceMove(PieceMoveEnum.MERGE) {
     override fun points() = first.piece.value
 }
-data class MovePlace(val first: PlacedPiece) : Move(MoveEnum.PLACE)
-data class MoveLoad(val board: Board) : Move(MoveEnum.LOAD) {
+data class PieceMovePlace(val first: PlacedPiece) : PieceMove(PieceMoveEnum.PLACE)
+data class PieceMoveLoad(val board: Board) : PieceMove(PieceMoveEnum.LOAD) {
     override fun points() = board.score
 }
-data class MoveDelay(val delayMs: Int) : Move(MoveEnum.DELAY)
+data class PieceMoveDelay(val delayMs: Int) : PieceMove(PieceMoveEnum.DELAY)

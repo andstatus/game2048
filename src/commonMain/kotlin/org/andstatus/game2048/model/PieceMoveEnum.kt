@@ -1,6 +1,6 @@
 package org.andstatus.game2048.model
 
-enum class MoveEnum(val id: String) {
+enum class PieceMoveEnum(val id: String) {
     ONE("one"),
     MERGE("merge"),
     PLACE("place"),
@@ -8,6 +8,6 @@ enum class MoveEnum(val id: String) {
     DELAY("delay");
 
     companion object {
-        fun fromId(value: String): MoveEnum? = values().firstOrNull { it.id == value}
+        fun fromId(value: String): PieceMoveEnum? = values().firstOrNull { it.id == value}
     }
 }

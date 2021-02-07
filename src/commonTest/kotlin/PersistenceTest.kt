@@ -5,12 +5,11 @@ import org.andstatus.game2048.model.Board
 import org.andstatus.game2048.model.GameClock
 import org.andstatus.game2048.model.GameRecord
 import org.andstatus.game2048.model.History
-import org.andstatus.game2048.model.MoveOne
 import org.andstatus.game2048.model.Piece
+import org.andstatus.game2048.model.PieceMoveOne
 import org.andstatus.game2048.model.PlacedPiece
 import org.andstatus.game2048.model.PlayerMove
 import org.andstatus.game2048.model.PlayerMoveEnum
-import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.view.ViewData
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -36,7 +35,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
     private suspend fun saveTestHistory(settings: Settings) = with (History.load(settings)) {
         val placedPiece = PlacedPiece(Piece.N2, settings.squares.toSquare(1, 2))
         val move1 = PlayerMove.computerMove(placedPiece, 0)
-        val move2 = PlayerMove.userMove(PlayerMoveEnum.DOWN, 1, listOf(MoveOne(placedPiece,
+        val move2 = PlayerMove.userMove(PlayerMoveEnum.DOWN, 1, listOf(PieceMoveOne(placedPiece,
             settings.squares.toSquare(1, 3))))
         val move3 = PlayerMove.computerMove(PlacedPiece(Piece.N4, settings.squares.toSquare(2, 1)), 2)
         val board = Board(

@@ -28,11 +28,11 @@ import org.andstatus.game2048.model.GameModeEnum
 import org.andstatus.game2048.model.GameRecord
 import org.andstatus.game2048.model.History
 import org.andstatus.game2048.model.Model
-import org.andstatus.game2048.model.MoveDelay
-import org.andstatus.game2048.model.MoveLoad
-import org.andstatus.game2048.model.MoveMerge
-import org.andstatus.game2048.model.MoveOne
-import org.andstatus.game2048.model.MovePlace
+import org.andstatus.game2048.model.PieceMoveDelay
+import org.andstatus.game2048.model.PieceMoveLoad
+import org.andstatus.game2048.model.PieceMoveMerge
+import org.andstatus.game2048.model.PieceMoveOne
+import org.andstatus.game2048.model.PieceMovePlace
 import org.andstatus.game2048.model.PlacedPiece
 import org.andstatus.game2048.model.PlayerMove
 import org.andstatus.game2048.model.PlayerMoveEnum
@@ -545,12 +545,12 @@ class Presenter(val view: ViewData, history: History) {
     private fun present(playerMove: PlayerMove, onEnd: () -> Unit) = view.gameStage.launchImmediately {
         view.gameStage.animateSequence {
             parallel {
-                playerMove.moves.forEach { move ->
+                playerMove.pieceMoves.forEach { move ->
                     when (move) {
-                        is MovePlace -> boardViews.addBlock(move.first)
-                        is MoveLoad -> boardViews.load(move.board)
-                        is MoveOne -> boardViews[move.first]?.move(this, move.destination)
-                        is MoveMerge -> {
+                        is PieceMovePlace -> boardViews.addBlock(move.first)
+                        is PieceMoveLoad -> boardViews.load(move.board)
+                        is PieceMoveOne -> boardViews[move.first]?.move(this, move.destination)
+                        is PieceMoveMerge -> {
                             val firstBlock = boardViews[move.first]
                             val secondBlock = boardViews[move.second]
                             sequence {
@@ -569,7 +569,7 @@ class Presenter(val view: ViewData, history: History) {
                                 }
                             }
                         }
-                        is MoveDelay -> with(view) {
+                        is PieceMoveDelay -> with(view) {
                             if (animateViews) boardViews.blocks.lastOrNull()?.also {
                                 moveTo(it.block, it.square, gameMode.delayMs.milliseconds, Easing.LINEAR)
                             }
@@ -596,16 +596,16 @@ class Presenter(val view: ViewData, history: History) {
     private fun presentReversed(playerMove: PlayerMove, onEnd: () -> Unit) = view.gameStage.launchImmediately {
         view.gameStage.animateSequence {
             parallel {
-                playerMove.moves.asReversed().forEach { move ->
+                playerMove.pieceMoves.asReversed().forEach { move ->
                     when (move) {
-                        is MovePlace -> boardViews[move.first]
+                        is PieceMovePlace -> boardViews[move.first]
                             ?.remove()
                             ?: myLog("No Block at destination during undo: $move")
-                        is MoveLoad -> boardViews.load(move.board)
-                        is MoveOne -> boardViews[PlacedPiece(move.first.piece, move.destination)]
+                        is PieceMoveLoad -> boardViews.load(move.board)
+                        is PieceMoveOne -> boardViews[PlacedPiece(move.first.piece, move.destination)]
                             ?.move(this, move.first.square)
                             ?: myLog("No Block at destination during undo: $move")
-                        is MoveMerge -> {
+                        is PieceMoveMerge -> {
                             val destination = move.merged.square
                             val effectiveBlock = boardViews[move.merged]
                             sequence {
@@ -621,7 +621,7 @@ class Presenter(val view: ViewData, history: History) {
                                 }
                             }
                         }
-                        is MoveDelay -> with(view) {
+                        is PieceMoveDelay -> with(view) {
                             if (animateViews) boardViews.blocks.lastOrNull()?.also {
                                 moveTo(it.block, it.square, gameMode.delayMs.milliseconds, Easing.LINEAR)
                             }
