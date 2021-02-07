@@ -30,7 +30,7 @@ class AiPlayer(val settings: Settings) {
 
     private fun moveWithMaxScore(position: GamePosition): GamePosition {
         return  UserPlies
-            .map(position::calcUserMove)
+            .map(position::calcUserPly)
             .filter { it.prevPly.isNotEmpty() }
             .maxByOrNull{ it.prevPly.points() }
             ?: allowedRandomMove(position)
@@ -115,7 +115,7 @@ class AiPlayer(val settings: Settings) {
         do {
             position = allowedRandomMove(position)
             if (position.prevPly.isNotEmpty()) {
-                position = position.randomComputerMove()
+                position = position.randomComputerPly()
             }
         } while (position.prevPly.isNotEmpty())
         return position
@@ -123,15 +123,15 @@ class AiPlayer(val settings: Settings) {
 
     private fun playUserMoves(position: GamePosition): List<FirstMove> = UserPlies
         .mapNotNull { move ->
-            position.calcUserMove(move)
+            position.calcUserPly(move)
                 .takeIf { it.prevPly.isNotEmpty() }
-                ?.randomComputerMove()
+                ?.randomComputerPly()
                 ?.let { FirstMove(move, it) }
         }
 
     private fun allowedRandomMove(position: GamePosition): GamePosition {
         UserPlies.shuffled().forEach {
-            position.calcUserMove(it).also {
+            position.calcUserPly(it).also {
                 if (it.prevPly.isNotEmpty()) return it
             }
         }

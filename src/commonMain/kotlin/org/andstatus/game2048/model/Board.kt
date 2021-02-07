@@ -94,7 +94,7 @@ class Board(
         settings, array.copyOf(), score,
         dateTime, if (seconds == 0) gameClock.copy() else GameClock(seconds), plyNumber + (if (isForward) 1 else -1)
     )
-    fun forNextMove() = Board(settings, array.copyOf(), score, DateTimeTz.nowLocal(), gameClock,
+    fun forNextPly() = Board(settings, array.copyOf(), score, DateTimeTz.nowLocal(), gameClock,
         plyNumber + 1
     )
 

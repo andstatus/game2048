@@ -30,7 +30,7 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
         return composerMove(board, true)
     }
 
-    fun composerMove(board: Board, isRedo: Boolean = false) = gamePosition.composerMove(board, isRedo).update(isRedo)
+    fun composerMove(board: Board, isRedo: Boolean = false) = gamePosition.composerPly(board, isRedo).update(isRedo)
 
     fun createBookmark() {
         history.createBookmark()
@@ -88,11 +88,11 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
         return composerMove(history.currentGame.shortRecord.finalBoard, true)
     }
 
-    fun randomComputerMove() = gamePosition.randomComputerMove().update()
+    fun randomComputerMove() = gamePosition.randomComputerPly().update()
 
-    fun computerMove(placedPiece: PlacedPiece) = gamePosition.computerMove(placedPiece).update()
+    fun computerMove(placedPiece: PlacedPiece) = gamePosition.computerPly(placedPiece).update()
 
-    fun userMove(plyEnum: PlyEnum): List<Ply> = gamePosition.userMove(plyEnum).update()
+    fun userMove(plyEnum: PlyEnum): List<Ply> = gamePosition.userPly(plyEnum).update()
 
     private fun GamePosition.update(isRedo: Boolean = false): List<Ply> {
         if (!isRedo && prevPly.isNotEmpty()) {
