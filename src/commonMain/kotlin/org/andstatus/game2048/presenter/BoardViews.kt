@@ -31,7 +31,7 @@ class BoardViews(val viewData: ViewData, val blocks: MutableList<PlacedBlock> = 
         blocks.forEach { it.block.removeFromParent() }
         blocks.clear()
 
-        position.pieces().forEach {
+        position.placedPieces().forEach {
             addBlock(it)
         }
     }

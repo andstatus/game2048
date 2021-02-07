@@ -66,19 +66,5 @@ class Board(settings: Settings) {
                 Direction.DOWN -> if (y < height - 1) toSquare(x, y + 1) else null
             }
 
-    /** Starting from the square, search for a block in the direction */
-    fun nextPlacedPieceInThe(square: Square, direction: Direction, position: GamePosition): PlacedPiece? {
-        var square1: Square? = square
-        while (square1 != null) {
-            val square2: Square = square1
-            position[square2]?.let {
-                return PlacedPiece(it, square2)
-            }
-            square1 = square2.nextInThe(direction)
-        }
-        return null
-    }
-
-    fun toSquare(ind: Int): Square = array[ind]
     fun toSquare(x: Int, y: Int): Square = array[x + y * width]
 }

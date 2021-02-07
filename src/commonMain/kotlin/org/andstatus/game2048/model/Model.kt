@@ -6,12 +6,13 @@ import org.andstatus.game2048.Settings
 /** @author yvolk@yurivolkov.com */
 class Model(private val coroutineScope: CoroutineScope, val history: History) {
     val settings: Settings = history.settings
-    var gamePosition = GamePosition.newEmpty(settings.defaultBoard)
+    var gamePosition = GamePosition(settings.defaultBoard)
 
     val moveNumber: Int get() = gamePosition.moveNumber
-    val isBookmarked get() = history.currentGame.shortRecord.bookmarks.any {
-        it.plyNumber == gamePosition.plyNumber
-    }
+    val isBookmarked
+        get() = history.currentGame.shortRecord.bookmarks.any {
+            it.plyNumber == gamePosition.plyNumber
+        }
     val gameClock get() = gamePosition.gameClock
     val bestScore get() = history.bestScore
     val score get() = gamePosition.score
