@@ -24,13 +24,13 @@ data class Ply(val player: PlayerEnum, val plyEnum: PlyEnum, val seconds: Int, v
     companion object{
         val emptyPly = Ply(PlayerEnum.COMPOSER, PlyEnum.EMPTY, 0, emptyList())
 
-        fun composerMove(board: Board) =
+        fun composerPly(board: Board) =
                 Ply(PlayerEnum.COMPOSER, PlyEnum.LOAD, board.gameClock.playedSeconds, listOf(PieceMoveLoad(board)))
 
-        fun computerMove(placedPiece: PlacedPiece, seconds: Int) =
+        fun computerPly(placedPiece: PlacedPiece, seconds: Int) =
                 Ply(PlayerEnum.COMPUTER, PlyEnum.PLACE, seconds, listOf(PieceMovePlace(placedPiece)))
 
-        fun userMove(plyEnum: PlyEnum, seconds: Int, pieceMoves: List<PieceMove>) =
+        fun userPly(plyEnum: PlyEnum, seconds: Int, pieceMoves: List<PieceMove>) =
                 Ply(PlayerEnum.USER, plyEnum, seconds, pieceMoves)
 
         fun delay(delayMs: Int = 500) =

@@ -11,10 +11,10 @@ import org.andstatus.game2048.myLog
 fun CoroutineScope.showAiTip(presenter: Presenter) = launch {
     with(presenter) {
         myLog("AI launch")
-        val model1 = model.gameModel
-        aiPlayer.nextMove(model1).also {
+        val gamePosition = model.gamePosition
+        aiPlayer.nextPly(gamePosition).also {
             myLog("AI tip: ${it.move}")
-            if (model.gameModel === model1) {
+            if (model.gamePosition === gamePosition) {
                 view.gameStage.launch {
                     myLog("Showing AI tip: ${it.move}")
                     view.mainView.showStatusBar(it)
@@ -29,13 +29,13 @@ fun CoroutineScope.aiPlayLoop(presenter: Presenter, startCount: Int) = launch {
         while (startCount == clickCounter.value && !model.noMoreMoves()
                 && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
             while (moveIsInProgress.value) delay(20)
-            val model1 = model.gameModel
+            val gamePosition = model.gamePosition
             val nextMove = Stopwatch().start().let { stopWatch ->
-                aiPlayer.nextMove(model1).also {
+                aiPlayer.nextPly(gamePosition).also {
                     delay(gameMode.delayMs.toLong() - stopWatch.elapsed.millisecondsLong)
                 }
             }
-            if (!moveIsInProgress.value && model.gameModel === model1 && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
+            if (!moveIsInProgress.value && model.gamePosition === gamePosition && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
                 view.gameStage.launch {
                     userMove(nextMove.move)
                 }.join()

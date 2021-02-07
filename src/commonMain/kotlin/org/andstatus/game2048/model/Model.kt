@@ -6,8 +6,8 @@ import org.andstatus.game2048.Settings
 /** @author yvolk@yurivolkov.com */
 class Model(private val coroutineScope: CoroutineScope, val history: History) {
     val settings: Settings = history.settings
-    var gameModel = GameModel(settings)
-    val board: Board get() = gameModel.board
+    var gamePosition = GamePosition(settings)
+    val board: Board get() = gamePosition.board
 
     val moveNumber: Int get() = board.moveNumber
     val isBookmarked get() = history.currentGame.shortRecord.bookmarks.any { it.plyNumber == board.plyNumber }
@@ -30,7 +30,7 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
         return composerMove(board, true)
     }
 
-    fun composerMove(board: Board, isRedo: Boolean = false) = gameModel.composerMove(board, isRedo).update(isRedo)
+    fun composerMove(board: Board, isRedo: Boolean = false) = gamePosition.composerMove(board, isRedo).update(isRedo)
 
     fun createBookmark() {
         history.createBookmark()
@@ -67,7 +67,7 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
     }
 
     fun undo(): List<Ply> = history.undo()?.let {
-        gameModel.playReversed(it).update(true)
+        gamePosition.playReversed(it).update(true)
     } ?: emptyList()
 
     fun undoToStart(): List<Ply> {
@@ -80,7 +80,7 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
     }
 
     fun redo(): List<Ply> = history.redo()?.let {
-        gameModel.play(it, true).update(true)
+        gamePosition.play(it, true).update(true)
     } ?: emptyList()
 
     fun redoToCurrent(): List<Ply> {
@@ -88,20 +88,20 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
         return composerMove(history.currentGame.shortRecord.finalBoard, true)
     }
 
-    fun randomComputerMove() = gameModel.randomComputerMove().update()
+    fun randomComputerMove() = gamePosition.randomComputerMove().update()
 
-    fun computerMove(placedPiece: PlacedPiece) = gameModel.computerMove(placedPiece).update()
+    fun computerMove(placedPiece: PlacedPiece) = gamePosition.computerMove(placedPiece).update()
 
-    fun userMove(plyEnum: PlyEnum): List<Ply> = gameModel.userMove(plyEnum).update()
+    fun userMove(plyEnum: PlyEnum): List<Ply> = gamePosition.userMove(plyEnum).update()
 
-    private fun GameModel.update(isRedo: Boolean = false): List<Ply> {
-        if (!isRedo && prevMove.isNotEmpty()) {
-            history.add(prevMove, board)
+    private fun GamePosition.update(isRedo: Boolean = false): List<Ply> {
+        if (!isRedo && prevPly.isNotEmpty()) {
+            history.add(prevPly, board)
         }
-        gameModel = this
-        return if (prevMove.isEmpty()) emptyList() else listOf(prevMove)
+        gamePosition = this
+        return if (prevPly.isEmpty()) emptyList() else listOf(prevPly)
     }
 
-    fun noMoreMoves() = gameModel.noMoreMoves()
+    fun noMoreMoves() = gamePosition.noMoreMoves()
 
 }
