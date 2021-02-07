@@ -32,11 +32,13 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
     fun composerMove(positionData: PositionData, isRedo: Boolean = false) = gamePosition.composerPly(positionData, isRedo).update(isRedo)
 
     fun createBookmark() {
-        history.createBookmark()
+        history.createBookmark(gamePosition)
+        saveCurrent()
     }
 
     fun deleteBookmark() {
-        history.deleteBookmark()
+        history.deleteBookmark(gamePosition)
+        saveCurrent()
     }
 
     fun restart(): List<Ply> {
@@ -45,7 +47,10 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
     }
 
     fun restoreGame(id: Int): List<Ply> {
-        return history.restoreGame(id)?.let { redoToCurrent() } ?: emptyList()
+        return history.restoreGame(id)?.let {
+            saveCurrent()
+            redoToCurrent()
+        } ?: emptyList()
     }
 
     fun pauseGame() {

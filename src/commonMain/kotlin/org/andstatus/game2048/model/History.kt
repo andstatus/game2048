@@ -80,7 +80,6 @@ class History(val settings: Settings,
                 }
                 currentGame = it
                 gameMode.modeEnum = GameModeEnum.STOP
-                saveCurrent()
             }
 
     fun saveCurrent(coroutineScope: CoroutineScope? = null): History {
@@ -187,25 +186,25 @@ class History(val settings: Settings,
         historyIndex = -1
     }
 
-    fun createBookmark() {
+    fun createBookmark(gamePosition: GamePosition) {
         currentGame = with(currentGame.shortRecord) {
             GameRecord(
-                GameRecord.ShortRecord(board, note, id, start, finalPosition, bookmarks + finalPosition.copy()),
-                currentGame.plies
+                    GameRecord.ShortRecord(board, note, id, start, finalPosition,
+                            bookmarks.filter { it.plyNumber != gamePosition.data.plyNumber } +
+                                    gamePosition.data.copy()),
+                    currentGame.plies
             )
         }
-        saveCurrent()
     }
 
-    fun deleteBookmark() {
+    fun deleteBookmark(gamePosition: GamePosition) {
         currentGame = with(currentGame.shortRecord) {
             GameRecord(
                 GameRecord.ShortRecord(board, note, id, start, finalPosition, bookmarks
-                    .filterNot { it.plyNumber == finalPosition.plyNumber }),
+                    .filterNot { it.plyNumber == gamePosition.data.plyNumber }),
                 currentGame.plies
             )
         }
-        saveCurrent()
     }
 
     fun canUndo(): Boolean = settings.allowUndo &&

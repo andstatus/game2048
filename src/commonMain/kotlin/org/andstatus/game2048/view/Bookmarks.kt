@@ -24,11 +24,14 @@ fun ViewData.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
         position(xPosition, itemHeight / 2)
     }
 
-    fun Container.oneRow(index: Int, score: String, lastChanged: String, duration: String, action: () -> Unit) {
+    fun Container.oneRow(index: Int, score: String, moveNumber: String, lastChanged: String, duration: String,
+                         action: () -> Unit) {
         container {
             roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
             var xPos = cellMargin
             rowText(score, xPos)
+            xPos += textSize * 2.4
+            rowText(moveNumber, xPos)
             xPos += textSize * 2.4
             rowText(lastChanged, xPos)
             xPos += textSize * 6.4
@@ -47,17 +50,23 @@ fun ViewData.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
         scaledHeight = winTop + winHeight - listTop - cellMargin
         contentHeight = max((itemHeight + cellMargin) * (nItems + 1), height)
     }) {
-        oneRow(0, stringResources.text("score"), stringResources.text("last_changed"),
-            stringResources.text("duration")) {}
+        oneRow(0, stringResources.text("score"),
+                stringResources.text("move"),
+                stringResources.text("last_changed"),
+                stringResources.text("duration")) {}
         with(game.shortRecord.finalPosition) {
-            oneRow(1, score.toString(), timeString,
-                gameClock.playedSecondsString) {
+            oneRow(1, score.toString(),
+                    moveNumber.toString(),
+                    timeString,
+                    gameClock.playedSecondsString) {
                 window.removeFromParent()
                 presenter.onGoToBookmarkClick(this)
             }
         }
         game.shortRecord.bookmarks.reversed().forEachIndexed {index, position ->
-            oneRow(index + 2, position.score.toString(), position.timeString,
+            oneRow(index + 2, position.score.toString(),
+                    position.moveNumber.toString(),
+                    position.timeString,
                 position.gameClock.playedSecondsString) {
                 window.removeFromParent()
                 presenter.onGoToBookmarkClick(position)

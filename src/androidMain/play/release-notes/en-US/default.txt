@@ -1,1 +1,1 @@
-v.1.10.5 Game responsiveness improved
+v.1.10.7. Bookmarking is extended. You can create a Bookmark at any move, not at current move only, as before.

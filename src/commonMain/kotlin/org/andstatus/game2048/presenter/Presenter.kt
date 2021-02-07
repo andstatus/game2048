@@ -478,20 +478,15 @@ class Presenter(val view: ViewData, history: History) {
                 )
                 if (model.gameClock.started) {
                     list.add(AppBarButtonsEnum.PAUSE)
-                    list.add(
-                        if (model.isBookmarked) AppBarButtonsEnum.BOOKMARKED else AppBarButtonsEnum.BOOKMARK
-                    )
                 } else {
                     list.add(AppBarButtonsEnum.APP_LOGO)
-                    if (model.history.currentGame.plies.size > 1 && model.isBookmarked) {
-                        list.add(AppBarButtonsEnum.BOOKMARKED)
-                    } else {
-                        list.add(AppBarButtonsEnum.BOOKMARK_PLACEHOLDER)
-                    }
                     if (!canRedo()) {
                         list.add(AppBarButtonsEnum.RESTART)
                     }
                 }
+                list.add(
+                    if (model.isBookmarked) AppBarButtonsEnum.BOOKMARKED else AppBarButtonsEnum.BOOKMARK
+                )
                 if (gameMode.aiEnabled) {
                     list.add(AppBarButtonsEnum.AI_START)
                 }
@@ -512,6 +507,11 @@ class Presenter(val view: ViewData, history: History) {
             }
             else -> {
                 list.add(AppBarButtonsEnum.WATCH)
+                if (model.moveNumber > 1 && model.isBookmarked) {
+                    list.add(AppBarButtonsEnum.BOOKMARKED)
+                } else {
+                    list.add(AppBarButtonsEnum.BOOKMARK_PLACEHOLDER)
+                }
                 if (canUndo()) {
                     if (gameMode.speed == -gameMode.maxSpeed) {
                         list.add(AppBarButtonsEnum.TO_START)

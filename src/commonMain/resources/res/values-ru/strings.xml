@@ -23,6 +23,8 @@
   <string name="last_changed">Изменён</string>
   <string name="light">Светлая</string>
   <string name="load_game">Загрузить игру</string>
+  <string name="move">Ход</string>
+  <string name="milliseconds">мс</string>
   <string name="note">Примечание</string>
   <string name="restore_game">Восстановить игру</string>
   <string name="score">Счёт</string>
