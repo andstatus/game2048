@@ -34,8 +34,8 @@ import org.andstatus.game2048.model.PieceMoveMerge
 import org.andstatus.game2048.model.PieceMoveOne
 import org.andstatus.game2048.model.PieceMovePlace
 import org.andstatus.game2048.model.PlacedPiece
-import org.andstatus.game2048.model.PlayerMove
-import org.andstatus.game2048.model.PlayerMoveEnum
+import org.andstatus.game2048.model.Ply
+import org.andstatus.game2048.model.PlyEnum
 import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
@@ -133,7 +133,7 @@ class Presenter(val view: ViewData, history: History) {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
         boardViews.hideGameOver()
-        (model.undo() + PlayerMove.delay() + model.undo()).presentReversed()
+        (model.undo() + Ply.delay() + model.undo()).presentReversed()
     }
 
     fun onRedoClick() = afterStop {
@@ -144,7 +144,7 @@ class Presenter(val view: ViewData, history: History) {
     fun redo() {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
-        (model.redo() + listOf(PlayerMove.delay()) + model.redo()).present()
+        (model.redo() + listOf(Ply.delay()) + model.redo()).present()
     }
 
     fun onRestartClick() = afterStop {
@@ -168,10 +168,10 @@ class Presenter(val view: ViewData, history: History) {
             GameModeEnum.PLAY -> {
                 userMove(
                         when (swipeDirection) {
-                            SwipeDirection.LEFT -> PlayerMoveEnum.LEFT
-                            SwipeDirection.RIGHT -> PlayerMoveEnum.RIGHT
-                            SwipeDirection.TOP -> PlayerMoveEnum.UP
-                            SwipeDirection.BOTTOM -> PlayerMoveEnum.DOWN
+                            SwipeDirection.LEFT -> PlyEnum.LEFT
+                            SwipeDirection.RIGHT -> PlyEnum.RIGHT
+                            SwipeDirection.TOP -> PlyEnum.UP
+                            SwipeDirection.BOTTOM -> PlyEnum.DOWN
                         }
                 )
             }
@@ -258,7 +258,7 @@ class Presenter(val view: ViewData, history: History) {
     fun onToStartClick() = afterStop {
         logClick("ToStart")
         boardViews.hideGameOver()
-        (model.undoToStart() + listOf(PlayerMove.delay()) + model.redo()).present()
+        (model.undoToStart() + listOf(Ply.delay()) + model.redo()).present()
     }
 
     fun onToCurrentClick() = afterStop {
@@ -301,7 +301,7 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     fun onGoToBookmarkClick(board: Board) = afterStop {
-        logClick("GoTo${board.moveNumber}")
+        logClick("GoTo${board.plyNumber}")
         showMainView()
         if (moveIsInProgress.compareAndSet(expect = false, update = true)) {
             model.gotoBookmark(board).present()
@@ -418,16 +418,16 @@ class Presenter(val view: ViewData, history: History) {
 
     fun computerMove(placedPiece: PlacedPiece) = model.computerMove(placedPiece).present()
 
-    fun userMove(playerMoveEnum: PlayerMoveEnum) {
+    fun userMove(plyEnum: PlyEnum) {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
         view.mainView.showStatusBar(null)
-        model.userMove(playerMoveEnum).let {
+        model.userMove(plyEnum).let {
             if (it.isEmpty()) it else it + model.randomComputerMove()
         }.present()
     }
 
-    private fun List<PlayerMove>.present(index: Int = 0) {
+    private fun List<Ply>.present(index: Int = 0) {
         if (isEmpty()) {
             onPresentEnd()
             if (model.noMoreMoves()) {
@@ -483,7 +483,7 @@ class Presenter(val view: ViewData, history: History) {
                     )
                 } else {
                     list.add(AppBarButtonsEnum.APP_LOGO)
-                    if (model.history.currentGame.playerMoves.size > 1 && model.isBookmarked) {
+                    if (model.history.currentGame.plies.size > 1 && model.isBookmarked) {
                         list.add(AppBarButtonsEnum.BOOKMARKED)
                     } else {
                         list.add(AppBarButtonsEnum.BOOKMARK_PLACEHOLDER)
@@ -542,10 +542,10 @@ class Presenter(val view: ViewData, history: History) {
         return list
     }
 
-    private fun present(playerMove: PlayerMove, onEnd: () -> Unit) = view.gameStage.launchImmediately {
+    private fun present(ply: Ply, onEnd: () -> Unit) = view.gameStage.launchImmediately {
         view.gameStage.animateSequence {
             parallel {
-                playerMove.pieceMoves.forEach { move ->
+                ply.pieceMoves.forEach { move ->
                     when (move) {
                         is PieceMovePlace -> boardViews.addBlock(move.first)
                         is PieceMoveLoad -> boardViews.load(move.board)
@@ -583,7 +583,7 @@ class Presenter(val view: ViewData, history: History) {
         }
     }
 
-    private fun List<PlayerMove>.presentReversed(index: Int = 0) {
+    private fun List<Ply>.presentReversed(index: Int = 0) {
         if (index < size) {
             presentReversed(this[index]) {
                 presentReversed(index + 1)
@@ -593,10 +593,10 @@ class Presenter(val view: ViewData, history: History) {
         }
     }
 
-    private fun presentReversed(playerMove: PlayerMove, onEnd: () -> Unit) = view.gameStage.launchImmediately {
+    private fun presentReversed(ply: Ply, onEnd: () -> Unit) = view.gameStage.launchImmediately {
         view.gameStage.animateSequence {
             parallel {
-                playerMove.pieceMoves.asReversed().forEach { move ->
+                ply.pieceMoves.asReversed().forEach { move ->
                     when (move) {
                         is PieceMovePlace -> boardViews[move.first]
                             ?.remove()

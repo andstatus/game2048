@@ -1,6 +1,6 @@
 package org.andstatus.game2048.model
 
-enum class PlayerMoveEnum(val id: String, val symbol: String) {
+enum class PlyEnum(val id: String, val symbol: String) {
     LEFT("left", "←"),
     RIGHT("right", "→"),
     UP("up", "↑"),
@@ -22,7 +22,7 @@ enum class PlayerMoveEnum(val id: String, val symbol: String) {
     }
 
     companion object {
-        val UserMoves get() = listOf(LEFT, RIGHT, UP, DOWN)
-        fun fromId(value: String): PlayerMoveEnum? = values().firstOrNull { it.id == value}
+        val UserPlies get() = listOf(LEFT, RIGHT, UP, DOWN)
+        fun fromId(value: String): PlyEnum? = values().firstOrNull { it.id == value}
     }
 }

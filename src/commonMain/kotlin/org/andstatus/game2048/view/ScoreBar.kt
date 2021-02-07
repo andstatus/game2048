@@ -18,7 +18,7 @@ fun ViewData.setupScoreBar(): ScoreBar {
 
 class ScoreBar(val viewData: ViewData): Container() {
     val gameTime: Text
-    val usersMoveNumber: Text
+    val moveNumber: Text
     var score: Text
     val bestScore: Text
 
@@ -65,7 +65,7 @@ class ScoreBar(val viewData: ViewData): Container() {
                 positionX(posX + scoreButtonWidth / 2)
                 positionY(scoreButtonTop + textYPadding)
             }
-            usersMoveNumber = text("", scoreTextSize, gameColors.labelText, font, TextAlignment.MIDDLE_CENTER) {
+            moveNumber = text("", scoreTextSize, gameColors.labelText, font, TextAlignment.MIDDLE_CENTER) {
                 centerXOn(gameTime)
                 positionY(scoreButtonTop + scoreLabelSize + textYPadding)
             }
@@ -75,7 +75,7 @@ class ScoreBar(val viewData: ViewData): Container() {
 
     fun show(parent: Container, playSpeed: Int) {
         addTo(parent)
-        usersMoveNumber.text = viewData.presenter.model.usersMoveNumber.toString() +
+        moveNumber.text = viewData.presenter.model.moveNumber.toString() +
                 (if (playSpeed < 0) " «" else "") +
                 (if (playSpeed > 0) " »" else "") +
                 (if (playSpeed != 0) abs(playSpeed) else "")

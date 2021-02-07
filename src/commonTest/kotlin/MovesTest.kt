@@ -26,11 +26,11 @@ class MovesTest : ViewsForTesting(log = true) {
         val board1 = this.presenter.model.board.copy()
         val piecesOnBoardViews1 = this.presentedPieces()
         assertEquals(board1.array.asList(), piecesOnBoardViews1, this.modelAndViews())
-        assertEquals(2, board1.moveNumber, this.modelAndViews())
+        assertEquals(2, board1.plyNumber, this.modelAndViews())
         this.presenter.onBookmarkClick()
         assertEquals(
-            board1.moveNumber,
-            this.presenter.model.history.currentGame.shortRecord.bookmarks[0].moveNumber,
+            board1.plyNumber,
+            this.presenter.model.history.currentGame.shortRecord.bookmarks[0].plyNumber,
             this.modelAndViews()
         )
         this.presenter.onSwipe(SwipeDirection.BOTTOM)
@@ -57,8 +57,8 @@ class MovesTest : ViewsForTesting(log = true) {
         assertTrue(this.presenter.canUndo(), this.historyString())
         assertFalse(this.presenter.canRedo(), this.historyString())
         assertEquals(
-            board1.moveNumber,
-            this.presenter.model.history.currentGame.shortRecord.bookmarks[0].moveNumber,
+            board1.plyNumber,
+            this.presenter.model.history.currentGame.shortRecord.bookmarks[0].plyNumber,
             this.modelAndViews()
         )
         assertEquals(1, this.presenter.model.history.currentGame.shortRecord.bookmarks.size, this.modelAndViews())

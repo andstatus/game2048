@@ -1,24 +1,23 @@
 package org.andstatus.game2048.model
 
 import org.andstatus.game2048.Settings
-import org.andstatus.game2048.model.PlayerMoveEnum.Companion.UserMoves
+import org.andstatus.game2048.model.PlyEnum.Companion.UserPlies
 import kotlin.random.Random
 
 /** @author yvolk@yurivolkov.com */
-class GameModel(val settings: Settings, val prevMove: PlayerMove, val board: Board) {
-    val usersMoveNumber: Int get() = board.usersMoveNumber
+class GameModel(val settings: Settings, val prevMove: Ply, val board: Board) {
     val gameClock get() = board.gameClock
     val score get() = board.score
 
-    constructor(settings: Settings) : this(settings, PlayerMove.emptyMove, Board(settings))
+    constructor(settings: Settings) : this(settings, Ply.emptyPly, Board(settings))
 
-    fun PlayerMove.nextModel(board: Board) = when {
+    fun Ply.nextModel(board: Board) = when {
         this.isNotEmpty() && (pieceMoves.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) -> this
-        else -> PlayerMove.emptyMove
+        else -> Ply.emptyPly
     }.let { GameModel(settings, it, board) }
 
     fun composerMove(board: Board, isRedo: Boolean = false): GameModel {
-        val move = PlayerMove.composerMove(board)
+        val move = Ply.composerMove(board)
         return play(move, isRedo)
     }
 
@@ -28,7 +27,7 @@ class GameModel(val settings: Settings, val prevMove: PlayerMove, val board: Boa
 
     fun computerMove(placedPiece: PlacedPiece): GameModel {
         return placedPiece.let {
-            val move = PlayerMove.computerMove(it, gameClock.playedSeconds)
+            val move = Ply.computerMove(it, gameClock.playedSeconds)
             play(move, false)
         }
     }
@@ -39,18 +38,18 @@ class GameModel(val settings: Settings, val prevMove: PlayerMove, val board: Boa
             PlacedPiece(piece, square)
         }
 
-    fun userMove(playerMoveEnum: PlayerMoveEnum): GameModel {
-        return calcUserMove(playerMoveEnum).also {
+    fun userMove(plyEnum: PlyEnum): GameModel {
+        return calcUserMove(plyEnum).also {
             if (it.prevMove.isNotEmpty()) gameClock.start()
         }
     }
 
-    fun calcUserMove(playerMoveEnum: PlayerMoveEnum): GameModel {
-        if (!UserMoves.contains(playerMoveEnum)) return nextEmpty()
+    fun calcUserMove(plyEnum: PlyEnum): GameModel {
+        if (!UserPlies.contains(plyEnum)) return nextEmpty()
 
         val newBoard = this.board.forNextMove()
         val moves = mutableListOf<PieceMove>()
-        val direction = playerMoveEnum.reverseDirection()
+        val direction = plyEnum.reverseDirection()
         var square: Square? = settings.squares.firstSquareToIterate(direction)
         while (square != null) {
             val found = settings.squares.nextPlacedPieceInThe(square, direction, newBoard)
@@ -81,14 +80,14 @@ class GameModel(val settings: Settings, val prevMove: PlayerMove, val board: Boa
                 }
             }
         }
-        return PlayerMove.userMove(playerMoveEnum, gameClock.playedSeconds, moves).nextModel(newBoard)
+        return Ply.userMove(plyEnum, gameClock.playedSeconds, moves).nextModel(newBoard)
     }
 
-    fun nextEmpty() = PlayerMove.emptyMove.nextModel(board)
+    fun nextEmpty() = Ply.emptyPly.nextModel(board)
 
-    fun play(playerMove: PlayerMove, isRedo: Boolean = false): GameModel {
-        var newBoard = if (isRedo) board.forAutoPlaying(playerMove.seconds, true) else board.forNextMove()
-        playerMove.pieceMoves.forEach { move ->
+    fun play(ply: Ply, isRedo: Boolean = false): GameModel {
+        var newBoard = if (isRedo) board.forAutoPlaying(ply.seconds, true) else board.forNextMove()
+        ply.pieceMoves.forEach { move ->
             newBoard.score += move.points()
             when (move) {
                 is PieceMovePlace -> {
@@ -109,12 +108,12 @@ class GameModel(val settings: Settings, val prevMove: PlayerMove, val board: Boa
                 is PieceMoveDelay -> Unit
             }
         }
-        return playerMove.nextModel(newBoard)
+        return ply.nextModel(newBoard)
     }
 
-    fun playReversed(playerMove: PlayerMove): GameModel {
-        var newBoard = board.forAutoPlaying(playerMove.seconds, false)
-        playerMove.pieceMoves.asReversed().forEach { move ->
+    fun playReversed(ply: Ply): GameModel {
+        var newBoard = board.forAutoPlaying(ply.seconds, false)
+        ply.pieceMoves.asReversed().forEach { move ->
             newBoard.score -= move.points()
             when (move) {
                 is PieceMovePlace -> {
@@ -135,7 +134,7 @@ class GameModel(val settings: Settings, val prevMove: PlayerMove, val board: Boa
                 is PieceMoveDelay -> Unit
             }
         }
-        return playerMove.nextModel(newBoard)
+        return ply.nextModel(newBoard)
     }
 
     fun noMoreMoves() = board.noMoreMoves()

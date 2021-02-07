@@ -3,17 +3,16 @@ package org.andstatus.game2048.ai
 import com.soywiz.klock.Stopwatch
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.model.GameModel
-import org.andstatus.game2048.model.PlayerMove
-import org.andstatus.game2048.model.PlayerMoveEnum
-import org.andstatus.game2048.model.PlayerMoveEnum.Companion.UserMoves
+import org.andstatus.game2048.model.PlyEnum
+import org.andstatus.game2048.model.PlyEnum.Companion.UserPlies
 
 /** @author yvolk@yurivolkov.com */
 class AiPlayer(val settings: Settings) {
 
-    private class FirstMove(val moveEnum: PlayerMoveEnum, val model: GameModel)
+    private class FirstMove(val plyEnum: PlyEnum, val model: GameModel)
 
-    private class MoveAndScore(val moveEnum: PlayerMoveEnum, val referenceScore: Int, val maxScore: Int) {
-        constructor(gameModel: GameModel): this(gameModel.prevMove.playerMoveEnum, gameModel.prevMove.points(), 0)
+    private class MoveAndScore(val plyEnum: PlyEnum, val referenceScore: Int, val maxScore: Int) {
+        constructor(gameModel: GameModel): this(gameModel.prevMove.plyEnum, gameModel.prevMove.points(), 0)
     }
 
     fun nextMove(model: GameModel): AiResult {
@@ -25,12 +24,12 @@ class AiPlayer(val settings: Settings) {
                 AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(model, 10)
                 AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(model, 50)
             }
-            AiResult(mas.moveEnum, mas.referenceScore, mas.maxScore, stopWatch.elapsed.millisecondsInt)
+            AiResult(mas.plyEnum, mas.referenceScore, mas.maxScore, stopWatch.elapsed.millisecondsInt)
         }
     }
 
     private fun moveWithMaxScore(model: GameModel): GameModel {
-        return  UserMoves
+        return  UserPlies
             .map(model::calcUserMove)
             .filter { it.prevMove.isNotEmpty() }
             .maxByOrNull{ it.prevMove.points() }
@@ -46,7 +45,7 @@ class AiPlayer(val settings: Settings) {
             ?: MoveAndScore(allowedRandomMove(model))
     }
 
-    private fun meanScoreForList(entry: Map.Entry<PlayerMoveEnum, List<GameModel>>): Int {
+    private fun meanScoreForList(entry: Map.Entry<PlyEnum, List<GameModel>>): Int {
         return if (entry.value.isEmpty()) 0 else entry.value.sumBy(GameModel::score) / entry.value.size
     }
 
@@ -64,11 +63,11 @@ class AiPlayer(val settings: Settings) {
             ?: MoveAndScore(allowedRandomMove(model))
     }
 
-    private fun playNMoves(model: GameModel, nMoves: Int): Map<PlayerMoveEnum, List<GameModel>> {
-        var moveToModels: Map<PlayerMoveEnum, List<GameModel>> = playUserMoves(model)
+    private fun playNMoves(model: GameModel, nMoves: Int): Map<PlyEnum, List<GameModel>> {
+        var moveToModels: Map<PlyEnum, List<GameModel>> = playUserMoves(model)
             .fold(HashMap()) { aMap, mm ->
                 aMap.apply {
-                    put(mm.moveEnum, listOf(mm.model))
+                    put(mm.plyEnum, listOf(mm.model))
                 }
             }
         (2..nMoves).forEach {
@@ -103,7 +102,7 @@ class AiPlayer(val settings: Settings) {
                     .let(this::playRandomTillEnd)
                     .also(attempts::add)
             }
-            MoveAndScore(firstMove.moveEnum,
+            MoveAndScore(firstMove.plyEnum,
                 attempts.sumBy { it.score } / attempts.size,
                 attempts.map { it.score }.maxOrNull() ?: 0
             )
@@ -123,7 +122,7 @@ class AiPlayer(val settings: Settings) {
         return model
     }
 
-    private fun playUserMoves(model: GameModel): List<FirstMove> = UserMoves
+    private fun playUserMoves(model: GameModel): List<FirstMove> = UserPlies
         .mapNotNull { move ->
             model.calcUserMove(move)
                 .takeIf { it.prevMove.isNotEmpty() }
@@ -132,7 +131,7 @@ class AiPlayer(val settings: Settings) {
         }
 
     private fun allowedRandomMove(model: GameModel): GameModel {
-        UserMoves.shuffled().forEach {
+        UserPlies.shuffled().forEach {
             model.calcUserMove(it).also {
                 if (it.prevMove.isNotEmpty()) return it
             }

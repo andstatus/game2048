@@ -144,15 +144,15 @@ class History(val settings: Settings,
         loadPrevGames()
     }
 
-    val currentPlayerMove: PlayerMove?
+    val currentPly: Ply?
         get() = when {
-            historyIndex < 0 || historyIndex >= currentGame.playerMoves.size -> null
-            else -> currentGame.playerMoves[historyIndex]
+            historyIndex < 0 || historyIndex >= currentGame.plies.size -> null
+            else -> currentGame.plies[historyIndex]
         }
 
-    fun add(playerMove: PlayerMove, board: Board) {
-        currentGame = when (playerMove.playerMoveEnum) {
-            PlayerMoveEnum.LOAD -> {
+    fun add(ply: Ply, board: Board) {
+        currentGame = when (ply.plyEnum) {
+            PlyEnum.LOAD -> {
                 GameRecord.newWithBoardAndMoves(board, emptyList(), emptyList())
             }
             else -> {
@@ -164,20 +164,20 @@ class History(val settings: Settings,
                         emptyList()
                     }
                     else -> {
-                        currentGame.shortRecord.bookmarks.filterNot { it.moveNumber > historyIndex }
+                        currentGame.shortRecord.bookmarks.filterNot { it.plyNumber > historyIndex }
                     }
                 }
                 val playerMoves = when {
                     historyIndex < 0 -> {
-                        currentGame.playerMoves
+                        currentGame.plies
                     }
                     historyIndex == 0 -> {
                         emptyList()
                     }
                     else -> {
-                        currentGame.playerMoves.take(historyIndex)
+                        currentGame.plies.take(historyIndex)
                     }
-                } + playerMove
+                } + ply
                 with(currentGame.shortRecord) {
                     GameRecord(GameRecord.ShortRecord(note, id, start, board, bookmarksNew), playerMoves)
                 }
@@ -191,7 +191,7 @@ class History(val settings: Settings,
         currentGame = with(currentGame.shortRecord) {
             GameRecord(
                 GameRecord.ShortRecord(note, id, start, finalBoard, bookmarks + finalBoard.copy()),
-                currentGame.playerMoves
+                currentGame.plies
             )
         }
         saveCurrent()
@@ -201,8 +201,8 @@ class History(val settings: Settings,
         currentGame = with(currentGame.shortRecord) {
             GameRecord(
                 GameRecord.ShortRecord(note, id, start, finalBoard, bookmarks
-                    .filterNot { it.moveNumber == finalBoard.moveNumber }),
-                currentGame.playerMoves
+                    .filterNot { it.plyNumber == finalBoard.plyNumber }),
+                currentGame.plies
             )
         }
         saveCurrent()
@@ -210,28 +210,28 @@ class History(val settings: Settings,
 
     fun canUndo(): Boolean = settings.allowUndo &&
             historyIndex != 0 && historyIndex != 1 &&
-            currentGame.playerMoves.size > 1 &&
-            currentGame.playerMoves.lastOrNull()?.player == PlayerEnum.COMPUTER
+            currentGame.plies.size > 1 &&
+            currentGame.plies.lastOrNull()?.player == PlayerEnum.COMPUTER
 
-    fun undo(): PlayerMove? {
-        if (historyIndex < 0 && currentGame.playerMoves.size > 0) {
-            historyIndex = currentGame.playerMoves.size - 1
-        } else if (historyIndex > 0 && historyIndex < currentGame.playerMoves.size)
+    fun undo(): Ply? {
+        if (historyIndex < 0 && currentGame.plies.size > 0) {
+            historyIndex = currentGame.plies.size - 1
+        } else if (historyIndex > 0 && historyIndex < currentGame.plies.size)
             historyIndex--
         else {
             return null
         }
-        return currentPlayerMove
+        return currentPly
     }
 
     fun canRedo(): Boolean {
-        return historyIndex >= 0 && historyIndex < currentGame.playerMoves.size
+        return historyIndex >= 0 && historyIndex < currentGame.plies.size
     }
 
-    fun redo(): PlayerMove? {
+    fun redo(): Ply? {
         if (canRedo()) {
-            return currentPlayerMove?.also {
-                if (historyIndex < currentGame.playerMoves.size - 1)
+            return currentPly?.also {
+                if (historyIndex < currentGame.plies.size - 1)
                     historyIndex++
                 else {
                     historyIndex = -1
@@ -243,10 +243,10 @@ class History(val settings: Settings,
     }
 
     fun gotoBookmark(board: Board) {
-        if (board.moveNumber >= currentGame.shortRecord.finalBoard.moveNumber) {
+        if (board.plyNumber >= currentGame.shortRecord.finalBoard.plyNumber) {
             historyIndex = -1
         } else {
-            historyIndex = board.moveNumber
+            historyIndex = board.plyNumber
         }
     }
 }

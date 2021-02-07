@@ -12,28 +12,28 @@ private const val keyPlayersMoves = "playersMoves"
 private const val keyFinalBoard = "finalBoard"
 private const val keyBookmarks = "bookmarks"
 
-class GameRecord(val shortRecord: ShortRecord, val playerMoves: List<PlayerMove>) {
+class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
 
     fun toMap(): Map<String, Any> = shortRecord.toMap() +
-            (keyPlayersMoves to playerMoves.map { it.toMap() })
+            (keyPlayersMoves to plies.map { it.toMap() })
 
     var id: Int by shortRecord::id
     val score get() = shortRecord.finalBoard.score
     override fun toString(): String = shortRecord.toString()
 
     companion object {
-        fun newWithBoardAndMoves(board: Board, bookmarks: List<Board>, playerMoves: List<PlayerMove>) =
-                GameRecord(ShortRecord("", 0, board.dateTime, board, bookmarks), playerMoves)
+        fun newWithBoardAndMoves(board: Board, bookmarks: List<Board>, plies: List<Ply>) =
+                GameRecord(ShortRecord("", 0, board.dateTime, board, bookmarks), plies)
 
         fun fromJson(settings: Settings, json: Any, newId: Int? = null): GameRecord? =
                 ShortRecord.fromJson(settings, json, newId)?.let { shortRecord ->
-                    val playerMoves: List<PlayerMove> = json.asJsonMap()[keyPlayersMoves]?.asJsonArray()
-                            ?.mapNotNull { PlayerMove.fromJson(settings, it) } ?: emptyList()
-                    if (playerMoves.size > shortRecord.finalBoard.moveNumber) {
+                    val plies: List<Ply> = json.asJsonMap()[keyPlayersMoves]?.asJsonArray()
+                            ?.mapNotNull { Ply.fromJson(settings, it) } ?: emptyList()
+                    if (plies.size > shortRecord.finalBoard.plyNumber) {
                         // Fix for older versions, which didn't store move number
-                        shortRecord.finalBoard.moveNumber = playerMoves.size
+                        shortRecord.finalBoard.plyNumber = plies.size
                     }
-                    GameRecord(shortRecord, playerMoves)
+                    GameRecord(shortRecord, plies)
                 }
     }
 

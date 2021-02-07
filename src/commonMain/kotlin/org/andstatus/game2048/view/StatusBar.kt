@@ -8,7 +8,7 @@ import com.soywiz.korge.view.positionY
 import com.soywiz.korge.view.text
 import com.soywiz.korim.text.TextAlignment
 import org.andstatus.game2048.ai.AiResult
-import org.andstatus.game2048.model.PlayerMoveEnum
+import org.andstatus.game2048.model.PlyEnum
 
 fun ViewData.setupStatusBar(): StatusBar {
     return StatusBar(this)
@@ -64,7 +64,7 @@ class StatusBar(val viewData: ViewData): Container() {
         if (viewData.closed) return
 
         with(aiResult) {
-            if (this == null || move == PlayerMoveEnum.EMPTY) {
+            if (this == null || move == PlyEnum.EMPTY) {
                 removeFromParent()
                 return
             }

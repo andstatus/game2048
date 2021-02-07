@@ -8,8 +8,8 @@ import org.andstatus.game2048.model.History
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.PieceMoveOne
 import org.andstatus.game2048.model.PlacedPiece
-import org.andstatus.game2048.model.PlayerMove
-import org.andstatus.game2048.model.PlayerMoveEnum
+import org.andstatus.game2048.model.Ply
+import org.andstatus.game2048.model.PlyEnum
 import org.andstatus.game2048.view.ViewData
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -34,10 +34,10 @@ class PersistenceTest : ViewsForTesting(log = true) {
 
     private suspend fun saveTestHistory(settings: Settings) = with (History.load(settings)) {
         val placedPiece = PlacedPiece(Piece.N2, settings.squares.toSquare(1, 2))
-        val move1 = PlayerMove.computerMove(placedPiece, 0)
-        val move2 = PlayerMove.userMove(PlayerMoveEnum.DOWN, 1, listOf(PieceMoveOne(placedPiece,
+        val move1 = Ply.computerMove(placedPiece, 0)
+        val move2 = Ply.userMove(PlyEnum.DOWN, 1, listOf(PieceMoveOne(placedPiece,
             settings.squares.toSquare(1, 3))))
-        val move3 = PlayerMove.computerMove(PlacedPiece(Piece.N4, settings.squares.toSquare(2, 1)), 2)
+        val move3 = Ply.computerMove(PlacedPiece(Piece.N4, settings.squares.toSquare(2, 1)), 2)
         val board = Board(
             settings,
             array = arrayOf(
@@ -48,7 +48,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
             ),
             score = 2,
             gameClock = GameClock(125),
-            moveNumber = 3
+            plyNumber = 3
         )
         currentGame = GameRecord.newWithBoardAndMoves(board, listOf(Board(settings), board), listOf(move1, move2, move3))
         saveCurrent()
@@ -61,14 +61,14 @@ class PersistenceTest : ViewsForTesting(log = true) {
     }
 
     private fun ViewData.persistGameRecordTest2(settings: Settings, nMoves: Int) {
-        val moves = ArrayList<PlayerMove>()
+        val moves = ArrayList<Ply>()
         var nMovesActual = 0
         while (nMovesActual < nMoves) {
             val square = when (nMovesActual) {
                 1 -> settings.squares.toSquare(2, 2)
                 else -> settings.squares.toSquare(1, 3)
             }
-            val move = PlayerMove.computerMove(PlacedPiece(Piece.N2, square), 0)
+            val move = Ply.computerMove(PlacedPiece(Piece.N2, square), 0)
             assertTrue(move.toMap().keys.size > 2, move.toMap().toString())
             moves.add(move)
             nMovesActual++
@@ -84,12 +84,12 @@ class PersistenceTest : ViewsForTesting(log = true) {
         val gameRecordRestored = GameRecord.fromJson(settings, gameRecordJson)
         assertTrue(gameRecordRestored != null, message)
 
-        assertEquals(gameRecord.playerMoves, gameRecordRestored.playerMoves, message)
+        assertEquals(gameRecord.plies, gameRecordRestored.plies, message)
     }
 
     private fun ViewData.assertTestHistory(expected: History) {
         val actual = presenter.model.history
-        assertEquals(expected.currentGame.playerMoves, actual.currentGame.playerMoves, modelAndViews())
+        assertEquals(expected.currentGame.plies, actual.currentGame.plies, modelAndViews())
         assertEquals(expected.currentGame.score, actual.currentGame.score, modelAndViews())
         assertEquals(expected.currentGame.shortRecord.bookmarks.size, actual.currentGame.shortRecord.bookmarks.size, modelAndViews())
         assertEquals(expected.currentGame.toMap().toJson(), actual.currentGame.toMap().toJson(), modelAndViews())
@@ -101,15 +101,15 @@ class PersistenceTest : ViewsForTesting(log = true) {
         presenter.computerMove()
         presenter.computerMove()
         assertTrue(presenter.boardViews.blocks.size > 1, modelAndViews())
-        assertTrue(presenter.model.history.currentGame.playerMoves.size > 1, currentGameString())
+        assertTrue(presenter.model.history.currentGame.plies.size > 1, currentGameString())
 
         presenter.onRestartClick()
         assertEquals(1, presenter.boardViews.blocks.size, modelAndViews())
         assertEquals( 1, presenter.model.board.array.count { it != null }, modelAndViews())
-        assertEquals(1, presenter.model.history.currentGame.playerMoves.size, currentGameString())
+        assertEquals(1, presenter.model.history.currentGame.plies.size, currentGameString())
 
         presenter.computerMove()
         assertEquals(2, presenter.model.board.array.count { it != null }, modelAndViews())
-        assertEquals(2, presenter.model.history.currentGame.playerMoves.size, currentGameString())
+        assertEquals(2, presenter.model.history.currentGame.plies.size, currentGameString())
     }
 }

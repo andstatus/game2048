@@ -7,7 +7,7 @@ import com.soywiz.kmem.isOdd
 import org.andstatus.game2048.Settings
 import kotlin.random.Random
 
-private const val keyMoveNumber = "moveNumber"
+private const val keyPlyNumber = "moveNumber"
 private const val keyPieces = "pieces"
 private const val keyScore = "score"
 private const val keyDateTime = "time"
@@ -21,13 +21,13 @@ class Board(
     var score: Int = 0,
     val dateTime: DateTimeTz = DateTimeTz.nowLocal(),
     val gameClock: GameClock = GameClock(),
-    var moveNumber: Int = 0
+    var plyNumber: Int = 0
 ) {
     val timeString get() = dateTime.format(SUMMARY_FORMAT)
 
-    val usersMoveNumber: Int get() {
-        if (moveNumber < 2 ) return 1
-        return (if (moveNumber.isOdd) (moveNumber + 1) else (moveNumber + 2)) / 2
+    val moveNumber: Int get() {
+        if (plyNumber < 2 ) return 1
+        return (if (plyNumber.isOdd) (plyNumber + 1) else (plyNumber + 2)) / 2
     }
 
     fun getRandomFreeSquare(): Square? = freeCount().let {
@@ -78,24 +78,24 @@ class Board(
     }
 
     fun toMap(): Map<String, Any> = mapOf(
-            keyMoveNumber to moveNumber,
+            keyPlyNumber to plyNumber,
             keyPieces to array.map { it?.id ?: 0 },
             keyScore to score,
             keyDateTime to dateTime.format(DateFormat.FORMAT1),
             keyPlayedSeconds to gameClock.playedSeconds
     )
 
-    override fun toString(): String = "$moveNumber. pieces:" + array.mapIndexed { ind, piece ->
+    override fun toString(): String = "$plyNumber. pieces:" + array.mapIndexed { ind, piece ->
         ind.toString() + ":" + (piece ?: "-")
     } + ", score:$score, time:${dateTime.format(DateFormat.FORMAT1)}"
 
-    fun copy() = Board(settings, array.copyOf(), score, dateTime, gameClock.copy(), moveNumber)
+    fun copy() = Board(settings, array.copyOf(), score, dateTime, gameClock.copy(), plyNumber)
     fun forAutoPlaying(seconds: Int, isForward: Boolean) = Board(
         settings, array.copyOf(), score,
-        dateTime, if (seconds == 0) gameClock.copy() else GameClock(seconds), moveNumber + (if (isForward) 1 else -1)
+        dateTime, if (seconds == 0) gameClock.copy() else GameClock(seconds), plyNumber + (if (isForward) 1 else -1)
     )
     fun forNextMove() = Board(settings, array.copyOf(), score, DateTimeTz.nowLocal(), gameClock,
-        moveNumber + 1
+        plyNumber + 1
     )
 
     companion object {
@@ -108,9 +108,9 @@ class Board(
             val score: Int? = aMap[keyScore] as Int?
             val dateTime: DateTimeTz? = aMap[keyDateTime]?.let { DateTime.parse(it as String)}
             val playedSeconds: Int = aMap[keyPlayedSeconds] as Int? ?: 0
-            val moveNumber: Int = aMap[keyMoveNumber] as Int? ?: 0
+            val plyNumber: Int = aMap[keyPlyNumber] as Int? ?: 0
             return if (pieces != null && score != null && dateTime != null && size == settings.squares.size)
-                Board(settings, pieces, score, dateTime, GameClock(playedSeconds), moveNumber)
+                Board(settings, pieces, score, dateTime, GameClock(playedSeconds), plyNumber)
             else null
         }
 

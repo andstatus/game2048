@@ -42,11 +42,11 @@ fun ViewData.modelAndViews() =
             ind.toString() + ":" + (if (list.isEmpty()) "-" else list.joinToString(transform = { it.piece.text }))
         }
 
-fun ViewData.currentGameString(): String = "CurrentGame" + presenter.model.history.currentGame.playerMoves
+fun ViewData.currentGameString(): String = "CurrentGame" + presenter.model.history.currentGame.plies
         .mapIndexed { ind, playerMove ->
             "\n" + (ind + 1).toString() + ":" + playerMove
         }
 
 fun ViewData.historyString(): String = with(presenter.model.history) {
-    "History: index:$historyIndex, moves:${currentGame.playerMoves.size}"
+    "History: index:$historyIndex, moves:${currentGame.plies.size}"
 }

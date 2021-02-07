@@ -2,7 +2,7 @@ package org.andstatus.game2048.model
 
 import org.andstatus.game2048.Settings
 
-private const val keyMoveEnum = "moveName"
+private const val keyPieceMoveEnum = "moveName"
 private const val keyFirst = "first"
 private const val keySecond = "second"
 private const val keyMerged = "merged"
@@ -14,22 +14,22 @@ sealed class PieceMove(val pieceMoveEnum: PieceMoveEnum) {
 
     fun toMap(): Map<String, Any> = when(this) {
         is PieceMoveOne -> mapOf(
-                    keyMoveEnum to pieceMoveEnum.id,
+                    keyPieceMoveEnum to pieceMoveEnum.id,
                     keyFirst to first.toMap(),
                     keyDestination to destination.toMap()
             )
         is PieceMoveMerge -> mapOf(
-                keyMoveEnum to pieceMoveEnum.id,
+                keyPieceMoveEnum to pieceMoveEnum.id,
                 keyFirst to first.toMap(),
                 keySecond to second.toMap(),
                 keyMerged to merged.toMap()
         )
         is PieceMovePlace -> mapOf(
-                keyMoveEnum to pieceMoveEnum.id,
+                keyPieceMoveEnum to pieceMoveEnum.id,
                 keyFirst to first.toMap()
         )
         is PieceMoveLoad -> mapOf(
-                keyMoveEnum to pieceMoveEnum.id,
+                keyPieceMoveEnum to pieceMoveEnum.id,
                 keyBoard to board.toMap()
         )
         is PieceMoveDelay -> emptyMap()
@@ -38,7 +38,7 @@ sealed class PieceMove(val pieceMoveEnum: PieceMoveEnum) {
     companion object {
         fun fromJson(settings: Settings, json: Any): PieceMove? {
             val aMap: Map<String, Any> = json.asJsonMap()
-            val moveEnum = aMap[keyMoveEnum]?.let { PieceMoveEnum.fromId(it as String) }
+            val moveEnum = aMap[keyPieceMoveEnum]?.let { PieceMoveEnum.fromId(it as String) }
             return when(moveEnum) {
                 PieceMoveEnum.ONE -> {
                     val first = aMap[keyFirst]?.let { PlacedPiece.fromJson(settings, it) }
