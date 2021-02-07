@@ -1,5 +1,6 @@
 package org.andstatus.game2048.model
 
+import com.soywiz.klock.DateTimeTz
 import org.andstatus.game2048.model.PlyEnum.Companion.UserPlies
 import kotlin.random.Random
 
@@ -9,8 +10,24 @@ class GamePosition(val board: Board, val prevPly: Ply = Ply.emptyPly,
     val gameClock get() = data.gameClock
     val score get() = data.score
 
+    constructor(board: Board, prevPly: Ply = Ply.emptyPly,
+                array: Array<Piece?> = Array(board.size) { null },
+                score: Int = 0,
+                dateTime: DateTimeTz = DateTimeTz.nowLocal(),
+                gameClock: GameClock = GameClock(),
+                plyNumber: Int = 0
+                ) : this(board, prevPly,
+        PositionData(board, array, score, dateTime, gameClock, plyNumber)
+    )
+
     companion object {
         fun newEmpty(board: Board) = GamePosition(board, Ply.emptyPly)
+
+        fun fromJson(board: Board, json: Any): GamePosition? =
+            PositionData.fromJson(board, json)?.let {
+                GamePosition(board, Ply.emptyPly, it)
+            }
+
     }
 
     fun copy(): GamePosition = GamePosition(board, prevPly.copy(), data.copy())

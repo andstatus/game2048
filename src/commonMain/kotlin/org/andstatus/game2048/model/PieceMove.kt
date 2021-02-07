@@ -63,9 +63,9 @@ sealed class PieceMove(val pieceMoveEnum: PieceMoveEnum) {
                         null;
                 }
                 PieceMoveEnum.LOAD -> {
-                    val position = aMap[keyPosition]?.let { PositionData.fromJson(board, it) }
+                    val position = aMap[keyPosition]?.let { GamePosition.fromJson(board, it) }
                     return if (position != null)
-                        PieceMoveLoad(GamePosition(board, Ply.emptyPly, position))
+                        PieceMoveLoad(position)
                     else
                         null;
                 }

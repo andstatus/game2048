@@ -64,11 +64,10 @@ class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
                 val id = newId ?: aMap[keyId]?.let { it as Int } ?: 0
                 val start: DateTimeTz? = aMap[keyStart]?.let { DateTime.parse(it as String) }
                 val finalPosition: GamePosition? = aMap[keyFinalPosition]
-                        ?.let { PositionData.fromJson(board, it) }
-                        ?.let { GamePosition(board, Ply.emptyPly, it) }
+                        ?.let { GamePosition.fromJson(board, it) }
                 val bookmarks: List<GamePosition> = json.asJsonMap()[keyBookmarks]?.asJsonArray()
-                        ?.mapNotNull { PositionData.fromJson(board, it) }
-                        ?.map { GamePosition(board, Ply.emptyPly, it) } ?: emptyList()
+                        ?.mapNotNull { GamePosition.fromJson(board, it) }
+                        ?: emptyList()
                 return if (start != null && finalPosition != null)
                     ShortRecord(board, note, id, start, finalPosition, bookmarks)
                 else null

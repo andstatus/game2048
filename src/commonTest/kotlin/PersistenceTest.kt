@@ -10,7 +10,6 @@ import org.andstatus.game2048.model.PieceMoveOne
 import org.andstatus.game2048.model.PlacedPiece
 import org.andstatus.game2048.model.Ply
 import org.andstatus.game2048.model.PlyEnum
-import org.andstatus.game2048.model.PositionData
 import org.andstatus.game2048.view.ViewData
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -40,8 +39,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         val ply2 = Ply.userPly(PlyEnum.DOWN, 1, listOf(PieceMoveOne(placedPiece,
             board.toSquare(1, 3))))
         val ply3 = Ply.computerPly(PlacedPiece(Piece.N4, board.toSquare(2, 1)), 2)
-        val position = GamePosition(board, Ply.emptyPly, PositionData(
-            board,
+        val position = GamePosition(board, Ply.emptyPly,
             array = arrayOf(
                 null, null, null, null,
                 null, null, null, null,
@@ -51,7 +49,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
             score = 2,
             gameClock = GameClock(125),
             plyNumber = 3
-        ))
+        )
         currentGame = GameRecord.newWithPositionAndMoves(position,
             listOf(GamePosition(board), position),
             listOf(ply1, ply2, ply3))
