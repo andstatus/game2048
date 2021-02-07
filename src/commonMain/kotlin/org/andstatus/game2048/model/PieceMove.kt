@@ -28,7 +28,7 @@ sealed class PieceMove(val pieceMoveEnum: PieceMoveEnum) {
         )
         is PieceMoveLoad -> mapOf(
                 keyPieceMoveEnum to pieceMoveEnum.id,
-                keyPosition to positionData.toMap()
+                keyPosition to position.data.toMap()
         )
         is PieceMoveDelay -> emptyMap()
     }
@@ -65,7 +65,7 @@ sealed class PieceMove(val pieceMoveEnum: PieceMoveEnum) {
                 PieceMoveEnum.LOAD -> {
                     val position = aMap[keyPosition]?.let { PositionData.fromJson(board, it) }
                     return if (position != null)
-                        PieceMoveLoad(position)
+                        PieceMoveLoad(GamePosition(board, Ply.emptyPly, position))
                     else
                         null;
                 }
@@ -81,7 +81,7 @@ data class PieceMoveMerge(val first: PlacedPiece, val second: PlacedPiece, val m
     override fun points() = first.piece.value
 }
 data class PieceMovePlace(val first: PlacedPiece) : PieceMove(PieceMoveEnum.PLACE)
-data class PieceMoveLoad(val positionData: PositionData) : PieceMove(PieceMoveEnum.LOAD) {
-    override fun points() = positionData.score
+data class PieceMoveLoad(val position: GamePosition) : PieceMove(PieceMoveEnum.LOAD) {
+    override fun points() = position.score
 }
 data class PieceMoveDelay(val delayMs: Int) : PieceMove(PieceMoveEnum.DELAY)

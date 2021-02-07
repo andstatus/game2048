@@ -135,7 +135,7 @@ class AiPlayer(val settings: Settings) {
                 if (it.prevPly.isNotEmpty()) return it
             }
         }
-        return position.nextEmpty()
+        return position.nextNoMove()
     }
 
 }

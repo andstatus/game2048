@@ -1,8 +1,8 @@
 import com.soywiz.korge.input.SwipeDirection
 import com.soywiz.korge.tests.ViewsForTesting
+import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.PlacedPiece
-import org.andstatus.game2048.model.PositionData
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -14,7 +14,7 @@ class MovesTest : ViewsForTesting(log = true) {
     fun movesTest() = viewsTest { initializeViewDataInTest {
         val board = presenter.model.gamePosition.board
         presenter.onWatchClick()
-        presenter.composerMove(PositionData(board))
+        presenter.composerMove(GamePosition(board))
         assertEquals(0, presenter.boardViews.blocks.size, this.modelAndViews())
         val square1 = board.toSquare(1, 1)
         val piece1 = PlacedPiece(Piece.N2, square1)
@@ -31,7 +31,7 @@ class MovesTest : ViewsForTesting(log = true) {
         presenter.onBookmarkClick()
         assertEquals(
             position1.plyNumber,
-            presenter.model.history.currentGame.shortRecord.bookmarks[0].plyNumber,
+            presenter.model.history.currentGame.shortRecord.bookmarks[0].data.plyNumber,
             this.modelAndViews()
         )
         presenter.onSwipe(SwipeDirection.BOTTOM)
@@ -59,7 +59,7 @@ class MovesTest : ViewsForTesting(log = true) {
         assertFalse(presenter.canRedo(), this.historyString())
         assertEquals(
             position1.plyNumber,
-            presenter.model.history.currentGame.shortRecord.bookmarks[0].plyNumber,
+            presenter.model.history.currentGame.shortRecord.bookmarks[0].data.plyNumber,
             this.modelAndViews()
         )
         assertEquals(1, presenter.model.history.currentGame.shortRecord.bookmarks.size, this.modelAndViews())

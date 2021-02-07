@@ -2,6 +2,7 @@ import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korio.serialization.json.toJson
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.model.GameClock
+import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.GameRecord
 import org.andstatus.game2048.model.History
 import org.andstatus.game2048.model.Piece
@@ -39,7 +40,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         val ply2 = Ply.userPly(PlyEnum.DOWN, 1, listOf(PieceMoveOne(placedPiece,
             board.toSquare(1, 3))))
         val ply3 = Ply.computerPly(PlacedPiece(Piece.N4, board.toSquare(2, 1)), 2)
-        val position = PositionData(
+        val position = GamePosition(board, Ply.emptyPly, PositionData(
             board,
             array = arrayOf(
                 null, null, null, null,
@@ -50,9 +51,9 @@ class PersistenceTest : ViewsForTesting(log = true) {
             score = 2,
             gameClock = GameClock(125),
             plyNumber = 3
-        )
-        currentGame = GameRecord.newWithPositionAndMoves(board, position,
-            listOf(PositionData(board), position),
+        ))
+        currentGame = GameRecord.newWithPositionAndMoves(position,
+            listOf(GamePosition(board), position),
             listOf(ply1, ply2, ply3))
         saveCurrent()
     }
@@ -78,7 +79,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
             nMovesActual++
         }
 
-        val gameRecord = GameRecord.newWithPositionAndMoves(board, PositionData(board), emptyList(), moves)
+        val gameRecord = GameRecord.newWithPositionAndMoves(GamePosition(board), emptyList(), moves)
         val gameRecordJson = gameRecord.toMap().toJson()
         val message = "nMoves:$nMoves, $gameRecordJson"
 

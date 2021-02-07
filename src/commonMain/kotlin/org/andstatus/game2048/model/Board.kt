@@ -3,6 +3,8 @@ package org.andstatus.game2048.model
 import org.andstatus.game2048.Settings
 
 class Board(settings: Settings) {
+    val allowUsersMoveWithoutBlockMoves = settings.allowUsersMoveWithoutBlockMoves
+    val allowResultingTileToMerge = settings.allowResultingTileToMerge
     val width = settings.boardWidth
     val height = settings.boardHeight
     val size = width * height
@@ -65,11 +67,11 @@ class Board(settings: Settings) {
             }
 
     /** Starting from the square, search for a block in the direction */
-    fun nextPlacedPieceInThe(square: Square, direction: Direction, positionData: PositionData): PlacedPiece? {
+    fun nextPlacedPieceInThe(square: Square, direction: Direction, position: GamePosition): PlacedPiece? {
         var square1: Square? = square
         while (square1 != null) {
             val square2: Square = square1
-            positionData[square2]?.let {
+            position.data[square2]?.let {
                 return PlacedPiece(it, square2)
             }
             square1 = square2.nextInThe(direction)
