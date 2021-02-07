@@ -71,7 +71,7 @@ class Board(settings: Settings) {
         var square1: Square? = square
         while (square1 != null) {
             val square2: Square = square1
-            position.data[square2]?.let {
+            position[square2]?.let {
                 return PlacedPiece(it, square2)
             }
             square1 = square2.nextInThe(direction)

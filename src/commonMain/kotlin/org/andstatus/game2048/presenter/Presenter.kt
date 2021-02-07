@@ -301,7 +301,7 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     fun onGoToBookmarkClick(position: GamePosition) = afterStop {
-        logClick("GoTo${position.data.plyNumber}")
+        logClick("GoTo${position.plyNumber}")
         showMainView()
         if (moveIsInProgress.compareAndSet(expect = false, update = true)) {
             model.gotoBookmark(position).present()

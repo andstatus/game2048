@@ -108,11 +108,11 @@ class PersistenceTest : ViewsForTesting(log = true) {
 
         presenter.onRestartClick()
         assertEquals(1, presenter.boardViews.blocks.size, modelAndViews())
-        assertEquals( 1, presenter.model.gamePosition.data.array.count { it != null }, modelAndViews())
+        assertEquals( 1, presenter.model.gamePosition.array.count { it != null }, modelAndViews())
         assertEquals(1, presenter.model.history.currentGame.plies.size, currentGameString())
 
         presenter.computerMove()
-        assertEquals(2, presenter.model.gamePosition.data.array.count { it != null }, modelAndViews())
+        assertEquals(2, presenter.model.gamePosition.array.count { it != null }, modelAndViews())
         assertEquals(2, presenter.model.history.currentGame.plies.size, currentGameString())
     }
 }

@@ -23,15 +23,15 @@ class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
 
     companion object {
         fun newWithPositionAndMoves(position: GamePosition, bookmarks: List<GamePosition>, plies: List<Ply>) =
-                GameRecord(ShortRecord(position.board,"", 0, position.data.dateTime, position, bookmarks), plies)
+                GameRecord(ShortRecord(position.board,"", 0, position.dateTime, position, bookmarks), plies)
 
         fun fromJson(settings: Settings, json: Any, newId: Int? = null): GameRecord? =
                 ShortRecord.fromJson(settings, json, newId)?.let { shortRecord ->
                     val plies: List<Ply> = json.asJsonMap()[keyPlayersMoves]?.asJsonArray()
                             ?.mapNotNull { Ply.fromJson(shortRecord.board, it) } ?: emptyList()
-                    if (plies.size > shortRecord.finalPosition.data.plyNumber) {
+                    if (plies.size > shortRecord.finalPosition.plyNumber) {
                         // Fix for older versions, which didn't store move number
-                        shortRecord.finalPosition.data.plyNumber = plies.size
+                        shortRecord.finalPosition.plyNumber = plies.size
                     }
                     GameRecord(shortRecord, plies)
                 }
@@ -40,7 +40,7 @@ class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
     class ShortRecord(val board: Board, val note: String, var id: Int, val start: DateTimeTz,
                       val finalPosition: GamePosition, val bookmarks: List<GamePosition>) {
 
-        override fun toString(): String = "${finalPosition.score} ${finalPosition.data.timeString} id:$id"
+        override fun toString(): String = "${finalPosition.score} ${finalPosition.timeString} id:$id"
 
         val jsonFileName: String get() =
             "${start.format(FILENAME_FORMAT)}_${finalPosition.score}.game2048.json"
@@ -48,8 +48,8 @@ class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
         fun toMap(): Map<String, Any> = mapOf(
                 keyNote to note,
                 keyStart to start.format(DateFormat.FORMAT1),
-                keyFinalPosition to finalPosition.data.toMap(),
-                keyBookmarks to bookmarks.map { it.data.toMap() },
+                keyFinalPosition to finalPosition.toMap(),
+                keyBookmarks to bookmarks.map { it.toMap() },
                 keyId to id,
                 "type" to "org.andstatus.game2048:GameRecord:1",
         )

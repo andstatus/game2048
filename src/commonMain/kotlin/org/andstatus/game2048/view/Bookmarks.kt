@@ -56,8 +56,8 @@ fun ViewData.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
                 stringResources.text("duration")) {}
         with(game.shortRecord.finalPosition) {
             oneRow(1, score.toString(),
-                    data.moveNumber.toString(),
-                    data.timeString,
+                    moveNumber.toString(),
+                    timeString,
                     gameClock.playedSecondsString) {
                 window.removeFromParent()
                 presenter.onGoToBookmarkClick(this)
@@ -65,8 +65,8 @@ fun ViewData.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
         }
         game.shortRecord.bookmarks.reversed().forEachIndexed {index, position ->
             oneRow(index + 2, position.score.toString(),
-                    position.data.moveNumber.toString(),
-                    position.data.timeString,
+                    position.moveNumber.toString(),
+                    position.timeString,
                 position.gameClock.playedSecondsString) {
                 window.removeFromParent()
                 presenter.onGoToBookmarkClick(position)

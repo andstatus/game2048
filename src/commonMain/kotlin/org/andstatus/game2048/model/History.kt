@@ -124,7 +124,7 @@ class History(val settings: Settings,
         val maxGames = gameIdsRange.last
         if (prevGames.size > maxOlderGames) {
             val keepAfter = DateTimeTz.nowLocal().minus(1.weeks)
-            val olderGames = prevGames.filter { it.finalPosition.data.dateTime < keepAfter }
+            val olderGames = prevGames.filter { it.finalPosition.dateTime < keepAfter }
             val id = when {
                 olderGames.size > 20 -> olderGames.minByOrNull { it.finalPosition.score }?.id
                 prevGames.size >= maxGames -> prevGames.minByOrNull { it.finalPosition.score }?.id
@@ -133,7 +133,7 @@ class History(val settings: Settings,
             if (id != null) return id
         }
         return (gameIdsRange.find { id -> prevGames.none { it.id == id } }
-            ?: prevGames.minByOrNull { it.finalPosition.data.dateTime }?.id
+            ?: prevGames.minByOrNull { it.finalPosition.dateTime }?.id
             ?: gameIdsRange.first)
     }
 
@@ -164,7 +164,7 @@ class History(val settings: Settings,
                         emptyList()
                     }
                     else -> {
-                        currentGame.shortRecord.bookmarks.filterNot { it.data.plyNumber > historyIndex }
+                        currentGame.shortRecord.bookmarks.filterNot { it.plyNumber > historyIndex }
                     }
                 }
                 val playerMoves = when {
@@ -191,7 +191,7 @@ class History(val settings: Settings,
         currentGame = with(currentGame.shortRecord) {
             GameRecord(
                     GameRecord.ShortRecord(board, note, id, start, finalPosition,
-                            bookmarks.filter { it.data.plyNumber != gamePosition.data.plyNumber } +
+                            bookmarks.filter { it.plyNumber != gamePosition.plyNumber } +
                                     gamePosition.copy()),
                     currentGame.plies
             )
@@ -202,7 +202,7 @@ class History(val settings: Settings,
         currentGame = with(currentGame.shortRecord) {
             GameRecord(
                 GameRecord.ShortRecord(board, note, id, start, finalPosition, bookmarks
-                    .filterNot { it.data.plyNumber == gamePosition.data.plyNumber }),
+                    .filterNot { it.plyNumber == gamePosition.plyNumber }),
                 currentGame.plies
             )
         }
@@ -243,10 +243,10 @@ class History(val settings: Settings,
     }
 
     fun gotoBookmark(position: GamePosition) {
-        if (position.data.plyNumber >= currentGame.shortRecord.finalPosition.data.plyNumber) {
+        if (position.plyNumber >= currentGame.shortRecord.finalPosition.plyNumber) {
             historyIndex = -1
         } else {
-            historyIndex = position.data.plyNumber
+            historyIndex = position.plyNumber
         }
     }
 }

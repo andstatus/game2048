@@ -28,7 +28,7 @@ sealed class PieceMove(val pieceMoveEnum: PieceMoveEnum) {
         )
         is PieceMoveLoad -> mapOf(
                 keyPieceMoveEnum to pieceMoveEnum.id,
-                keyPosition to position.data.toMap()
+                keyPosition to position.toMap()
         )
         is PieceMoveDelay -> emptyMap()
     }

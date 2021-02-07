@@ -8,13 +8,13 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
     val settings: Settings = history.settings
     var gamePosition = GamePosition.newEmpty(settings.defaultBoard)
 
-    val moveNumber: Int get() = gamePosition.data.moveNumber
+    val moveNumber: Int get() = gamePosition.moveNumber
     val isBookmarked get() = history.currentGame.shortRecord.bookmarks.any {
-        it.data.plyNumber == gamePosition.data.plyNumber
+        it.plyNumber == gamePosition.plyNumber
     }
-    val gameClock get() = gamePosition.data.gameClock
+    val gameClock get() = gamePosition.gameClock
     val bestScore get() = history.bestScore
-    val score get() = gamePosition.data.score
+    val score get() = gamePosition.score
 
     val gameMode: GameMode get() = history.gameMode
 

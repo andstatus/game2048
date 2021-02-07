@@ -24,32 +24,32 @@ class MovesTest : ViewsForTesting(log = true) {
         assertEquals(listOf(Piece.N2), this.blocksAt(square1), this.modelAndViews())
         presenter.computerMove(piece2)
         assertEquals(listOf(Piece.N2), this.blocksAt(square2), this.modelAndViews())
-        val position1 = presenter.model.gamePosition.data.copy()
+        val position1 = presenter.model.gamePosition.copy()
         val piecesOnBoardViews1 = this.presentedPieces()
         assertEquals(position1.array.asList(), piecesOnBoardViews1, this.modelAndViews())
         assertEquals(2, position1.plyNumber, this.modelAndViews())
         presenter.onBookmarkClick()
         assertEquals(
             position1.plyNumber,
-            presenter.model.history.currentGame.shortRecord.bookmarks[0].data.plyNumber,
+            presenter.model.history.currentGame.shortRecord.bookmarks[0].plyNumber,
             this.modelAndViews()
         )
         presenter.onSwipe(SwipeDirection.BOTTOM)
         assertEquals(listOf(Piece.N4), this.blocksAt(board.toSquare(1, 3)), this.modelAndViews())
         assertEquals(2, presenter.boardViews.blocks.size, this.modelAndViews())
-        val position2 = presenter.model.gamePosition.data.copy()
+        val position2 = presenter.model.gamePosition.copy()
         val piecesOnBoardViews2 = this.presentedPieces()
         assertEquals(2, position2.score, this.modelAndViews())
         assertEquals(position2.array.asList(), piecesOnBoardViews2, this.modelAndViews())
         assertTrue(presenter.canUndo(), this.historyString())
         presenter.undo()
-        val position3 = presenter.model.gamePosition.data.copy()
+        val position3 = presenter.model.gamePosition.copy()
         val piecesOnBoardViews3 = this.presentedPieces()
         assertEquals(position1.array.asList(), position3.array.asList(), "Board after undo")
         assertEquals(position3.array.asList(), piecesOnBoardViews3, "Board views after undo")
         assertTrue(presenter.canRedo(), this.historyString())
         presenter.redo()
-        val position4 = presenter.model.gamePosition.data.copy()
+        val position4 = presenter.model.gamePosition.copy()
         val piecesOnBoardViews4 = this.presentedPieces()
         assertEquals(position2.array.asList(), position4.array.asList(), "Board after redo")
         assertEquals(position4.array.asList(), piecesOnBoardViews4, "Board views after redo")
@@ -59,12 +59,12 @@ class MovesTest : ViewsForTesting(log = true) {
         assertFalse(presenter.canRedo(), this.historyString())
         assertEquals(
             position1.plyNumber,
-            presenter.model.history.currentGame.shortRecord.bookmarks[0].data.plyNumber,
+            presenter.model.history.currentGame.shortRecord.bookmarks[0].plyNumber,
             this.modelAndViews()
         )
         assertEquals(1, presenter.model.history.currentGame.shortRecord.bookmarks.size, this.modelAndViews())
         presenter.undo()
-        val position5 = presenter.model.gamePosition.data.copy()
+        val position5 = presenter.model.gamePosition.copy()
         val piecesOnBoardViews5 = this.presentedPieces()
         assertEquals(position4.array.asList(), position5.array.asList(), "Board after second undo")
         assertEquals(position5.array.asList(), piecesOnBoardViews5, "Board views second after undo")
