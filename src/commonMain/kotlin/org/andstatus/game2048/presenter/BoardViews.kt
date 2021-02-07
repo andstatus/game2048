@@ -5,8 +5,6 @@ import org.andstatus.game2048.model.PlacedPiece
 import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.view.ViewData
 
-data class PlacedBlock(val block: Block, val square: Square)
-
 class BoardViews(val viewData: ViewData, val blocks: MutableList<PlacedBlock> = ArrayList()) {
 
     val blocksOnBoard: List<List<Block>>
