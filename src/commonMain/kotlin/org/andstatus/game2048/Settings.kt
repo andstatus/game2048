@@ -5,7 +5,7 @@ import com.soywiz.korge.view.Stage
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korio.file.std.resourcesVfs
 import org.andstatus.game2048.ai.AiAlgorithm
-import org.andstatus.game2048.model.Squares
+import org.andstatus.game2048.model.Board
 import org.andstatus.game2048.view.ColorThemeEnum
 import org.andstatus.game2048.view.StringResources
 
@@ -29,7 +29,7 @@ class Settings(val storage: MyStorage) {
     var boardHeight = boardWidth
     var colorThemeEnum: ColorThemeEnum = ColorThemeEnum.load(storage.getOrNull(keyColorTheme))
     var aiAlgorithm: AiAlgorithm = AiAlgorithm.load(storage.getOrNull(keyAiAlgorithm))
-    var squares = Squares(this)
+    var board = Board(this)
 
     companion object {
         fun load(stage: Stage): Settings = MyStorage.load(stage).let { storage ->

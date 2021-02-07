@@ -2,7 +2,7 @@ package org.andstatus.game2048.model
 
 import org.andstatus.game2048.Settings
 
-class Squares(settings: Settings) {
+class Board(settings: Settings) {
     val width = settings.boardWidth
     val height = settings.boardHeight
     val size = width * height
@@ -56,7 +56,7 @@ class Squares(settings: Settings) {
                 }
             }
 
-    fun Square._nextInThe(direction: Direction) : Square? =
+    private fun Square._nextInThe(direction: Direction) : Square? =
             when (direction) {
                 Direction.LEFT -> if (x > 0) toSquare(x - 1, y) else null
                 Direction.RIGHT -> if (x < width - 1) toSquare(x + 1, y) else null

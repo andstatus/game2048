@@ -17,7 +17,7 @@ private val SUMMARY_FORMAT = DateFormat("yyyy-MM-dd HH:mm")
 
 class PositionData(
     val settings: Settings,
-    val array: Array<Piece?> = Array(settings.squares.size) { null },
+    val array: Array<Piece?> = Array(settings.board.size) { null },
     var score: Int = 0,
     val dateTime: DateTimeTz = DateTimeTz.nowLocal(),
     val gameClock: GameClock = GameClock(),
@@ -36,7 +36,7 @@ class PositionData(
 
     private fun findFreeSquare(freeIndToFind: Int): Square? {
         var freeInd = -1
-        settings.squares.array.forEach { square ->
+        settings.board.array.forEach { square ->
             if (array[square.ind] == null ) {
                 freeInd++
                 if (freeInd == freeIndToFind) return square
@@ -45,14 +45,14 @@ class PositionData(
         return null
     }
 
-    fun pieces(): List<PlacedPiece> = settings.squares.array.mapNotNull { square ->
+    fun pieces(): List<PlacedPiece> = settings.board.array.mapNotNull { square ->
         array[square.ind]?.let { piece -> PlacedPiece(piece, square) }
     }
 
     fun freeCount(): Int = array.count { it == null }
 
     fun noMoreMoves(): Boolean {
-        settings.squares.array.forEach { square ->
+        settings.board.array.forEach { square ->
             array[square.ind]?.let { piece ->
                 if (square.hasMove(piece)) return false
             } ?: return false
@@ -109,7 +109,7 @@ class PositionData(
             val dateTime: DateTimeTz? = aMap[keyDateTime]?.let { DateTime.parse(it as String)}
             val playedSeconds: Int = aMap[keyPlayedSeconds] as Int? ?: 0
             val plyNumber: Int = aMap[keyPlyNumber] as Int? ?: 0
-            return if (pieces != null && score != null && dateTime != null && size == settings.squares.size)
+            return if (pieces != null && score != null && dateTime != null && size == settings.board.size)
                 PositionData(settings, pieces, score, dateTime, GameClock(playedSeconds), plyNumber)
             else null
         }

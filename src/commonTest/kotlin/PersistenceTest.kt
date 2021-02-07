@@ -33,11 +33,11 @@ class PersistenceTest : ViewsForTesting(log = true) {
     }
 
     private suspend fun saveTestHistory(settings: Settings) = with (History.load(settings)) {
-        val placedPiece = PlacedPiece(Piece.N2, settings.squares.toSquare(1, 2))
+        val placedPiece = PlacedPiece(Piece.N2, settings.board.toSquare(1, 2))
         val ply1 = Ply.computerPly(placedPiece, 0)
         val ply2 = Ply.userPly(PlyEnum.DOWN, 1, listOf(PieceMoveOne(placedPiece,
-            settings.squares.toSquare(1, 3))))
-        val ply3 = Ply.computerPly(PlacedPiece(Piece.N4, settings.squares.toSquare(2, 1)), 2)
+            settings.board.toSquare(1, 3))))
+        val ply3 = Ply.computerPly(PlacedPiece(Piece.N4, settings.board.toSquare(2, 1)), 2)
         val position = PositionData(
             settings,
             array = arrayOf(
@@ -65,8 +65,8 @@ class PersistenceTest : ViewsForTesting(log = true) {
         var nMovesActual = 0
         while (nMovesActual < nMoves) {
             val square = when (nMovesActual) {
-                1 -> settings.squares.toSquare(2, 2)
-                else -> settings.squares.toSquare(1, 3)
+                1 -> settings.board.toSquare(2, 2)
+                else -> settings.board.toSquare(1, 3)
             }
             val move = Ply.computerPly(PlacedPiece(Piece.N2, square), 0)
             assertTrue(move.toMap().keys.size > 2, move.toMap().toString())

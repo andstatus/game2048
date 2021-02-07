@@ -37,7 +37,7 @@ data class Square(val x: Int, val y: Int) {
             val x = aMap[keyX] as Int?
             val y = aMap[keyY] as Int?
             return if (x != null && x >= 0 && y != null && y >= 0)
-                settings.squares.toSquare(x, y)
+                settings.board.toSquare(x, y)
             else
                 null;
         }

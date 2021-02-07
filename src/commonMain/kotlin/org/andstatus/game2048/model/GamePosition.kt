@@ -50,14 +50,14 @@ class GamePosition(val settings: Settings, val prevPly: Ply, val data: PositionD
         val newData = this.data.forNextPly()
         val pieceMoves = mutableListOf<PieceMove>()
         val direction = plyEnum.reverseDirection()
-        var square: Square? = settings.squares.firstSquareToIterate(direction)
+        var square: Square? = settings.board.firstSquareToIterate(direction)
         while (square != null) {
-            val found = settings.squares.nextPlacedPieceInThe(square, direction, newData)
+            val found = settings.board.nextPlacedPieceInThe(square, direction, newData)
             if (found == null) {
                 square = square.nextToIterate(direction)
             } else {
                 newData[found.square] = null
-                val next = settings.squares.nextPlacedPieceInThe(found.square, direction, newData)
+                val next = settings.board.nextPlacedPieceInThe(found.square, direction, newData)
                 if (next != null && found.piece == next.piece) {
                     // merge equal blocks
                     val merged = found.piece.next()
