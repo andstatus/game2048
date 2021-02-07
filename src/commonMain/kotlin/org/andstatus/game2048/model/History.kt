@@ -45,7 +45,7 @@ class History(val settings: Settings,
                 myMeasured("Current game loaded") {
                     settings.storage.getOrNull(keyCurrentGame)
                             ?.let { GameRecord.fromJson(settings, it) }
-                            ?: GameRecord.newWithBoardAndMoves(Board(settings), emptyList(), emptyList())
+                            ?: GameRecord.newWithPositionAndMoves(PositionData(settings), emptyList(), emptyList())
                 }
             }
             History(settings, dCurrentGame.await())
@@ -89,7 +89,7 @@ class History(val settings: Settings,
 
         if (isNew && currentGame.score < 1) {
             // Store only the latest game without score
-            prevGames.filter { it.finalBoard.score < 1 }.forEach {
+            prevGames.filter { it.finalPosition.score < 1 }.forEach {
                 settings.storage.native.remove(keyGame + it.id)
             }
         }
@@ -124,16 +124,16 @@ class History(val settings: Settings,
         val maxGames = gameIdsRange.last
         if (prevGames.size > maxOlderGames) {
             val keepAfter = DateTimeTz.nowLocal().minus(1.weeks)
-            val olderGames = prevGames.filter { it.finalBoard.dateTime < keepAfter }
+            val olderGames = prevGames.filter { it.finalPosition.dateTime < keepAfter }
             val id = when {
-                olderGames.size > 20 -> olderGames.minByOrNull { it.finalBoard.score }?.id
-                prevGames.size >= maxGames -> prevGames.minByOrNull { it.finalBoard.score }?.id
+                olderGames.size > 20 -> olderGames.minByOrNull { it.finalPosition.score }?.id
+                prevGames.size >= maxGames -> prevGames.minByOrNull { it.finalPosition.score }?.id
                 else -> null
             }
             if (id != null) return id
         }
         return (gameIdsRange.find { id -> prevGames.none { it.id == id } }
-            ?: prevGames.minByOrNull { it.finalBoard.dateTime }?.id
+            ?: prevGames.minByOrNull { it.finalPosition.dateTime }?.id
             ?: gameIdsRange.first)
     }
 
@@ -150,10 +150,10 @@ class History(val settings: Settings,
             else -> currentGame.plies[historyIndex]
         }
 
-    fun add(ply: Ply, board: Board) {
+    fun add(ply: Ply, positionData: PositionData) {
         currentGame = when (ply.plyEnum) {
             PlyEnum.LOAD -> {
-                GameRecord.newWithBoardAndMoves(board, emptyList(), emptyList())
+                GameRecord.newWithPositionAndMoves(positionData, emptyList(), emptyList())
             }
             else -> {
                 val bookmarksNew = when {
@@ -179,7 +179,7 @@ class History(val settings: Settings,
                     }
                 } + ply
                 with(currentGame.shortRecord) {
-                    GameRecord(GameRecord.ShortRecord(note, id, start, board, bookmarksNew), playerMoves)
+                    GameRecord(GameRecord.ShortRecord(note, id, start, positionData, bookmarksNew), playerMoves)
                 }
             }
         }
@@ -190,7 +190,7 @@ class History(val settings: Settings,
     fun createBookmark() {
         currentGame = with(currentGame.shortRecord) {
             GameRecord(
-                GameRecord.ShortRecord(note, id, start, finalBoard, bookmarks + finalBoard.copy()),
+                GameRecord.ShortRecord(note, id, start, finalPosition, bookmarks + finalPosition.copy()),
                 currentGame.plies
             )
         }
@@ -200,8 +200,8 @@ class History(val settings: Settings,
     fun deleteBookmark() {
         currentGame = with(currentGame.shortRecord) {
             GameRecord(
-                GameRecord.ShortRecord(note, id, start, finalBoard, bookmarks
-                    .filterNot { it.plyNumber == finalBoard.plyNumber }),
+                GameRecord.ShortRecord(note, id, start, finalPosition, bookmarks
+                    .filterNot { it.plyNumber == finalPosition.plyNumber }),
                 currentGame.plies
             )
         }
@@ -242,11 +242,11 @@ class History(val settings: Settings,
         return null
     }
 
-    fun gotoBookmark(board: Board) {
-        if (board.plyNumber >= currentGame.shortRecord.finalBoard.plyNumber) {
+    fun gotoBookmark(positionData: PositionData) {
+        if (positionData.plyNumber >= currentGame.shortRecord.finalPosition.plyNumber) {
             historyIndex = -1
         } else {
-            historyIndex = board.plyNumber
+            historyIndex = positionData.plyNumber
         }
     }
 }

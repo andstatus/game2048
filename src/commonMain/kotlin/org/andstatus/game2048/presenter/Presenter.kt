@@ -23,7 +23,6 @@ import org.andstatus.game2048.ai.AiPlayer
 import org.andstatus.game2048.closeGameApp
 import org.andstatus.game2048.gameStopWatch
 import org.andstatus.game2048.loadJsonGameRecord
-import org.andstatus.game2048.model.Board
 import org.andstatus.game2048.model.GameModeEnum
 import org.andstatus.game2048.model.GameRecord
 import org.andstatus.game2048.model.History
@@ -36,6 +35,7 @@ import org.andstatus.game2048.model.PieceMovePlace
 import org.andstatus.game2048.model.PlacedPiece
 import org.andstatus.game2048.model.Ply
 import org.andstatus.game2048.model.PlyEnum
+import org.andstatus.game2048.model.PositionData
 import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
@@ -300,11 +300,11 @@ class Presenter(val view: ViewData, history: History) {
         view.showRestoreGame(model.history.prevGames)
     }
 
-    fun onGoToBookmarkClick(board: Board) = afterStop {
-        logClick("GoTo${board.plyNumber}")
+    fun onGoToBookmarkClick(positionData: PositionData) = afterStop {
+        logClick("GoTo${positionData.plyNumber}")
         showMainView()
         if (moveIsInProgress.compareAndSet(expect = false, update = true)) {
-            model.gotoBookmark(board).present()
+            model.gotoBookmark(positionData).present()
         }
     }
 
@@ -412,7 +412,7 @@ class Presenter(val view: ViewData, history: History) {
         }
     }
 
-    fun composerMove(board: Board) = model.composerMove(board, false).present()
+    fun composerMove(positionData: PositionData) = model.composerMove(positionData, false).present()
 
     fun computerMove() = model.randomComputerMove().present()
 
@@ -548,7 +548,7 @@ class Presenter(val view: ViewData, history: History) {
                 ply.pieceMoves.forEach { move ->
                     when (move) {
                         is PieceMovePlace -> boardViews.addBlock(move.first)
-                        is PieceMoveLoad -> boardViews.load(move.board)
+                        is PieceMoveLoad -> boardViews.load(move.positionData)
                         is PieceMoveOne -> boardViews[move.first]?.move(this, move.destination)
                         is PieceMoveMerge -> {
                             val firstBlock = boardViews[move.first]
@@ -601,7 +601,7 @@ class Presenter(val view: ViewData, history: History) {
                         is PieceMovePlace -> boardViews[move.first]
                             ?.remove()
                             ?: myLog("No Block at destination during undo: $move")
-                        is PieceMoveLoad -> boardViews.load(move.board)
+                        is PieceMoveLoad -> boardViews.load(move.positionData)
                         is PieceMoveOne -> boardViews[PlacedPiece(move.first.piece, move.destination)]
                             ?.move(this, move.first.square)
                             ?: myLog("No Block at destination during undo: $move")

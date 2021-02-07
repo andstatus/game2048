@@ -52,7 +52,7 @@ class AiPlayer(val settings: Settings) {
     private fun maxEmptyBlocksNMoves(position: GamePosition, nMoves: Int): MoveAndScore {
         return playNMoves(position, nMoves)
             .maxByOrNull {
-                if (it.value.isEmpty()) 0 else it.value.sumBy { it.board.freeCount() } / it.value.size
+                if (it.value.isEmpty()) 0 else it.value.sumBy { it.data.freeCount() } / it.value.size
             }
             ?.let { entry ->
                 MoveAndScore(entry.key,
@@ -81,7 +81,7 @@ class AiPlayer(val settings: Settings) {
     }
 
     private fun longestRandomPlayAdaptive(position: GamePosition, nAttemptsInitial: Int): MoveAndScore {
-        val nAttempts = nAttemptsInitial * when(position.board.freeCount()) {
+        val nAttempts = nAttemptsInitial * when(position.data.freeCount()) {
             in 0..5 -> 8
             in 6..8 -> 4
             in 9..11 -> 2

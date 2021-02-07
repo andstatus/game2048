@@ -5,19 +5,19 @@ import org.andstatus.game2048.model.PlyEnum.Companion.UserPlies
 import kotlin.random.Random
 
 /** @author yvolk@yurivolkov.com */
-class GamePosition(val settings: Settings, val prevPly: Ply, val board: Board) {
-    val gameClock get() = board.gameClock
-    val score get() = board.score
+class GamePosition(val settings: Settings, val prevPly: Ply, val data: PositionData) {
+    val gameClock get() = data.gameClock
+    val score get() = data.score
 
-    constructor(settings: Settings) : this(settings, Ply.emptyPly, Board(settings))
+    constructor(settings: Settings) : this(settings, Ply.emptyPly, PositionData(settings))
 
-    fun Ply.nextPosition(board: Board) = when {
+    fun Ply.nextPosition(positionData: PositionData) = when {
         this.isNotEmpty() && (pieceMoves.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) -> this
         else -> Ply.emptyPly
-    }.let { GamePosition(settings, it, board) }
+    }.let { GamePosition(settings, it, positionData) }
 
-    fun composerPly(board: Board, isRedo: Boolean = false): GamePosition {
-        val ply = Ply.composerPly(board)
+    fun composerPly(positionData: PositionData, isRedo: Boolean = false): GamePosition {
+        val ply = Ply.composerPly(positionData)
         return play(ply, isRedo)
     }
 
@@ -33,7 +33,7 @@ class GamePosition(val settings: Settings, val prevPly: Ply, val board: Board) {
     }
 
     private fun calcPlacedRandomBlock(): PlacedPiece? =
-        board.getRandomFreeSquare()?.let { square ->
+        data.getRandomFreeSquare()?.let { square ->
             val piece = if (Random.nextDouble() < 0.9) Piece.N2 else Piece.N4
             PlacedPiece(piece, square)
         }
@@ -47,24 +47,24 @@ class GamePosition(val settings: Settings, val prevPly: Ply, val board: Board) {
     fun calcUserPly(plyEnum: PlyEnum): GamePosition {
         if (!UserPlies.contains(plyEnum)) return nextEmpty()
 
-        val newBoard = this.board.forNextPly()
+        val newData = this.data.forNextPly()
         val pieceMoves = mutableListOf<PieceMove>()
         val direction = plyEnum.reverseDirection()
         var square: Square? = settings.squares.firstSquareToIterate(direction)
         while (square != null) {
-            val found = settings.squares.nextPlacedPieceInThe(square, direction, newBoard)
+            val found = settings.squares.nextPlacedPieceInThe(square, direction, newData)
             if (found == null) {
                 square = square.nextToIterate(direction)
             } else {
-                newBoard[found.square] = null
-                val next = settings.squares.nextPlacedPieceInThe(found.square, direction, newBoard)
+                newData[found.square] = null
+                val next = settings.squares.nextPlacedPieceInThe(found.square, direction, newData)
                 if (next != null && found.piece == next.piece) {
                     // merge equal blocks
                     val merged = found.piece.next()
-                    newBoard[square] = merged
-                    newBoard[next.square] = null
+                    newData[square] = merged
+                    newData[next.square] = null
                     pieceMoves += PieceMoveMerge(found, next, PlacedPiece(merged, square)).also {
-                        newBoard.score += it.points()
+                        newData.score += it.points()
                     }
                     if (!settings.allowResultingTileToMerge) {
                         square = square.nextToIterate(direction)
@@ -72,71 +72,71 @@ class GamePosition(val settings: Settings, val prevPly: Ply, val board: Board) {
                 } else {
                     if (found.square != square) {
                         pieceMoves += PieceMoveOne(found, square).also {
-                            newBoard.score += it.points()
+                            newData.score += it.points()
                         }
                     }
-                    newBoard[square] = found.piece
+                    newData[square] = found.piece
                     square = square.nextToIterate(direction)
                 }
             }
         }
-        return Ply.userPly(plyEnum, gameClock.playedSeconds, pieceMoves).nextPosition(newBoard)
+        return Ply.userPly(plyEnum, gameClock.playedSeconds, pieceMoves).nextPosition(newData)
     }
 
-    fun nextEmpty() = Ply.emptyPly.nextPosition(board)
+    fun nextEmpty() = Ply.emptyPly.nextPosition(data)
 
     fun play(ply: Ply, isRedo: Boolean = false): GamePosition {
-        var newBoard = if (isRedo) board.forAutoPlaying(ply.seconds, true) else board.forNextPly()
+        var newData = if (isRedo) data.forAutoPlaying(ply.seconds, true) else data.forNextPly()
         ply.pieceMoves.forEach { move ->
-            newBoard.score += move.points()
+            newData.score += move.points()
             when (move) {
                 is PieceMovePlace -> {
-                    newBoard[move.first.square] = move.first.piece
+                    newData[move.first.square] = move.first.piece
                 }
                 is PieceMoveLoad -> {
-                    newBoard = move.board.copy()
+                    newData = move.positionData.copy()
                 }
                 is PieceMoveOne -> {
-                    newBoard[move.first.square] = null
-                    newBoard[move.destination] = move.first.piece
+                    newData[move.first.square] = null
+                    newData[move.destination] = move.first.piece
                 }
                 is PieceMoveMerge -> {
-                    newBoard[move.first.square] = null
-                    newBoard[move.second.square] = null
-                    newBoard[move.merged.square] = move.merged.piece
+                    newData[move.first.square] = null
+                    newData[move.second.square] = null
+                    newData[move.merged.square] = move.merged.piece
                 }
                 is PieceMoveDelay -> Unit
             }
         }
-        return ply.nextPosition(newBoard)
+        return ply.nextPosition(newData)
     }
 
     fun playReversed(ply: Ply): GamePosition {
-        var newBoard = board.forAutoPlaying(ply.seconds, false)
+        var newData = data.forAutoPlaying(ply.seconds, false)
         ply.pieceMoves.asReversed().forEach { move ->
-            newBoard.score -= move.points()
+            newData.score -= move.points()
             when (move) {
                 is PieceMovePlace -> {
-                    newBoard[move.first.square] = null
+                    newData[move.first.square] = null
                 }
                 is PieceMoveLoad -> {
-                    newBoard = move.board
+                    newData = move.positionData
                 }
                 is PieceMoveOne -> {
-                    newBoard[move.destination] = null
-                    newBoard[move.first.square] = move.first.piece
+                    newData[move.destination] = null
+                    newData[move.first.square] = move.first.piece
                 }
                 is PieceMoveMerge -> {
-                    newBoard[move.merged.square] = null
-                    newBoard[move.second.square] = move.second.piece
-                    newBoard[move.first.square] = move.first.piece
+                    newData[move.merged.square] = null
+                    newData[move.second.square] = move.second.piece
+                    newData[move.first.square] = move.first.piece
                 }
                 is PieceMoveDelay -> Unit
             }
         }
-        return ply.nextPosition(newBoard)
+        return ply.nextPosition(newData)
     }
 
-    fun noMoreMoves() = board.noMoreMoves()
+    fun noMoreMoves() = data.noMoreMoves()
 
 }

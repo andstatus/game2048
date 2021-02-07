@@ -65,11 +65,11 @@ class Squares(settings: Settings) {
             }
 
     /** Starting from the square, search for a block in the direction */
-    fun nextPlacedPieceInThe(square: Square, direction: Direction, board: Board): PlacedPiece? {
+    fun nextPlacedPieceInThe(square: Square, direction: Direction, positionData: PositionData): PlacedPiece? {
         var square1: Square? = square
         while (square1 != null) {
             val square2: Square = square1
-            board[square2]?.let {
+            positionData[square2]?.let {
                 return PlacedPiece(it, square2)
             }
             square1 = square2.nextInThe(direction)

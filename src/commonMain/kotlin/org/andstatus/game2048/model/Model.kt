@@ -7,13 +7,13 @@ import org.andstatus.game2048.Settings
 class Model(private val coroutineScope: CoroutineScope, val history: History) {
     val settings: Settings = history.settings
     var gamePosition = GamePosition(settings)
-    val board: Board get() = gamePosition.board
+    val positionData: PositionData get() = gamePosition.data
 
-    val moveNumber: Int get() = board.moveNumber
-    val isBookmarked get() = history.currentGame.shortRecord.bookmarks.any { it.plyNumber == board.plyNumber }
-    val gameClock get() = board.gameClock
+    val moveNumber: Int get() = positionData.moveNumber
+    val isBookmarked get() = history.currentGame.shortRecord.bookmarks.any { it.plyNumber == positionData.plyNumber }
+    val gameClock get() = positionData.gameClock
     val bestScore get() = history.bestScore
-    val score get() = board.score
+    val score get() = positionData.score
 
     val gameMode: GameMode get() = history.gameMode
 
@@ -21,16 +21,16 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
         return if (history.currentGame.id == 0)
             restart()
         else
-            composerMove(history.currentGame.shortRecord.finalBoard, true)
+            composerMove(history.currentGame.shortRecord.finalPosition, true)
     }
 
-    fun gotoBookmark(board: Board): List<Ply> {
+    fun gotoBookmark(positionData: PositionData): List<Ply> {
         gameMode.modeEnum = GameModeEnum.STOP
-        history.gotoBookmark(board)
-        return composerMove(board, true)
+        history.gotoBookmark(positionData)
+        return composerMove(positionData, true)
     }
 
-    fun composerMove(board: Board, isRedo: Boolean = false) = gamePosition.composerPly(board, isRedo).update(isRedo)
+    fun composerMove(positionData: PositionData, isRedo: Boolean = false) = gamePosition.composerPly(positionData, isRedo).update(isRedo)
 
     fun createBookmark() {
         history.createBookmark()
@@ -42,7 +42,7 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
 
     fun restart(): List<Ply> {
         gameMode.modeEnum = GameModeEnum.PLAY
-        return composerMove(Board(settings), false) + Ply.delay() + randomComputerMove()
+        return composerMove(PositionData(settings), false) + Ply.delay() + randomComputerMove()
     }
 
     fun restoreGame(id: Int): List<Ply> {
@@ -72,7 +72,7 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
 
     fun undoToStart(): List<Ply> {
         history.historyIndex = 0
-        return composerMove(Board(settings), true)
+        return composerMove(PositionData(settings), true)
     }
 
     fun canRedo(): Boolean {
@@ -85,7 +85,7 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
 
     fun redoToCurrent(): List<Ply> {
         history.historyIndex = -1
-        return composerMove(history.currentGame.shortRecord.finalBoard, true)
+        return composerMove(history.currentGame.shortRecord.finalPosition, true)
     }
 
     fun randomComputerMove() = gamePosition.randomComputerPly().update()
@@ -96,7 +96,7 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
 
     private fun GamePosition.update(isRedo: Boolean = false): List<Ply> {
         if (!isRedo && prevPly.isNotEmpty()) {
-            history.add(prevPly, board)
+            history.add(prevPly, data)
         }
         gamePosition = this
         return if (prevPly.isEmpty()) emptyList() else listOf(prevPly)

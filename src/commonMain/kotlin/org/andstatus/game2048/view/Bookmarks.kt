@@ -49,18 +49,18 @@ fun ViewData.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
     }) {
         oneRow(0, stringResources.text("score"), stringResources.text("last_changed"),
             stringResources.text("duration")) {}
-        with(game.shortRecord.finalBoard) {
+        with(game.shortRecord.finalPosition) {
             oneRow(1, score.toString(), timeString,
                 gameClock.playedSecondsString) {
                 window.removeFromParent()
                 presenter.onGoToBookmarkClick(this)
             }
         }
-        game.shortRecord.bookmarks.reversed().forEachIndexed {index, board ->
-            oneRow(index + 2, board.score.toString(), board.timeString,
-                board.gameClock.playedSecondsString) {
+        game.shortRecord.bookmarks.reversed().forEachIndexed {index, position ->
+            oneRow(index + 2, position.score.toString(), position.timeString,
+                position.gameClock.playedSecondsString) {
                 window.removeFromParent()
-                presenter.onGoToBookmarkClick(board)
+                presenter.onGoToBookmarkClick(position)
             }
         }
     }

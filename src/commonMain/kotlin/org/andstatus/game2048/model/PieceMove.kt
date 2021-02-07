@@ -7,7 +7,7 @@ private const val keyFirst = "first"
 private const val keySecond = "second"
 private const val keyMerged = "merged"
 private const val keyDestination = "destination"
-private const val keyBoard = "board"
+private const val keyPosition = "board"
 
 sealed class PieceMove(val pieceMoveEnum: PieceMoveEnum) {
     open fun points() = 0
@@ -30,7 +30,7 @@ sealed class PieceMove(val pieceMoveEnum: PieceMoveEnum) {
         )
         is PieceMoveLoad -> mapOf(
                 keyPieceMoveEnum to pieceMoveEnum.id,
-                keyBoard to board.toMap()
+                keyPosition to positionData.toMap()
         )
         is PieceMoveDelay -> emptyMap()
     }
@@ -65,9 +65,9 @@ sealed class PieceMove(val pieceMoveEnum: PieceMoveEnum) {
                         null;
                 }
                 PieceMoveEnum.LOAD -> {
-                    val board = aMap[keyBoard]?.let { Board.fromJson(settings, it) }
-                    return if (board != null)
-                        PieceMoveLoad(board)
+                    val position = aMap[keyPosition]?.let { PositionData.fromJson(settings, it) }
+                    return if (position != null)
+                        PieceMoveLoad(position)
                     else
                         null;
                 }
@@ -83,7 +83,7 @@ data class PieceMoveMerge(val first: PlacedPiece, val second: PlacedPiece, val m
     override fun points() = first.piece.value
 }
 data class PieceMovePlace(val first: PlacedPiece) : PieceMove(PieceMoveEnum.PLACE)
-data class PieceMoveLoad(val board: Board) : PieceMove(PieceMoveEnum.LOAD) {
-    override fun points() = board.score
+data class PieceMoveLoad(val positionData: PositionData) : PieceMove(PieceMoveEnum.LOAD) {
+    override fun points() = positionData.score
 }
 data class PieceMoveDelay(val delayMs: Int) : PieceMove(PieceMoveEnum.DELAY)

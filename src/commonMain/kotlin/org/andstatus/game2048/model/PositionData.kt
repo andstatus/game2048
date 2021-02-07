@@ -15,7 +15,7 @@ private const val keyPlayedSeconds = "playedSeconds"
 
 private val SUMMARY_FORMAT = DateFormat("yyyy-MM-dd HH:mm")
 
-class Board(
+class PositionData(
     val settings: Settings,
     val array: Array<Piece?> = Array(settings.squares.size) { null },
     var score: Int = 0,
@@ -89,18 +89,18 @@ class Board(
         ind.toString() + ":" + (piece ?: "-")
     } + ", score:$score, time:${dateTime.format(DateFormat.FORMAT1)}"
 
-    fun copy() = Board(settings, array.copyOf(), score, dateTime, gameClock.copy(), plyNumber)
-    fun forAutoPlaying(seconds: Int, isForward: Boolean) = Board(
+    fun copy() = PositionData(settings, array.copyOf(), score, dateTime, gameClock.copy(), plyNumber)
+    fun forAutoPlaying(seconds: Int, isForward: Boolean) = PositionData(
         settings, array.copyOf(), score,
         dateTime, if (seconds == 0) gameClock.copy() else GameClock(seconds), plyNumber + (if (isForward) 1 else -1)
     )
-    fun forNextPly() = Board(settings, array.copyOf(), score, DateTimeTz.nowLocal(), gameClock,
+    fun forNextPly() = PositionData(settings, array.copyOf(), score, DateTimeTz.nowLocal(), gameClock,
         plyNumber + 1
     )
 
     companion object {
 
-        fun fromJson(settings: Settings, json: Any): Board? {
+        fun fromJson(settings: Settings, json: Any): PositionData? {
             val aMap: Map<String, Any> = json.asJsonMap()
             val pieces: Array<Piece?>? = aMap[keyPieces]?.asJsonArray()
                     ?.map { Piece.fromId(it as Int) }?.toTypedArray()
@@ -110,7 +110,7 @@ class Board(
             val playedSeconds: Int = aMap[keyPlayedSeconds] as Int? ?: 0
             val plyNumber: Int = aMap[keyPlyNumber] as Int? ?: 0
             return if (pieces != null && score != null && dateTime != null && size == settings.squares.size)
-                Board(settings, pieces, score, dateTime, GameClock(playedSeconds), plyNumber)
+                PositionData(settings, pieces, score, dateTime, GameClock(playedSeconds), plyNumber)
             else null
         }
 

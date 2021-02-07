@@ -9,7 +9,7 @@ private const val keyNote = "note"
 private const val keyId = "id"
 private const val keyStart = "start"
 private const val keyPlayersMoves = "playersMoves"
-private const val keyFinalBoard = "finalBoard"
+private const val keyFinalPosition = "finalBoard"
 private const val keyBookmarks = "bookmarks"
 
 class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
@@ -18,37 +18,37 @@ class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
             (keyPlayersMoves to plies.map { it.toMap() })
 
     var id: Int by shortRecord::id
-    val score get() = shortRecord.finalBoard.score
+    val score get() = shortRecord.finalPosition.score
     override fun toString(): String = shortRecord.toString()
 
     companion object {
-        fun newWithBoardAndMoves(board: Board, bookmarks: List<Board>, plies: List<Ply>) =
-                GameRecord(ShortRecord("", 0, board.dateTime, board, bookmarks), plies)
+        fun newWithPositionAndMoves(data: PositionData, bookmarks: List<PositionData>, plies: List<Ply>) =
+                GameRecord(ShortRecord("", 0, data.dateTime, data, bookmarks), plies)
 
         fun fromJson(settings: Settings, json: Any, newId: Int? = null): GameRecord? =
                 ShortRecord.fromJson(settings, json, newId)?.let { shortRecord ->
                     val plies: List<Ply> = json.asJsonMap()[keyPlayersMoves]?.asJsonArray()
                             ?.mapNotNull { Ply.fromJson(settings, it) } ?: emptyList()
-                    if (plies.size > shortRecord.finalBoard.plyNumber) {
+                    if (plies.size > shortRecord.finalPosition.plyNumber) {
                         // Fix for older versions, which didn't store move number
-                        shortRecord.finalBoard.plyNumber = plies.size
+                        shortRecord.finalPosition.plyNumber = plies.size
                     }
                     GameRecord(shortRecord, plies)
                 }
     }
 
-    class ShortRecord(val note: String, var id: Int, val start: DateTimeTz, val finalBoard: Board,
-                      val bookmarks: List<Board>) {
+    class ShortRecord(val note: String, var id: Int, val start: DateTimeTz, val finalPosition: PositionData,
+                      val bookmarks: List<PositionData>) {
 
-        override fun toString(): String = "${finalBoard.score} ${finalBoard.timeString} id:$id"
+        override fun toString(): String = "${finalPosition.score} ${finalPosition.timeString} id:$id"
 
         val jsonFileName: String get() =
-            "${start.format(FILENAME_FORMAT)}_${finalBoard.score}.game2048.json"
+            "${start.format(FILENAME_FORMAT)}_${finalPosition.score}.game2048.json"
 
         fun toMap(): Map<String, Any> = mapOf(
                 keyNote to note,
                 keyStart to start.format(DateFormat.FORMAT1),
-                keyFinalBoard to finalBoard.toMap(),
+                keyFinalPosition to finalPosition.toMap(),
                 keyBookmarks to bookmarks.map { it.toMap() },
                 keyId to id,
                 "type" to "org.andstatus.game2048:GameRecord:1",
@@ -62,11 +62,11 @@ class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
                 val note: String = aMap[keyNote] as String? ?: ""
                 val id = newId ?: aMap[keyId]?.let { it as Int } ?: 0
                 val start: DateTimeTz? = aMap[keyStart]?.let { DateTime.parse(it as String) }
-                val finalBoard: Board? = aMap[keyFinalBoard]?.let { Board.fromJson(settings, it) }
-                val bookmarks: List<Board> = json.asJsonMap()[keyBookmarks]?.asJsonArray()
-                        ?.mapNotNull { Board.fromJson(settings, it) } ?: emptyList()
-                return if (start != null && finalBoard != null)
-                    ShortRecord(note, id, start, finalBoard, bookmarks)
+                val finalPosition: PositionData? = aMap[keyFinalPosition]?.let { PositionData.fromJson(settings, it) }
+                val bookmarks: List<PositionData> = json.asJsonMap()[keyBookmarks]?.asJsonArray()
+                        ?.mapNotNull { PositionData.fromJson(settings, it) } ?: emptyList()
+                return if (start != null && finalPosition != null)
+                    ShortRecord(note, id, start, finalPosition, bookmarks)
                 else null
             }
         }

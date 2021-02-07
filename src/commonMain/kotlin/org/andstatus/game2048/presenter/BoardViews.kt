@@ -1,7 +1,7 @@
 package org.andstatus.game2048.presenter
 
-import org.andstatus.game2048.model.Board
 import org.andstatus.game2048.model.PlacedPiece
+import org.andstatus.game2048.model.PositionData
 import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.view.ViewData
 
@@ -26,12 +26,12 @@ class BoardViews(val viewData: ViewData, val blocks: MutableList<PlacedBlock> = 
         blocks.add(PlacedBlock(block, placedPiece.square))
     }
 
-    fun load(board: Board) {
+    fun load(positionData: PositionData) {
         hideGameOver()
         blocks.forEach { it.block.removeFromParent() }
         blocks.clear()
 
-        board.pieces().forEach {
+        positionData.pieces().forEach {
             addBlock(it)
         }
     }

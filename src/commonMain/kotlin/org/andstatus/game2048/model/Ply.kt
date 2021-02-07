@@ -24,8 +24,8 @@ data class Ply(val player: PlayerEnum, val plyEnum: PlyEnum, val seconds: Int, v
     companion object{
         val emptyPly = Ply(PlayerEnum.COMPOSER, PlyEnum.EMPTY, 0, emptyList())
 
-        fun composerPly(board: Board) =
-                Ply(PlayerEnum.COMPOSER, PlyEnum.LOAD, board.gameClock.playedSeconds, listOf(PieceMoveLoad(board)))
+        fun composerPly(positionData: PositionData) =
+                Ply(PlayerEnum.COMPOSER, PlyEnum.LOAD, positionData.gameClock.playedSeconds, listOf(PieceMoveLoad(positionData)))
 
         fun computerPly(placedPiece: PlacedPiece, seconds: Int) =
                 Ply(PlayerEnum.COMPUTER, PlyEnum.PLACE, seconds, listOf(PieceMovePlace(placedPiece)))
