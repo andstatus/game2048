@@ -1,7 +1,5 @@
 package org.andstatus.game2048.model
 
-import org.andstatus.game2048.Settings
-
 private const val keyPieceMoveEnum = "moveName"
 private const val keyFirst = "first"
 private const val keySecond = "second"
@@ -36,36 +34,36 @@ sealed class PieceMove(val pieceMoveEnum: PieceMoveEnum) {
     }
 
     companion object {
-        fun fromJson(settings: Settings, json: Any): PieceMove? {
+        fun fromJson(board: Board, json: Any): PieceMove? {
             val aMap: Map<String, Any> = json.asJsonMap()
             val moveEnum = aMap[keyPieceMoveEnum]?.let { PieceMoveEnum.fromId(it as String) }
             return when(moveEnum) {
                 PieceMoveEnum.ONE -> {
-                    val first = aMap[keyFirst]?.let { PlacedPiece.fromJson(settings, it) }
-                    val destination = aMap[keyDestination]?.let { Square.fromJson(settings, it) }
+                    val first = aMap[keyFirst]?.let { PlacedPiece.fromJson(board, it) }
+                    val destination = aMap[keyDestination]?.let { Square.fromJson(board, it) }
                     return if (first != null && destination != null)
                         PieceMoveOne(first, destination)
                     else
                         null;
                 }
                 PieceMoveEnum.MERGE -> {
-                    val first = aMap[keyFirst]?.let { PlacedPiece.fromJson(settings, it) }
-                    val second = aMap[keySecond]?.let { PlacedPiece.fromJson(settings, it) }
-                    val merged = aMap[keyMerged]?.let { PlacedPiece.fromJson(settings, it) }
+                    val first = aMap[keyFirst]?.let { PlacedPiece.fromJson(board, it) }
+                    val second = aMap[keySecond]?.let { PlacedPiece.fromJson(board, it) }
+                    val merged = aMap[keyMerged]?.let { PlacedPiece.fromJson(board, it) }
                     return if (first != null && second != null && merged != null)
                         PieceMoveMerge(first,second, merged)
                     else
                         null;
                 }
                 PieceMoveEnum.PLACE -> {
-                    val first = aMap[keyFirst]?.let { PlacedPiece.fromJson(settings, it) }
+                    val first = aMap[keyFirst]?.let { PlacedPiece.fromJson(board, it) }
                     return if (first != null)
                         PieceMovePlace(first)
                     else
                         null;
                 }
                 PieceMoveEnum.LOAD -> {
-                    val position = aMap[keyPosition]?.let { PositionData.fromJson(settings, it) }
+                    val position = aMap[keyPosition]?.let { PositionData.fromJson(board, it) }
                     return if (position != null)
                         PieceMoveLoad(position)
                     else

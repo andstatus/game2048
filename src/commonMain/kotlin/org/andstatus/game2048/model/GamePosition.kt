@@ -6,10 +6,13 @@ import kotlin.random.Random
 
 /** @author yvolk@yurivolkov.com */
 class GamePosition(val settings: Settings, val prevPly: Ply, val data: PositionData) {
+    val board get() = data.board
     val gameClock get() = data.gameClock
     val score get() = data.score
 
-    constructor(settings: Settings) : this(settings, Ply.emptyPly, PositionData(settings))
+    companion object {
+        fun newEmpty(settings: Settings) = GamePosition(settings, Ply.emptyPly, PositionData(settings.defaultBoard))
+    }
 
     fun Ply.nextPosition(positionData: PositionData) = when {
         this.isNotEmpty() && (pieceMoves.isNotEmpty() || settings.allowUsersMoveWithoutBlockMoves) -> this
@@ -50,14 +53,14 @@ class GamePosition(val settings: Settings, val prevPly: Ply, val data: PositionD
         val newData = this.data.forNextPly()
         val pieceMoves = mutableListOf<PieceMove>()
         val direction = plyEnum.reverseDirection()
-        var square: Square? = settings.board.firstSquareToIterate(direction)
+        var square: Square? = board.firstSquareToIterate(direction)
         while (square != null) {
-            val found = settings.board.nextPlacedPieceInThe(square, direction, newData)
+            val found = board.nextPlacedPieceInThe(square, direction, newData)
             if (found == null) {
                 square = square.nextToIterate(direction)
             } else {
                 newData[found.square] = null
-                val next = settings.board.nextPlacedPieceInThe(found.square, direction, newData)
+                val next = board.nextPlacedPieceInThe(found.square, direction, newData)
                 if (next != null && found.piece == next.piece) {
                     // merge equal blocks
                     val merged = found.piece.next()

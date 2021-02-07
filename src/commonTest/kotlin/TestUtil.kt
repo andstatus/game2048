@@ -31,9 +31,9 @@ fun ViewData.presentedPieces() = presenter.boardViews.blocksOnBoard.map { it.fir
 fun ViewData.blocksAt(square: Square) = presenter.boardViews.getAll(square).map { it.piece }
 
 fun ViewData.modelAndViews() =
-        "Model:     " + presenter.model.positionData.array.mapIndexed { ind, piece ->
-            ind.toString() + ":" + (piece?.text ?: "-")
-        } +
+    "Model:     " + presenter.model.gamePosition.data.array.mapIndexed { ind, piece ->
+        ind.toString() + ":" + (piece?.text ?: "-")
+    } +
         (if (presenter.model.history.currentGame.shortRecord.bookmarks.isNotEmpty())
             "  bookmarks: " + presenter.model.history.currentGame.shortRecord.bookmarks.size
             else "") +

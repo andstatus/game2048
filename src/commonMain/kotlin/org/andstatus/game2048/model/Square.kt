@@ -1,7 +1,5 @@
 package org.andstatus.game2048.model
 
-import org.andstatus.game2048.Settings
-
 private const val keyX = "x"
 private const val keyY = "y"
 
@@ -32,12 +30,12 @@ data class Square(val x: Int, val y: Int) {
     )
 
     companion object {
-        fun fromJson(settings: Settings, json: Any): Square? {
+        fun fromJson(board: Board, json: Any): Square? {
             val aMap: Map<String, Any> = json.asJsonMap()
             val x = aMap[keyX] as Int?
             val y = aMap[keyY] as Int?
             return if (x != null && x >= 0 && y != null && y >= 0)
-                settings.board.toSquare(x, y)
+                board.toSquare(x, y)
             else
                 null;
         }

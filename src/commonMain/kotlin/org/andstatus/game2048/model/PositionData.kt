@@ -4,7 +4,6 @@ import com.soywiz.klock.DateFormat
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.kmem.isOdd
-import org.andstatus.game2048.Settings
 import kotlin.random.Random
 
 private const val keyPlyNumber = "moveNumber"
@@ -16,8 +15,8 @@ private const val keyPlayedSeconds = "playedSeconds"
 private val SUMMARY_FORMAT = DateFormat("yyyy-MM-dd HH:mm")
 
 class PositionData(
-    val settings: Settings,
-    val array: Array<Piece?> = Array(settings.board.size) { null },
+    val board: Board,
+    val array: Array<Piece?> = Array(board.size) { null },
     var score: Int = 0,
     val dateTime: DateTimeTz = DateTimeTz.nowLocal(),
     val gameClock: GameClock = GameClock(),
@@ -36,7 +35,7 @@ class PositionData(
 
     private fun findFreeSquare(freeIndToFind: Int): Square? {
         var freeInd = -1
-        settings.board.array.forEach { square ->
+        board.array.forEach { square ->
             if (array[square.ind] == null ) {
                 freeInd++
                 if (freeInd == freeIndToFind) return square
@@ -45,14 +44,14 @@ class PositionData(
         return null
     }
 
-    fun pieces(): List<PlacedPiece> = settings.board.array.mapNotNull { square ->
+    fun pieces(): List<PlacedPiece> = board.array.mapNotNull { square ->
         array[square.ind]?.let { piece -> PlacedPiece(piece, square) }
     }
 
     fun freeCount(): Int = array.count { it == null }
 
     fun noMoreMoves(): Boolean {
-        settings.board.array.forEach { square ->
+        board.array.forEach { square ->
             array[square.ind]?.let { piece ->
                 if (square.hasMove(piece)) return false
             } ?: return false
@@ -89,18 +88,18 @@ class PositionData(
         ind.toString() + ":" + (piece ?: "-")
     } + ", score:$score, time:${dateTime.format(DateFormat.FORMAT1)}"
 
-    fun copy() = PositionData(settings, array.copyOf(), score, dateTime, gameClock.copy(), plyNumber)
+    fun copy() = PositionData(board, array.copyOf(), score, dateTime, gameClock.copy(), plyNumber)
     fun forAutoPlaying(seconds: Int, isForward: Boolean) = PositionData(
-        settings, array.copyOf(), score,
+        board, array.copyOf(), score,
         dateTime, if (seconds == 0) gameClock.copy() else GameClock(seconds), plyNumber + (if (isForward) 1 else -1)
     )
-    fun forNextPly() = PositionData(settings, array.copyOf(), score, DateTimeTz.nowLocal(), gameClock,
+    fun forNextPly() = PositionData(board, array.copyOf(), score, DateTimeTz.nowLocal(), gameClock,
         plyNumber + 1
     )
 
     companion object {
 
-        fun fromJson(settings: Settings, json: Any): PositionData? {
+        fun fromJson(board: Board, json: Any): PositionData? {
             val aMap: Map<String, Any> = json.asJsonMap()
             val pieces: Array<Piece?>? = aMap[keyPieces]?.asJsonArray()
                     ?.map { Piece.fromId(it as Int) }?.toTypedArray()
@@ -109,8 +108,8 @@ class PositionData(
             val dateTime: DateTimeTz? = aMap[keyDateTime]?.let { DateTime.parse(it as String)}
             val playedSeconds: Int = aMap[keyPlayedSeconds] as Int? ?: 0
             val plyNumber: Int = aMap[keyPlyNumber] as Int? ?: 0
-            return if (pieces != null && score != null && dateTime != null && size == settings.board.size)
-                PositionData(settings, pieces, score, dateTime, GameClock(playedSeconds), plyNumber)
+            return if (pieces != null && score != null && dateTime != null && size == board.size)
+                PositionData(board, pieces, score, dateTime, GameClock(playedSeconds), plyNumber)
             else null
         }
 

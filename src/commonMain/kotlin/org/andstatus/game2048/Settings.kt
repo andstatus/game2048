@@ -29,7 +29,7 @@ class Settings(val storage: MyStorage) {
     var boardHeight = boardWidth
     var colorThemeEnum: ColorThemeEnum = ColorThemeEnum.load(storage.getOrNull(keyColorTheme))
     var aiAlgorithm: AiAlgorithm = AiAlgorithm.load(storage.getOrNull(keyAiAlgorithm))
-    var board = Board(this)
+    var defaultBoard = Board(this)
 
     companion object {
         fun load(stage: Stage): Settings = MyStorage.load(stage).let { storage ->

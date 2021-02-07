@@ -8,7 +8,7 @@ import org.andstatus.game2048.view.ViewData
 class BoardViews(val viewData: ViewData, val blocks: MutableList<PlacedBlock> = ArrayList()) {
 
     val blocksOnBoard: List<List<Block>>
-        get() = viewData.settings.board.array
+        get() = viewData.presenter.model.gamePosition.board.array
             .map { square -> blocks.filter { it.square == square} }
             .map { it.map { it.block } }
 

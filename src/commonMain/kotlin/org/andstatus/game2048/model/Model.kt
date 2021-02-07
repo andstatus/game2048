@@ -6,14 +6,13 @@ import org.andstatus.game2048.Settings
 /** @author yvolk@yurivolkov.com */
 class Model(private val coroutineScope: CoroutineScope, val history: History) {
     val settings: Settings = history.settings
-    var gamePosition = GamePosition(settings)
-    val positionData: PositionData get() = gamePosition.data
+    var gamePosition = GamePosition.newEmpty(settings)
 
-    val moveNumber: Int get() = positionData.moveNumber
-    val isBookmarked get() = history.currentGame.shortRecord.bookmarks.any { it.plyNumber == positionData.plyNumber }
-    val gameClock get() = positionData.gameClock
+    val moveNumber: Int get() = gamePosition.data.moveNumber
+    val isBookmarked get() = history.currentGame.shortRecord.bookmarks.any { it.plyNumber == gamePosition.data.plyNumber }
+    val gameClock get() = gamePosition.data.gameClock
     val bestScore get() = history.bestScore
-    val score get() = positionData.score
+    val score get() = gamePosition.data.score
 
     val gameMode: GameMode get() = history.gameMode
 
@@ -42,7 +41,7 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
 
     fun restart(): List<Ply> {
         gameMode.modeEnum = GameModeEnum.PLAY
-        return composerMove(PositionData(settings), false) + Ply.delay() + randomComputerMove()
+        return composerMove(PositionData(gamePosition.board), false) + Ply.delay() + randomComputerMove()
     }
 
     fun restoreGame(id: Int): List<Ply> {
@@ -72,7 +71,7 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
 
     fun undoToStart(): List<Ply> {
         history.historyIndex = 0
-        return composerMove(PositionData(settings), true)
+        return composerMove(PositionData(gamePosition.board), true)
     }
 
     fun canRedo(): Boolean {
@@ -96,7 +95,7 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
 
     private fun GamePosition.update(isRedo: Boolean = false): List<Ply> {
         if (!isRedo && prevPly.isNotEmpty()) {
-            history.add(prevPly, data)
+            history.add(this)
         }
         gamePosition = this
         return if (prevPly.isEmpty()) emptyList() else listOf(prevPly)

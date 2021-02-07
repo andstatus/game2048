@@ -45,7 +45,7 @@ class History(val settings: Settings,
                 myMeasured("Current game loaded") {
                     settings.storage.getOrNull(keyCurrentGame)
                             ?.let { GameRecord.fromJson(settings, it) }
-                            ?: GameRecord.newWithPositionAndMoves(PositionData(settings), emptyList(), emptyList())
+                            ?: GameRecord.newWithPositionAndMoves(settings.defaultBoard, PositionData(settings.defaultBoard), emptyList(), emptyList())
                 }
             }
             History(settings, dCurrentGame.await())
@@ -150,10 +150,10 @@ class History(val settings: Settings,
             else -> currentGame.plies[historyIndex]
         }
 
-    fun add(ply: Ply, positionData: PositionData) {
-        currentGame = when (ply.plyEnum) {
+    fun add(position: GamePosition) {
+        currentGame = when (position.prevPly.plyEnum) {
             PlyEnum.LOAD -> {
-                GameRecord.newWithPositionAndMoves(positionData, emptyList(), emptyList())
+                GameRecord.newWithPositionAndMoves(position.board, position.data, emptyList(), emptyList())
             }
             else -> {
                 val bookmarksNew = when {
@@ -177,9 +177,9 @@ class History(val settings: Settings,
                     else -> {
                         currentGame.plies.take(historyIndex)
                     }
-                } + ply
+                } + position.prevPly
                 with(currentGame.shortRecord) {
-                    GameRecord(GameRecord.ShortRecord(note, id, start, positionData, bookmarksNew), playerMoves)
+                    GameRecord(GameRecord.ShortRecord(board, note, id, start, position.data, bookmarksNew), playerMoves)
                 }
             }
         }
@@ -190,7 +190,7 @@ class History(val settings: Settings,
     fun createBookmark() {
         currentGame = with(currentGame.shortRecord) {
             GameRecord(
-                GameRecord.ShortRecord(note, id, start, finalPosition, bookmarks + finalPosition.copy()),
+                GameRecord.ShortRecord(board, note, id, start, finalPosition, bookmarks + finalPosition.copy()),
                 currentGame.plies
             )
         }
@@ -200,7 +200,7 @@ class History(val settings: Settings,
     fun deleteBookmark() {
         currentGame = with(currentGame.shortRecord) {
             GameRecord(
-                GameRecord.ShortRecord(note, id, start, finalPosition, bookmarks
+                GameRecord.ShortRecord(board, note, id, start, finalPosition, bookmarks
                     .filterNot { it.plyNumber == finalPosition.plyNumber }),
                 currentGame.plies
             )
@@ -214,7 +214,7 @@ class History(val settings: Settings,
             currentGame.plies.lastOrNull()?.player == PlayerEnum.COMPUTER
 
     fun undo(): Ply? {
-        if (historyIndex < 0 && currentGame.plies.size > 0) {
+        if (historyIndex < 0 && currentGame.plies.isNotEmpty()) {
             historyIndex = currentGame.plies.size - 1
         } else if (historyIndex > 0 && historyIndex < currentGame.plies.size)
             historyIndex--
