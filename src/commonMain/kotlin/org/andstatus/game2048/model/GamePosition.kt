@@ -18,13 +18,13 @@ private val SUMMARY_FORMAT = DateFormat("yyyy-MM-dd HH:mm")
 /** @author yvolk@yurivolkov.com */
 class GamePosition(val board: Board,
                    val prevPly: Ply = Ply.emptyPly,
-                   val array: Array<Piece?> = Array(board.size) { null },
+                   val pieces: Array<Piece?> = Array(board.size) { null },
                    var score: Int = 0,
-                   val dateTime: DateTimeTz = DateTimeTz.nowLocal(),
+                   val startingDateTime: DateTimeTz = DateTimeTz.nowLocal(),
                    val gameClock: GameClock = GameClock(),
                    var plyNumber: Int = 0) {
 
-    val timeString get() = dateTime.format(SUMMARY_FORMAT)
+    val startingDateTimeString get() = startingDateTime.format(SUMMARY_FORMAT)
 
     val moveNumber: Int get() {
         if (plyNumber < 2 ) return 1
@@ -38,7 +38,7 @@ class GamePosition(val board: Board,
             else -> Ply.emptyPly
         }.let { ply ->
             with(position) {
-                GamePosition(board, ply, array, score, dateTime, gameClock, plyNumber)
+                GamePosition(board, ply, pieces, score, startingDateTime, gameClock, plyNumber)
             }
         }
 
@@ -58,7 +58,7 @@ class GamePosition(val board: Board,
     }
 
     fun copy(): GamePosition = GamePosition(board, prevPly.copy(),
-        array.copyOf(), score, dateTime, gameClock.copy(), plyNumber)
+        pieces.copyOf(), score, startingDateTime, gameClock.copy(), plyNumber)
 
     fun nextNoPly() = Ply.emptyPly.nextPosition(this)
 
@@ -67,15 +67,15 @@ class GamePosition(val board: Board,
     private fun forAutoPlaying(seconds: Int, isForward: Boolean) = GamePosition(
         board,
         prevPly.copy(),
-        array.copyOf(),
+        pieces.copyOf(),
         score,
-        dateTime,
+        startingDateTime,
         if (seconds == 0) gameClock.copy() else GameClock(seconds),
         plyNumber + (if (isForward) 1 else -1)
     )
 
-    private fun forNextPly() = GamePosition(board, Ply.emptyPly, array.copyOf(), score, DateTimeTz.nowLocal(), gameClock,
-        plyNumber + 1)
+    private fun forNextPly() = GamePosition(board, Ply.emptyPly,
+        pieces.copyOf(), score, DateTimeTz.nowLocal(), gameClock, plyNumber + 1)
 
     fun composerPly(position: GamePosition, isRedo: Boolean = false): GamePosition {
         val ply = Ply.composerPly(position)
@@ -216,7 +216,7 @@ class GamePosition(val board: Board,
     private fun findFreeSquare(freeIndToFind: Int): Square? {
         var freeInd = -1
         board.array.forEach { square ->
-            if (array[square.ind] == null ) {
+            if (pieces[square.ind] == null ) {
                 freeInd++
                 if (freeInd == freeIndToFind) return square
             }
@@ -225,14 +225,14 @@ class GamePosition(val board: Board,
     }
 
     fun placedPieces(): List<PlacedPiece> = board.array.mapNotNull { square ->
-        array[square.ind]?.let { piece -> PlacedPiece(piece, square) }
+        pieces[square.ind]?.let { piece -> PlacedPiece(piece, square) }
     }
 
-    fun freeCount(): Int = array.count { it == null }
+    fun freeCount(): Int = pieces.count { it == null }
 
     fun noMoreMoves(): Boolean {
         board.array.forEach { square ->
-            array[square.ind]?.let { piece ->
+            pieces[square.ind]?.let { piece ->
                 if (square.hasMove(piece)) return false
             } ?: return false
         }
@@ -250,21 +250,21 @@ class GamePosition(val board: Board,
         ?.let { square -> get(square)?.let { it == piece } ?: true }
         ?: false
 
-    operator fun get(square: Square): Piece? = array[square.ind]
+    operator fun get(square: Square): Piece? = pieces[square.ind]
 
     operator fun set(square: Square, value: Piece?) {
-        array[square.ind] = value
+        pieces[square.ind] = value
     }
 
     fun toMap(): Map<String, Any> = mapOf(
         keyPlyNumber to plyNumber,
-        keyPieces to array.map { it?.id ?: 0 },
+        keyPieces to pieces.map { it?.id ?: 0 },
         keyScore to score,
-        keyDateTime to dateTime.format(DateFormat.FORMAT1),
+        keyDateTime to startingDateTime.format(DateFormat.FORMAT1),
         keyPlayedSeconds to gameClock.playedSeconds
     )
 
-    override fun toString(): String = "$plyNumber. pieces:" + array.mapIndexed { ind, piece ->
+    override fun toString(): String = "$plyNumber. pieces:" + pieces.mapIndexed { ind, piece ->
         ind.toString() + ":" + (piece ?: "-")
-    } + ", score:$score, time:${dateTime.format(DateFormat.FORMAT1)}"
+    } + ", score:$score, time:${startingDateTime.format(DateFormat.FORMAT1)}"
 }

@@ -23,7 +23,10 @@ class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
 
     companion object {
         fun newWithPositionAndMoves(position: GamePosition, bookmarks: List<GamePosition>, plies: List<Ply>) =
-                GameRecord(ShortRecord(position.board,"", 0, position.dateTime, position, bookmarks), plies)
+            GameRecord(
+                ShortRecord(position.board, "", 0, position.startingDateTime, position, bookmarks),
+                plies
+            )
 
         fun fromJson(settings: Settings, json: Any, newId: Int? = null): GameRecord? =
                 ShortRecord.fromJson(settings, json, newId)?.let { shortRecord ->
@@ -40,7 +43,7 @@ class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
     class ShortRecord(val board: Board, val note: String, var id: Int, val start: DateTimeTz,
                       val finalPosition: GamePosition, val bookmarks: List<GamePosition>) {
 
-        override fun toString(): String = "${finalPosition.score} ${finalPosition.timeString} id:$id"
+        override fun toString(): String = "${finalPosition.score} ${finalPosition.startingDateTimeString} id:$id"
 
         val jsonFileName: String get() =
             "${start.format(FILENAME_FORMAT)}_${finalPosition.score}.game2048.json"

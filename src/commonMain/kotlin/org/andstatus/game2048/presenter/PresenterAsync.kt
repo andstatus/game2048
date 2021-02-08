@@ -30,14 +30,14 @@ fun CoroutineScope.aiPlayLoop(presenter: Presenter, startCount: Int) = launch {
                 && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
             while (moveIsInProgress.value) delay(20)
             val gamePosition = model.gamePosition
-            val nextMove = Stopwatch().start().let { stopWatch ->
+            val aiResult = Stopwatch().start().let { stopWatch ->
                 aiPlayer.nextPly(gamePosition).also {
                     delay(gameMode.delayMs.toLong() - stopWatch.elapsed.millisecondsLong)
                 }
             }
             if (!moveIsInProgress.value && model.gamePosition === gamePosition && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
                 view.gameStage.launch {
-                    userMove(nextMove.move)
+                    userMove(aiResult.move)
                 }.join()
             }
         }

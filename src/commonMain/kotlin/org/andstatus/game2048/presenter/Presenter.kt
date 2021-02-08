@@ -20,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.ai.AiPlayer
+import org.andstatus.game2048.ai.AiResult
 import org.andstatus.game2048.closeGameApp
 import org.andstatus.game2048.gameStopWatch
 import org.andstatus.game2048.loadJsonGameRecord
@@ -421,7 +422,7 @@ class Presenter(val view: ViewData, history: History) {
     fun userMove(plyEnum: PlyEnum) {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
-        view.mainView.showStatusBar(null)
+        view.mainView.showStatusBar(AiResult.empty)
         model.userMove(plyEnum).let {
             if (it.isEmpty()) it else it + model.randomComputerMove()
         }.present()
@@ -461,7 +462,7 @@ class Presenter(val view: ViewData, history: History) {
     fun showMainView() {
         if (view.closed) return
 
-        view.mainView.show(buttonsToShow(), gameMode.speed, null)
+        view.mainView.show(buttonsToShow(), gameMode.speed)
         if (gameMode.aiEnabled && gameMode.modeEnum == GameModeEnum.PLAY) {
             multithreadedCoroutineScope.showAiTip(this)
             myLog("After AI Launch")

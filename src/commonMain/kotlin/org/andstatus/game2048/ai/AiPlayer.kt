@@ -13,55 +13,53 @@ class AiPlayer(val settings: Settings) {
 
     private class MoveAndScore(val plyEnum: PlyEnum, val referenceScore: Int, val maxScore: Int) {
         constructor(position: GamePosition): this(position.prevPly.plyEnum, position.prevPly.points(), 0)
-    }
 
-    fun nextPly(position: GamePosition): AiResult {
-        return Stopwatch().start().let { stopWatch ->
-            val mas: MoveAndScore =  when(settings.aiAlgorithm) {
-                AiAlgorithm.RANDOM -> MoveAndScore(allowedRandomMove(position))
-                AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> MoveAndScore(moveWithMaxScore(position))
-                AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(position, 8)
-                AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(position, 10)
-                AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(position, 50)
-            }
-            AiResult(mas.plyEnum, mas.referenceScore, mas.maxScore, stopWatch.elapsed.millisecondsInt)
+        fun toAiResult(takenMillis: Int) = if (plyEnum.isEmpty()) {
+            AiResult.empty
+        } else {
+            AiResult(plyEnum, referenceScore, maxScore, takenMillis)
         }
     }
 
-    private fun moveWithMaxScore(position: GamePosition): GamePosition {
-        return  UserPlies
-            .map(position::calcUserPly)
-            .filter { it.prevPly.isNotEmpty() }
-            .maxByOrNull{ it.prevPly.points() }
-            ?: allowedRandomMove(position)
+    fun nextPly(position: GamePosition): AiResult = Stopwatch().start().let { stopWatch ->
+        when (settings.aiAlgorithm) {
+            AiAlgorithm.RANDOM -> MoveAndScore(allowedRandomMove(position))
+            AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> MoveAndScore(moveWithMaxScore(position))
+            AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(position, 8)
+            AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(position, 10)
+            AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(position, 50)
+        }.toAiResult(stopWatch.elapsed.millisecondsInt)
     }
 
-    private fun maxScoreNMoves(position: GamePosition, nMoves: Int): MoveAndScore {
-        return playNMoves(position, nMoves)
-            .maxByOrNull(this::meanScoreForList)
-            ?.let {
-                MoveAndScore(it.key, meanScoreForList(it), it.value.map{ it.score}.maxOrNull() ?: 0)
-            }
-            ?: MoveAndScore(allowedRandomMove(position))
-    }
+    private fun moveWithMaxScore(position: GamePosition): GamePosition = UserPlies
+        .map(position::calcUserPly)
+        .filter { it.prevPly.isNotEmpty() }
+        .maxByOrNull{ it.prevPly.points() }
+        ?: position.nextNoPly()
 
-    private fun meanScoreForList(entry: Map.Entry<PlyEnum, List<GamePosition>>): Int {
-        return if (entry.value.isEmpty()) 0 else entry.value.sumBy(GamePosition::score) / entry.value.size
-    }
+    private fun maxScoreNMoves(position: GamePosition, nMoves: Int): MoveAndScore =
+        playNMoves(position, nMoves)
+        .maxByOrNull(this::meanScoreForList)
+        ?.let {
+            MoveAndScore(it.key, meanScoreForList(it), it.value.map{ it.score}.maxOrNull() ?: 0)
+        }
+        ?: MoveAndScore(position.nextNoPly())
 
-    private fun maxEmptyBlocksNMoves(position: GamePosition, nMoves: Int): MoveAndScore {
-        return playNMoves(position, nMoves)
-            .maxByOrNull {
-                if (it.value.isEmpty()) 0 else it.value.sumBy { it.freeCount() } / it.value.size
-            }
-            ?.let { entry ->
-                MoveAndScore(entry.key,
-                    if(entry.value.isEmpty()) 0 else entry.value.sumBy { it.score } / entry.value.size,
-                    entry.value.map { it.score }.maxOrNull() ?: 0
-                )
-            }
-            ?: MoveAndScore(allowedRandomMove(position))
-    }
+    private fun meanScoreForList(entry: Map.Entry<PlyEnum, List<GamePosition>>): Int =
+        if (entry.value.isEmpty()) 0 else entry.value.sumBy(GamePosition::score) / entry.value.size
+
+    private fun maxEmptyBlocksNMoves(position: GamePosition, nMoves: Int): MoveAndScore =
+        playNMoves(position, nMoves)
+        .maxByOrNull {
+            if (it.value.isEmpty()) 0 else it.value.sumBy { it.freeCount() } / it.value.size
+        }
+        ?.let { entry ->
+            MoveAndScore(entry.key,
+                if(entry.value.isEmpty()) 0 else entry.value.sumBy { it.score } / entry.value.size,
+                entry.value.map { it.score }.maxOrNull() ?: 0
+            )
+        }
+        ?: MoveAndScore(position.nextNoPly())
 
     private fun playNMoves(position: GamePosition, nMoves: Int): Map<PlyEnum, List<GamePosition>> {
         var plyToPositions: Map<PlyEnum, List<GamePosition>> = playUserMoves(position)
@@ -107,7 +105,7 @@ class AiPlayer(val settings: Settings) {
             )
         }
 
-        return list.maxByOrNull { it.referenceScore } ?: MoveAndScore(allowedRandomMove(position))
+        return list.maxByOrNull { it.referenceScore } ?: MoveAndScore(position.nextNoPly())
     }
 
     private fun playRandomTillEnd(positionIn: GamePosition): GamePosition {

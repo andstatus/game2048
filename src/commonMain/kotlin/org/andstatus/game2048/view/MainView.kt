@@ -13,17 +13,17 @@ class MainView private constructor(
     val boardView: BoardView,
     val statusBar: StatusBar) : Container() {
 
-    fun show(appBarButtonsToShow: List<AppBarButtonsEnum>, playSpeed: Int, aiResult: AiResult?) {
+    fun show(appBarButtonsToShow: List<AppBarButtonsEnum>, playSpeed: Int) {
         if (appBar.viewData.closed) return
 
         appBar.show(this, appBarButtonsToShow)
         scoreBar.show(this, playSpeed)
-        statusBar.show(this, aiResult)
+        statusBar.show(this, AiResult.empty)
         boardView.setOnTop(this)
         this.addTo(appBar.viewData.gameStage)
     }
 
-    fun showStatusBar(aiResult: AiResult?) {
+    fun showStatusBar(aiResult: AiResult) {
         if (appBar.viewData.closed || this.parent == null) return
 
         statusBar.show(this, aiResult)

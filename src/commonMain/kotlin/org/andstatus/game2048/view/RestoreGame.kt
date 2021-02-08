@@ -57,9 +57,15 @@ fun ViewData.showRestoreGame(prevGames: List<GameRecord.ShortRecord>) = myWindow
             stringResources.text("duration"), stringResources.text("id"),
             stringResources.text("note")) {}
 
-        prevGames.sortedByDescending { it.finalPosition.dateTime }.forEachIndexed { index, game ->
-            oneRow(index + 1, game.finalPosition.score.toString(), game.finalPosition.timeString,
-                game.finalPosition.gameClock.playedSecondsString, game.id.toString(), game.note) {
+        prevGames.sortedByDescending { it.finalPosition.startingDateTime }.forEachIndexed { index, game ->
+            oneRow(
+                index + 1,
+                game.finalPosition.score.toString(),
+                game.finalPosition.startingDateTimeString,
+                game.finalPosition.gameClock.playedSecondsString,
+                game.id.toString(),
+                game.note
+            ) {
                 window.removeFromParent()
                 presenter.onHistoryItemClick(game.id)
             }

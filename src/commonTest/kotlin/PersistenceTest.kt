@@ -40,7 +40,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
             board.toSquare(1, 3))))
         val ply3 = Ply.computerPly(PlacedPiece(Piece.N4, board.toSquare(2, 1)), 2)
         val position = GamePosition(board, Ply.emptyPly,
-            array = arrayOf(
+            pieces = arrayOf(
                 null, null, null, null,
                 null, null, null, null,
                 null, null, Piece.N4, null,
@@ -108,11 +108,11 @@ class PersistenceTest : ViewsForTesting(log = true) {
 
         presenter.onRestartClick()
         assertEquals(1, presenter.boardViews.blocks.size, modelAndViews())
-        assertEquals( 1, presenter.model.gamePosition.array.count { it != null }, modelAndViews())
+        assertEquals( 1, presenter.model.gamePosition.pieces.count { it != null }, modelAndViews())
         assertEquals(1, presenter.model.history.currentGame.plies.size, currentGameString())
 
         presenter.computerMove()
-        assertEquals(2, presenter.model.gamePosition.array.count { it != null }, modelAndViews())
+        assertEquals(2, presenter.model.gamePosition.pieces.count { it != null }, modelAndViews())
         assertEquals(2, presenter.model.history.currentGame.plies.size, currentGameString())
     }
 }

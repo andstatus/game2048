@@ -124,7 +124,7 @@ class History(val settings: Settings,
         val maxGames = gameIdsRange.last
         if (prevGames.size > maxOlderGames) {
             val keepAfter = DateTimeTz.nowLocal().minus(1.weeks)
-            val olderGames = prevGames.filter { it.finalPosition.dateTime < keepAfter }
+            val olderGames = prevGames.filter { it.finalPosition.startingDateTime < keepAfter }
             val id = when {
                 olderGames.size > 20 -> olderGames.minByOrNull { it.finalPosition.score }?.id
                 prevGames.size >= maxGames -> prevGames.minByOrNull { it.finalPosition.score }?.id
@@ -133,7 +133,7 @@ class History(val settings: Settings,
             if (id != null) return id
         }
         return (gameIdsRange.find { id -> prevGames.none { it.id == id } }
-            ?: prevGames.minByOrNull { it.finalPosition.dateTime }?.id
+            ?: prevGames.minByOrNull { it.finalPosition.startingDateTime }?.id
             ?: gameIdsRange.first)
     }
 
