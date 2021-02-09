@@ -42,31 +42,24 @@ class AiPlayer(val settings: Settings) {
 
     private fun maxScoreNMoves(position: GamePosition, nMoves: Int): AiResult =
         playNMoves(position, nMoves)
-        .maxByOrNull(this::meanScoreForList)
-        ?.let {
-            AiResult(it.key, meanScoreForList(it), it.value.map{ it.score}.maxOrNull() ?: 0)
+        .map {
+            AiResult(it.key,
+                if (it.value.isEmpty()) 0 else it.value.sumBy(GamePosition::score) / it.value.size,
+                it.value.map { it.score }.maxOrNull() ?: 0
+            )
         }
-        ?: AiResult.empty
+        .maxByOrNull{ it.referenceScore} ?: AiResult.empty
 
-    private fun meanScoreForList(entry: Map.Entry<PlyEnum, List<GamePosition>>): Int =
-        if (entry.value.isEmpty()) 0 else entry.value.sumBy(GamePosition::score) / entry.value.size
-
-    private fun playNMoves(position: GamePosition, nMoves: Int): Map<PlyEnum, List<GamePosition>> {
-        var plyToPositions: Map<PlyEnum, List<GamePosition>> = playUserPlies(position)
-            .fold(HashMap()) { aMap, mm ->
-                aMap.apply {
-                    put(mm.plyEnum, listOf(mm.position))
-                }
+    private fun playNMoves(position: GamePosition, nMoves: Int): Map<PlyEnum, List<GamePosition>> =
+        playUserPlies(position).map { firstMove ->
+            var positions: List<GamePosition> = listOf(firstMove.position)
+            repeat(nMoves - 1) {
+                positions = positions
+                    .flatMap(this::playUserPlies)
+                    .map { it.position }
             }
-        (2..nMoves).forEach {
-            plyToPositions = plyToPositions.mapValues {
-                it.value.flatMap { pos ->
-                    playUserPlies(pos).map(FirstMove::position)
-                }
-            }
-        }
-        return plyToPositions
-    }
+            firstMove.plyEnum to positions
+        }.toMap()
 
     private fun longestRandomPlayAdaptive(position: GamePosition, nAttemptsInitial: Int): AiResult =
         when (position.freeCount()) {
@@ -78,24 +71,19 @@ class AiPlayer(val settings: Settings) {
             longestRandomPlay(position, nAttemptsInitial * it)
         }
 
-    private fun longestRandomPlay(position: GamePosition, nAttempts: Int): AiResult {
-        val firstMoves: List<FirstMove> = playUserPlies(position)
-
-        val list: List<AiResult> = firstMoves.map { firstMove ->
-            val attempts: MutableList<GamePosition> = ArrayList()
+    private fun longestRandomPlay(position: GamePosition, nAttempts: Int): AiResult =
+        playUserPlies(position).map { firstMove ->
+            val positions: MutableList<GamePosition> = ArrayList()
             repeat(nAttempts) {
                 firstMove.position
                     .let(this::playRandomTillEnd)
-                    .also(attempts::add)
+                    .also(positions::add)
             }
             AiResult(firstMove.plyEnum,
-                attempts.sumBy { it.score } / attempts.size,
-                attempts.map { it.score }.maxOrNull() ?: 0
+                 if (positions.isEmpty()) 0 else positions.sumBy { it.score } / positions.size,
+                positions.map { it.score }.maxOrNull() ?: 0
             )
-        }
-
-        return list.maxByOrNull { it.referenceScore } ?: AiResult.empty
-    }
+        }.maxByOrNull { it.referenceScore } ?: AiResult.empty
 
     private fun playRandomTillEnd(positionIn: GamePosition): GamePosition {
         var position = positionIn
