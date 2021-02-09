@@ -60,7 +60,7 @@ class GamePosition(val board: Board,
     fun copy(): GamePosition = GamePosition(board, prevPly.copy(),
         pieces.copyOf(), score, startingDateTime, gameClock.copy(), plyNumber)
 
-    fun nextNoPly() = Ply.emptyPly.nextPosition(this)
+    fun noPly() = Ply.emptyPly.nextPosition(this)
 
     fun newEmpty() = GamePosition(board)
 
@@ -83,7 +83,7 @@ class GamePosition(val board: Board,
     }
 
     fun randomComputerPly(): GamePosition {
-        return calcPlacedRandomBlock()?.let { computerPly(it) } ?: nextNoPly()
+        return calcPlacedRandomBlock()?.let { computerPly(it) } ?: noPly()
     }
 
     private fun calcPlacedRandomBlock(): PlacedPiece? =
@@ -106,7 +106,7 @@ class GamePosition(val board: Board,
     }
 
     fun calcUserPly(plyEnum: PlyEnum): GamePosition = if (!UserPlies.contains(plyEnum)) {
-        nextNoPly()
+        noPly()
     } else with(forNextPly()) {
         val pieceMoves = mutableListOf<PieceMove>()
         val direction = plyEnum.reverseDirection()

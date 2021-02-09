@@ -13,10 +13,10 @@ fun CoroutineScope.showAiTip(presenter: Presenter) = launch {
         myLog("AI launch")
         val gamePosition = model.gamePosition
         aiPlayer.nextPly(gamePosition).also {
-            myLog("AI tip: ${it.move}")
+            myLog("AI tip: ${it.plyEnum}")
             if (model.gamePosition === gamePosition) {
                 view.gameStage.launch {
-                    myLog("Showing AI tip: ${it.move}")
+                    myLog("Showing AI tip: ${it.plyEnum}")
                     view.mainView.showStatusBar(it)
                 }
             }
@@ -37,7 +37,7 @@ fun CoroutineScope.aiPlayLoop(presenter: Presenter, startCount: Int) = launch {
             }
             if (!moveIsInProgress.value && model.gamePosition === gamePosition && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
                 view.gameStage.launch {
-                    userMove(aiResult.move)
+                    userMove(aiResult.plyEnum)
                 }.join()
             }
         }

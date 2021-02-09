@@ -68,7 +68,7 @@ class StatusBar(val viewData: ViewData): Container() {
                 return
             }
 
-            moveSuggested.text = move.symbol
+            moveSuggested.text = plyEnum.symbol
             scoreProjected.text =  if (maxScore > referenceScore) {
                 "$referenceScore - $maxScore"
             } else if (referenceScore == 0) {
