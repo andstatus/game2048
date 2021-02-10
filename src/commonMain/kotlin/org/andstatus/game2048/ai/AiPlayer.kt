@@ -36,7 +36,7 @@ class AiPlayer(val settings: Settings) {
             ?.let { entry ->
                 AiResult(entry.key,
                     if(entry.value.isEmpty()) 0 else entry.value.sumBy { it.score } / entry.value.size,
-                    entry.value.map { it.score }.maxOrNull() ?: 0
+                    entry.value.maxByOrNull { it.score }
                 )
             }
             ?: AiResult.empty
@@ -46,7 +46,7 @@ class AiPlayer(val settings: Settings) {
         .map {
             AiResult(it.key,
                 if (it.value.isEmpty()) 0 else it.value.sumBy(GamePosition::score) / it.value.size,
-                it.value.map { it.score }.maxOrNull() ?: 0
+                it.value.maxByOrNull { it.score }
             )
         }
         .maxByOrNull{ it.referenceScore} ?: AiResult.empty
@@ -83,7 +83,7 @@ class AiPlayer(val settings: Settings) {
             val selected = positions.sortedBy { it.score }.takeLast(positions.size / 2)
             AiResult(firstMove.plyEnum,
                  if (selected.isEmpty()) 0 else selected.sumBy { it.score } / selected.size,
-                selected.map { it.score }.maxOrNull() ?: 0
+                selected.maxByOrNull { it.score }
             )
         }.maxByOrNull { it.referenceScore } ?: AiResult.empty
 
