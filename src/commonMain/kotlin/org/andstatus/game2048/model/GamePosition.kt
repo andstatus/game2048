@@ -82,15 +82,13 @@ class GamePosition(val board: Board,
         return play(ply, isRedo)
     }
 
-    fun randomComputerPly(): GamePosition {
-        return calcPlacedRandomBlock()?.let { computerPly(it) } ?: noPly()
+    fun randomComputerPly(piece: Piece = randomComputerPiece()): GamePosition {
+        return getRandomFreeSquare()?.let { square ->
+            PlacedPiece(piece, square)
+        }?.let { computerPly(it) } ?: noPly()
     }
 
-    private fun calcPlacedRandomBlock(): PlacedPiece? =
-        getRandomFreeSquare()?.let { square ->
-            val piece = if (Random.nextDouble() < 0.9) Piece.N2 else Piece.N4
-            PlacedPiece(piece, square)
-        }
+    private fun randomComputerPiece() = if (Random.nextDouble() < 0.9) Piece.N2 else Piece.N4
 
     fun computerPly(placedPiece: PlacedPiece): GamePosition {
         return placedPiece.let {

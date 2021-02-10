@@ -3,6 +3,7 @@ package org.andstatus.game2048.ai
 import com.soywiz.klock.Stopwatch
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.model.GamePosition
+import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.PlyEnum
 import org.andstatus.game2048.model.PlyEnum.Companion.UserPlies
 
@@ -79,9 +80,10 @@ class AiPlayer(val settings: Settings) {
                     .let(this::playRandomTillEnd)
                     .also(positions::add)
             }
+            val selected = positions.sortedBy { it.score }.takeLast(positions.size / 2)
             AiResult(firstMove.plyEnum,
-                 if (positions.isEmpty()) 0 else positions.sumBy { it.score } / positions.size,
-                positions.map { it.score }.maxOrNull() ?: 0
+                 if (selected.isEmpty()) 0 else selected.sumBy { it.score } / selected.size,
+                selected.map { it.score }.maxOrNull() ?: 0
             )
         }.maxByOrNull { it.referenceScore } ?: AiResult.empty
 
@@ -90,7 +92,7 @@ class AiPlayer(val settings: Settings) {
         do {
             position = allowedRandomMove(position)
             if (position.prevPly.isNotEmpty()) {
-                position = position.randomComputerPly()
+                position = position.randomComputerPly(Piece.N2)
             }
         } while (position.prevPly.isNotEmpty())
         return position
@@ -100,7 +102,7 @@ class AiPlayer(val settings: Settings) {
         .mapNotNull { plyEnum ->
             position.calcUserPly(plyEnum)
                 .takeIf { it.prevPly.isNotEmpty() }
-                ?.randomComputerPly()
+                ?.randomComputerPly(Piece.N2)
                 ?.let { FirstMove(plyEnum, it) }
         }
 
