@@ -20,7 +20,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.ai.AiPlayer
-import org.andstatus.game2048.ai.AiResult
 import org.andstatus.game2048.closeGameApp
 import org.andstatus.game2048.gameStopWatch
 import org.andstatus.game2048.loadJsonGameRecord
@@ -90,7 +89,7 @@ class Presenter(val view: ViewData, history: History) {
     fun onMagicClicked() {
         logClick("Magic")
         gameMode.aiEnabled = false
-        if (gameMode.modeEnum != GameModeEnum.PLAY) {
+        if (gameMode.modeEnum == GameModeEnum.AI_PLAY) {
             gameMode.modeEnum = GameModeEnum.PLAY
             pauseGame()
         }
@@ -235,7 +234,6 @@ class Presenter(val view: ViewData, history: History) {
     fun onPlayClick() = afterStop {
         logClick("Play")
         gameMode.modeEnum = GameModeEnum.STOP
-        gameMode.aiEnabled = false
         pauseGame()
         updateMainView()
     }
@@ -422,7 +420,7 @@ class Presenter(val view: ViewData, history: History) {
     fun userMove(plyEnum: PlyEnum) {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
-        view.mainView.showStatusBar(AiResult.empty)
+        view.mainView.hideStatusBar()
         model.userMove(plyEnum).let {
             if (it.isEmpty()) it else it + model.randomComputerMove()
         }.present()
@@ -463,7 +461,7 @@ class Presenter(val view: ViewData, history: History) {
         if (view.closed) return
 
         view.mainView.show(buttonsToShow(), gameMode.speed)
-        if (gameMode.aiEnabled && gameMode.modeEnum == GameModeEnum.PLAY) {
+        if (gameMode.aiEnabled && gameMode.speed < 2) {
             multithreadedCoroutineScope.showAiTip(this)
             myLog("After AI Launch")
         }
@@ -508,6 +506,9 @@ class Presenter(val view: ViewData, history: History) {
             }
             else -> {
                 list.add(AppBarButtonsEnum.WATCH)
+                list.add(
+                    if (gameMode.aiEnabled) AppBarButtonsEnum.AI_ON else AppBarButtonsEnum.AI_OFF
+                )
                 if (model.moveNumber > 1 && model.isBookmarked) {
                     list.add(AppBarButtonsEnum.BOOKMARKED)
                 } else {

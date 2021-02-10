@@ -17,6 +17,7 @@ class StatusBar(val viewData: ViewData): Container() {
     val moveSuggested: Text
     var scoreProjected: Text
     val timeTaken: Text
+    var positionProjected: Text
 
     init {
         with(viewData) {
@@ -55,6 +56,10 @@ class StatusBar(val viewData: ViewData): Container() {
                 positionX(posX + scoreButtonWidth / 2)
                 positionY(barTop + textYPadding)
             }
+            positionProjected = text("", scoreLabelSize, gameColors.labelText, font, TextAlignment.MIDDLE_CENTER) {
+                positionX(posX + scoreButtonWidth / 2)
+                positionY(barTop + scoreLabelSize + textYPadding)
+            }
 
         }
     }
@@ -77,6 +82,8 @@ class StatusBar(val viewData: ViewData): Container() {
                 referenceScore.toString()
             }
             timeTaken.text = if (takenMillis == 0) "-" else takenMillis.toString()
+
+            positionProjected.text = if (moreMoves > 0) "+$moreMoves" else ""
         }
         addTo(parent)
     }

@@ -18,9 +18,15 @@ class MainView private constructor(
 
         appBar.show(this, appBarButtonsToShow)
         scoreBar.show(this, playSpeed)
-        statusBar.show(this, AiResult.empty)
+        hideStatusBar()
         boardView.setOnTop(this)
         this.addTo(appBar.viewData.gameStage)
+    }
+
+    fun hideStatusBar() {
+        if (appBar.viewData.closed || this.parent == null) return
+
+        statusBar.removeFromParent()
     }
 
     fun showStatusBar(aiResult: AiResult) {
@@ -36,7 +42,7 @@ class MainView private constructor(
                 val appBar = async { setupAppBar() }
                 val scoreBar = async { setupScoreBar() }
                 val boardView = async { BoardView(this@setupMainView) }
-                val statusBar = async { StatusBar(this@setupMainView) }
+                val statusBar = async { setupStatusBar() }
 
                 return MainView(appBar.await(), scoreBar.await(), boardView.await(), statusBar.await())
             }

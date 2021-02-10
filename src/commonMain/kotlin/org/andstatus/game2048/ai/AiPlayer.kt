@@ -19,14 +19,15 @@ class AiPlayer(val settings: Settings) {
             AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(position, 8)
             AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(position, 10)
             AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(position, 50)
-        }.withTime(stopWatch.elapsed.millisecondsInt)
+        }.withContext(position, stopWatch.elapsed.millisecondsInt)
     }
 
     private fun moveWithMaxScore(position: GamePosition): AiResult = UserPlies
         .map(position::calcUserPly)
         .filter { it.prevPly.isNotEmpty() }
-        .maxByOrNull{ it.prevPly.points() }
-        .let(::AiResult)
+        .maxByOrNull { it.prevPly.points() }
+        ?.let(::AiResult)
+        ?: AiResult.empty(position)
 
     private fun maxEmptyBlocksNMoves(position: GamePosition, nMoves: Int): AiResult =
         playNMoves(position, nMoves)
@@ -36,20 +37,20 @@ class AiPlayer(val settings: Settings) {
             ?.let { entry ->
                 AiResult(entry.key,
                     if(entry.value.isEmpty()) 0 else entry.value.sumBy { it.score } / entry.value.size,
-                    entry.value.maxByOrNull { it.score }
+                    entry.value.maxByOrNull { it.score } ?: position
                 )
             }
-            ?: AiResult.empty
+            ?: AiResult.empty(position)
 
     private fun maxScoreNMoves(position: GamePosition, nMoves: Int): AiResult =
         playNMoves(position, nMoves)
         .map {
             AiResult(it.key,
                 if (it.value.isEmpty()) 0 else it.value.sumBy(GamePosition::score) / it.value.size,
-                it.value.maxByOrNull { it.score }
+                it.value.maxByOrNull { it.score } ?: position
             )
         }
-        .maxByOrNull{ it.referenceScore} ?: AiResult.empty
+        .maxByOrNull{ it.referenceScore} ?: AiResult.empty(position)
 
     private fun playNMoves(position: GamePosition, nMoves: Int): Map<PlyEnum, List<GamePosition>> =
         playUserPlies(position).map { firstMove ->
@@ -83,9 +84,9 @@ class AiPlayer(val settings: Settings) {
             val selected = positions.sortedBy { it.score }.takeLast(positions.size / 2)
             AiResult(firstMove.plyEnum,
                  if (selected.isEmpty()) 0 else selected.sumBy { it.score } / selected.size,
-                selected.maxByOrNull { it.score }
+                selected.maxByOrNull { it.score } ?: position
             )
-        }.maxByOrNull { it.referenceScore } ?: AiResult.empty
+        }.maxByOrNull { it.referenceScore } ?: AiResult.empty(position)
 
     private fun playRandomTillEnd(positionIn: GamePosition): GamePosition {
         var position = positionIn
