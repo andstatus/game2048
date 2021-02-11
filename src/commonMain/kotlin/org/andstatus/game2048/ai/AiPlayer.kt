@@ -10,7 +10,7 @@ import org.andstatus.game2048.model.PlyEnum.Companion.UserPlies
 /** @author yvolk@yurivolkov.com */
 class AiPlayer(val settings: Settings) {
 
-    private class FirstMove(val plyEnum: PlyEnum, val position: GamePosition)
+    private class FirstMove(val plyEnum: PlyEnum, val positions: List<GamePosition>)
 
     fun nextPly(position: GamePosition): AiResult = Stopwatch().start().let { stopWatch ->
         when (settings.aiAlgorithm) {
@@ -18,7 +18,7 @@ class AiPlayer(val settings: Settings) {
             AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> moveWithMaxScore(position)
             AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(position, 8)
             AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(position, 10)
-            AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(position, 50)
+            AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(position, 5)
         }.withContext(position, stopWatch.elapsed.millisecondsInt)
     }
 
@@ -38,7 +38,7 @@ class AiPlayer(val settings: Settings) {
                 AiResult(entry.key,
                     if(entry.value.isEmpty()) 0 else entry.value.sumBy { it.score } / entry.value.size,
                     entry.value.maxByOrNull { it.score } ?: position,
-                    "n$nMoves",
+                    "N$nMoves",
                     position
                 )
             }
@@ -50,7 +50,7 @@ class AiPlayer(val settings: Settings) {
             AiResult(it.key,
                 if (it.value.isEmpty()) 0 else it.value.sumBy(GamePosition::score) / it.value.size,
                 it.value.maxByOrNull { it.score } ?: position,
-                "n$nMoves",
+                "N$nMoves",
                 position
             )
         }
@@ -58,11 +58,11 @@ class AiPlayer(val settings: Settings) {
 
     private fun playNMoves(position: GamePosition, nMoves: Int): Map<PlyEnum, List<GamePosition>> =
         playUserPlies(position).map { firstMove ->
-            var positions: List<GamePosition> = listOf(firstMove.position)
+            var positions: List<GamePosition> = firstMove.positions
             repeat(nMoves - 1) {
                 positions = positions
                     .flatMap(this::playUserPlies)
-                    .map { it.position }
+                    .flatMap { it.positions }
             }
             firstMove.plyEnum to positions
         }.toMap()
@@ -83,18 +83,17 @@ class AiPlayer(val settings: Settings) {
     }
 
     private fun longestRandomPlay(position: GamePosition, nAttempts: Int): AiResult =
-        playUserPlies(position).map { firstMove ->
+        playUserPlies(position, 10).map { firstMove ->
             val positions: MutableList<GamePosition> = ArrayList()
             repeat(nAttempts) {
-                firstMove.position
-                    .let(this::playRandomTillEnd)
-                    .also(positions::add)
+                firstMove.positions
+                    .map(this::playRandomTillEnd)
+                    .also(positions::addAll)
             }
-            val selected = positions.sortedBy { it.score }.takeLast(positions.size / 2)
             AiResult(firstMove.plyEnum,
-                if (selected.isEmpty()) 0 else selected.sumBy { it.score } / selected.size,
-                selected.maxByOrNull { it.score } ?: position,
-                "n$nAttempts",
+                if (positions.isEmpty()) 0 else positions.sumBy { it.score } / positions.size,
+                positions.maxByOrNull { it.score } ?: position,
+                "N$nAttempts",
                 position
             )
         }.maxByOrNull { it.referenceScore } ?: AiResult.empty(position)
@@ -115,7 +114,14 @@ class AiPlayer(val settings: Settings) {
             position.calcUserPly(plyEnum)
                 .takeIf { it.prevPly.isNotEmpty() }
                 ?.randomComputerPly(Piece.N2)
-                ?.let { FirstMove(plyEnum, it) }
+                ?.let { FirstMove(plyEnum, listOf(it)) }
+        }
+
+    private fun playUserPlies(position: GamePosition, nTimes: Int): List<FirstMove> = UserPlies
+        .mapNotNull { plyEnum ->
+            position.calcUserPly(plyEnum).takeIf { it.prevPly.isNotEmpty() }
+        }.map { position2 ->
+            FirstMove(position2.prevPly.plyEnum, (1..nTimes).map { position2.randomComputerPly()})
         }
 
     private fun allowedRandomMove(position: GamePosition): GamePosition {
