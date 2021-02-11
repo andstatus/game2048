@@ -83,7 +83,7 @@ class StatusBar(val viewData: ViewData): Container() {
             }
             timeTaken.text = if (takenMillis == 0) "-" else takenMillis.toString()
 
-            positionProjected.text = if (moreMoves > 0) "+$moreMoves" else ""
+            positionProjected.text = (if (moreMoves > 0) "+$moreMoves " else "") + note
         }
         addTo(parent)
     }

@@ -132,6 +132,7 @@ class Presenter(val view: ViewData, history: History) {
     fun undo() {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
+        view.mainView.hideStatusBar()
         boardViews.hideGameOver()
         (model.undo() + Ply.delay() + model.undo()).presentReversed()
     }
@@ -420,13 +421,13 @@ class Presenter(val view: ViewData, history: History) {
     fun userMove(plyEnum: PlyEnum) {
         if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
 
-        view.mainView.hideStatusBar()
         model.userMove(plyEnum).let {
             if (it.isEmpty()) it else it + model.randomComputerMove()
         }.present()
     }
 
     private fun List<Ply>.present(index: Int = 0) {
+        view.mainView.hideStatusBar()
         if (isEmpty()) {
             onPresentEnd()
             if (model.noMoreMoves()) {

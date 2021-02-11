@@ -37,7 +37,9 @@ class AiPlayer(val settings: Settings) {
             ?.let { entry ->
                 AiResult(entry.key,
                     if(entry.value.isEmpty()) 0 else entry.value.sumBy { it.score } / entry.value.size,
-                    entry.value.maxByOrNull { it.score } ?: position
+                    entry.value.maxByOrNull { it.score } ?: position,
+                    "n$nMoves",
+                    position
                 )
             }
             ?: AiResult.empty(position)
@@ -47,7 +49,9 @@ class AiPlayer(val settings: Settings) {
         .map {
             AiResult(it.key,
                 if (it.value.isEmpty()) 0 else it.value.sumBy(GamePosition::score) / it.value.size,
-                it.value.maxByOrNull { it.score } ?: position
+                it.value.maxByOrNull { it.score } ?: position,
+                "n$nMoves",
+                position
             )
         }
         .maxByOrNull{ it.referenceScore} ?: AiResult.empty(position)
@@ -63,15 +67,20 @@ class AiPlayer(val settings: Settings) {
             firstMove.plyEnum to positions
         }.toMap()
 
-    private fun longestRandomPlayAdaptive(position: GamePosition, nAttemptsInitial: Int): AiResult =
-        when (position.freeCount()) {
-            in 0..5 -> 8
+    private fun longestRandomPlayAdaptive(position: GamePosition, nAttemptsInitial: Int): AiResult {
+        var multiplier = when (position.freeCount()) {
+            in 0..1 -> 16
+            in 2..5 -> 8
             in 6..8 -> 4
             in 9..11 -> 2
             else -> 1
-        }.let {
-            longestRandomPlay(position, nAttemptsInitial * it)
         }
+        do {
+            val result = longestRandomPlay(position, nAttemptsInitial * multiplier)
+            if (result.moreMoves > 50 || multiplier > 512) return result
+            multiplier *= 2
+        } while (true)
+    }
 
     private fun longestRandomPlay(position: GamePosition, nAttempts: Int): AiResult =
         playUserPlies(position).map { firstMove ->
@@ -83,8 +92,10 @@ class AiPlayer(val settings: Settings) {
             }
             val selected = positions.sortedBy { it.score }.takeLast(positions.size / 2)
             AiResult(firstMove.plyEnum,
-                 if (selected.isEmpty()) 0 else selected.sumBy { it.score } / selected.size,
-                selected.maxByOrNull { it.score } ?: position
+                if (selected.isEmpty()) 0 else selected.sumBy { it.score } / selected.size,
+                selected.maxByOrNull { it.score } ?: position,
+                "n$nAttempts",
+                position
             )
         }.maxByOrNull { it.referenceScore } ?: AiResult.empty(position)
 
@@ -93,7 +104,7 @@ class AiPlayer(val settings: Settings) {
         do {
             position = allowedRandomMove(position)
             if (position.prevPly.isNotEmpty()) {
-                position = position.randomComputerPly(Piece.N2)
+                position = position.randomComputerPly()
             }
         } while (position.prevPly.isNotEmpty())
         return position
