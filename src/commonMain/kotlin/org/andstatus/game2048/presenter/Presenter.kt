@@ -8,9 +8,8 @@ import com.soywiz.korge.tween.get
 import com.soywiz.korge.view.Text
 import com.soywiz.korio.async.launch
 import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.concurrent.atomic.KorAtomicBoolean
-import com.soywiz.korio.concurrent.atomic.KorAtomicInt
 import com.soywiz.korio.concurrent.atomic.incrementAndGet
+import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.lang.substr
 import com.soywiz.korio.serialization.json.toJson
 import com.soywiz.korio.util.OS
@@ -54,12 +53,12 @@ class Presenter(val view: ViewData, history: History) {
         else CoroutineScope(view.gameStage.coroutineContext + Dispatchers.Default)
     val model = Model(multithreadedCoroutineScope, history)
     val aiPlayer = AiPlayer(history.settings)
-    val moveIsInProgress = KorAtomicBoolean(false)
+    val moveIsInProgress = korAtomic(false)
     val score get() = model.score
     val bestScore get() = model.bestScore
     var boardViews = BoardViews(view)
     val gameMode get() = model.gameMode
-    var clickCounter = KorAtomicInt(0)
+    var clickCounter = korAtomic(0)
 
     private fun presentGameClock(coroutineScope: CoroutineScope, model: Model, textSupplier: () -> Text) {
         coroutineScope.launch {
