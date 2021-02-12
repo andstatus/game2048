@@ -18,7 +18,6 @@ class MainView private constructor(
 
         appBar.show(this, appBarButtonsToShow)
         scoreBar.show(this, playSpeed)
-        hideStatusBar()
         boardView.setOnTop(this)
         this.addTo(appBar.viewData.gameStage)
     }

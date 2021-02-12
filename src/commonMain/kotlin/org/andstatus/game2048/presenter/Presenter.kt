@@ -426,7 +426,9 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     private fun List<Ply>.present(index: Int = 0) {
-        view.mainView.hideStatusBar()
+        if (gameMode.modeEnum != GameModeEnum.AI_PLAY || gameMode.speed != 1) {
+            view.mainView.hideStatusBar()
+        }
         if (isEmpty()) {
             onPresentEnd()
             if (model.noMoreMoves()) {
@@ -461,7 +463,7 @@ class Presenter(val view: ViewData, history: History) {
         if (view.closed) return
 
         view.mainView.show(buttonsToShow(), gameMode.speed)
-        if (gameMode.aiEnabled && gameMode.speed < 2) {
+        if (gameMode.aiEnabled && gameMode.speed == 0) {
             multithreadedCoroutineScope.showAiTip(this)
             myLog("After AI Launch")
         }

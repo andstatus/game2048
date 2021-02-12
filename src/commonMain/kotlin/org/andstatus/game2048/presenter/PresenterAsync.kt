@@ -37,6 +37,9 @@ fun CoroutineScope.aiPlayLoop(presenter: Presenter, startCount: Int) = launch {
             }
             if (!moveIsInProgress.value && model.gamePosition === gamePosition && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
                 view.gameStage.launch {
+                    if (gameMode.speed == 1) {
+                        view.mainView.showStatusBar(aiResult)
+                    }
                     userMove(aiResult.plyEnum)
                 }.join()
             }
