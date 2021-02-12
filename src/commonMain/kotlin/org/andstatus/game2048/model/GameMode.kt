@@ -1,6 +1,8 @@
 package org.andstatus.game2048.model
 
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
+import com.soywiz.korio.concurrent.atomic.korAtomic
+import com.soywiz.korio.util.OS
 import kotlin.math.abs
 
 /** @author yvolk@yurivolkov.com */
@@ -8,7 +10,8 @@ class GameMode() {
     private data class GameModeData(val modeEnum: GameModeEnum, val speed: Int, val aiEnabled: Boolean)
 
     val maxSpeed = 6
-    private val data = KorAtomicRef(initialData())
+    // Needed until the fix of https://github.com/korlibs/korge-next/issues/166
+    private val data = if (OS.isNative) KorAtomicRef(initialData()) else korAtomic(initialData())
 
     fun stop() {
         val old = data.value

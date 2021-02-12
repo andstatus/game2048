@@ -2,11 +2,13 @@ package org.andstatus.game2048.model
 
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
+import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.lang.format
+import com.soywiz.korio.util.OS
 
 class GameClock(initialSeconds: Int = 0) {
 
-    private data class Counter(val started: Boolean, val startedAt: DateTimeTz?, val initialSeconds: Int) {
+    private class Counter(val started: Boolean, val startedAt: DateTimeTz?, val initialSeconds: Int) {
         fun current(): Int =
             if (started) {
                 initialSeconds + (startedAt?.let { (DateTimeTz.nowLocal() - it).seconds.toInt() } ?: 0)
@@ -15,8 +17,9 @@ class GameClock(initialSeconds: Int = 0) {
             }
     }
 
-    private val counterRef: KorAtomicRef<Counter> =
-        KorAtomicRef(Counter(false, null, initialSeconds))
+    // Needed until the fix of https://github.com/korlibs/korge-next/issues/166
+    private val counterRef = if (OS.isNative) KorAtomicRef(Counter(false, null, initialSeconds))
+        else korAtomic(Counter(false, null, initialSeconds))
 
     fun start() {
         do {
