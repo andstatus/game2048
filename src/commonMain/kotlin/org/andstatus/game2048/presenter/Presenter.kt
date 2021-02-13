@@ -374,7 +374,7 @@ class Presenter(val view: ViewData, history: History) {
                     while (startCount == clickCounter.value &&
                         if (gameMode.modeEnum == GameModeEnum.BACKWARDS) canUndo() else canRedo()
                     ) {
-                        while(moveIsInProgress.value) delay(20)
+                        delayWhileMoveInProgress()
                         if (gameMode.speed != 0) {
                             if (gameMode.modeEnum == GameModeEnum.BACKWARDS) undo() else redo()
                         }
@@ -679,5 +679,9 @@ class Presenter(val view: ViewData, history: History) {
                 reInitialize()
             }
         }
+    }
+
+    suspend fun delayWhileMoveInProgress() {
+        while (moveIsInProgress.value) delay(20)
     }
 }

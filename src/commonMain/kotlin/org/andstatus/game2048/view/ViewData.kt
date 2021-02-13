@@ -35,8 +35,14 @@ import kotlin.properties.Delegates
 suspend fun viewData(stage: Stage, animateViews: Boolean, handler: suspend ViewData.() -> Unit = {}) {
     stage.removeChildren()
     coroutineScope {
-        val scope: CoroutineScope = if (OS.isNative) this else CoroutineScope(coroutineContext + Dispatchers.Default)
-        scope.initialize(stage, animateViews, handler)
+        val outerScope: CoroutineScope = this
+        val handlerInOuterScope: suspend ViewData.() -> Unit = {
+            outerScope.launch { handler() }
+        }
+
+        val scope: CoroutineScope = if (OS.isNative) outerScope else
+            CoroutineScope(coroutineContext + Dispatchers.Default)
+        scope.initialize(stage, animateViews, handlerInOuterScope)
     }
 }
 
