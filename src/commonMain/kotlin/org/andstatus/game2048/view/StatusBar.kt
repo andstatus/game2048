@@ -74,14 +74,12 @@ class StatusBar(val viewData: ViewData): Container() {
             }
 
             moveSuggested.text = plyEnum.symbol
-            scoreProjected.text =  if (maxScore > referenceScore) {
-                "$referenceScore - $maxScore"
-            } else {
-                referenceScore.toString()
-            }
-            timeTaken.text = takenMillis.toString()
 
-            positionProjected.text = (if (moreMoves > 0) "+$moreMoves " else "") + (note ?: "")
+            scoreProjected.text = "+$moreScore" +
+                    if (moreMaxScore > moreScore) "-$moreMaxScore" else ""
+
+            timeTaken.text = takenMillis.toString()
+            positionProjected.text = (if (moreMoves > 0) "+$moreMoves  " else "") + (note ?: "")
         }
         addTo(parent)
     }

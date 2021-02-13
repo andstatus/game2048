@@ -45,7 +45,7 @@ class AiResult(
 
     override fun toString(): String {
         return "AiResult ${initialPosition.moveNumber}, ${plyEnum.id}," +
-                " score +$moreScore - $moreMaxScore, " +
+                " score +$moreScore-$moreMaxScore, " +
                 " $takenMillis ms, moves +$moreMoves, $note"
     }
 }

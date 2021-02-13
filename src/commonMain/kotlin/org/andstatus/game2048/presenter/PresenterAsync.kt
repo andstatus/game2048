@@ -13,7 +13,6 @@ fun CoroutineScope.showAiTip(presenter: Presenter) = launch {
         myLog("AI launch")
         val gamePosition = model.gamePosition
         aiPlayer.nextPly(gamePosition).also {
-            myLog("AI tip: ${it.plyEnum}")
             if (model.gamePosition === gamePosition) {
                 view.gameStage.launch {
                     myLog("Showing AI tip: ${it.plyEnum}")

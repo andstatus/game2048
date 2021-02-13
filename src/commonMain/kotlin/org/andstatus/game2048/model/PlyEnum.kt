@@ -25,4 +25,8 @@ enum class PlyEnum(val id: String, val symbol: String) {
         val UserPlies get() = listOf(LEFT, RIGHT, UP, DOWN)
         fun fromId(value: String): PlyEnum? = values().firstOrNull { it.id == value}
     }
+
+    override fun toString(): String {
+        return id
+    }
 }

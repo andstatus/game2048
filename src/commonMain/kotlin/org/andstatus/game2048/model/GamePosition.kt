@@ -264,5 +264,6 @@ class GamePosition(val board: Board,
 
     override fun toString(): String = "$plyNumber. pieces:" + pieces.mapIndexed { ind, piece ->
         ind.toString() + ":" + (piece ?: "-")
-    } + ", score:$score, time:${startingDateTime.format(DateFormat.FORMAT1)}"
+    } + ", score:$score, time:${startingDateTime.format(DateFormat.FORMAT1)}" +
+            if (prevPly.isEmpty()) "" else ", ${prevPly.plyEnum.id}"
 }

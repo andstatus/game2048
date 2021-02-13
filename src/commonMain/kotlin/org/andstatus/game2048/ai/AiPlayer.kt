@@ -2,22 +2,19 @@ package org.andstatus.game2048.ai
 
 import com.soywiz.klock.Stopwatch
 import org.andstatus.game2048.Settings
+import org.andstatus.game2048.meanBy
 import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.PlyEnum
 import org.andstatus.game2048.model.PlyEnum.Companion.UserPlies
 import org.andstatus.game2048.myLog
+import org.andstatus.game2048.timeIsUp
 import kotlin.math.pow
 
 /** @author yvolk@yurivolkov.com */
 class AiPlayer(val settings: Settings) {
 
     private class FirstMove(val plyEnum: PlyEnum, val positions: List<GamePosition>)
-
-    fun timeIsUp(seconds: Int): () -> Boolean {
-        val stopwatch: Stopwatch = Stopwatch().start()
-        return { stopwatch.elapsed.seconds >= seconds }
-    }
 
     fun nextPly(position: GamePosition): AiResult = Stopwatch().start().let { stopWatch ->
         when (settings.aiAlgorithm) {
@@ -40,11 +37,11 @@ class AiPlayer(val settings: Settings) {
     private fun maxEmptyBlocksNMoves(position: GamePosition, nMoves: Int, maxSeconds: Int): AiResult =
         playNMoves(position, nMoves, timeIsUp(maxSeconds))
             .maxByOrNull {
-                if (it.positions.isEmpty()) 0 else it.positions.sumBy { it.freeCount() } / it.positions.size
+                it.positions.meanBy { it.freeCount() }
             }
             ?.let { entry ->
                 AiResult(entry.plyEnum,
-                    if(entry.positions.isEmpty()) 0 else entry.positions.sumBy { it.score } / entry.positions.size,
+                    entry.positions.meanBy{ it.score },
                     entry.positions.maxByOrNull { it.score } ?: position,
                     "N$nMoves",
                     position
@@ -56,7 +53,7 @@ class AiPlayer(val settings: Settings) {
         playNMoves(position, nMoves, timeIsUp(maxSeconds))
         .map {
             AiResult(it.plyEnum,
-                if (it.positions.isEmpty()) 0 else it.positions.sumBy(GamePosition::score) / it.positions.size,
+                it.positions.meanBy(GamePosition::score),
                 it.positions.maxByOrNull { it.score } ?: position,
                 "N$nMoves",
                 position
@@ -117,7 +114,7 @@ class AiPlayer(val settings: Settings) {
                     .also(positions::addAll)
             }
             AiResult(firstMove.plyEnum,
-                if (positions.isEmpty()) 0 else positions.sumBy { it.score } / positions.size,
+                positions.meanBy(GamePosition::score),
                 positions.maxByOrNull { it.score } ?: position,
                 "N$attemptsPower",
                 position
