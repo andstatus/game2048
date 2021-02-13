@@ -24,6 +24,10 @@ enum class Piece(val value: Int) {
 
     fun next() = values()[(ordinal + 1) % values().size]
 
+    override fun toString(): String {
+        return text
+    }
+
     companion object {
         fun fromId(value: Int): Piece? = values().find { it.id == value}
     }

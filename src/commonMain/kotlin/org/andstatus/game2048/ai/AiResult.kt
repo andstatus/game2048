@@ -19,7 +19,7 @@ class AiResult(
 
     constructor(position: GamePosition): this(
         position.prevPly.plyEnum,
-        position.prevPly.points(),
+        position.score,
         position,
         null,
         position,
@@ -38,6 +38,14 @@ class AiResult(
         AiResult(plyEnum, referenceScore, maxPosition, note, initialPosition, takenMillis)
     }
 
-    val maxScore = maxPosition.score
-    val moreMoves = maxPosition.moveNumber - initialPosition.moveNumber
+    val maxScore get() = maxPosition.score
+    val moreScore get() = referenceScore - initialPosition.score
+    val moreMaxScore get() = maxPosition.score - initialPosition.score
+    val moreMoves get() = maxPosition.moveNumber - initialPosition.moveNumber
+
+    override fun toString(): String {
+        return "AiResult ${initialPosition.moveNumber}, ${plyEnum.id}," +
+                " score +$moreScore - $moreMaxScore, " +
+                " $takenMillis ms, moves +$moreMoves, $note"
+    }
 }
