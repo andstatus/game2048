@@ -49,7 +49,7 @@ import org.andstatus.game2048.view.showRestoreGame
 
 /** @author yvolk@yurivolkov.com */
 class Presenter(val view: ViewData, history: History) {
-    private val multithreadedCoroutineScope: CoroutineScope get() = if (OS.isWindows) view.gameStage
+    private val multithreadedCoroutineScope: CoroutineScope get() = if (OS.isNative) view.gameStage
         else CoroutineScope(view.gameStage.coroutineContext + Dispatchers.Default)
     val model = Model(multithreadedCoroutineScope, history)
     val aiPlayer = AiPlayer(history.settings)

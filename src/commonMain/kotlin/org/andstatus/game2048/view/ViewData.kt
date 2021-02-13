@@ -35,7 +35,7 @@ import kotlin.properties.Delegates
 suspend fun viewData(stage: Stage, animateViews: Boolean, handler: suspend ViewData.() -> Unit = {}) {
     stage.removeChildren()
     coroutineScope {
-        val scope: CoroutineScope = if (OS.isWindows) this else CoroutineScope(coroutineContext + Dispatchers.Default)
+        val scope: CoroutineScope = if (OS.isNative) this else CoroutineScope(coroutineContext + Dispatchers.Default)
         scope.initialize(stage, animateViews, handler)
     }
 }
