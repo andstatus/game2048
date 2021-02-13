@@ -1,1 +1,2 @@
-v.1.10.8. AI mode is more fun and more clever. It shows projected number of moves till game end also...
+v.1.10.9. Add max number of seconds that AI can search for the next move. It's con user configurable yet,
+but at least allows to use AI on older/slower devices and don't wait forever.
