@@ -1,5 +1,5 @@
 # 2048 Open Fun Game - User experience
-[Link to the YouTube video](https://youtu.be/kF_ZCKU5xlc)
+[Link to the YouTube video](https://youtu.be/S5J8WyoX-Uk)
 
 We are launching 2048 Open Fun Game,
 and it shows us the last game we played.
@@ -9,9 +9,9 @@ But if you want to use some artificial intelligence (AI), we can press that "Mag
 
 Now I will switch to the most effective algorithm: "Longest random play"...
 
-Oh, if works fast and shows us, what we should do. At any time we can switch AI off by pressing "Magic" button at the top, and it won't show us any new move tips anymore.
+Oh, it works fast and shows us, what we should do. At any time we can switch AI off by pressing "Magic" button at the top, and it won't show us any new move tips anymore.
 
-Suppose we want to remember, to bookmark some position in our game e.g. before making some important decision above move, and we think that we may need to return to the same place and try to go another way, make some other move here.
+Suppose we want to remember, to bookmark some position in our game e.g. before making some important decision about a move, and we think that we may need to return to the same place and try to go another way, make some other move here.
 We press "Bookmark" button, see that its icon is filled, so the bookmark is set.
 And we continue playing, knowing that it will be easy for us to return to this place later.
 
@@ -33,7 +33,7 @@ Now we press "Magic play" button, and it starts making moves automatically at qu
 We could make showing faster: we see that it takes less than a second for AI to choose the next move. Sometimes more, sometimes less - depending on the position.
 If we swipe to the right, we increase speed. More and more...
 We increase speed of showing, but we cannot make AI think faster. 
-This is why sometime we don't see speed increase. The algorithm continues playing...
+This is why sometimes we don't see speed increase. The algorithm continues playing...
 
 Now we can switch back to our manual mode by a swipe down or by tapping "Stop" button. We can play manually now, as we always do.
 
@@ -43,7 +43,7 @@ Now I'm pressing Stop or Swipe down.
 
 I can share the game via any app that can send a text file, e.g. via email. Pressing "Menu" button and then - "Share game". Later we can load this text file using "Load game" menu item at any other device, or at this device thus creating a copy of the existing game.
 
-Share and send via email. This is it! In order to send to myself I can even not send it - the draft is saved anyway. 
+Share and send via email. This is it! In order to send to myself I don't even need to "Send" it - the draft is saved anyway. 
 
 And now I return to the game... Now we can, for example, switch from current Dark theme to the Light theme. Menu -> Switch theme.
 
