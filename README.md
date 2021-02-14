@@ -23,6 +23,9 @@ i.e. 2+2 merge into 4, 4+4 merge into 8 and so on.
 The goal is to create a tile with the highest number.
 Number 2048 is a good first win…
 
+We have quite a long video post at Youtube demonstrating the app features,
+see [User experience](doc/User-Experience.md).
+
 ### Features of "2048 Open Fun Game" that are not present in the original game
 
 * Unlimited and animated Undo and Redo.
@@ -63,6 +66,8 @@ Number 2048 is a good first win…
 <img src="doc/images/5x5.png" width="5" />
 <img title="AI algorithm selection in Game2048 app" src="src/androidMain/play/listings/en-US/graphics/phone-screenshots/8.png" height="400" />
 </p>
+
+Privacy policy is [here](doc/Privacy-Policy.md).
 
 If you found the project useful, please 
 [donate to the 2048 game development](http://andstatus.org/donate.html) via its lead developer.
