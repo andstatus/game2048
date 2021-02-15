@@ -89,10 +89,20 @@ class AiPlayer(val settings: Settings) {
             in 9..11 -> 1
             else -> 0
         }
+        var prevMoves: List<FirstMove> = emptyList()
         do {
-            var result: AiResult? = null
-            result = longestRandomPlay(result, position, attemptsPowerOf2, timeIsUp)
-            if (result.moreMoves > 100 || attemptsPowerOf2 > 18 || timeIsUp()) return result
+            prevMoves = longestRandomPlay(prevMoves, position, attemptsPowerOf2, timeIsUp)
+            val bestMove: FirstMove? = prevMoves.maxByOrNull { it.positions.meanBy(GamePosition::score) }
+            val maxPosition = bestMove?.positions?.maxByOrNull { it.score } ?: position
+            if ( maxPosition.moveNumber - position.moveNumber > 100 || attemptsPowerOf2 > 18 || timeIsUp())
+                return bestMove?.let { firstMove ->
+                    AiResult(firstMove.plyEnum,
+                        firstMove.positions.meanBy(GamePosition::score),
+                        maxPosition,
+                        "N$attemptsPowerOf2",
+                        position
+                    )
+                } ?: AiResult.empty(position)
             attemptsPowerOf2++
         } while (true)
     }
@@ -100,26 +110,22 @@ class AiPlayer(val settings: Settings) {
     private fun Int.intPowerOf2(): Int = 2.0f.pow(this).toInt()
 
     private fun longestRandomPlay(
-        prevResult: AiResult?, position: GamePosition,
+        prevResult: List<FirstMove>, position: GamePosition,
         attemptsPower: Int, timeIsUp: () -> Boolean
-    ): AiResult =
-        playUserPlies(position, 10).map { firstMove ->
+    ): List<FirstMove> = playUserPlies(position, 10)
+        .map { firstMove ->
             val positions: MutableList<GamePosition> = ArrayList()
-            repeat(attemptsPower.intPowerOf2()) {
-                firstMove.positions
-                    .map {
-                        if (prevResult != null && timeIsUp()) return prevResult
-                        playRandomTillEnd(it)
-                    }
-                    .also(positions::addAll)
+            for (i in 1..attemptsPower.intPowerOf2()) {
+                for (pos1 in firstMove.positions) {
+                    if (timeIsUp() && prevResult.isNotEmpty()) break
+                    positions.add(playRandomTillEnd(pos1))
+                }
             }
-            AiResult(firstMove.plyEnum,
-                positions.meanBy(GamePosition::score),
-                positions.maxByOrNull { it.score } ?: position,
-                "N$attemptsPower",
-                position
-            )
-        }.maxByOrNull { it.referenceScore } ?: AiResult.empty(position)
+            prevResult.find { it.plyEnum == firstMove.plyEnum }?.let {
+                positions.addAll(it.positions)
+            }
+            FirstMove(firstMove.plyEnum, positions)
+        }
 
     private fun playRandomTillEnd(positionIn: GamePosition): GamePosition {
         var position = positionIn
