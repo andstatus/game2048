@@ -92,7 +92,7 @@ class AiPlayer(val settings: Settings) {
         do {
             var result: AiResult? = null
             result = longestRandomPlay(result, position, attemptsPowerOf2, timeIsUp)
-            if (result.moreMoves > 50 || attemptsPowerOf2 > 18 || timeIsUp()) return result
+            if (result.moreMoves > 100 || attemptsPowerOf2 > 18 || timeIsUp()) return result
             attemptsPowerOf2++
         } while (true)
     }
@@ -144,7 +144,15 @@ class AiPlayer(val settings: Settings) {
         .mapNotNull { plyEnum ->
             position.calcUserPly(plyEnum).takeIf { it.prevPly.isNotEmpty() }
         }.map { position2 ->
-            FirstMove(position2.prevPly.plyEnum, (1..nTimes).map { position2.randomComputerPly()})
+            val positions: List<GamePosition> = (1..nTimes)
+                .mapNotNull {
+                    position2.randomComputerPly()
+                        .takeIf { it.prevPly.isNotEmpty() }
+                }
+                .fold(emptyList(), { acc, position3 ->
+                    if (acc.contains(position3)) acc else acc + position3
+                })
+            FirstMove(position2.prevPly.plyEnum, positions)
         }
 
     private fun allowedRandomMove(position: GamePosition): GamePosition {

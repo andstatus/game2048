@@ -262,6 +262,10 @@ class GamePosition(val board: Board,
         keyPlayedSeconds to gameClock.playedSeconds
     )
 
+    override fun equals(other: Any?): Boolean {
+        return other is GamePosition &&  prevPly.plyEnum == other.prevPly.plyEnum && plyNumber == other.plyNumber
+    }
+
     override fun toString(): String = "$plyNumber. pieces:" + pieces.mapIndexed { ind, piece ->
         ind.toString() + ":" + (piece ?: "-")
     } + ", score:$score, time:${startingDateTime.format(DateFormat.FORMAT1)}" +
