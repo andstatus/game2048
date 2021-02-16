@@ -22,7 +22,7 @@ class AiPlayer(val settings: Settings) {
             AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> moveWithMaxScore(position)
             AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(position, 12, 5)
             AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(position, 12, 5)
-            AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(position, 3, 20)
+            AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(position, 3, 3)
         }.withContext(position, stopWatch.elapsed.millisecondsInt)
             .also { myLog(it) }
     }
@@ -41,7 +41,7 @@ class AiPlayer(val settings: Settings) {
             }
             ?.let { entry ->
                 AiResult(entry.plyEnum,
-                    entry.positions.meanBy{ it.score },
+                    entry.positions.mean() ?: position,
                     entry.positions.maxByOrNull { it.score } ?: position,
                     "N$nMoves",
                     position
@@ -53,13 +53,13 @@ class AiPlayer(val settings: Settings) {
         playNMoves(position, nMoves, timeIsUp(maxSeconds))
         .map {
             AiResult(it.plyEnum,
-                it.positions.meanBy(GamePosition::score),
+                it.positions.mean() ?: position,
                 it.positions.maxByOrNull { it.score } ?: position,
                 "N$nMoves",
                 position
             )
         }
-        .maxByOrNull{ it.referenceScore} ?: AiResult.empty(position)
+        .maxByOrNull{ it.referencePosition.score} ?: AiResult.empty(position)
 
     private fun playNMoves(position: GamePosition, nMoves: Int, timeIsUp: () -> Boolean): List<FirstMove> {
         var firstMoves: List<FirstMove> = playUserPlies(position)
@@ -89,25 +89,36 @@ class AiPlayer(val settings: Settings) {
             in 9..11 -> 1
             else -> 0
         }
+        var additionalAttempts = 0
         var prevMoves: List<FirstMove> = emptyList()
         do {
             prevMoves = longestRandomPlay(prevMoves, position, attemptsPowerOf2, timeIsUp)
             val bestMove: FirstMove? = prevMoves.maxByOrNull { it.positions.meanBy(GamePosition::score) }
+            val referencePosition = bestMove?.positions?.mean() ?: position
             val maxPosition = bestMove?.positions?.maxByOrNull { it.score } ?: position
-            if ( maxPosition.moveNumber - position.moveNumber > 100 || attemptsPowerOf2 > 18 || timeIsUp())
+            if ( maxPosition.moveNumber - position.moveNumber > 60 || additionalAttempts > 12 || timeIsUp())
                 return bestMove?.let { firstMove ->
                     AiResult(firstMove.plyEnum,
-                        firstMove.positions.meanBy(GamePosition::score),
+                        referencePosition,
                         maxPosition,
                         "N$attemptsPowerOf2",
                         position
                     )
                 } ?: AiResult.empty(position)
             attemptsPowerOf2++
+            additionalAttempts++
         } while (true)
     }
 
     private fun Int.intPowerOf2(): Int = 2.0f.pow(this).toInt()
+
+    private fun List<GamePosition>.mean(): GamePosition? = sortedBy { it.score }.let {
+        when {
+            it.isEmpty() -> null
+            it.size == 1 -> it.get(0)
+            else -> it.get(it.size / 2)
+        }
+    }
 
     private fun longestRandomPlay(
         prevResult: List<FirstMove>, position: GamePosition,
@@ -155,9 +166,7 @@ class AiPlayer(val settings: Settings) {
                     position2.randomComputerPly()
                         .takeIf { it.prevPly.isNotEmpty() }
                 }
-                .fold(emptyList(), { acc, position3 ->
-                    if (acc.contains(position3)) acc else acc + position3
-                })
+                .fold(emptyList(), { acc, position3 -> acc + position3 })
             FirstMove(position2.prevPly.plyEnum, positions)
         }
 

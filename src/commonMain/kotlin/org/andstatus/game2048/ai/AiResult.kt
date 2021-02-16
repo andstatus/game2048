@@ -5,7 +5,7 @@ import org.andstatus.game2048.model.PlyEnum
 
 class AiResult(
     val plyEnum: PlyEnum,
-    val referenceScore: Int,
+    val referencePosition: GamePosition,
     val maxPosition: GamePosition,
     val note: String?,
     val initialPosition: GamePosition,
@@ -13,13 +13,13 @@ class AiResult(
 ) {
 
     constructor(
-        plyEnum: PlyEnum, referenceScore: Int, maxPosition: GamePosition,
+        plyEnum: PlyEnum, referencePosition: GamePosition, maxPosition: GamePosition,
         note: String?, initialPosition: GamePosition):
-            this(plyEnum, referenceScore, maxPosition, note, initialPosition, 0)
+            this(plyEnum, referencePosition, maxPosition, note, initialPosition, 0)
 
     constructor(position: GamePosition): this(
         position.prevPly.plyEnum,
-        position.score,
+        position,
         position,
         null,
         position,
@@ -27,7 +27,7 @@ class AiResult(
     )
 
     companion object {
-        fun empty(position: GamePosition) = AiResult(PlyEnum.EMPTY, position.score, position, null, position, 0)
+        fun empty(position: GamePosition) = AiResult(PlyEnum.EMPTY, position, position, null, position, 0)
     }
 
     fun isEmpty() = plyEnum == PlyEnum.EMPTY
@@ -35,17 +35,17 @@ class AiResult(
     fun withContext(initialPosition: GamePosition, takenMillis: Int) = if (isEmpty()) {
         empty(initialPosition)
     } else {
-        AiResult(plyEnum, referenceScore, maxPosition, note, initialPosition, takenMillis)
+        AiResult(plyEnum, referencePosition, maxPosition, note, initialPosition, takenMillis)
     }
 
-    val maxScore get() = maxPosition.score
-    val moreScore get() = referenceScore - initialPosition.score
-    val moreMaxScore get() = maxPosition.score - initialPosition.score
-    val moreMoves get() = maxPosition.moveNumber - initialPosition.moveNumber
+    val moreScore get() = referencePosition.score - initialPosition.score
+    val moreScoreMax get() = maxPosition.score - initialPosition.score
+    val moreMoves get() = referencePosition.moveNumber - initialPosition.moveNumber
+    val moreMovesMax get() = maxPosition.moveNumber - initialPosition.moveNumber
 
     override fun toString(): String {
         return "AiResult ${initialPosition.moveNumber}, ${plyEnum.id}," +
-                " score +$moreScore-$moreMaxScore, " +
-                " $takenMillis ms, moves +$moreMoves, $note"
+                " score +$moreScore-$moreScoreMax, " +
+                " $takenMillis ms, moves +$moreMoves-$moreMovesMax, $note"
     }
 }
