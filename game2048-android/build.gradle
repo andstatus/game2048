@@ -41,8 +41,8 @@ android {
         applicationId 'org.andstatus.game2048'
         minSdkVersion 24
         targetSdkVersion 29
-        versionCode 26
-        versionName '1.10.9'
+        versionCode 27
+        versionName '1.10.10'
 
         archivesBaseName = "game2048-android-$versionName"
     }
