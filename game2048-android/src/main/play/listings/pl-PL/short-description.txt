@@ -1,0 +1,1 @@
+2048 z automatycznym wzowieniem gry, historią i innymi przydatnymi funkcjami
