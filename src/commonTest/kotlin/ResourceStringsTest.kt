@@ -51,7 +51,7 @@ class ResourceStringsTest : ViewsForTesting(log = true) {
 
     private fun addCodePoints(acc: MutableSet<Int>, str: String) {
         (0 until str.length).forEach {
-            acc.add(str[it].toInt())
+            acc.add(str[it].code)
         }
     }
 }

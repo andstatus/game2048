@@ -1,7 +1,6 @@
 package org.andstatus.game2048
 
 import com.soywiz.klogger.Console
-import com.soywiz.klogger.log
 import com.soywiz.korge.view.Stage
 import com.soywiz.korma.geom.SizeInt
 import com.soywiz.korma.geom.times

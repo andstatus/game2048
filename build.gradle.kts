@@ -6,9 +6,9 @@ buildscript {
 
     repositories {
         mavenLocal()
-        maven { url = uri("https://plugins.gradle.org/m2/") }
         mavenCentral()
         google()
+        maven { url = uri("https://plugins.gradle.org/m2/") }
     }
     dependencies {
         classpath("com.soywiz.korlibs.korge.plugins:korge-gradle-plugin:$korgePluginVersion")
@@ -36,5 +36,6 @@ korge {
     // We need to switch to the "indirect" target only to generate build.gradle
     // and manually sync it with our customized game2048-android/build.gradle
     //targetAndroidIndirect()
-    targetAndroidDirect()
+    // The below stopped working after upgrade to Kotlin 1.5.0, etc.
+    //targetAndroidDirect()
 }

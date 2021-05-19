@@ -3,18 +3,12 @@ package org.andstatus.game2048.view
 import com.soywiz.korev.Key
 import com.soywiz.korge.input.SwipeDirection
 import com.soywiz.korge.input.onSwipe
-import com.soywiz.korge.ui.TextFormat
-import com.soywiz.korge.ui.TextSkin
-import com.soywiz.korge.ui.uiText
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.SolidRect
 import com.soywiz.korge.view.addTo
 import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.centerXBetween
-import com.soywiz.korge.view.container
 import com.soywiz.korge.view.graphics
 import com.soywiz.korge.view.position
-import com.soywiz.korge.view.positionY
 import com.soywiz.korge.view.roundRect
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korge.view.text
@@ -93,12 +87,6 @@ class BoardView(val viewData: ViewData): Container() {
         val window = this
         with(viewData) {
             val gameColors = gameColors
-            val format = TextFormat(gameColors.labelText, defaultTextSize.toInt(), font)
-            val skin = TextSkin(
-                normal = format,
-                over = format.copy(gameColors.labelTextOver),
-                down = format.copy(gameColors.labelTextDown)
-            )
 
             graphics {
                 fill(gameColors.gameOverBackground) {
@@ -111,9 +99,11 @@ class BoardView(val viewData: ViewData): Container() {
             ) {
                 position(boardWidth / 2, (boardWidth - textSize) / 2)
             }
-            uiText(stringResources.text("try_again"), 120.0, 35.0, skin) {
-                centerXBetween(0.0, boardWidth)
-                positionY((boardWidth + textSize) / 2)
+            text(stringResources.text("try_again"),
+                defaultTextSize, gameColors.labelText, font,
+                TextAlignment.MIDDLE_CENTER
+            ) {
+                position(boardWidth / 2, (boardWidth + textSize) / 2)
                 customOnClick {
                     window.removeFromParent()
                     presenter.onRestartClick()

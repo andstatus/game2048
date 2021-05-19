@@ -66,7 +66,7 @@ class WrappableTextRenderer(val wrapWidth: Double, val gravity: Gravity) : TextR
         setFont(defaultFont, size)
 
         val lines = mutableListOf(Line())
-        val spaceWidth = getGlyphMetrics(' '.toInt()).xadvance + getKerning(' '.toInt(), 'A'.toInt())
+        val spaceWidth = getGlyphMetrics(' '.code).xadvance + getKerning(' '.code, 'A'.code)
 
         for (wrapped in text.split('\n')) {
             var curX = 0.0
@@ -74,8 +74,8 @@ class WrappableTextRenderer(val wrapWidth: Double, val gravity: Gravity) : TextR
                 var wordWidth = 0.0
                 var curWord = ""
                 for (n in word.indices) {
-                    val c = word[n].toInt()
-                    val c1 = word.getOrElse(n + 1) { '\u0000' }.toInt()
+                    val c = word[n].code
+                    val c1 = word.getOrElse(n + 1) { '\u0000' }.code
 
                     val g = getGlyphMetrics(c)
                     val kerning = getKerning(c, c1)
@@ -124,8 +124,8 @@ class WrappableTextRenderer(val wrapWidth: Double, val gravity: Gravity) : TextR
                 x = start
 
                 for (n in word.text.indices) {
-                    val c = word.text[n].toInt()
-                    val c1 = word.text.getOrElse(n + 1) { '\u0000' }.toInt()
+                    val c = word.text[n].code
+                    val c1 = word.text.getOrElse(n + 1) { '\u0000' }.code
 
                     val g = getGlyphMetrics(c)
                     transform.identity()
@@ -149,7 +149,7 @@ class WrappableTextRenderer(val wrapWidth: Double, val gravity: Gravity) : TextR
             val words: MutableList<Word> = mutableListOf()
     ) {
         fun calculateWidth(spaceWidth: Double): Double {
-            return words.sumByDouble { it.width } + (words.size - 1) * spaceWidth
+            return words.sumOf{ it.width } + (words.size - 1) * spaceWidth
         }
     }
 
