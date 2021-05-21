@@ -44,13 +44,13 @@ android {
         exclude '**/*.kotlin_metadata'
         exclude '**/*.kotlin_builtins'
     }
-    compileSdkVersion 29
+    compileSdkVersion 30
     defaultConfig {
         applicationId 'org.andstatus.game2048'
         minSdkVersion 24
-        targetSdkVersion 29
-        versionCode 29
-        versionName '1.10.12'
+        targetSdkVersion 30
+        versionCode 30
+        versionName '1.10.13'
 
         archivesBaseName = "game2048-android-$versionName"
     }

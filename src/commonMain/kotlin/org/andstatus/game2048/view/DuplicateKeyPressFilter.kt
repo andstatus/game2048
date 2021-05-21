@@ -15,8 +15,6 @@ class DuplicateKeyPressFilter {
             onPress(Key.BACKSPACE, action)
     }
 
-    fun onSwipeOrOver(action: () -> Unit) = onPress(Key.RIGHT, action)
-
     fun onPress(key: Key, action: () -> Unit) {
         val now = DateTime.nowUnixLong()
         pressed[key]?.let{

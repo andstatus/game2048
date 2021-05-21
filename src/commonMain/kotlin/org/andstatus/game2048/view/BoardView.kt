@@ -40,10 +40,8 @@ class BoardView(val viewData: ViewData): Container() {
             controlsArea = solidRect(boardWidth, boardWidth + buttonSize + buttonMargin,
                 gameColors.transparent)
 
-            controlsArea.onSwipe(20.0) {
-                duplicateKeyPressFilter.onSwipeOrOver {
+            controlsArea.onSwipe(150.0) {
                     presenter.onSwipe(it.direction)
-                }
             }
 
             controlsArea.addUpdater {
