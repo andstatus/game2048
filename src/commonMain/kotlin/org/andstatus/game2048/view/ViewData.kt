@@ -5,6 +5,7 @@ import com.soywiz.korev.PauseEvent
 import com.soywiz.korev.ResumeEvent
 import com.soywiz.korev.addEventListener
 import com.soywiz.korge.animate.Animator
+import com.soywiz.korge.input.onClick
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.View
@@ -108,9 +109,8 @@ class ViewData(viewDataQuick: ViewDataQuick,
         viewData(gameStage, animateViews, handler)
     }
 
-    /** Workaround for the bug: https://github.com/korlibs/korge-next/issues/56 */
-    fun Container.customOnClick(handler: () -> Unit) = duplicateKeyPressFilter.apply {
-        customOnClick(handler)
+    fun Container.customOnClick(handler: () -> Unit) = onClick {
+        handler()
     }
 
     fun Container.position(square: Square) {

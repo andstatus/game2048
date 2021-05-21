@@ -2,7 +2,6 @@ package org.andstatus.game2048.view
 
 import com.soywiz.korge.ui.uiScrollableArea
 import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.container
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.roundRect
@@ -71,13 +70,6 @@ fun ViewData.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
                 window.removeFromParent()
                 presenter.onGoToBookmarkClick(position)
             }
-        }
-    }
-
-    addUpdater {
-        duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
-            window.removeFromParent()
-            presenter.showMainView()
         }
     }
 }
