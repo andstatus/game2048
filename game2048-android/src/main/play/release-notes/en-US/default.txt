@@ -1,2 +1,1 @@
-v.1.10.9. Add max number of seconds that AI can search for the next move. It's con user configurable yet,
-but at least allows to use AI on older/slower devices and don't wait forever.
+v.1.10.14. Swipe is triggered after moving for about a half of a Board cell.

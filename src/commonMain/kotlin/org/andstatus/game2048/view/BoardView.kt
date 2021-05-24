@@ -40,7 +40,7 @@ class BoardView(val viewData: ViewData): Container() {
             controlsArea = solidRect(boardWidth, boardWidth + buttonSize + buttonMargin,
                 gameColors.transparent)
 
-            controlsArea.onSwipe(150.0) {
+            controlsArea.onSwipe(80.0) {
                     presenter.onSwipe(it.direction)
             }
 
