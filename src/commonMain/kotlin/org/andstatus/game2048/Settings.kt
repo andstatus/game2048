@@ -12,6 +12,7 @@ import org.andstatus.game2048.view.StringResources
 private const val keyAllowResultingTileToMerge = "allowResultingTileToMerge"
 private const val keyAllowUsersMoveWithoutBlockMoves = "allowUsersMoveWithoutBlockMoves"
 private const val keyAllowUndo = "allowUndo"
+private const val keyMaxMovesToStore = "maxMovesToStore"
 
 /** Game options / tweaks. Default values are for original game,
 see https://en.wikipedia.org/wiki/2048_(video_game)
@@ -27,6 +28,7 @@ class Settings(val storage: MyStorage) {
     var allowUndo = storage.getBoolean(keyAllowUndo,true)
     var boardWidth = 4
     var boardHeight = boardWidth
+    var maxMovesToStore = storage.getInt(keyMaxMovesToStore, 5000)
     var colorThemeEnum: ColorThemeEnum = ColorThemeEnum.load(storage.getOrNull(keyColorTheme))
     var aiAlgorithm: AiAlgorithm = AiAlgorithm.load(storage.getOrNull(keyAiAlgorithm))
     var defaultBoard = Board(this)

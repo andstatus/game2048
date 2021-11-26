@@ -31,7 +31,7 @@ class StringResources private constructor(val lang: String, val strings: Map<Str
             }
             return lang.indexOfOrNull('-')?.let {
                 lang.substring(0, it) to loadLangFile(lang.substring(0, it))
-            } ?: lang to exact
+            } ?: (lang to exact)
         }
 
         private suspend fun loadLangFile(lang: String): Map<String, String> =

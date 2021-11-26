@@ -53,11 +53,11 @@ class History(val settings: Settings,
         }
 
         private fun loadPrevGames(settings: Settings): List<GameRecord.ShortRecord> = myMeasured("PrevGames loaded") {
-            gameIdsRange.fold(emptyList(), { acc, ind ->
+            gameIdsRange.fold(emptyList()) { acc, ind ->
                 settings.storage.getOrNull(keyGame + ind)
-                        ?.let { GameRecord.ShortRecord.fromJson(settings, it) }
-                        ?.let { acc + it } ?: acc
-            })
+                    ?.let { GameRecord.ShortRecord.fromJson(settings, it) }
+                    ?.let { acc + it } ?: acc
+            }
         }
     }
 
@@ -177,6 +177,9 @@ class History(val settings: Settings,
                     else -> {
                         currentGame.plies.take(historyIndex)
                     }
+                }.let {
+                    val toDrop = it.size - settings.maxMovesToStore * 2 + 1
+                    if (toDrop > 0) it.drop(toDrop) else it
                 } + position.prevPly
                 with(currentGame.shortRecord) {
                     GameRecord(GameRecord.ShortRecord(board, note, id, start, position, bookmarksNew), playerMoves)

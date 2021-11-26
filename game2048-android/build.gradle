@@ -5,7 +5,7 @@ buildscript {
 	}
     dependencies {
 		classpath 'com.android.tools.build:gradle:7.0.3';
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.31' }
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.0-RC2' }
 
 }
 
@@ -23,6 +23,14 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_1_8
+		targetCompatibility JavaVersion.VERSION_1_8
+	}
+	adbOptions {
+		installOptions = ["-r"]
+		timeOutInMs = 30 * 1000
+	}
     lintOptions {
         disable("GradleCompatible")
     }
@@ -59,7 +67,7 @@ android {
             minifyEnabled false
         }
         release {
-            minifyEnabled true
+            minifyEnabled false
         }
     }
     sourceSets {
@@ -88,18 +96,18 @@ if (project.hasProperty("andstatus.google-play-publisher")
 }
 
 dependencies {
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.31'
-    implementation 'com.soywiz.korlibs.klock:klock-android:2.4.7'
-    implementation 'com.soywiz.korlibs.kmem:kmem-android:2.4.7'
-    implementation 'com.soywiz.korlibs.kds:kds-android:2.4.7'
-    implementation 'com.soywiz.korlibs.krypto:krypto-android:2.4.7'
-    implementation 'com.soywiz.korlibs.korge2:korge-android:2.4.7'
-    implementation 'com.soywiz.korlibs.korma:korma-android:2.4.7'
-    implementation 'com.soywiz.korlibs.korio:korio-android:2.4.7'
-    implementation 'com.soywiz.korlibs.korim:korim-android:2.4.7'
-    implementation 'com.soywiz.korlibs.korau:korau-android:2.4.7'
-    implementation 'com.soywiz.korlibs.korgw:korgw-android:2.4.7'
-    implementation 'com.soywiz.korlibs.korinject:korinject-android:2.4.7'
-    implementation 'com.soywiz.korlibs.klogger:klogger-android:2.4.7'
-    implementation 'com.soywiz.korlibs.korte:korte-android:2.4.7'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.0-RC2'
+    implementation 'com.soywiz.korlibs.klock:klock-android:2.4.8'
+    implementation 'com.soywiz.korlibs.kmem:kmem-android:2.4.8'
+    implementation 'com.soywiz.korlibs.kds:kds-android:2.4.8'
+    implementation 'com.soywiz.korlibs.krypto:krypto-android:2.4.8'
+    implementation 'com.soywiz.korlibs.korge2:korge-android:2.4.8'
+    implementation 'com.soywiz.korlibs.korma:korma-android:2.4.8'
+    implementation 'com.soywiz.korlibs.korio:korio-android:2.4.8'
+    implementation 'com.soywiz.korlibs.korim:korim-android:2.4.8'
+    implementation 'com.soywiz.korlibs.korau:korau-android:2.4.8'
+    implementation 'com.soywiz.korlibs.korgw:korgw-android:2.4.8'
+    implementation 'com.soywiz.korlibs.korinject:korinject-android:2.4.8'
+    implementation 'com.soywiz.korlibs.klogger:klogger-android:2.4.8'
+    implementation 'com.soywiz.korlibs.korte:korte-android:2.4.8'
 }

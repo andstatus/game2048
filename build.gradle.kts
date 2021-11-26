@@ -26,8 +26,8 @@ korge {
     jvmMainClassName = "org.andstatus.game2048.MainKt"
 
     androidMinSdk = 24
-    androidCompileSdk = 29
-    androidTargetSdk = 29
+    androidCompileSdk = 30
+    androidTargetSdk = 30
 
     targetJvm()
     targetJs()
@@ -36,6 +36,7 @@ korge {
     // We need to switch to the "indirect" target only to generate build.gradle
     // and manually sync it with our customized game2048-android/build.gradle
     //targetAndroidIndirect()
+
     // The below stopped working after upgrade to Kotlin 1.5.0, etc.
     //targetAndroidDirect()
 }

@@ -1,1 +1,1 @@
-v.1.10.14. Swipe is triggered after moving for about a half of a Board cell.
+v.1.10.15. Limit max number of stored moves for a game to 5000.
