@@ -8,6 +8,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.andstatus.game2048.Settings
+import org.andstatus.game2048.model.GameRecord.ShortRecord.Companion.fromJsonMap
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.myMeasuredIt
@@ -55,7 +56,7 @@ class History(val settings: Settings,
         private fun loadPrevGames(settings: Settings): List<GameRecord.ShortRecord> = myMeasured("PrevGames loaded") {
             gameIdsRange.fold(emptyList()) { acc, ind ->
                 settings.storage.getOrNull(keyGame + ind)
-                    ?.let { GameRecord.ShortRecord.fromJson(settings, it) }
+                    ?.let { fromJsonMap(settings, it.asJsonMap(), null) }
                     ?.let { acc + it } ?: acc
             }
         }
@@ -82,6 +83,11 @@ class History(val settings: Settings,
                 currentGame = it
                 gameMode.modeEnum = GameModeEnum.STOP
             }
+            ?: run {
+                myLog("Failed to restore game $id")
+                null
+            }
+
 
     fun saveCurrent(coroutineScope: CoroutineScope? = null): History {
         settings.storage[keyGameMode] = gameMode.modeEnum.id
@@ -120,7 +126,7 @@ class History(val settings: Settings,
         }
     }
 
-    private fun idForNewGame(): Int {
+    fun idForNewGame(): Int {
         val maxGames = gameIdsRange.last
         if (prevGames.size > maxOlderGames) {
             val keepAfter = DateTimeTz.nowLocal().minus(1.weeks)

@@ -3,6 +3,8 @@ package org.andstatus.game2048.model
 import com.soywiz.klock.DateFormat
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.DateTimeTz
+import com.soywiz.korio.serialization.json.Json
+import com.soywiz.korio.util.StrReader
 import org.andstatus.game2048.Settings
 
 private const val keyNote = "note"
@@ -28,9 +30,22 @@ class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
                 plies
             )
 
-        fun fromJson(settings: Settings, json: Any, newId: Int? = null): GameRecord? =
-                ShortRecord.fromJson(settings, json, newId)?.let { shortRecord ->
-                    val plies: List<Ply> = json.asJsonMap()[keyPlayersMoves]?.asJsonArray()
+        fun fromJson(settings: Settings, json: String, newId: Int? = null): GameRecord? {
+                val reader = StrReader(json)
+                val aMap: Map<String, Any> = reader.asJsonMap()
+                return ShortRecord.fromJsonMap(settings, aMap, newId)?.let { shortRecord ->
+                    val plies: List<Ply> =
+                        if (aMap.containsKey(keyPlayersMoves))
+                            aMap[keyPlayersMoves]?.asJsonArray()
+                        else {
+                            val list: MutableList<Any> = ArrayList()
+                            while (reader.hasMore) {
+                                Json.parse(reader)?.let {
+                                    list.add(it)
+                                }
+                            }
+                            list
+                        }
                             ?.mapNotNull { Ply.fromJson(shortRecord.board, it) } ?: emptyList()
                     if (plies.size > shortRecord.finalPosition.plyNumber) {
                         // Fix for older versions, which didn't store move number
@@ -38,6 +53,7 @@ class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
                     }
                     GameRecord(shortRecord, plies)
                 }
+        }
     }
 
     class ShortRecord(val board: Board, val note: String, var id: Int, val start: DateTimeTz,
@@ -60,17 +76,16 @@ class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
         companion object {
             val FILENAME_FORMAT = DateFormat("yyyy-MM-dd-HH-mm")
 
-            fun fromJson(settings: Settings, json: Any, newId: Int? = null): ShortRecord? {
+            fun fromJsonMap(settings: Settings, aMap: Map<String, Any>, newId: Int?): ShortRecord? {
                 val board = settings.defaultBoard // TODO Create / load here
-                val aMap: Map<String, Any> = json.asJsonMap()
                 val note: String = aMap[keyNote] as String? ?: ""
                 val id = newId ?: aMap[keyId]?.let { it as Int } ?: 0
                 val start: DateTimeTz? = aMap[keyStart]?.let { DateTime.parse(it as String) }
                 val finalPosition: GamePosition? = aMap[keyFinalPosition]
-                        ?.let { GamePosition.fromJson(board, it) }
-                val bookmarks: List<GamePosition> = json.asJsonMap()[keyBookmarks]?.asJsonArray()
-                        ?.mapNotNull { GamePosition.fromJson(board, it) }
-                        ?: emptyList()
+                    ?.let { GamePosition.fromJson(board, it) }
+                val bookmarks: List<GamePosition> = aMap[keyBookmarks]?.asJsonArray()
+                    ?.mapNotNull { GamePosition.fromJson(board, it) }
+                    ?: emptyList()
                 return if (start != null && finalPosition != null)
                     ShortRecord(board, note, id, start, finalPosition, bookmarks)
                 else null
