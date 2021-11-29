@@ -319,7 +319,7 @@ class Presenter(val view: ViewData, history: History) {
         logClick("Share")
         view.gameStage.shareText(
                 view.stringResources.text("share"), model.history.currentGame.shortRecord.jsonFileName,
-                model.history.currentGame.toMap().toJson()
+                model.history.currentGame.toJsonString()
         )
     }
 

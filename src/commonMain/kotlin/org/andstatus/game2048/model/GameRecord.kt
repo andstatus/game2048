@@ -4,6 +4,7 @@ import com.soywiz.klock.DateFormat
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.korio.serialization.json.Json
+import com.soywiz.korio.serialization.json.toJson
 import com.soywiz.korio.util.StrReader
 import org.andstatus.game2048.Settings
 
@@ -16,8 +17,14 @@ private const val keyBookmarks = "bookmarks"
 
 class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
 
-    fun toMap(): Map<String, Any> = shortRecord.toMap() +
-            (keyPlayersMoves to plies.map { it.toMap() })
+    fun toJsonString(): String = shortRecord.toMap().toJson()
+        .let { StringBuilder(it) }
+        .apply {
+            plies.forEach { ply ->
+                ply.toMap().toJson()
+                    .let { json -> append(json) }
+            }
+        }.toString()
 
     var id: Int by shortRecord::id
     val score get() = shortRecord.finalPosition.score

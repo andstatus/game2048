@@ -1,5 +1,4 @@
 import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korio.serialization.json.toJson
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.model.GameClock
 import org.andstatus.game2048.model.GamePosition
@@ -79,7 +78,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         }
 
         val gameRecord = GameRecord.newWithPositionAndMoves(GamePosition(board), emptyList(), moves)
-        val gameRecordJson = gameRecord.toMap().toJson()
+        val gameRecordJson = gameRecord.toJsonString()
         val message = "nMoves:$nMoves, $gameRecordJson"
 
         if (nMoves > 0) {
@@ -96,7 +95,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         assertEquals(expected.currentGame.plies, actual.currentGame.plies, modelAndViews())
         assertEquals(expected.currentGame.score, actual.currentGame.score, modelAndViews())
         assertEquals(expected.currentGame.shortRecord.bookmarks.size, actual.currentGame.shortRecord.bookmarks.size, modelAndViews())
-        assertEquals(expected.currentGame.toMap().toJson(), actual.currentGame.toMap().toJson(), modelAndViews())
+        assertEquals(expected.currentGame.toJsonString(), actual.currentGame.toJsonString(), modelAndViews())
         assertTrue(presenter.canUndo(), modelAndViews())
         assertFalse(presenter.canRedo(), modelAndViews())
     }

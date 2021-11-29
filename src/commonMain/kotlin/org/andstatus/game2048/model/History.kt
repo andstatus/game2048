@@ -2,7 +2,6 @@ package org.andstatus.game2048.model
 
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.weeks
-import com.soywiz.korio.serialization.json.toJson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -105,8 +104,10 @@ class History(val settings: Settings,
                 currentGame.id = it
             } else currentGame.id
             updateBestScore()
-            settings.storage[keyCurrentGame] = currentGame.toMap().toJson()
-            settings.storage[keyGame + idToStore] = currentGame.toMap().toJson()
+            currentGame.toJsonString().let {
+                settings.storage[keyCurrentGame] = it
+                settings.storage[keyGame + idToStore] = it
+            }
             currentGame
         }
         return if (coroutineScope == null) {
