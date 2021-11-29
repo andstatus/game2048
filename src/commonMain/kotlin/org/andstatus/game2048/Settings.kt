@@ -29,7 +29,7 @@ class Settings(stage: Stage) {
     var allowUndo = storage.getBoolean(keyAllowUndo,true)
     var boardWidth = 4
     var boardHeight = boardWidth
-    var maxMovesToStore = storage.getInt(keyMaxMovesToStore, 5000)
+    var maxMovesToStore = storage.getInt(keyMaxMovesToStore, 100000)
     var colorThemeEnum: ColorThemeEnum = ColorThemeEnum.load(storage.getOrNull(keyColorTheme))
     var aiAlgorithm: AiAlgorithm = AiAlgorithm.load(storage.getOrNull(keyAiAlgorithm))
     var defaultBoard = Board(this)

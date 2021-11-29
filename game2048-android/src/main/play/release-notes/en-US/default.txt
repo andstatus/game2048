@@ -1,1 +1,1 @@
-v.1.10.15. Limit max number of stored moves for a game to 5000.
+v.1.11.0. Optimized to allow games with more than 50 thousand moves.
