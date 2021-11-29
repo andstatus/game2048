@@ -26,7 +26,7 @@
   <string name="move">Ход</string>
   <string name="milliseconds">мс</string>
   <string name="note">Примечание</string>
-  <string name="restore_game">Восстановить игру</string>
+  <string name="recent_games">Недавние игры</string>
   <string name="score">Счёт</string>
   <string name="score_upper">СЧЁТ</string>
   <string name="select_ai_algorithm">Выберите ИИ алгоритм</string>

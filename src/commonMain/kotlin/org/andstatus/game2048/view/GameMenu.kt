@@ -23,7 +23,7 @@ fun ViewData.showGameMenu(aiEnabled: Boolean) = myWindow("game_actions") {
         button(GameMenuButtonsEnum.SELECT_AI_ALGORITHM) { selectAiAlgorithm(settings) }
     }
     button(GameMenuButtonsEnum.BOOKMARKS, presenter::onBookmarksClick)
-    button(GameMenuButtonsEnum.RESTORE, presenter::onRestoreClick)
+    button(GameMenuButtonsEnum.RECENT, presenter::onRecentClick)
     button(GameMenuButtonsEnum.RESTART, presenter::onRestartClick)
     button(GameMenuButtonsEnum.DELETE, presenter::onDeleteGameClick)
     button(GameMenuButtonsEnum.SHARE, presenter::onShareClick)

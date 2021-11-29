@@ -2,7 +2,7 @@ package org.andstatus.game2048.view
 
 enum class GameMenuButtonsEnum(val icon: String, val labelKey: String) {
     BOOKMARKS("bookmarks", "goto_bookmark"),
-    RESTORE("restore", "restore_game"),
+    RECENT("recent", "recent_games"),
     RESTART("restart", "try_again"),
     SHARE("share", "share"),
     LOAD("load", "load_game"),

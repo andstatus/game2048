@@ -50,8 +50,8 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
         return composerMove(gamePosition.newEmpty(), false) + Ply.delay() + randomComputerMove()
     }
 
-    fun restoreGame(id: Int): List<Ply> {
-        return history.restoreGame(id)?.let {
+    fun openGame(id: Int): List<Ply> {
+        return history.openGame(id)?.let {
             saveCurrent()
             redoToCurrent()
         } ?: emptyList()

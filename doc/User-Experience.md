@@ -37,7 +37,7 @@ This is why sometimes we don't see speed increase. The algorithm continues playi
 
 Now we can switch back to our manual mode by a swipe down or by tapping "Stop" button. We can play manually now, as we always do.
 
-I didn't show you yet that we can restore any previous game, for example the game which was very interesting. 
+I didn't show you yet that we can open any recent game, for example the game which was very interesting. 
 Quite a long game. We are in the "Watch" mode and can navigate its moves backwards or forward. After the sixth speed we can press "To the start" (or "To the end") button and see the game from its beginning.
 Now I'm pressing Stop or Swipe down.
 

@@ -11,7 +11,6 @@ import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.concurrent.atomic.incrementAndGet
 import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.lang.substr
-import com.soywiz.korio.serialization.json.toJson
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
@@ -45,7 +44,7 @@ import org.andstatus.game2048.view.ViewData
 import org.andstatus.game2048.view.showBookmarks
 import org.andstatus.game2048.view.showGameMenu
 import org.andstatus.game2048.view.showHelp
-import org.andstatus.game2048.view.showRestoreGame
+import org.andstatus.game2048.view.showRecentGames
 
 /** @author yvolk@yurivolkov.com */
 class Presenter(val view: ViewData, history: History) {
@@ -72,7 +71,7 @@ class Presenter(val view: ViewData, history: History) {
     fun onAppEntry() = myMeasured("onAppEntry") {
         model.onAppEntry().present()
         presentGameClock(view.gameStage, model) { view.mainView.scoreBar.gameTime }
-        if (model.history.prevGames.isEmpty() && model.history.currentGame.id == 0) {
+        if (model.history.recentGames.isEmpty() && model.history.currentGame.id == 0) {
             view.showHelp()
         } else {
             showMainView()
@@ -293,10 +292,10 @@ class Presenter(val view: ViewData, history: History) {
         view.showBookmarks(model.history.currentGame)
     }
 
-    fun onRestoreClick() = afterStop {
-        logClick("Restore")
+    fun onRecentClick() = afterStop {
+        logClick("Recent")
         model.pauseGame()
-        view.showRestoreGame(model.history.prevGames)
+        view.showRecentGames(model.history.recentGames)
     }
 
     fun onGoToBookmarkClick(position: GamePosition) = afterStop {
@@ -311,7 +310,7 @@ class Presenter(val view: ViewData, history: History) {
         logClick("History$id")
         showMainView()
         if (moveIsInProgress.compareAndSet(expect = false, update = true)) {
-            model.restoreGame(id).present()
+            model.openGame(id).present()
         }
     }
 

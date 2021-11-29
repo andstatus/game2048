@@ -45,8 +45,8 @@ see [User experience](doc/User-Experience.md).
 * The Latest games with all their moves, bookmarks and scores are stored in a history and can be watched.
   Or you can play them again.
 * Game menu allows you to delete current game from history, to restart a game ("Try again")
-  or to restore existing game from a list.
-* When you tap "Try again" button or restore existing game, current game is automatically saved to the history,
+  or to open recent game from a list.
+* When you tap "Try again" button or open recent game, current game is automatically saved to the history,
   so you can review or continue to play it later.
 * Share a game as a file, so it can be loaded, watched and even played on any other device.
 * The app is multilingual. Please add new translations [2048 Open Fun Game at Crowdin](https://crowdin.com/project/2048-open-fun-game)
@@ -60,7 +60,7 @@ see [User experience](doc/User-Experience.md).
 <img src="doc/images/5x5.png" width="5" />
 <img title="Game actions menu of Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/4.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Restore game, then watch or play it. Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/5.png" height="400" />
+<img title="Open recent game, then watch or play it. Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/5.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
 <img title="Game Over in Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/6.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />

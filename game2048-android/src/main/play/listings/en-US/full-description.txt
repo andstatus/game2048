@@ -25,8 +25,8 @@ Features of "2048 Open Fun Game" that are not present in the original game:
 * The Latest games with all their moves, bookmarks and scores are stored in a history and can be watched.
   Or you can play them again.
 * Game menu allows you to delete current game from history, to restart a game ("Try again")
-  or to restore existing game from a list.
-* When you tap "Try again" button or restore existing game, current game is automatically saved to the history,
+  or to open recent game from a list.
+* When you tap "Try again" button or open recent game, current game is automatically saved to the history,
   so you can review or continue to play it later.
 * Share a game as a file, so it can be loaded, watched and even played on any other device.
 * The app is multilingual. Please add new translations at https://crowdin.com/project/2048-open-fun-game

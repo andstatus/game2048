@@ -10,9 +10,9 @@ import com.soywiz.korim.text.TextAlignment
 import org.andstatus.game2048.model.GameRecord
 import kotlin.math.max
 
-fun ViewData.showRestoreGame(prevGames: List<GameRecord.ShortRecord>) = myWindow("restore_game") {
+fun ViewData.showRecentGames(recentGames: List<GameRecord.ShortRecord>) = myWindow("recent_games") {
     val listTop = winTop + cellMargin + buttonSize + buttonMargin
-    val nItems = prevGames.size
+    val nItems = recentGames.size
     val itemHeight = buttonSize
     val textWidth = winWidth * 2
     val textSize = defaultTextSize
@@ -57,7 +57,7 @@ fun ViewData.showRestoreGame(prevGames: List<GameRecord.ShortRecord>) = myWindow
             stringResources.text("duration"), stringResources.text("id"),
             stringResources.text("note")) {}
 
-        prevGames.sortedByDescending { it.finalPosition.startingDateTime }.forEachIndexed { index, game ->
+        recentGames.sortedByDescending { it.finalPosition.startingDateTime }.forEachIndexed { index, game ->
             oneRow(
                 index + 1,
                 game.finalPosition.score.toString(),

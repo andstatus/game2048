@@ -22,7 +22,7 @@ private val maxOlderGames = 30
 /** @author yvolk@yurivolkov.com */
 class History(val settings: Settings,
               var currentGame: GameRecord,
-              var prevGames: List<GameRecord.ShortRecord> = emptyList()) {
+              var recentGames: List<GameRecord.ShortRecord> = emptyList()) {
     private val keyBest = "best"
 
     // 1. Info on previous games
@@ -52,7 +52,7 @@ class History(val settings: Settings,
             History(settings, dCurrentGame.await())
         }
 
-        private fun loadPrevGames(settings: Settings): List<GameRecord.ShortRecord> = myMeasured("PrevGames loaded") {
+        private fun loadRecentGames(settings: Settings): List<GameRecord.ShortRecord> = myMeasured("Recent games loaded") {
             gameIdsRange.fold(emptyList()) { acc, ind ->
                 settings.storage.getOrNull(keyGame + ind)
                     ?.let { fromJsonMap(settings, it.asJsonMap(), null) }
@@ -61,29 +61,29 @@ class History(val settings: Settings,
         }
     }
 
-    fun loadPrevGames(): History {
-        prevGames = loadPrevGames(settings)
+    fun loadRecentGames(): History {
+        recentGames = loadRecentGames(settings)
         return this
     }
 
-    fun restoreGame(id: Int): GameRecord? =
+    fun openGame(id: Int): GameRecord? =
         settings.storage.getOrNull(keyGame + id)
             ?.let {
-                myLog("On restore gameId:$id, json.length:${it.length} ${it.substring(0..200)}...")
+                myLog("On open gameId:$id, json.length:${it.length} ${it.substring(0..200)}...")
                 GameRecord.fromJson(settings, it)
             }
             ?.also {
                 if (it.id == id) {
-                    myLog("Restored game $it")
+                    myLog("Opened game $it")
                 } else {
-                    myLog("Fixed id $id for Restored game $it")
+                    myLog("Fixed id $id while opening game $it")
                     it.id = id
                 }
                 currentGame = it
                 gameMode.modeEnum = GameModeEnum.STOP
             }
             ?: run {
-                myLog("Failed to restore game $id")
+                myLog("Failed to open game $id")
                 null
             }
 
@@ -94,7 +94,7 @@ class History(val settings: Settings,
 
         if (isNew && currentGame.score < 1) {
             // Store only the latest game without score
-            prevGames.filter { it.finalPosition.score < 1 }.forEach {
+            recentGames.filter { it.finalPosition.score < 1 }.forEach {
                 settings.storage.native.remove(keyGame + it.id)
             }
         }
@@ -111,10 +111,10 @@ class History(val settings: Settings,
             currentGame
         }
         return if (coroutineScope == null) {
-            loadPrevGames()
+            loadRecentGames()
         } else {
             coroutineScope.launch {
-                loadPrevGames()
+                loadRecentGames()
             }
             this
         }
@@ -129,18 +129,18 @@ class History(val settings: Settings,
 
     fun idForNewGame(): Int {
         val maxGames = gameIdsRange.last
-        if (prevGames.size > maxOlderGames) {
+        if (recentGames.size > maxOlderGames) {
             val keepAfter = DateTimeTz.nowLocal().minus(1.weeks)
-            val olderGames = prevGames.filter { it.finalPosition.startingDateTime < keepAfter }
+            val olderGames = recentGames.filter { it.finalPosition.startingDateTime < keepAfter }
             val id = when {
                 olderGames.size > 20 -> olderGames.minByOrNull { it.finalPosition.score }?.id
-                prevGames.size >= maxGames -> prevGames.minByOrNull { it.finalPosition.score }?.id
+                recentGames.size >= maxGames -> recentGames.minByOrNull { it.finalPosition.score }?.id
                 else -> null
             }
             if (id != null) return id
         }
-        return (gameIdsRange.find { id -> prevGames.none { it.id == id } }
-            ?: prevGames.minByOrNull { it.finalPosition.startingDateTime }?.id
+        return (gameIdsRange.find { id -> recentGames.none { it.id == id } }
+            ?: recentGames.minByOrNull { it.finalPosition.startingDateTime }?.id
             ?: gameIdsRange.first)
     }
 
@@ -148,7 +148,7 @@ class History(val settings: Settings,
         if (currentGame.id == 0) return
 
         settings.storage.native.remove(keyGame + currentGame.id)
-        loadPrevGames()
+        loadRecentGames()
     }
 
     val currentPly: Ply?

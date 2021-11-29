@@ -26,7 +26,7 @@ Number 2048 is a good first win…</string>
   <string name="move">Move</string>
   <string name="milliseconds">ms</string>
   <string name="note">Note</string>
-  <string name="restore_game">Restore game</string>
+  <string name="recent_games">Recent games</string>
   <string name="score">Score</string>
   <string name="score_upper">SCORE</string>
   <string name="select_ai_algorithm">Select AI algorithm</string>

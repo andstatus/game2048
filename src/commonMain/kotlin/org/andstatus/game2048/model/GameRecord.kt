@@ -38,28 +38,29 @@ class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
             )
 
         fun fromJson(settings: Settings, json: String, newId: Int? = null): GameRecord? {
-                val reader = StrReader(json)
-                val aMap: Map<String, Any> = reader.asJsonMap()
-                return ShortRecord.fromJsonMap(settings, aMap, newId)?.let { shortRecord ->
-                    val plies: List<Ply> =
-                        if (aMap.containsKey(keyPlayersMoves))
-                            aMap[keyPlayersMoves]?.asJsonArray()
-                        else {
-                            val list: MutableList<Any> = ArrayList()
-                            while (reader.hasMore) {
-                                Json.parse(reader)?.let {
-                                    list.add(it)
-                                }
-                            }
-                            list
-                        }
+            val reader = StrReader(json)
+            val aMap: Map<String, Any> = reader.asJsonMap()
+            return ShortRecord.fromJsonMap(settings, aMap, newId)?.let { shortRecord ->
+                val plies: List<Ply> =
+                    if (aMap.containsKey(keyPlayersMoves))
+                        aMap[keyPlayersMoves]?.asJsonArray()
                             ?.mapNotNull { Ply.fromJson(shortRecord.board, it) } ?: emptyList()
-                    if (plies.size > shortRecord.finalPosition.plyNumber) {
-                        // Fix for older versions, which didn't store move number
-                        shortRecord.finalPosition.plyNumber = plies.size
+                    else {
+                        val list: MutableList<Ply> = ArrayList()
+                        while (reader.hasMore) {
+                            Json.parse(reader)
+                                ?.let { Ply.fromJson(shortRecord.board, it) }
+                                ?.let { list.add(it) }
+                        }
+                        list
                     }
-                    GameRecord(shortRecord, plies)
+
+                if (plies.size > shortRecord.finalPosition.plyNumber) {
+                    // Fix for older versions, which didn't store move number
+                    shortRecord.finalPosition.plyNumber = plies.size
                 }
+                GameRecord(shortRecord, plies)
+            }
         }
     }
 

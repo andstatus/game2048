@@ -55,7 +55,7 @@ private fun CoroutineScope.initialize(stage: Stage, animateViews: Boolean, handl
     val settings = async { Settings.load(stage) }
     val history = async { History.load(settings.await()) }
     launch {
-        history.await().loadPrevGames()
+        history.await().loadRecentGames()
     }
     val gameColors = async { ColorTheme.load(stage, settings.await()) }
 

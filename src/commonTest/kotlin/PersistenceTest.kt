@@ -84,10 +84,10 @@ class PersistenceTest : ViewsForTesting(log = true) {
         if (nMoves > 0) {
             assertTrue(gameRecordJson.contains("place"), message)
         }
-        val gameRecordRestored = GameRecord.fromJson(settings, gameRecordJson)
-        assertTrue(gameRecordRestored != null, message)
+        val gameRecordOpened = GameRecord.fromJson(settings, gameRecordJson)
+        assertTrue(gameRecordOpened != null, message)
 
-        assertEquals(gameRecord.plies, gameRecordRestored.plies, message)
+        assertEquals(gameRecord.plies, gameRecordOpened.plies, message)
     }
 
     private fun ViewData.assertTestHistory(expected: History) {
