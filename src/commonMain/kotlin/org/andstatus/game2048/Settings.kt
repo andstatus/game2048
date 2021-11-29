@@ -14,11 +14,12 @@ private const val keyAllowUsersMoveWithoutBlockMoves = "allowUsersMoveWithoutBlo
 private const val keyAllowUndo = "allowUndo"
 private const val keyMaxMovesToStore = "maxMovesToStore"
 
-/** Game options / tweaks. Default values are for original game,
+/** Game options / tweaks. Default values are for the original game,
 see https://en.wikipedia.org/wiki/2048_(video_game)
-and the game in browser: https://play2048.co/
+and for the game in browser: https://play2048.co/
 For now you can modify settings in the "game.storage" file. */
-class Settings(val storage: MyStorage) {
+class Settings(stage: Stage) {
+    val storage: MyStorage = MyStorage.load(stage)
     val keyColorTheme = "colorTheme"
     val keyAiAlgorithm = "aiAlgorithm"
 
@@ -32,11 +33,10 @@ class Settings(val storage: MyStorage) {
     var colorThemeEnum: ColorThemeEnum = ColorThemeEnum.load(storage.getOrNull(keyColorTheme))
     var aiAlgorithm: AiAlgorithm = AiAlgorithm.load(storage.getOrNull(keyAiAlgorithm))
     var defaultBoard = Board(this)
+    val isTestRun = "TestGameWindow" == stage.views.gameWindow::class.simpleName
 
     companion object {
-        fun load(stage: Stage): Settings = MyStorage.load(stage).let { storage ->
-            myMeasured("Settings loaded") { Settings(storage) }
-        }
+        fun load(stage: Stage): Settings = myMeasured("Settings loaded") { Settings(stage) }
     }
 
     fun save() {

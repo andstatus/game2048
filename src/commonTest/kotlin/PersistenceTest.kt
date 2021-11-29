@@ -23,6 +23,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         unsetGameView()
         val settings = Settings.load(stage)
         assertEquals(4, settings.boardWidth, "Settings are not initialized")
+        assertTrue(settings.isTestRun, "Should be Test Run")
         val history = saveTestHistory(settings)
 
         initializeViewDataInTest {
