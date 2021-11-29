@@ -29,7 +29,7 @@ fun ViewData.showRecentGames(recentGames: List<GameRecord.ShortRecord>) = myWind
             roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
             var xPos = cellMargin
             rowText(score, xPos)
-            xPos += textSize * 2.4
+            xPos += textSize * 2.8
             rowText(lastChanged, xPos)
             xPos += textSize * 6.4
             rowText(duration, xPos)
