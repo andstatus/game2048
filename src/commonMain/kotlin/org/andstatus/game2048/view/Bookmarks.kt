@@ -29,7 +29,7 @@ fun ViewData.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
             roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
             var xPos = cellMargin
             rowText(score, xPos)
-            xPos += textSize * 2.4
+            xPos += textSize * 2.8
             rowText(moveNumber, xPos)
             xPos += textSize * 2.4
             rowText(lastChanged, xPos)
