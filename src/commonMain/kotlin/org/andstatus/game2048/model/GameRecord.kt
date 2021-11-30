@@ -7,6 +7,7 @@ import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.serialization.json.toJson
 import com.soywiz.korio.util.StrReader
 import org.andstatus.game2048.Settings
+import org.andstatus.game2048.model.Plies.Companion.appendLastPlies
 
 private const val keyNote = "note"
 private const val keyId = "id"
@@ -15,23 +16,19 @@ private const val keyPlayersMoves = "playersMoves"
 private const val keyFinalPosition = "finalBoard"
 private const val keyBookmarks = "bookmarks"
 
-class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
+class GameRecord(val shortRecord: ShortRecord, val plies: Plies) {
 
     fun toJsonString(): String = shortRecord.toMap().toJson()
         .let { StringBuilder(it) }
-        .apply {
-            plies.forEach { ply ->
-                ply.toMap().toJson()
-                    .let { json -> append(json) }
-            }
-        }.toString()
+        .appendLastPlies(plies)
+        .toString()
 
     var id: Int by shortRecord::id
     val score get() = shortRecord.finalPosition.score
     override fun toString(): String = shortRecord.toString()
 
     companion object {
-        fun newWithPositionAndMoves(position: GamePosition, bookmarks: List<GamePosition>, plies: List<Ply>) =
+        fun newWithPositionAndMoves(position: GamePosition, bookmarks: List<GamePosition>, plies: Plies) =
             GameRecord(
                 ShortRecord(position.board, "", 0, position.startingDateTime, position, bookmarks),
                 plies
@@ -41,7 +38,7 @@ class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
             val reader = StrReader(json)
             val aMap: Map<String, Any> = reader.asJsonMap()
             return ShortRecord.fromJsonMap(settings, aMap, newId)?.let { shortRecord ->
-                val plies: List<Ply> =
+                val plies: Plies =
                     if (aMap.containsKey(keyPlayersMoves))
                         aMap[keyPlayersMoves]?.asJsonArray()
                             ?.mapNotNull { Ply.fromJson(shortRecord.board, it) } ?: emptyList()
@@ -53,7 +50,7 @@ class GameRecord(val shortRecord: ShortRecord, val plies: List<Ply>) {
                                 ?.let { list.add(it) }
                         }
                         list
-                    }
+                    }.let { Plies(it) }
 
                 if (plies.size > shortRecord.finalPosition.plyNumber) {
                     // Fix for older versions, which didn't store move number

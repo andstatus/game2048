@@ -12,12 +12,12 @@ import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.myMeasuredIt
 
-private val keyCurrentGame = "current"
-private val keyGame = "game"
-val keyGameMode = "gameMode"
+private const val keyCurrentGame = "current"
+private const val keyGame = "game"
+const val keyGameMode = "gameMode"
 
 private val gameIdsRange = 1..60
-private val maxOlderGames = 30
+private const val maxOlderGames = 30
 
 /** @author yvolk@yurivolkov.com */
 class History(val settings: Settings,
@@ -46,7 +46,7 @@ class History(val settings: Settings,
                     settings.storage.getOrNull(keyCurrentGame)
                             ?.let { GameRecord.fromJson(settings, it) }
                             ?: GameRecord.newWithPositionAndMoves(
-                                    GamePosition(settings.defaultBoard), emptyList(), emptyList())
+                                    GamePosition(settings.defaultBoard), emptyList(), Plies(emptyList()))
                 }
             }
             History(settings, dCurrentGame.await())
@@ -160,7 +160,7 @@ class History(val settings: Settings,
     fun add(position: GamePosition) {
         currentGame = when (position.prevPly.plyEnum) {
             PlyEnum.LOAD -> {
-                GameRecord.newWithPositionAndMoves(position, emptyList(), emptyList())
+                GameRecord.newWithPositionAndMoves(position, emptyList(), Plies(emptyList()))
             }
             else -> {
                 val bookmarksNew = when {
@@ -179,7 +179,7 @@ class History(val settings: Settings,
                         currentGame.plies
                     }
                     historyIndex == 0 -> {
-                        emptyList()
+                        Plies(emptyList())
                     }
                     else -> {
                         currentGame.plies.take(historyIndex)

@@ -7,6 +7,7 @@ import org.andstatus.game2048.model.History
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.PieceMoveOne
 import org.andstatus.game2048.model.PlacedPiece
+import org.andstatus.game2048.model.Plies
 import org.andstatus.game2048.model.Ply
 import org.andstatus.game2048.model.PlyEnum
 import org.andstatus.game2048.view.ViewData
@@ -52,7 +53,8 @@ class PersistenceTest : ViewsForTesting(log = true) {
         )
         currentGame = GameRecord.newWithPositionAndMoves(position,
             listOf(GamePosition(board), position),
-            listOf(ply1, ply2, ply3))
+            Plies(listOf(ply1, ply2, ply3))
+        )
         saveCurrent()
     }
 
@@ -64,20 +66,20 @@ class PersistenceTest : ViewsForTesting(log = true) {
 
     private fun ViewData.persistGameRecordTest2(settings: Settings, nMoves: Int) {
         val board = presenter.model.gamePosition.board
-        val moves = ArrayList<Ply>()
+        val plies = ArrayList<Ply>()
         var nMovesActual = 0
         while (nMovesActual < nMoves) {
             val square = when (nMovesActual) {
                 1 -> board.toSquare(2, 2)
                 else -> board.toSquare(1, 3)
             }
-            val move = Ply.computerPly(PlacedPiece(Piece.N2, square), 0)
-            assertTrue(move.toMap().keys.size > 2, move.toMap().toString())
-            moves.add(move)
+            val ply = Ply.computerPly(PlacedPiece(Piece.N2, square), 0)
+            assertTrue(ply.toMap().keys.size > 2, ply.toMap().toString())
+            plies.add(ply)
             nMovesActual++
         }
 
-        val gameRecord = GameRecord.newWithPositionAndMoves(GamePosition(board), emptyList(), moves)
+        val gameRecord = GameRecord.newWithPositionAndMoves(GamePosition(board), emptyList(), Plies(plies))
         val gameRecordJson = gameRecord.toJsonString()
         val message = "nMoves:$nMoves, $gameRecordJson"
 
@@ -87,12 +89,12 @@ class PersistenceTest : ViewsForTesting(log = true) {
         val gameRecordOpened = GameRecord.fromJson(settings, gameRecordJson)
         assertTrue(gameRecordOpened != null, message)
 
-        assertEquals(gameRecord.plies, gameRecordOpened.plies, message)
+        assertEquals(gameRecord.plies.toLongString(), gameRecordOpened.plies.toLongString(), message)
     }
 
     private fun ViewData.assertTestHistory(expected: History) {
         val actual = presenter.model.history
-        assertEquals(expected.currentGame.plies, actual.currentGame.plies, modelAndViews())
+        assertEquals(expected.currentGame.plies.toLongString(), actual.currentGame.plies.toLongString(), modelAndViews())
         assertEquals(expected.currentGame.score, actual.currentGame.score, modelAndViews())
         assertEquals(expected.currentGame.shortRecord.bookmarks.size, actual.currentGame.shortRecord.bookmarks.size, modelAndViews())
         assertEquals(expected.currentGame.toJsonString(), actual.currentGame.toJsonString(), modelAndViews())
