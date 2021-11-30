@@ -23,13 +23,13 @@ fun Any.asJsonMap(): Map<String, Any> =
     when (this) {
         is String -> try {
             Json.parse(this) as Map<String, Any>
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             myLog("Error parsing $this\n$e")
             emptyMap()
         }
         is StrReader -> try {
             Json.parse(this) as Map<String, Any>
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             myLog("Error parsing $this\n$e")
             emptyMap()
         }

@@ -2,6 +2,7 @@ package org.andstatus.game2048.model
 
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.weeks
+import com.soywiz.korio.lang.parseInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -44,7 +45,17 @@ class History(val settings: Settings,
             val dCurrentGame = async {
                 myMeasured("Current game loaded") {
                     settings.storage.getOrNull(keyCurrentGame)
-                            ?.let { GameRecord.fromJson(settings, it) }
+                            ?.let {
+                                // TODO: for compatibility with previous versions:
+                                if (it.startsWith("{"))
+                                    GameRecord.fromJson(settings, it)
+                                else {
+                                    val id = it.parseInt()
+                                    settings.storage.getOrNull(keyGame + id) ?.let {
+                                        GameRecord.fromJson(settings, it)
+                                    }
+                                }
+                            }
                             ?: GameRecord.newWithPositionAndMoves(
                                     GamePosition(settings.defaultBoard), emptyList(), Plies(emptyList()))
                 }
@@ -105,7 +116,7 @@ class History(val settings: Settings,
             } else currentGame.id
             updateBestScore()
             currentGame.toJsonString().let {
-                settings.storage[keyCurrentGame] = it
+                settings.storage[keyCurrentGame] = currentGame.id
                 settings.storage[keyGame + idToStore] = it
             }
             currentGame
