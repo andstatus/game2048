@@ -1,4 +1,5 @@
 import com.soywiz.korge.tests.ViewsForTesting
+import kotlinx.coroutines.CoroutineScope
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.model.GameClock
 import org.andstatus.game2048.model.GamePosition
@@ -11,6 +12,7 @@ import org.andstatus.game2048.model.Plies
 import org.andstatus.game2048.model.Ply
 import org.andstatus.game2048.model.PlyEnum
 import org.andstatus.game2048.view.ViewData
+import kotlin.coroutines.coroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -55,7 +57,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
             listOf(GamePosition(board), position),
             Plies(listOf(ply1, ply2, ply3))
         )
-        saveCurrent()
+        saveCurrent(CoroutineScope(coroutineContext))
     }
 
     private fun ViewData.persistGameRecordTest(settings: Settings) {
@@ -89,6 +91,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         val gameRecordOpened = GameRecord.fromJson(settings, gameRecordJson)
         assertTrue(gameRecordOpened != null, message)
 
+        gameRecordOpened.plies.load()
         assertEquals(gameRecord.plies.toLongString(), gameRecordOpened.plies.toLongString(), message)
     }
 

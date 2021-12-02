@@ -3,11 +3,10 @@ package org.andstatus.game2048.model
 import com.soywiz.klock.DateFormat
 import com.soywiz.klock.DateTime
 import com.soywiz.klock.DateTimeTz
-import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.serialization.json.toJson
 import com.soywiz.korio.util.StrReader
 import org.andstatus.game2048.Settings
-import org.andstatus.game2048.model.Plies.Companion.appendLastPlies
+import org.andstatus.game2048.model.Plies.Companion.appendPlies
 
 private const val keyNote = "note"
 private const val keyId = "id"
@@ -20,12 +19,14 @@ class GameRecord(val shortRecord: ShortRecord, val plies: Plies) {
 
     fun toJsonString(): String = shortRecord.toMap().toJson()
         .let { StringBuilder(it) }
-        .appendLastPlies(plies)
+        .appendPlies(plies)
         .toString()
 
     var id: Int by shortRecord::id
     val score get() = shortRecord.finalPosition.score
-    override fun toString(): String = shortRecord.toString()
+
+    override fun toString(): String = "$shortRecord, " +
+            if (plies.notCompleted) "loading..." else "${plies.size} plies"
 
     companion object {
         fun newWithPositionAndMoves(position: GamePosition, bookmarks: List<GamePosition>, plies: Plies) =
@@ -40,17 +41,14 @@ class GameRecord(val shortRecord: ShortRecord, val plies: Plies) {
             return ShortRecord.fromJsonMap(settings, aMap, newId)?.let { shortRecord ->
                 val plies: Plies =
                     if (aMap.containsKey(keyPlayersMoves))
-                        aMap[keyPlayersMoves]?.asJsonArray()
-                            ?.mapNotNull { Ply.fromJson(shortRecord.board, it) } ?: emptyList()
+                        // TODO: For compatibility with previous versions
+                        (aMap[keyPlayersMoves]?.asJsonArray()
+                            ?.mapNotNull { Ply.fromJson(shortRecord.board, it) }
+                            ?: emptyList())
+                            .let { Plies(it) }
                     else {
-                        val list: MutableList<Ply> = ArrayList()
-                        while (reader.hasMore) {
-                            Json.parse(reader)
-                                ?.let { Ply.fromJson(shortRecord.board, it) }
-                                ?.let { list.add(it) }
-                        }
-                        list
-                    }.let { Plies(it) }
+                        Plies(null, shortRecord, reader)
+                    }
 
                 if (plies.size > shortRecord.finalPosition.plyNumber) {
                     // Fix for older versions, which didn't store move number

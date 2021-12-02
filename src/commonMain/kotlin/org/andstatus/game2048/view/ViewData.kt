@@ -18,6 +18,7 @@ import com.soywiz.korio.util.OS
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -36,14 +37,14 @@ import kotlin.properties.Delegates
 suspend fun viewData(stage: Stage, animateViews: Boolean, handler: suspend ViewData.() -> Unit = {}) {
     stage.removeChildren()
     coroutineScope {
-        val outerScope: CoroutineScope = this
+        val activeScope = if (OS.isNative) this else CoroutineScope(this.coroutineContext + Job())
         val handlerInOuterScope: suspend ViewData.() -> Unit = {
-            outerScope.launch { handler() }
+            activeScope.launch { handler() }
         }
 
-        val scope: CoroutineScope = if (OS.isNative) outerScope else
-            CoroutineScope(coroutineContext + Dispatchers.Default)
-        scope.initialize(stage, animateViews, handlerInOuterScope)
+        val multithreadedScope: CoroutineScope = if (OS.isNative) activeScope else
+            CoroutineScope(activeScope.coroutineContext + Dispatchers.Default)
+        multithreadedScope.initialize(stage, animateViews, handlerInOuterScope)
     }
 }
 
@@ -69,7 +70,7 @@ private fun CoroutineScope.initialize(stage: Stage, animateViews: Boolean, handl
         splashDefault.removeFromParent()
     }
 
-    if (!OS.isAndroid) {
+    if (!OS.isAndroid) launch {
         // We set window title in Android via AndroidManifest.xml
         stage.gameWindow.title = strings.await().text("app_name")
     }

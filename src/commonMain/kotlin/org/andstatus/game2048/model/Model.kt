@@ -1,10 +1,9 @@
 package org.andstatus.game2048.model
 
-import kotlinx.coroutines.CoroutineScope
 import org.andstatus.game2048.Settings
 
 /** @author yvolk@yurivolkov.com */
-class Model(private val coroutineScope: CoroutineScope, val history: History) {
+class Model(val history: History) {
     val settings: Settings = history.settings
     var gamePosition = GamePosition(settings.defaultBoard)
 
@@ -52,7 +51,6 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
 
     fun openGame(id: Int): List<Ply> {
         return history.openGame(id)?.let {
-            saveCurrent()
             redoToCurrent()
         } ?: emptyList()
     }
@@ -68,7 +66,7 @@ class Model(private val coroutineScope: CoroutineScope, val history: History) {
         saveCurrent()
     }
 
-    fun saveCurrent() = history.saveCurrent(coroutineScope)
+    fun saveCurrent() = history.saveCurrent(history.settings.multithreadedScope)
 
     fun canUndo(): Boolean {
         return history.canUndo()

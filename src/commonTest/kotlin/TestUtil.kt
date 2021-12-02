@@ -18,14 +18,16 @@ fun unsetGameView() {
 }
 
 suspend fun Stage.initializeViewDataInTest(handler: suspend ViewData.() -> Unit = {}) {
-    if (!lazyViewData.isInitialized()) {
+    if (lazyViewData.isInitialized()) {
+        viewData.handler()
+    } else {
         viewData(stage, animateViews = false) {
             myLog("Initialized in test")
             viewData = this
+            viewData.handler()
         }
         myLog("initializeViewDataInTest after 'viewData' function ended")
     }
-    viewData.handler()
 }
 
 fun ViewData.presentedPieces() = presenter.boardViews.blocksOnBoard.map { it.firstOrNull()?.piece }

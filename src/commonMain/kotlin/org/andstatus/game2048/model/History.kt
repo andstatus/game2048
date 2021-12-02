@@ -91,6 +91,7 @@ class History(val settings: Settings,
                     it.id = id
                 }
                 currentGame = it
+                settings.storage[keyCurrentGame] = currentGame.id
                 gameMode.modeEnum = GameModeEnum.STOP
             }
             ?: run {
@@ -99,7 +100,7 @@ class History(val settings: Settings,
             }
 
 
-    fun saveCurrent(coroutineScope: CoroutineScope? = null): History {
+    fun saveCurrent(coroutineScope: CoroutineScope): History {
         settings.storage[keyGameMode] = gameMode.modeEnum.id
         val isNew = currentGame.id <= 0
 
@@ -110,25 +111,23 @@ class History(val settings: Settings,
             }
         }
 
-        myMeasuredIt((if (isNew) "New" else "Old") + " game saved") {
-            val idToStore = if (isNew) idForNewGame().also {
-                currentGame.id = it
-            } else currentGame.id
-            updateBestScore()
-            currentGame.toJsonString().let {
-                settings.storage[keyCurrentGame] = currentGame.id
-                settings.storage[keyGame + idToStore] = it
+        val idToStore = if (isNew) idForNewGame().also {
+            currentGame.id = it
+        } else currentGame.id
+        settings.storage[keyCurrentGame] = currentGame.id
+        val game = currentGame
+
+        coroutineScope.launch {
+            myMeasuredIt((if (isNew) "New" else "Old") + " game saved") {
+                updateBestScore()
+                game.toJsonString().let {
+                    settings.storage[keyGame + idToStore] = it
+                }
+                game
             }
-            currentGame
-        }
-        return if (coroutineScope == null) {
             loadRecentGames()
-        } else {
-            coroutineScope.launch {
-                loadRecentGames()
-            }
-            this
         }
+        return this
     }
 
     private fun updateBestScore() {

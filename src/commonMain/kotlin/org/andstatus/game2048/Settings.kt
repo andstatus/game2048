@@ -4,6 +4,10 @@ import com.soywiz.korge.service.storage.NativeStorage
 import com.soywiz.korge.view.Stage
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korio.util.OS
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.model.Board
 import org.andstatus.game2048.view.ColorThemeEnum
@@ -18,7 +22,10 @@ private const val keyMaxMovesToStore = "maxMovesToStore"
 see https://en.wikipedia.org/wiki/2048_(video_game)
 and for the game in browser: https://play2048.co/
 For now you can modify settings in the "game.storage" file. */
-class Settings(stage: Stage) {
+class Settings(private val stage: Stage) {
+    val multithreadedScope: CoroutineScope
+        get() = if (OS.isNative) CoroutineScope(stage.coroutineContext + Job())
+        else CoroutineScope(stage.coroutineContext + Job() + Dispatchers.Default)
     val storage: MyStorage = MyStorage.load(stage)
     val keyColorTheme = "colorTheme"
     val keyAiAlgorithm = "aiAlgorithm"

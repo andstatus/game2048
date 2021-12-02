@@ -6,16 +6,15 @@ import com.soywiz.korge.animate.animateSequence
 import com.soywiz.korge.input.SwipeDirection
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.view.Text
-import com.soywiz.korio.async.launch
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.concurrent.atomic.incrementAndGet
 import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.lang.substr
-import com.soywiz.korio.util.OS
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.ai.AiPlayer
 import org.andstatus.game2048.closeGameApp
@@ -48,9 +47,8 @@ import org.andstatus.game2048.view.showRecentGames
 
 /** @author yvolk@yurivolkov.com */
 class Presenter(val view: ViewData, history: History) {
-    private val multithreadedCoroutineScope: CoroutineScope get() = if (OS.isNative) view.gameStage
-        else CoroutineScope(view.gameStage.coroutineContext + Dispatchers.Default)
-    val model = Model(multithreadedCoroutineScope, history)
+    val model = Model(history)
+    private val multithreadedScope: CoroutineScope get() = model.history.settings.multithreadedScope
     val aiPlayer = AiPlayer(history.settings)
     val moveIsInProgress = korAtomic(false)
     val score get() = model.score
@@ -75,6 +73,7 @@ class Presenter(val view: ViewData, history: History) {
             view.showHelp()
         } else {
             showMainView()
+            loadPlies()
         }
     }
 
@@ -311,6 +310,18 @@ class Presenter(val view: ViewData, history: History) {
         showMainView()
         if (moveIsInProgress.compareAndSet(expect = false, update = true)) {
             model.openGame(id).present()
+            loadPlies()
+        }
+    }
+
+    private fun loadPlies() {
+        with(model.history.currentGame.plies) {
+            if (notCompleted) afterStop {
+                multithreadedScope.launch {
+                    load()
+                    showMainView()
+                }
+            }
         }
     }
 
@@ -326,9 +337,9 @@ class Presenter(val view: ViewData, history: History) {
         logClick("Load")
         view.gameStage.loadJsonGameRecord { json ->
             view.gameStage.launch {
-                myLog("Opened game: ${json.substr(0, 140)}")
+                myLog("Opened game string: ${json.substr(0, 140)}")
                 GameRecord.fromJson(model.settings, json, newId = 0)?.let {
-                    myLog("Loaded game: $it")
+                    myLog("Opened game: $it")
                     model.history.currentGame = it
                     model.saveCurrent()
                     // I noticed some kind of KorGe window reset after return from the other activity:
@@ -369,7 +380,7 @@ class Presenter(val view: ViewData, history: History) {
                 val startCount = clickCounter.incrementAndGet()
                 gameMode.modeEnum = newMode
                 updateMainView()
-                multithreadedCoroutineScope.launch {
+                multithreadedScope.launch {
                     while (startCount == clickCounter.value &&
                         if (gameMode.modeEnum == GameModeEnum.BACKWARDS) canUndo() else canRedo()
                     ) {
@@ -391,7 +402,7 @@ class Presenter(val view: ViewData, history: History) {
             val startCount = clickCounter.incrementAndGet()
             gameMode.modeEnum = GameModeEnum.AI_PLAY
             updateMainView()
-            multithreadedCoroutineScope.aiPlayLoop(this, startCount)
+            multithreadedScope.aiPlayLoop(this, startCount)
         }
     }
 
@@ -400,9 +411,9 @@ class Presenter(val view: ViewData, history: History) {
         gameStopWatch.start()
     }
 
-    private fun afterStop(action: () -> Unit) {
+    private fun afterStop(action: suspend () -> Unit) {
         val startCount = clickCounter.incrementAndGet()
-        multithreadedCoroutineScope.launch {
+        multithreadedScope.launch {
             while (gameMode.autoPlaying && startCount == clickCounter.value) {
                 delay(100)
             }
@@ -463,7 +474,7 @@ class Presenter(val view: ViewData, history: History) {
 
         view.mainView.show(buttonsToShow(), gameMode.speed)
         if (gameMode.aiEnabled && gameMode.speed == 0) {
-            multithreadedCoroutineScope.showAiTip(this)
+            multithreadedScope.showAiTip(this)
             myLog("After AI Launch")
         }
     }
