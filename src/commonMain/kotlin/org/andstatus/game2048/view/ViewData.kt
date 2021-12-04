@@ -1,33 +1,21 @@
 package org.andstatus.game2048.view
 
+import com.soywiz.klock.Stopwatch
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korev.PauseEvent
 import com.soywiz.korev.ResumeEvent
 import com.soywiz.korev.addEventListener
 import com.soywiz.korge.animate.Animator
 import com.soywiz.korge.input.onClick
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Stage
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.solidRect
+import com.soywiz.korge.view.*
 import com.soywiz.korim.font.Font
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.interpolation.Easing
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import org.andstatus.game2048.Settings
-import org.andstatus.game2048.defaultLanguage
-import org.andstatus.game2048.loadFont
+import kotlinx.coroutines.*
+import org.andstatus.game2048.*
 import org.andstatus.game2048.model.History
 import org.andstatus.game2048.model.Square
-import org.andstatus.game2048.myLog
-import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.presenter.Presenter
 import org.andstatus.game2048.view.MainView.Companion.setupMainView
 import kotlin.properties.Delegates
@@ -50,6 +38,7 @@ suspend fun viewData(stage: Stage, animateViews: Boolean, handler: suspend ViewD
 private fun CoroutineScope.initialize(stage: Stage, animateViews: Boolean, handler: suspend ViewData.() -> Unit = {}) = launch {
     val quick = ViewDataQuick(stage, animateViews)
     val splashDefault = stage.splashScreen(quick, ColorThemeEnum.deviceDefault(stage))
+    waitForGameLoading()
     val strings = async { StringResources.load(defaultLanguage) }
     val font = async { loadFont(strings.await()) }
     val settings = async { Settings.load(stage) }
@@ -86,6 +75,19 @@ private fun CoroutineScope.initialize(stage: Stage, animateViews: Boolean, handl
             .also { view.closeables.add(it) }
     myLog("GameView${view.id} initialized")
     view.handler()
+}
+
+suspend fun waitForGameLoading() {
+    if (!gameIsLoading.value) return
+
+    myLog("Waiting for game loading to finish...")
+    val stopWatch = Stopwatch().start()
+    while (gameIsLoading.value && stopWatch.elapsed.minutes < 5) {
+        delay(100)
+    }
+    if (gameIsLoading.value) myLog("Timeout waiting for game loading")
+    else myLog("Game loading finished")
+
 }
 
 class ViewData(viewDataQuick: ViewDataQuick,

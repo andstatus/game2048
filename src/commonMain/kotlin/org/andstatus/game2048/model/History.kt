@@ -7,11 +7,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import org.andstatus.game2048.Settings
+import org.andstatus.game2048.*
 import org.andstatus.game2048.model.GameRecord.ShortRecord.Companion.fromJsonMap
-import org.andstatus.game2048.myLog
-import org.andstatus.game2048.myMeasured
-import org.andstatus.game2048.myMeasuredIt
 
 private const val keyCurrentGame = "current"
 private const val keyGame = "game"
@@ -43,7 +40,7 @@ class History(val settings: Settings,
     companion object {
         suspend fun load(settings: Settings): History = coroutineScope {
             val dCurrentGame = async {
-                myMeasured("Current game loaded") {
+                myMeasuredIt("Current game loaded") {
                     settings.storage.getOrNull(keyCurrentGame)
                             ?.let {
                                 // TODO: for compatibility with previous versions:
@@ -78,7 +75,11 @@ class History(val settings: Settings,
     }
 
     fun openGame(id: Int): GameRecord? =
-        settings.storage.getOrNull(keyGame + id)
+        if (currentGame.id == id) currentGame
+        else openGame(id, settings.storage.getOrNull(keyGame + id))
+
+    fun openGame(id: Int, json: String?): GameRecord? =
+            json
             ?.let {
                 myLog("On open gameId:$id, json.length:${it.length} ${it.substring(0..200)}...")
                 GameRecord.fromJson(settings, it)
@@ -98,7 +99,6 @@ class History(val settings: Settings,
                 myLog("Failed to open game $id")
                 null
             }
-
 
     fun saveCurrent(coroutineScope: CoroutineScope): History {
         settings.storage[keyGameMode] = gameMode.modeEnum.id
@@ -120,9 +120,11 @@ class History(val settings: Settings,
         coroutineScope.launch {
             myMeasuredIt((if (isNew) "New" else "Old") + " game saved") {
                 updateBestScore()
+                myLog("Starting to save $game")
                 game.toJsonString().let {
                     settings.storage[keyGame + idToStore] = it
                 }
+                gameIsLoading.compareAndSet(true, false)
                 game
             }
             loadRecentGames()

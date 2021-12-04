@@ -17,7 +17,8 @@ private const val keyBookmarks = "bookmarks"
 
 class GameRecord(val shortRecord: ShortRecord, val plies: Plies) {
 
-    fun toJsonString(): String = shortRecord.toMap().toJson()
+    fun toJsonString(): String = load()
+        .shortRecord.toMap().toJson()
         .let { StringBuilder(it) }
         .appendPlies(plies)
         .toString()

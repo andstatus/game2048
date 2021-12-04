@@ -9,40 +9,15 @@ import com.soywiz.korge.view.Text
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.concurrent.atomic.incrementAndGet
 import com.soywiz.korio.concurrent.atomic.korAtomic
-import com.soywiz.korio.lang.substr
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.andstatus.game2048.*
 import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.ai.AiPlayer
-import org.andstatus.game2048.closeGameApp
-import org.andstatus.game2048.gameStopWatch
-import org.andstatus.game2048.loadJsonGameRecord
-import org.andstatus.game2048.model.GameModeEnum
-import org.andstatus.game2048.model.GamePosition
-import org.andstatus.game2048.model.GameRecord
-import org.andstatus.game2048.model.History
-import org.andstatus.game2048.model.Model
-import org.andstatus.game2048.model.PieceMoveDelay
-import org.andstatus.game2048.model.PieceMoveLoad
-import org.andstatus.game2048.model.PieceMoveMerge
-import org.andstatus.game2048.model.PieceMoveOne
-import org.andstatus.game2048.model.PieceMovePlace
-import org.andstatus.game2048.model.PlacedPiece
-import org.andstatus.game2048.model.Ply
-import org.andstatus.game2048.model.PlyEnum
-import org.andstatus.game2048.model.Square
-import org.andstatus.game2048.myLog
-import org.andstatus.game2048.myMeasured
-import org.andstatus.game2048.shareText
-import org.andstatus.game2048.view.AppBarButtonsEnum
-import org.andstatus.game2048.view.ColorThemeEnum
-import org.andstatus.game2048.view.ViewData
-import org.andstatus.game2048.view.showBookmarks
-import org.andstatus.game2048.view.showGameMenu
-import org.andstatus.game2048.view.showHelp
-import org.andstatus.game2048.view.showRecentGames
+import org.andstatus.game2048.model.*
+import org.andstatus.game2048.view.*
 
 /** @author yvolk@yurivolkov.com */
 class Presenter(val view: ViewData, history: History) {
@@ -334,18 +309,13 @@ class Presenter(val view: ViewData, history: History) {
 
     fun onLoadClick() = afterStop {
         logClick("Load")
+        model.restart().present()
         view.gameStage.loadJsonGameRecord { json ->
-            view.gameStage.launch {
-                myLog("Opened game string: ${json.substr(0, 140)}")
-                GameRecord.fromJson(model.settings, json, newId = 0)?.let {
-                    myLog("Opened game: $it")
-                    model.history.currentGame = it
-                    model.saveCurrent()
-                    // I noticed some kind of KorGe window reset after return from the other activity:
-                    // GLSurfaceView.onSurfaceChanged
-                    // If really needed, we could re-create activity...
-                    view.reInitialize()
-                }
+            gameIsLoading.value = true
+            model.history.openGame(model.history.idForNewGame(), json)?.let {
+                model.saveCurrent()
+            } ?: run {
+                gameIsLoading.value = false
             }
         }
     }

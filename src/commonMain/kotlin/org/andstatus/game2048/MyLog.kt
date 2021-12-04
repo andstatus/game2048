@@ -1,9 +1,11 @@
 package org.andstatus.game2048
 
 import com.soywiz.klock.Stopwatch
+import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.lang.currentThreadId
 
 val gameStopWatch = Stopwatch().start()
+val gameIsLoading = korAtomic(false)
 
 fun myLog(message: Any?) = println("game2048.log ${gameStopWatch.elapsed.milliseconds.toInt()} [${currentThreadId}] $message")
 

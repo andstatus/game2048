@@ -38,10 +38,12 @@ class MainActivity : KorgwActivity() {
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		myLog("Got result $resultCode on request $requestCode")
-		if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_OPEN_JSON_GAME && gameRecordConsumer != null) {
+		val consumer = gameRecordConsumer
+		gameRecordConsumer = null
+		if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_OPEN_JSON_GAME && consumer != null) {
 			data?.data?.let { uri ->
-				documentUri2String(this, uri)?.let { gameRecordConsumer?.invoke(it) }
-				gameRecordConsumer = null
+				documentUri2String(this, uri)
+					?.let { strValue -> consumer.invoke(strValue) }
 			}
 		} else {
 			super.onActivityResult(requestCode, resultCode, data)
