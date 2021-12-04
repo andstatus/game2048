@@ -13,7 +13,6 @@ import com.soywiz.korio.lang.substr
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.ai.AiPlayer
@@ -315,7 +314,7 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     private fun loadPlies() {
-        with(model.history.currentGame.plies) {
+        with(model.history.currentGame) {
             if (notCompleted) afterStop {
                 multithreadedScope.launch {
                     load()

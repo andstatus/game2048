@@ -18,7 +18,6 @@ import com.soywiz.korio.util.OS
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -37,13 +36,13 @@ import kotlin.properties.Delegates
 suspend fun viewData(stage: Stage, animateViews: Boolean, handler: suspend ViewData.() -> Unit = {}) {
     stage.removeChildren()
     coroutineScope {
-        val activeScope = if (OS.isNative) this else CoroutineScope(this.coroutineContext + Job())
+        val outerScope = this
         val handlerInOuterScope: suspend ViewData.() -> Unit = {
-            activeScope.launch { handler() }
+            outerScope.launch { handler() }
         }
 
-        val multithreadedScope: CoroutineScope = if (OS.isNative) activeScope else
-            CoroutineScope(activeScope.coroutineContext + Dispatchers.Default)
+        val multithreadedScope: CoroutineScope = if (OS.isNative) outerScope else
+            CoroutineScope(outerScope.coroutineContext + Dispatchers.Default)
         multithreadedScope.initialize(stage, animateViews, handlerInOuterScope)
     }
 }

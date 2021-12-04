@@ -25,8 +25,12 @@ class GameRecord(val shortRecord: ShortRecord, val plies: Plies) {
     var id: Int by shortRecord::id
     val score get() = shortRecord.finalPosition.score
 
+    fun load(): GameRecord = plies.load().let { this }
+    val isReady: Boolean get() = !notCompleted
+    val notCompleted: Boolean get() = plies.notCompleted
+
     override fun toString(): String = "$shortRecord, " +
-            if (plies.notCompleted) "loading..." else "${plies.size} plies"
+            if (notCompleted) "loading..." else "${plies.size} plies"
 
     companion object {
         fun newWithPositionAndMoves(position: GamePosition, bookmarks: List<GamePosition>, plies: Plies) =

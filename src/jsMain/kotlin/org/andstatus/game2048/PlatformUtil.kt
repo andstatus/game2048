@@ -2,6 +2,8 @@ package org.andstatus.game2048
 
 import com.soywiz.klogger.Console
 import com.soywiz.korge.view.Stage
+import com.soywiz.korio.concurrent.atomic.KorAtomicRef
+import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korma.geom.SizeInt
 import kotlin.coroutines.CoroutineContext
 
@@ -23,3 +25,7 @@ actual fun Stage.loadJsonGameRecord(consumer: (String) -> Unit) {
 }
 
 actual fun Stage.closeGameApp() {}
+
+actual fun <T> initAtomicReference(initial: T): KorAtomicRef<T> = korAtomic(initial)
+
+actual fun <T> KorAtomicRef<T>.compareAndSetFixed(expect: T, update: T): Boolean = compareAndSet(expect, update)

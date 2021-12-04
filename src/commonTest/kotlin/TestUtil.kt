@@ -1,29 +1,34 @@
+import com.soywiz.klock.Stopwatch
 import com.soywiz.korge.view.Stage
+import com.soywiz.korio.concurrent.atomic.KorAtomicRef
+import com.soywiz.korio.concurrent.atomic.korAtomic
+import com.soywiz.korio.lang.Thread_sleep
 import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.view.ViewData
 import org.andstatus.game2048.view.viewData
 
+
 // TODO: Make some separate class for this...
-private val uninitializedLazy = lazy { throw IllegalStateException("Value is not initialized yet") }
-private var lazyViewData: Lazy<ViewData> = uninitializedLazy
-private var viewData: ViewData
-    get() = lazyViewData.value
-    set(value) {
-        lazyViewData = lazyOf(value)
-    }
+private val isViewDataInitialized = korAtomic(false)
+private val viewDataRef: KorAtomicRef<ViewData?> = korAtomic(null)
+private val viewData: ViewData
+    get() = if (isViewDataInitialized.value) viewDataRef.value
+        ?: throw IllegalStateException("Value is not initialized yet")
+    else throw IllegalStateException("Value is not initialized yet")
 
 fun unsetGameView() {
-    if (lazyViewData.isInitialized()) lazyViewData = uninitializedLazy
+    isViewDataInitialized.value = false
 }
 
 suspend fun Stage.initializeViewDataInTest(handler: suspend ViewData.() -> Unit = {}) {
-    if (lazyViewData.isInitialized()) {
+    if (isViewDataInitialized.value) {
         viewData.handler()
     } else {
         viewData(stage, animateViews = false) {
             myLog("Initialized in test")
-            viewData = this
+            viewDataRef.value = this
+            isViewDataInitialized.value = true
             viewData.handler()
         }
         myLog("initializeViewDataInTest after 'viewData' function ended")
@@ -50,4 +55,11 @@ fun ViewData.currentGameString(): String = "CurrentGame " + presenter.model.hist
 
 fun ViewData.historyString(): String = with(presenter.model.history) {
     "History: index:$historyIndex, moves:${currentGame.plies.size}"
+}
+
+fun waitFor(condition: () -> Boolean) {
+    val stopWatch = Stopwatch().start()
+    while (!condition() && stopWatch.elapsed.seconds < 20) {
+        Thread_sleep(50)
+    }
 }

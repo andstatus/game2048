@@ -101,6 +101,8 @@ class Model(val history: History) {
     fun userMove(plyEnum: PlyEnum): List<Ply> = gamePosition.userPly(plyEnum).update()
 
     private fun GamePosition.update(isRedo: Boolean = false): List<Ply> {
+        if (!isRedo && history.currentGame.notCompleted) return emptyList()
+
         if (!isRedo && prevPly.isNotEmpty()) {
             history.add(this)
         }

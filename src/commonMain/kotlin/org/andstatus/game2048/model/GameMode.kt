@@ -1,8 +1,7 @@
 package org.andstatus.game2048.model
 
-import com.soywiz.korio.concurrent.atomic.KorAtomicRef
-import com.soywiz.korio.concurrent.atomic.korAtomic
-import com.soywiz.korio.util.OS
+import org.andstatus.game2048.compareAndSetFixed
+import org.andstatus.game2048.initAtomicReference
 import kotlin.math.abs
 
 /** @author yvolk@yurivolkov.com */
@@ -11,11 +10,11 @@ class GameMode() {
 
     val maxSpeed = 6
     // Needed until the fix of https://github.com/korlibs/korge-next/issues/166
-    private val data = if (OS.isNative) KorAtomicRef(initialData()) else korAtomic(initialData())
+    private val data = initAtomicReference(initialData())
 
     fun stop() {
         val old = data.value
-        data.compareAndSet(old, GameModeData(GameModeEnum.STOP, 0, old.aiEnabled))
+        data.compareAndSetFixed(old, GameModeData(GameModeEnum.STOP, 0, old.aiEnabled))
     }
 
     val speed get() = data.value.speed
@@ -45,7 +44,7 @@ class GameMode() {
         get() = data.value.aiEnabled
         set(value) {
             val old = data.value
-            data.compareAndSet(old, GameModeData(old.modeEnum, old.speed, value))
+            data.compareAndSetFixed(old, GameModeData(old.modeEnum, old.speed, value))
         }
 
     private fun initialData() = GameModeData(GameModeEnum.STOP, 0, false)
@@ -55,7 +54,7 @@ class GameMode() {
         if (old.speed < maxSpeed) {
             val newSpeed = old.speed + 1
             val newMode = newGameMode(newSpeed)
-            data.compareAndSet(old, GameModeData(newMode, newSpeed, old.aiEnabled))
+            data.compareAndSetFixed(old, GameModeData(newMode, newSpeed, old.aiEnabled))
         }
     }
 
@@ -64,7 +63,7 @@ class GameMode() {
         if (old.speed > -maxSpeed) {
             val newSpeed = old.speed - 1
             val newMode = newGameMode(newSpeed)
-            data.compareAndSet(old, GameModeData(newMode, newSpeed, old.aiEnabled))
+            data.compareAndSetFixed(old, GameModeData(newMode, newSpeed, old.aiEnabled))
         }
     }
 

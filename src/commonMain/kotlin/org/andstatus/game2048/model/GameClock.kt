@@ -1,10 +1,9 @@
 package org.andstatus.game2048.model
 
 import com.soywiz.klock.DateTimeTz
-import com.soywiz.korio.concurrent.atomic.KorAtomicRef
-import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.lang.format
-import com.soywiz.korio.util.OS
+import org.andstatus.game2048.compareAndSetFixed
+import org.andstatus.game2048.initAtomicReference
 
 class GameClock(initialSeconds: Int = 0) {
 
@@ -18,14 +17,16 @@ class GameClock(initialSeconds: Int = 0) {
     }
 
     // Needed until the fix of https://github.com/korlibs/korge-next/issues/166
-    private val counterRef = if (OS.isNative) KorAtomicRef(Counter(false, null, initialSeconds))
-        else korAtomic(Counter(false, null, initialSeconds))
+    private val counterRef = initAtomicReference(Counter(false, null, initialSeconds))
 
     fun start() {
         do {
             val counter = counterRef.value
-            if (!counter.started && counterRef.compareAndSet(counter,
-                    Counter(true, DateTimeTz.nowLocal(), counter.initialSeconds))) {
+            if (!counter.started && counterRef.compareAndSetFixed(
+                    counter,
+                    Counter(true, DateTimeTz.nowLocal(), counter.initialSeconds)
+                )
+            ) {
                 break
             }
         } while (!counter.started)
@@ -35,7 +36,8 @@ class GameClock(initialSeconds: Int = 0) {
         do {
             val counter = counterRef.value
             if (counter.started &&
-                    counterRef.compareAndSet(counter, Counter(false, null, counter.current()))) {
+                counterRef.compareAndSetFixed(counter, Counter(false, null, counter.current()))
+            ) {
                 break
             }
         } while (counter.started)
@@ -47,14 +49,15 @@ class GameClock(initialSeconds: Int = 0) {
     val started: Boolean get() = counterRef.value.started
     val playedSeconds: Int get() = counterRef.value.current()
 
-    val playedSecondsString: String get() {
-        fun Int.format() = "%02d".format(this)
+    val playedSecondsString: String
+        get() {
+            fun Int.format() = "%02d".format(this)
 
-        val seconds = playedSeconds
-        val secOnly: Int = seconds.rem(60)
-        val minutes = (seconds - secOnly) / 60
-        val minOnly: Int = minutes.rem(60)
-        val hours = (minutes - minOnly) / 60
-        return hours.format() + ":" + minOnly.format() + ":" + secOnly.format()
-    }
+            val seconds = playedSeconds
+            val secOnly: Int = seconds.rem(60)
+            val minutes = (seconds - secOnly) / 60
+            val minOnly: Int = minutes.rem(60)
+            val hours = (minutes - minOnly) / 60
+            return hours.format() + ":" + minOnly.format() + ":" + secOnly.format()
+        }
 }

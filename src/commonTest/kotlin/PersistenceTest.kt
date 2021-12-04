@@ -1,6 +1,9 @@
+import com.soywiz.klock.Stopwatch
 import com.soywiz.korge.tests.ViewsForTesting
+import com.soywiz.korio.lang.Thread_sleep
 import kotlinx.coroutines.CoroutineScope
 import org.andstatus.game2048.Settings
+import org.andstatus.game2048.gameStopWatch
 import org.andstatus.game2048.model.GameClock
 import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.GameRecord
@@ -112,6 +115,8 @@ class PersistenceTest : ViewsForTesting(log = true) {
         assertTrue(presenter.model.history.currentGame.plies.size > 1, currentGameString())
 
         presenter.onRestartClick()
+        waitFor { -> presenter.boardViews.blocks.size == 1 }
+
         assertEquals(1, presenter.boardViews.blocks.size, modelAndViews())
         assertEquals( 1, presenter.model.gamePosition.pieces.count { it != null }, modelAndViews())
         assertEquals(1, presenter.model.history.currentGame.plies.size, currentGameString())

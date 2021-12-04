@@ -168,6 +168,8 @@ class History(val settings: Settings,
         }
 
     fun add(position: GamePosition) {
+        if (currentGame.notCompleted) return
+
         currentGame = when (position.prevPly.plyEnum) {
             PlyEnum.LOAD -> {
                 GameRecord.newWithPositionAndMoves(position, emptyList(), Plies(emptyList()))
@@ -208,6 +210,8 @@ class History(val settings: Settings,
     }
 
     fun createBookmark(gamePosition: GamePosition) {
+        if (currentGame.notCompleted) return
+
         currentGame = with(currentGame.shortRecord) {
             GameRecord(
                     GameRecord.ShortRecord(board, note, id, start, finalPosition,
@@ -219,6 +223,8 @@ class History(val settings: Settings,
     }
 
     fun deleteBookmark(gamePosition: GamePosition) {
+        if (currentGame.notCompleted) return
+
         currentGame = with(currentGame.shortRecord) {
             GameRecord(
                 GameRecord.ShortRecord(board, note, id, start, finalPosition, bookmarks
@@ -228,13 +234,16 @@ class History(val settings: Settings,
         }
     }
 
-    fun canUndo(): Boolean = settings.allowUndo &&
+    fun canUndo(): Boolean = currentGame.isReady &&
+            settings.allowUndo &&
             historyIndex != 0 && historyIndex != 1 &&
             currentGame.plies.size > 1 &&
             currentGame.plies.lastOrNull()?.player == PlayerEnum.COMPUTER
 
     fun undo(): Ply? {
-        if (historyIndex < 0 && currentGame.plies.isNotEmpty()) {
+        if (!canUndo()) {
+            return null
+        } else if (historyIndex < 0 && currentGame.plies.isNotEmpty()) {
             historyIndex = currentGame.plies.size - 1
         } else if (historyIndex > 0 && historyIndex < currentGame.plies.size)
             historyIndex--
@@ -245,7 +254,7 @@ class History(val settings: Settings,
     }
 
     fun canRedo(): Boolean {
-        return historyIndex >= 0 && historyIndex < currentGame.plies.size
+        return currentGame.isReady &&  historyIndex >= 0 && historyIndex < currentGame.plies.size
     }
 
     fun redo(): Ply? {
@@ -263,6 +272,8 @@ class History(val settings: Settings,
     }
 
     fun gotoBookmark(position: GamePosition) {
+        if (currentGame.notCompleted) return
+
         if (position.plyNumber >= currentGame.shortRecord.finalPosition.plyNumber) {
             historyIndex = -1
         } else {

@@ -8,6 +8,8 @@ import android.util.DisplayMetrics
 import android.view.WindowManager
 import com.soywiz.korge.view.Stage
 import com.soywiz.korio.android.AndroidCoroutineContext
+import com.soywiz.korio.concurrent.atomic.KorAtomicRef
+import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.lang.substr
 import com.soywiz.korma.geom.SizeInt
 import org.andstatus.game2048.data.FileProvider
@@ -91,3 +93,7 @@ actual fun Stage.loadJsonGameRecord(consumer: (String) -> Unit) {
 }
 
 actual fun Stage.closeGameApp() = mainActivity?.finish() ?: Unit
+
+actual fun <T> initAtomicReference(initial: T): KorAtomicRef<T> = korAtomic(initial)
+
+actual fun <T> KorAtomicRef<T>.compareAndSetFixed(expect: T, update: T): Boolean = compareAndSet(expect, update)

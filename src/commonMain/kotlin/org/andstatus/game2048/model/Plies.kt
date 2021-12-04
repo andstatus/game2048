@@ -1,10 +1,11 @@
 package org.andstatus.game2048.model
 
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
-import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.serialization.json.toJson
 import com.soywiz.korio.util.StrReader
+import org.andstatus.game2048.compareAndSetFixed
+import org.andstatus.game2048.initAtomicReference
 import org.andstatus.game2048.myLog
 
 /** @author yvolk@yurivolkov.com */
@@ -14,7 +15,7 @@ class Plies(iPlies: List<Ply>?, private val shortRecord: GameRecord.ShortRecord?
         load()
     }
 
-    private val pliesRef: KorAtomicRef<List<Ply>?> = korAtomic(iPlies)
+    private val pliesRef: KorAtomicRef<List<Ply>?> = initAtomicReference(iPlies)
     private val plies: List<Ply> get() = pliesRef.value ?: emptyList()
 
     val notCompleted: Boolean get() = !pliesLoaded.isInitialized()
@@ -31,7 +32,7 @@ class Plies(iPlies: List<Ply>?, private val shortRecord: GameRecord.ShortRecord?
             } catch (e: Throwable) {
                 myLog("Failed to load ply ${list.size + 1}, at pos:${reader.pos}: $e")
             }
-            pliesRef.compareAndSet(null, list)
+            pliesRef.compareAndSetFixed(null, list)
         }
         true
     }
