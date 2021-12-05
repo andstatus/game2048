@@ -34,7 +34,7 @@ fun CoroutineScope.aiPlayLoop(presenter: Presenter, startCount: Int) = launch {
                     delay(gameMode.delayMs.toLong() - stopWatch.elapsed.millisecondsLong)
                 }
             }
-            if (!moveIsInProgress.value && model.gamePosition === gamePosition && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
+            if (!isPresenting.value && model.gamePosition === gamePosition && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
                 view.gameStage.launch {
                     if (gameMode.speed == 1) {
                         view.mainView.showStatusBar(aiResult)

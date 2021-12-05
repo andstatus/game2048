@@ -94,7 +94,7 @@ class MyWindow(val viewData: ViewData, val titleKey: String) : Container() {
             addUpdater {
                 duplicateKeyPressFilter.ifWindowCloseKeyPressed(gameStage.views.input) {
                     window.removeFromParent()
-                    presenter.showMainView()
+                    presenter.asyncShowMainView()
                 }
             }
         }

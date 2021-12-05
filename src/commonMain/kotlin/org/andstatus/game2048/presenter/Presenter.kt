@@ -50,7 +50,7 @@ class Presenter(val view: ViewData, history: History) {
     private val multithreadedScope: CoroutineScope get() = model.history.settings.multithreadedScope
     val aiPlayer = AiPlayer(history.settings)
     val mainViewShown = korAtomic(false)
-    val moveIsInProgress = korAtomic(false)
+    val isPresenting = korAtomic(false)
     val score get() = model.score
     val bestScore get() = model.bestScore
     var boardViews = BoardViews(view)
@@ -72,7 +72,7 @@ class Presenter(val view: ViewData, history: History) {
         if (model.history.recentGames.isEmpty() && model.history.currentGame.id == 0) {
             view.showHelp()
         } else {
-            showMainView()
+            asyncShowMainView()
             loadPlies()
         }
     }
@@ -80,7 +80,7 @@ class Presenter(val view: ViewData, history: History) {
     fun onNoMagicClicked() {
         logClick("NoMagic")
         gameMode.aiEnabled = true
-        showMainView()
+        asyncShowMainView()
     }
 
     fun onMagicClicked() {
@@ -90,7 +90,7 @@ class Presenter(val view: ViewData, history: History) {
             gameMode.modeEnum = GameModeEnum.PLAY
             pauseGame()
         }
-        showMainView()
+        asyncShowMainView()
     }
 
     fun onAiStartClicked() {
@@ -103,7 +103,7 @@ class Presenter(val view: ViewData, history: History) {
         logClick("AiStop")
         gameMode.modeEnum = GameModeEnum.PLAY
         pauseGame()
-        showMainView()
+        asyncShowMainView()
     }
 
     fun onAiForwardClicked() {
@@ -113,7 +113,7 @@ class Presenter(val view: ViewData, history: History) {
     fun onAiAlgorithmSelect(selected: AiAlgorithm) {
         model.settings.aiAlgorithm = selected
         view.settings.save()
-        showMainView()
+        asyncShowMainView()
     }
 
     fun canUndo(): Boolean = model.canUndo()
@@ -127,11 +127,11 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     fun undo() {
-        if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
+        if (!isPresenting.compareAndSet(expect = false, update = true)) return
 
         view.mainView.hideStatusBar()
         boardViews.hideGameOver()
-        (model.undo() + Ply.delay() + model.undo()).presentReversed()
+        (model.undo() + Ply.delay() + model.undo() + Ply.delay()).presentReversed()
     }
 
     fun onRedoClick() = afterStop {
@@ -140,14 +140,14 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     fun redo() {
-        if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
+        if (!isPresenting.compareAndSet(expect = false, update = true)) return
 
-        (model.redo() + listOf(Ply.delay()) + model.redo()).present()
+        (model.redo() + Ply.delay() + model.redo() + Ply.delay()).present()
     }
 
     fun onRestartClick() = afterStop {
         logClick("Restart")
-        showMainView()
+        asyncShowMainView()
         model.pauseGame()
         model.restart().present()
     }
@@ -177,11 +177,11 @@ class Presenter(val view: ViewData, history: History) {
                 when (swipeDirection) {
                     SwipeDirection.LEFT -> {
                         gameMode.decrementSpeed()
-                        showMainView()
+                        asyncShowMainView()
                     }
                     SwipeDirection.RIGHT -> {
                         gameMode.incrementSpeed()
-                        showMainView()
+                        asyncShowMainView()
                     }
                     else -> {
                         onAiStopClicked()
@@ -195,25 +195,25 @@ class Presenter(val view: ViewData, history: History) {
     fun onBookmarkClick() = afterStop {
         logClick("Bookmark")
         model.createBookmark()
-        showMainView()
+        asyncShowMainView()
     }
 
     fun onBookmarkedClick() = afterStop {
         logClick("Bookmarked")
         model.deleteBookmark()
-        showMainView()
+        asyncShowMainView()
     }
 
     fun onPauseClick() = afterStop {
         logClick("Pause")
         pauseGame()
-        showMainView()
+        asyncShowMainView()
     }
 
     fun onPauseEvent() {
         logClick("onPauseEvent")
         pauseGame()
-        showMainView()
+        asyncShowMainView()
     }
 
     fun onCloseGameWindowClick() {
@@ -226,14 +226,14 @@ class Presenter(val view: ViewData, history: History) {
     fun onWatchClick() = afterStop {
         logClick("Watch")
         gameMode.modeEnum = GameModeEnum.PLAY
-        showMainView()
+        asyncShowMainView()
     }
 
     fun onPlayClick() = afterStop {
         logClick("Play")
         gameMode.modeEnum = GameModeEnum.STOP
         pauseGame()
-        showMainView()
+        asyncShowMainView()
     }
 
     fun onBackwardsClick() {
@@ -244,7 +244,7 @@ class Presenter(val view: ViewData, history: History) {
     fun onStopClick() = afterStop {
         logClick("Stop")
         gameMode.modeEnum = GameModeEnum.STOP
-        showMainView()
+        asyncShowMainView()
     }
 
     fun onForwardClick() {
@@ -276,12 +276,12 @@ class Presenter(val view: ViewData, history: History) {
 
     fun onCloseMyWindowClick() {
         logClick("CloseMyWindow")
-        showMainView()
+        asyncShowMainView()
     }
 
     fun onDeleteGameClick() = afterStop {
         logClick("DeleteGame")
-        showMainView()
+        asyncShowMainView()
         model.history.deleteCurrent()
         model.restart().present()
     }
@@ -299,16 +299,16 @@ class Presenter(val view: ViewData, history: History) {
 
     fun onGoToBookmarkClick(position: GamePosition) = afterStop {
         logClick("GoTo${position.plyNumber}")
-        showMainView()
-        if (moveIsInProgress.compareAndSet(expect = false, update = true)) {
+        asyncShowMainView()
+        if (isPresenting.compareAndSet(expect = false, update = true)) {
             model.gotoBookmark(position).present()
         }
     }
 
     fun onHistoryItemClick(id: Int) = afterStop {
         logClick("History$id")
-        showMainView()
-        if (moveIsInProgress.compareAndSet(expect = false, update = true)) {
+        asyncShowMainView()
+        if (isPresenting.compareAndSet(expect = false, update = true)) {
             model.openGame(id).present()
             loadPlies()
         }
@@ -319,7 +319,7 @@ class Presenter(val view: ViewData, history: History) {
             if (notCompleted) afterStop {
                 multithreadedScope.launch {
                     load()
-                    showMainView()
+                    asyncShowMainView()
                 }
             }
         }
@@ -368,12 +368,12 @@ class Presenter(val view: ViewData, history: History) {
     private fun startAutoReplay(newMode: GameModeEnum) {
         if (gameMode.modeEnum == newMode) {
             if (newMode == GameModeEnum.BACKWARDS) gameMode.decrementSpeed() else gameMode.incrementSpeed()
-            showMainView()
+            asyncShowMainView()
         } else if (if (newMode == GameModeEnum.BACKWARDS) canUndo() else canRedo()) {
             afterStop {
                 val startCount = clickCounter.incrementAndGet()
                 gameMode.modeEnum = newMode
-                showMainView()
+                asyncShowMainView()
                 multithreadedScope.launch {
                     while (startCount == clickCounter.value &&
                         if (gameMode.modeEnum == GameModeEnum.BACKWARDS) canUndo() else canRedo()
@@ -382,10 +382,9 @@ class Presenter(val view: ViewData, history: History) {
                         if (gameMode.speed != 0) {
                             if (gameMode.modeEnum == GameModeEnum.BACKWARDS) undo() else redo()
                         }
-                        delay(gameMode.delayMs.toLong())
                     }
                     gameMode.stop()
-                    showMainView()
+                    asyncShowMainView()
                 }
             }
         }
@@ -395,7 +394,7 @@ class Presenter(val view: ViewData, history: History) {
         afterStop {
             val startCount = clickCounter.incrementAndGet()
             gameMode.modeEnum = GameModeEnum.AI_PLAY
-            showMainView()
+            asyncShowMainView()
             multithreadedScope.aiPlayLoop(this, startCount)
         }
     }
@@ -422,7 +421,7 @@ class Presenter(val view: ViewData, history: History) {
     fun computerMove(placedPiece: PlacedPiece) = model.computerMove(placedPiece).present()
 
     fun userMove(plyEnum: PlyEnum) {
-        if (!moveIsInProgress.compareAndSet(expect = false, update = true)) return
+        if (!isPresenting.compareAndSet(expect = false, update = true)) return
 
         model.userMove(plyEnum).let {
             if (it.isEmpty()) it else it + model.randomComputerMove()
@@ -454,24 +453,30 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     private fun onPresentEnd() {
-        showMainView()
+        view.gameStage.launch {
+            showMainView()
+            isPresenting.value = false
+        }
     }
 
-    fun showMainView() {
+    fun asyncShowMainView() {
         view.gameStage.launch {
-            if (!view.closed) {
-                if (!model.settings.isTestRun) {
-                    // TOD: Why this doesn't work in tests?
-                    view.mainView.show(buttonsToShow(), gameMode.speed)
-                }
-                if (gameMode.aiEnabled && gameMode.speed == 0) {
-                    multithreadedScope.showAiTip(this@Presenter)
-                    myLog("After AI Launch")
-                }
-            }
-            moveIsInProgress.value = false
-            mainViewShown.value = true
+            showMainView()
         }
+    }
+
+    private fun showMainView() {
+        if (!view.closed) {
+            if (!model.settings.isTestRun) {
+                // TOD: Why this doesn't work in tests?
+                view.mainView.show(buttonsToShow(), gameMode.speed)
+            }
+            if (gameMode.aiEnabled && gameMode.speed == 0) {
+                multithreadedScope.showAiTip(this@Presenter)
+                myLog("After AI Launch")
+            }
+        }
+        mainViewShown.value = true
     }
 
     private fun buttonsToShow(): List<AppBarButtonsEnum> {
@@ -608,7 +613,11 @@ class Presenter(val view: ViewData, history: History) {
                 ply.pieceMoves.asReversed().forEach { move ->
                     when (move) {
                         is PieceMovePlace -> boardViews[move.first]
-                            ?.remove()
+                            ?.also { b ->
+                                sequenceLazy {
+                                    b.remove()
+                                }
+                            }
                             ?: myLog("No Block at destination during undo: $move")
                         is PieceMoveLoad -> boardViews.load(move.position)
                         is PieceMoveOne -> boardViews[PlacedPiece(move.first.piece, move.destination)]
@@ -618,15 +627,18 @@ class Presenter(val view: ViewData, history: History) {
                             val destination = move.merged.square
                             val effectiveBlock = boardViews[move.merged]
                             sequence {
+                                sequenceLazy {
+                                    if (view.animateViews) effectiveBlock?.let { animateResultingBlock(this, it) }
+                                }
                                 block {
                                     effectiveBlock?.remove()
                                         ?: myLog("No Block at destination during undo: $move")
-                                }
-                                parallel {
-                                    val secondBlock = boardViews.addBlock(PlacedPiece(move.second.piece, destination))
-                                    val firstBlock = boardViews.addBlock(PlacedPiece(move.first.piece, destination))
-                                    secondBlock.move(this, move.second.square)
-                                    firstBlock.move(this, move.first.square)
+                                    parallel {
+                                        val secondBlock = boardViews.addBlock(PlacedPiece(move.second.piece, destination))
+                                        val firstBlock = boardViews.addBlock(PlacedPiece(move.first.piece, destination))
+                                        secondBlock.move(this, move.second.square)
+                                        firstBlock.move(this, move.first.square)
+                                    }
                                 }
                             }
                         }
@@ -648,7 +660,7 @@ class Presenter(val view: ViewData, history: History) {
         with(view) {
             if (animateViews) animator.moveTo(this@move, to, gameMode.moveMs.milliseconds, Easing.LINEAR)
         }
-        boardViews[PlacedPiece(piece, to)] = this
+        boardViews.move(PlacedPiece(piece, to), this)
     }
 
     private fun Block.remove() {
@@ -687,6 +699,6 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     suspend fun delayWhileMoveInProgress() {
-        while (moveIsInProgress.value) delay(20)
+        while (isPresenting.value) delay(20)
     }
 }
