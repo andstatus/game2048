@@ -378,7 +378,7 @@ class Presenter(val view: ViewData, history: History) {
                     while (startCount == clickCounter.value &&
                         if (gameMode.modeEnum == GameModeEnum.BACKWARDS) canUndo() else canRedo()
                     ) {
-                        delayWhileMoveInProgress()
+                        delayWhilePresenting()
                         if (gameMode.speed != 0) {
                             if (gameMode.modeEnum == GameModeEnum.BACKWARDS) undo() else redo()
                         }
@@ -408,6 +408,7 @@ class Presenter(val view: ViewData, history: History) {
             while (gameMode.autoPlaying && startCount == clickCounter.value) {
                 delay(100)
             }
+            delayWhilePresenting()
             action()
         }
     }
@@ -696,7 +697,7 @@ class Presenter(val view: ViewData, history: History) {
         }
     }
 
-    suspend fun delayWhileMoveInProgress() {
+    suspend fun delayWhilePresenting() {
         while (isPresenting.value) delay(20)
     }
 }

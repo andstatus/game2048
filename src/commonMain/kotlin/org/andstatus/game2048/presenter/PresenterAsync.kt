@@ -27,7 +27,7 @@ fun CoroutineScope.aiPlayLoop(presenter: Presenter, startCount: Int) = launch {
     with(presenter) {
         while (startCount == clickCounter.value && !model.noMoreMoves()
                 && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
-            presenter.delayWhileMoveInProgress()
+            presenter.delayWhilePresenting()
             val gamePosition = model.gamePosition
             val aiResult = Stopwatch().start().let { stopWatch ->
                 aiPlayer.nextPly(gamePosition).also {
