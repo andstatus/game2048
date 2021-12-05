@@ -57,9 +57,17 @@ fun ViewData.historyString(): String = with(presenter.model.history) {
     "History: index:$historyIndex, moves:${currentGame.plies.size}"
 }
 
-fun waitFor(condition: () -> Boolean) {
+fun ViewData.waitForMainViewShown(action: () -> Any? = { -> null }) {
+    presenter.mainViewShown.value = false
+    action()
+    waitFor("Main view shown") { -> presenter.mainViewShown.value }
+}
+
+fun waitFor(message: String = "???", condition: () -> Boolean) {
     val stopWatch = Stopwatch().start()
-    while (!condition() && stopWatch.elapsed.seconds < 20) {
+    while (stopWatch.elapsed.seconds < 20) {
+        if (condition()) return
         Thread_sleep(50)
     }
+    throw AssertionError("Condition wasn't met after timeout: $message")
 }

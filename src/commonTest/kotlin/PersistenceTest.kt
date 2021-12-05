@@ -1,9 +1,7 @@
-import com.soywiz.klock.Stopwatch
 import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korio.lang.Thread_sleep
+import com.soywiz.korio.concurrent.atomic.korAtomic
 import kotlinx.coroutines.CoroutineScope
 import org.andstatus.game2048.Settings
-import org.andstatus.game2048.gameStopWatch
 import org.andstatus.game2048.model.GameClock
 import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.GameRecord
@@ -24,18 +22,23 @@ import kotlin.test.assertTrue
 class PersistenceTest : ViewsForTesting(log = true) {
 
     @Test
-    fun persistenceTest() = viewsTest {
-        unsetGameView()
-        val settings = Settings.load(stage)
-        assertEquals(4, settings.boardWidth, "Settings are not initialized")
-        assertTrue(settings.isTestRun, "Should be Test Run")
-        val history = saveTestHistory(settings)
+    fun persistenceTest()  {
+        val testWasExecuted = korAtomic(false)
+        viewsTest {
+            unsetGameView()
+            val settings = Settings.load(stage)
+            assertEquals(4, settings.boardWidth, "Settings are not initialized")
+            assertTrue(settings.isTestRun, "Should be Test Run")
+            val history = saveTestHistory(settings)
 
-        initializeViewDataInTest {
-            persistGameRecordTest(settings)
-            assertTestHistory(history)
-            restartTest()
+            initializeViewDataInTest {
+                persistGameRecordTest(settings)
+                assertTestHistory(history)
+                restartTest()
+                testWasExecuted.value = true
+            }
         }
+        waitFor("persistenceTest was executed") { -> testWasExecuted.value }
     }
 
     private suspend fun saveTestHistory(settings: Settings) = with (History.load(settings)) {
@@ -91,7 +94,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         if (nMoves > 0) {
             assertTrue(gameRecordJson.contains("place"), message)
         }
-        val gameRecordOpened = GameRecord.fromJson(settings, gameRecordJson)
+        val gameRecordOpened = GameRecord.fromSharedJson(settings, gameRecordJson)
         assertTrue(gameRecordOpened != null, message)
 
         gameRecordOpened.plies.load()
@@ -114,8 +117,9 @@ class PersistenceTest : ViewsForTesting(log = true) {
         assertTrue(presenter.boardViews.blocks.size > 1, modelAndViews())
         assertTrue(presenter.model.history.currentGame.plies.size > 1, currentGameString())
 
-        presenter.onRestartClick()
-        waitFor { -> presenter.boardViews.blocks.size == 1 }
+        waitForMainViewShown {
+            presenter.onRestartClick()
+        }
 
         assertEquals(1, presenter.boardViews.blocks.size, modelAndViews())
         assertEquals( 1, presenter.model.gamePosition.pieces.count { it != null }, modelAndViews())

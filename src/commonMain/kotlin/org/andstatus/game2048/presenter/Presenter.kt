@@ -13,17 +13,43 @@ import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.andstatus.game2048.*
 import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.ai.AiPlayer
-import org.andstatus.game2048.model.*
-import org.andstatus.game2048.view.*
+import org.andstatus.game2048.closeGameApp
+import org.andstatus.game2048.gameIsLoading
+import org.andstatus.game2048.gameStopWatch
+import org.andstatus.game2048.loadJsonGameRecord
+import org.andstatus.game2048.model.GameModeEnum
+import org.andstatus.game2048.model.GamePosition
+import org.andstatus.game2048.model.GameRecord
+import org.andstatus.game2048.model.History
+import org.andstatus.game2048.model.Model
+import org.andstatus.game2048.model.PieceMoveDelay
+import org.andstatus.game2048.model.PieceMoveLoad
+import org.andstatus.game2048.model.PieceMoveMerge
+import org.andstatus.game2048.model.PieceMoveOne
+import org.andstatus.game2048.model.PieceMovePlace
+import org.andstatus.game2048.model.PlacedPiece
+import org.andstatus.game2048.model.Ply
+import org.andstatus.game2048.model.PlyEnum
+import org.andstatus.game2048.model.Square
+import org.andstatus.game2048.myLog
+import org.andstatus.game2048.myMeasured
+import org.andstatus.game2048.shareText
+import org.andstatus.game2048.view.AppBarButtonsEnum
+import org.andstatus.game2048.view.ColorThemeEnum
+import org.andstatus.game2048.view.ViewData
+import org.andstatus.game2048.view.showBookmarks
+import org.andstatus.game2048.view.showGameMenu
+import org.andstatus.game2048.view.showHelp
+import org.andstatus.game2048.view.showRecentGames
 
 /** @author yvolk@yurivolkov.com */
 class Presenter(val view: ViewData, history: History) {
     val model = Model(history)
     private val multithreadedScope: CoroutineScope get() = model.history.settings.multithreadedScope
     val aiPlayer = AiPlayer(history.settings)
+    val mainViewShown = korAtomic(false)
     val moveIsInProgress = korAtomic(false)
     val score get() = model.score
     val bestScore get() = model.bestScore
@@ -54,7 +80,7 @@ class Presenter(val view: ViewData, history: History) {
     fun onNoMagicClicked() {
         logClick("NoMagic")
         gameMode.aiEnabled = true
-        updateMainView()
+        showMainView()
     }
 
     fun onMagicClicked() {
@@ -64,7 +90,7 @@ class Presenter(val view: ViewData, history: History) {
             gameMode.modeEnum = GameModeEnum.PLAY
             pauseGame()
         }
-        updateMainView()
+        showMainView()
     }
 
     fun onAiStartClicked() {
@@ -77,7 +103,7 @@ class Presenter(val view: ViewData, history: History) {
         logClick("AiStop")
         gameMode.modeEnum = GameModeEnum.PLAY
         pauseGame()
-        updateMainView()
+        showMainView()
     }
 
     fun onAiForwardClicked() {
@@ -139,23 +165,23 @@ class Presenter(val view: ViewData, history: History) {
             }
             GameModeEnum.PLAY -> {
                 userMove(
-                        when (swipeDirection) {
-                            SwipeDirection.LEFT -> PlyEnum.LEFT
-                            SwipeDirection.RIGHT -> PlyEnum.RIGHT
-                            SwipeDirection.TOP -> PlyEnum.UP
-                            SwipeDirection.BOTTOM -> PlyEnum.DOWN
-                        }
+                    when (swipeDirection) {
+                        SwipeDirection.LEFT -> PlyEnum.LEFT
+                        SwipeDirection.RIGHT -> PlyEnum.RIGHT
+                        SwipeDirection.TOP -> PlyEnum.UP
+                        SwipeDirection.BOTTOM -> PlyEnum.DOWN
+                    }
                 )
             }
             GameModeEnum.AI_PLAY -> {
                 when (swipeDirection) {
                     SwipeDirection.LEFT -> {
                         gameMode.decrementSpeed()
-                        updateMainView()
+                        showMainView()
                     }
                     SwipeDirection.RIGHT -> {
                         gameMode.incrementSpeed()
-                        updateMainView()
+                        showMainView()
                     }
                     else -> {
                         onAiStopClicked()
@@ -169,25 +195,25 @@ class Presenter(val view: ViewData, history: History) {
     fun onBookmarkClick() = afterStop {
         logClick("Bookmark")
         model.createBookmark()
-        updateMainView()
+        showMainView()
     }
 
     fun onBookmarkedClick() = afterStop {
         logClick("Bookmarked")
         model.deleteBookmark()
-        updateMainView()
+        showMainView()
     }
 
     fun onPauseClick() = afterStop {
         logClick("Pause")
         pauseGame()
-        updateMainView()
+        showMainView()
     }
 
     fun onPauseEvent() {
         logClick("onPauseEvent")
         pauseGame()
-        updateMainView()
+        showMainView()
     }
 
     fun onCloseGameWindowClick() {
@@ -200,14 +226,14 @@ class Presenter(val view: ViewData, history: History) {
     fun onWatchClick() = afterStop {
         logClick("Watch")
         gameMode.modeEnum = GameModeEnum.PLAY
-        updateMainView()
+        showMainView()
     }
 
     fun onPlayClick() = afterStop {
         logClick("Play")
         gameMode.modeEnum = GameModeEnum.STOP
         pauseGame()
-        updateMainView()
+        showMainView()
     }
 
     fun onBackwardsClick() {
@@ -218,7 +244,7 @@ class Presenter(val view: ViewData, history: History) {
     fun onStopClick() = afterStop {
         logClick("Stop")
         gameMode.modeEnum = GameModeEnum.STOP
-        updateMainView()
+        showMainView()
     }
 
     fun onForwardClick() {
@@ -302,21 +328,20 @@ class Presenter(val view: ViewData, history: History) {
     fun onShareClick() = afterStop {
         logClick("Share")
         view.gameStage.shareText(
-                view.stringResources.text("share"), model.history.currentGame.shortRecord.jsonFileName,
-                model.history.currentGame.toJsonString()
+            view.stringResources.text("share"), model.history.currentGame.shortRecord.jsonFileName,
+            model.history.currentGame.toJsonString()
         )
     }
 
     fun onLoadClick() = afterStop {
         logClick("Load")
         model.restart().present()
-        view.gameStage.loadJsonGameRecord { json ->
-            gameIsLoading.value = true
-            model.history.openGame(model.history.idForNewGame(), json)?.let {
-                model.saveCurrent()
-            } ?: run {
-                gameIsLoading.value = false
-            }
+        gameIsLoading.value = true
+        view.gameStage.loadJsonGameRecord {
+            GameRecord.fromSharedJson(model.history.settings, it)
+                ?.also { model.history.openGame(it, model.history.idForNewGame()) }
+                ?.let { model.saveCurrent() }
+                ?: run { gameIsLoading.value = false }
         }
     }
 
@@ -343,12 +368,12 @@ class Presenter(val view: ViewData, history: History) {
     private fun startAutoReplay(newMode: GameModeEnum) {
         if (gameMode.modeEnum == newMode) {
             if (newMode == GameModeEnum.BACKWARDS) gameMode.decrementSpeed() else gameMode.incrementSpeed()
-            updateMainView()
+            showMainView()
         } else if (if (newMode == GameModeEnum.BACKWARDS) canUndo() else canRedo()) {
             afterStop {
                 val startCount = clickCounter.incrementAndGet()
                 gameMode.modeEnum = newMode
-                updateMainView()
+                showMainView()
                 multithreadedScope.launch {
                     while (startCount == clickCounter.value &&
                         if (gameMode.modeEnum == GameModeEnum.BACKWARDS) canUndo() else canRedo()
@@ -360,7 +385,7 @@ class Presenter(val view: ViewData, history: History) {
                         delay(gameMode.delayMs.toLong())
                     }
                     gameMode.stop()
-                    updateMainView()
+                    showMainView()
                 }
             }
         }
@@ -370,7 +395,7 @@ class Presenter(val view: ViewData, history: History) {
         afterStop {
             val startCount = clickCounter.incrementAndGet()
             gameMode.modeEnum = GameModeEnum.AI_PLAY
-            updateMainView()
+            showMainView()
             multithreadedScope.aiPlayLoop(this, startCount)
         }
     }
@@ -412,12 +437,12 @@ class Presenter(val view: ViewData, history: History) {
             onPresentEnd()
             if (model.noMoreMoves()) {
                 boardViews = boardViews
-                        .hideGameOver()
-                        .copy()
-                        .apply {
-                            view.mainView.boardView.showGameOver()
-                            pauseGame()
-                        }
+                    .hideGameOver()
+                    .copy()
+                    .apply {
+                        view.mainView.boardView.showGameOver()
+                        pauseGame()
+                    }
             }
         } else if (index < size) {
             present(this[index]) {
@@ -429,22 +454,20 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     private fun onPresentEnd() {
-        updateMainView()
-        moveIsInProgress.value = false
-    }
-
-    fun updateMainView() {
-        if (view.mainView.parent == null) return
         showMainView()
     }
 
     fun showMainView() {
-        if (view.closed) return
-
-        view.mainView.show(buttonsToShow(), gameMode.speed)
-        if (gameMode.aiEnabled && gameMode.speed == 0) {
-            multithreadedScope.showAiTip(this)
-            myLog("After AI Launch")
+        view.gameStage.launch {
+            if (view.mainView.parent != null && !view.closed) {
+                view.mainView.show(buttonsToShow(), gameMode.speed)
+                if (gameMode.aiEnabled && gameMode.speed == 0) {
+                    multithreadedScope.showAiTip(this@Presenter)
+                    myLog("After AI Launch")
+                }
+            }
+            moveIsInProgress.value = false
+            mainViewShown.value = true
         }
     }
 

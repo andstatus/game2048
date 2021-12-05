@@ -7,7 +7,9 @@ import com.soywiz.korio.serialization.json.toJson
 import com.soywiz.korio.util.StrReader
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.model.Plies.Companion.appendPlies
+import org.andstatus.game2048.myLog
 
+const val keyGame = "game"
 private const val keyNote = "note"
 private const val keyId = "id"
 private const val keyStart = "start"
@@ -40,7 +42,12 @@ class GameRecord(val shortRecord: ShortRecord, val plies: Plies) {
                 plies
             )
 
-        fun fromJson(settings: Settings, json: String, newId: Int? = null): GameRecord? {
+        fun fromId(settings: Settings, id: Int): GameRecord? =
+            settings.storage.getOrNull(keyGame + id)
+                ?.let { fromSharedJson(settings, it, id) }
+
+        fun fromSharedJson(settings: Settings, json: String, newId: Int? = null): GameRecord? {
+            myLog("Game fromSharedJson newId:$newId, length:${json.length} ${json.substring(0..200)}...")
             val reader = StrReader(json)
             val aMap: Map<String, Any> = reader.asJsonMap()
             return ShortRecord.fromJsonMap(settings, aMap, newId)?.let { shortRecord ->
@@ -83,6 +90,9 @@ class GameRecord(val shortRecord: ShortRecord, val plies: Plies) {
 
         companion object {
             val FILENAME_FORMAT = DateFormat("yyyy-MM-dd-HH-mm")
+
+            fun fromSharedJson(settings: Settings, json: String, newId: Int?): ShortRecord? =
+                fromJsonMap(settings, json.asJsonMap(), newId)
 
             fun fromJsonMap(settings: Settings, aMap: Map<String, Any>, newId: Int?): ShortRecord? {
                 val board = settings.defaultBoard // TODO Create / load here

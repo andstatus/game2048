@@ -1,6 +1,7 @@
 import com.soywiz.klock.Stopwatch
 import com.soywiz.korge.input.SwipeDirection
 import com.soywiz.korge.tests.ViewsForTesting
+import com.soywiz.korio.concurrent.atomic.korAtomic
 import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.PlacedPiece
@@ -13,16 +14,20 @@ class MovesTest : ViewsForTesting(log = true) {
 
     @Test
     fun movesTest() {
-        var testWasExecuted = false
+        val testWasExecuted = korAtomic(false)
         viewsTest {
             unsetGameView()
             initializeViewDataInTest {
-                waitFor { -> presenter.boardViews.blocks.isNotEmpty() }
+//                waitFor { -> presenter.boardViews.blocks.isNotEmpty() }
                 assertTrue(presenter.boardViews.blocks.isNotEmpty(), modelAndViews())
 
                 val board = presenter.model.gamePosition.board
-                presenter.onWatchClick()
-                presenter.composerMove(GamePosition(board))
+                waitForMainViewShown {
+                    presenter.onWatchClick()
+                }
+                waitForMainViewShown {
+                    presenter.composerMove(GamePosition(board))
+                }
                 assertEquals(0, presenter.boardViews.blocks.size, modelAndViews())
                 val square1 = board.toSquare(1, 1)
                 val piece1 = PlacedPiece(Piece.N2, square1)
@@ -36,8 +41,9 @@ class MovesTest : ViewsForTesting(log = true) {
                 val piecesOnBoardViews1 = this.presentedPieces()
                 assertEquals(position1.pieces.asList(), piecesOnBoardViews1, modelAndViews())
                 assertEquals(2, position1.plyNumber, modelAndViews())
-                presenter.onBookmarkClick()
-                waitFor { -> presenter.model.history.currentGame.shortRecord.bookmarks.isNotEmpty() }
+                waitForMainViewShown {
+                    presenter.onBookmarkClick()
+                }
                 assertEquals(
                     position1.plyNumber,
                     presenter.model.history.currentGame.shortRecord.bookmarks[0].plyNumber,
@@ -51,16 +57,20 @@ class MovesTest : ViewsForTesting(log = true) {
                 assertEquals(2, position2.score, modelAndViews())
                 assertEquals(position2.pieces.asList(), piecesOnBoardViews2, modelAndViews())
                 assertTrue(presenter.canUndo(), this.historyString())
-                presenter.undo()
+                waitForMainViewShown {
+                    presenter.onUndoClick()
+                }
                 val position3 = presenter.model.gamePosition.copy()
-                val piecesOnBoardViews3 = this.presentedPieces()
                 assertEquals(position1.pieces.asList(), position3.pieces.asList(), "Board after undo")
+                val piecesOnBoardViews3 = this.presentedPieces()
                 assertEquals(position3.pieces.asList(), piecesOnBoardViews3, "Board views after undo")
                 assertTrue(presenter.canRedo(), this.historyString())
-                presenter.redo()
+                waitForMainViewShown {
+                    presenter.onRedoClick()
+                }
                 val position4 = presenter.model.gamePosition.copy()
-                val piecesOnBoardViews4 = this.presentedPieces()
                 assertEquals(position2.pieces.asList(), position4.pieces.asList(), "Board after redo")
+                val piecesOnBoardViews4 = this.presentedPieces()
                 assertEquals(position4.pieces.asList(), piecesOnBoardViews4, "Board views after redo")
                 assertFalse(presenter.canRedo(), this.historyString())
                 presenter.onSwipe(SwipeDirection.TOP)
@@ -72,8 +82,9 @@ class MovesTest : ViewsForTesting(log = true) {
                     modelAndViews()
                 )
                 assertEquals(1, presenter.model.history.currentGame.shortRecord.bookmarks.size, modelAndViews())
-                presenter.onUndoClick()
-                waitFor { -> position4.pieces.contentEquals(presenter.model.gamePosition.copy().pieces) }
+                waitForMainViewShown {
+                    presenter.onUndoClick()
+                }
                 val position5 = presenter.model.gamePosition.copy()
                 val piecesOnBoardViews5 = this.presentedPieces()
                 assertEquals(position4.pieces.asList(), position5.pieces.asList(), "Board after second undo")
@@ -86,17 +97,16 @@ class MovesTest : ViewsForTesting(log = true) {
                     presenter.onSwipe(SwipeDirection.TOP)
                     assertTrue(started, "GameClock should start: $playedSeconds")
                     val stopWatch = Stopwatch().start()
-                    waitFor { -> stopWatch.elapsed.seconds > 1 }
+                    waitFor("Elapsed seconds 1") { -> stopWatch.elapsed.seconds > 1 }
                     val val1 = playedSeconds
                     assertTrue(val1 > 0, "GameClock should tick: $val1")
-                    waitFor { -> stopWatch.elapsed.seconds > 3 }
+                    waitFor("Elapsed seconds 3") { -> stopWatch.elapsed.seconds > 3 }
                     assertTrue(playedSeconds > val1, "GameClock should tick: $playedSeconds")
                 }
 
-                testWasExecuted = true
+                testWasExecuted.value = true
             }
         }
-        waitFor { -> testWasExecuted }
-        assertTrue(testWasExecuted, "Test wasn't executed")
+        waitFor("MovesTest was executed") { -> testWasExecuted.value }
     }
 }

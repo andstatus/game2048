@@ -24,9 +24,9 @@ actual fun Stage.shareText(actionTitle: String, fileName: String, value: String)
     Console.log("$platformSourceFolder, shareText '$fileName' (${value.length} bytes):\n${value}")
 }
 
-actual fun Stage.loadJsonGameRecord(consumer: (String) -> Unit) {
+actual fun Stage.loadJsonGameRecord(sharedJsonHandler: (String) -> Unit) {
     Console.log("$platformSourceFolder, loadJsonGameRecord")
-    consumer("")
+    sharedJsonHandler("")
 }
 
 actual fun Stage.closeGameApp() {}

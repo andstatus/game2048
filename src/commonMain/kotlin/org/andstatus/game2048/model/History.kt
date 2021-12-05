@@ -2,16 +2,18 @@ package org.andstatus.game2048.model
 
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.weeks
-import com.soywiz.korio.lang.parseInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import org.andstatus.game2048.*
+import org.andstatus.game2048.Settings
+import org.andstatus.game2048.gameIsLoading
+import org.andstatus.game2048.keyCurrentGame
 import org.andstatus.game2048.model.GameRecord.ShortRecord.Companion.fromJsonMap
+import org.andstatus.game2048.myLog
+import org.andstatus.game2048.myMeasured
+import org.andstatus.game2048.myMeasuredIt
 
-private const val keyCurrentGame = "current"
-private const val keyGame = "game"
 const val keyGameMode = "gameMode"
 
 private val gameIdsRange = 1..60
@@ -41,20 +43,11 @@ class History(val settings: Settings,
         suspend fun load(settings: Settings): History = coroutineScope {
             val dCurrentGame = async {
                 myMeasuredIt("Current game loaded") {
-                    settings.storage.getOrNull(keyCurrentGame)
-                            ?.let {
-                                // TODO: for compatibility with previous versions:
-                                if (it.startsWith("{"))
-                                    GameRecord.fromJson(settings, it)
-                                else {
-                                    val id = it.parseInt()
-                                    settings.storage.getOrNull(keyGame + id) ?.let {
-                                        GameRecord.fromJson(settings, it)
-                                    }
-                                }
-                            }
-                            ?: GameRecord.newWithPositionAndMoves(
-                                    GamePosition(settings.defaultBoard), emptyList(), Plies(emptyList()))
+                    settings.currentGameId
+                        ?.let { GameRecord.fromId(settings, it) }
+                        ?: GameRecord.newWithPositionAndMoves(
+                            GamePosition(settings.defaultBoard), emptyList(), Plies(emptyList())
+                        )
                 }
             }
             History(settings, dCurrentGame.await())
@@ -76,29 +69,25 @@ class History(val settings: Settings,
 
     fun openGame(id: Int): GameRecord? =
         if (currentGame.id == id) currentGame
-        else openGame(id, settings.storage.getOrNull(keyGame + id))
+        else GameRecord.fromId(settings, id)
+            ?.also { openGame(it, id) }
 
-    fun openGame(id: Int, json: String?): GameRecord? =
-            json
-            ?.let {
-                myLog("On open gameId:$id, json.length:${it.length} ${it.substring(0..200)}...")
-                GameRecord.fromJson(settings, it)
+    fun openGame(game: GameRecord?, id: Int): GameRecord? = game
+        ?.also {
+            if (it.id == id) {
+                myLog("Opened game $it")
+            } else {
+                myLog("Fixed id $id while opening game $it")
+                it.id = id
             }
-            ?.also {
-                if (it.id == id) {
-                    myLog("Opened game $it")
-                } else {
-                    myLog("Fixed id $id while opening game $it")
-                    it.id = id
-                }
-                currentGame = it
-                settings.storage[keyCurrentGame] = currentGame.id
-                gameMode.modeEnum = GameModeEnum.STOP
-            }
-            ?: run {
-                myLog("Failed to open game $id")
-                null
-            }
+            currentGame = it
+            settings.storage[keyCurrentGame] = currentGame.id
+            gameMode.modeEnum = GameModeEnum.STOP
+        }
+        ?: run {
+            myLog("Failed to open game $id")
+            null
+        }
 
     fun saveCurrent(coroutineScope: CoroutineScope): History {
         settings.storage[keyGameMode] = gameMode.modeEnum.id
