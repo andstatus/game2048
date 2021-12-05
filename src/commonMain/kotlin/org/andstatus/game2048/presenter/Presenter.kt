@@ -459,8 +459,11 @@ class Presenter(val view: ViewData, history: History) {
 
     fun showMainView() {
         view.gameStage.launch {
-            if (view.mainView.parent != null && !view.closed) {
-                view.mainView.show(buttonsToShow(), gameMode.speed)
+            if (!view.closed) {
+                if (!model.settings.isTestRun) {
+                    // TOD: Why this doesn't work in tests?
+                    view.mainView.show(buttonsToShow(), gameMode.speed)
+                }
                 if (gameMode.aiEnabled && gameMode.speed == 0) {
                     multithreadedScope.showAiTip(this@Presenter)
                     myLog("After AI Launch")

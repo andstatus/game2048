@@ -87,9 +87,9 @@ private fun shareLongText(context: Activity, actionTitle: String, fileName: Stri
     }
 }
 
-actual fun Stage.loadJsonGameRecord(consumer: (String) -> Unit) {
+actual fun Stage.loadJsonGameRecord(sharedJsonHandler: (String) -> Unit) {
     myLog("$platformSourceFolder, loadJsonGameRecord")
-    mainActivity?.openJsonGameRecord(consumer)
+    mainActivity?.openJsonGameRecord(sharedJsonHandler)
 }
 
 actual fun Stage.closeGameApp() = mainActivity?.finish() ?: Unit
