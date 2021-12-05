@@ -88,13 +88,13 @@ class PersistenceTest : ViewsForTesting(log = true) {
         }
 
         val gameRecord = GameRecord.newWithPositionAndMoves(GamePosition(board), emptyList(), Plies(plies))
-        val gameRecordJson = gameRecord.toJsonString()
-        val message = "nMoves:$nMoves, $gameRecordJson"
+        val sharedJson = gameRecord.toSharedJson()
+        val message = "nMoves:$nMoves, $sharedJson"
 
         if (nMoves > 0) {
-            assertTrue(gameRecordJson.contains("place"), message)
+            assertTrue(sharedJson.contains("place"), message)
         }
-        val gameRecordOpened = GameRecord.fromSharedJson(settings, gameRecordJson)
+        val gameRecordOpened = GameRecord.fromSharedJson(settings, sharedJson)
         assertTrue(gameRecordOpened != null, message)
 
         gameRecordOpened.plies.load()
@@ -106,7 +106,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         assertEquals(expected.currentGame.plies.toLongString(), actual.currentGame.plies.toLongString(), modelAndViews())
         assertEquals(expected.currentGame.score, actual.currentGame.score, modelAndViews())
         assertEquals(expected.currentGame.shortRecord.bookmarks.size, actual.currentGame.shortRecord.bookmarks.size, modelAndViews())
-        assertEquals(expected.currentGame.toJsonString(), actual.currentGame.toJsonString(), modelAndViews())
+        assertEquals(expected.currentGame.toSharedJson(), actual.currentGame.toSharedJson(), modelAndViews())
         assertTrue(presenter.canUndo(), modelAndViews())
         assertFalse(presenter.canRedo(), modelAndViews())
     }

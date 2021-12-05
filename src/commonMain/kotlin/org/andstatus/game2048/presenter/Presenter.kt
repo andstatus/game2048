@@ -255,7 +255,7 @@ class Presenter(val view: ViewData, history: History) {
     fun onToStartClick() = afterStop {
         logClick("ToStart")
         boardViews.hideGameOver()
-        (model.undoToStart() + listOf(Ply.delay()) + model.redo()).present()
+        (model.undoToStart() + Ply.delay() + model.redo()).present()
     }
 
     fun onToCurrentClick() = afterStop {
@@ -329,7 +329,7 @@ class Presenter(val view: ViewData, history: History) {
         logClick("Share")
         view.gameStage.shareText(
             view.stringResources.text("share"), model.history.currentGame.shortRecord.jsonFileName,
-            model.history.currentGame.toJsonString()
+            model.history.currentGame.toSharedJson()
         )
     }
 
@@ -390,13 +390,11 @@ class Presenter(val view: ViewData, history: History) {
         }
     }
 
-    private fun startAiPlay() {
-        afterStop {
-            val startCount = clickCounter.incrementAndGet()
-            gameMode.modeEnum = GameModeEnum.AI_PLAY
-            asyncShowMainView()
-            multithreadedScope.aiPlayLoop(this, startCount)
-        }
+    private fun startAiPlay() = afterStop {
+        val startCount = clickCounter.incrementAndGet()
+        gameMode.modeEnum = GameModeEnum.AI_PLAY
+        asyncShowMainView()
+        multithreadedScope.aiPlayLoop(this, startCount)
     }
 
     private fun logClick(buttonName: String) {

@@ -9,7 +9,6 @@ import kotlinx.coroutines.launch
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.gameIsLoading
 import org.andstatus.game2048.keyCurrentGame
-import org.andstatus.game2048.model.GameRecord.ShortRecord.Companion.fromJsonMap
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.myMeasuredIt
@@ -53,13 +52,13 @@ class History(val settings: Settings,
             History(settings, dCurrentGame.await())
         }
 
-        private fun loadRecentGames(settings: Settings): List<GameRecord.ShortRecord> = myMeasured("Recent games loaded") {
-            gameIdsRange.fold(emptyList()) { acc, ind ->
-                settings.storage.getOrNull(keyGame + ind)
-                    ?.let { fromJsonMap(settings, it.asJsonMap(), null) }
-                    ?.let { acc + it } ?: acc
+        private fun loadRecentGames(settings: Settings): List<GameRecord.ShortRecord> =
+            myMeasured("Recent games loaded") {
+                gameIdsRange.fold(emptyList()) { acc, ind ->
+                    GameRecord.ShortRecord.fromId(settings, ind)
+                        ?.let { acc + it } ?: acc
+                }
             }
-        }
     }
 
     fun loadRecentGames(): History {
@@ -109,10 +108,7 @@ class History(val settings: Settings,
         coroutineScope.launch {
             myMeasuredIt((if (isNew) "New" else "Old") + " game saved") {
                 updateBestScore()
-                myLog("Starting to save $game")
-                game.toJsonString().let {
-                    settings.storage[keyGame + idToStore] = it
-                }
+                game.save(settings)
                 gameIsLoading.compareAndSet(true, false)
                 game
             }

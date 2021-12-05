@@ -4,14 +4,17 @@ import com.soywiz.korio.concurrent.atomic.KorAtomicRef
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.serialization.json.toJson
 import com.soywiz.korio.util.StrReader
+import org.andstatus.game2048.Settings
 import org.andstatus.game2048.compareAndSetFixed
 import org.andstatus.game2048.initAtomicReference
 import org.andstatus.game2048.myLog
 
+private const val keyPlayersMoves = "playersMoves"
+
 /** @author yvolk@yurivolkov.com */
 class Plies(iPlies: List<Ply>?, private val shortRecord: GameRecord.ShortRecord?, private val reader: StrReader?) {
 
-    constructor(plies: List<Ply>): this(plies, null, null) {
+    constructor(plies: List<Ply>) : this(plies, null, null) {
         load()
     }
 
@@ -63,6 +66,30 @@ class Plies(iPlies: List<Ply>?, private val shortRecord: GameRecord.ShortRecord?
             plies.plies.forEach { ply ->
                 ply.toMap().toJson()
                     .let { json -> append(json) }
+            }
+        }
+
+        fun fromId(settings: Settings, shortRecord: GameRecord.ShortRecord): Plies {
+            val json = settings.storage.getOrNull(keyGame + shortRecord.id) ?: return Plies(emptyList())
+            return fromSharedJson(json, shortRecord)
+        }
+
+        fun fromSharedJson(json: String, shortRecord: GameRecord.ShortRecord): Plies {
+            val reader = StrReader(json)
+            val aMap: Map<String, Any> = reader.asJsonMap()
+            return if (aMap.containsKey(keyPlayersMoves))
+            // TODO: For compatibility with previous versions
+                (aMap[keyPlayersMoves]?.asJsonArray()
+                    ?.mapNotNull { Ply.fromJson(shortRecord.board, it) }
+                    ?: emptyList())
+                    .let { Plies(it) }
+            else {
+                Plies(null, shortRecord, reader)
+            }.also {
+                if (it.size > shortRecord.finalPosition.plyNumber) {
+                    // Fix for older versions, which didn't store move number
+                    shortRecord.finalPosition.plyNumber = it.size
+                }
             }
         }
 
