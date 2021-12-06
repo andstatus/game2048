@@ -5,6 +5,9 @@ private const val keyPlyEnum = "moveEnum"
 private const val keySeconds = "seconds"
 private const val keyMoves = "moves"
 
+/** @author yvolk@yurivolkov.com
+ * on Ply term see https://en.wikipedia.org/wiki/Ply_(game_theory)
+ * */
 data class Ply(val player: PlayerEnum, val plyEnum: PlyEnum, val seconds: Int, val pieceMoves: List<PieceMove>) {
 
     fun toMap(): Map<String, Any> = mapOf(

@@ -22,16 +22,16 @@ class Model(val history: History) {
         return if (history.currentGame.id == 0)
             restart()
         else
-            composerMove(history.currentGame.shortRecord.finalPosition, true)
+            composerPly(history.currentGame.shortRecord.finalPosition, true)
     }
 
     fun gotoBookmark(position: GamePosition): List<Ply> {
         gameMode.modeEnum = GameModeEnum.STOP
         history.gotoBookmark(position)
-        return composerMove(position, true)
+        return composerPly(position, true)
     }
 
-    fun composerMove(position: GamePosition, isRedo: Boolean = false) =
+    fun composerPly(position: GamePosition, isRedo: Boolean = false) =
         gamePosition.composerPly(position, isRedo).update(isRedo)
 
     fun createBookmark() {
@@ -46,7 +46,7 @@ class Model(val history: History) {
 
     fun restart(): List<Ply> {
         gameMode.modeEnum = GameModeEnum.PLAY
-        return composerMove(gamePosition.newEmpty(), false) + Ply.delay() + randomComputerMove()
+        return composerPly(gamePosition.newEmpty(), false) + Ply.delay() + randomComputerMove()
     }
 
     fun openGame(id: Int): List<Ply> {
@@ -78,7 +78,7 @@ class Model(val history: History) {
 
     fun undoToStart(): List<Ply> {
         history.historyIndex = 0
-        return composerMove(gamePosition.newEmpty(), true)
+        return composerPly(gamePosition.newEmpty(), true)
     }
 
     fun canRedo(): Boolean {
@@ -91,7 +91,7 @@ class Model(val history: History) {
 
     fun redoToCurrent(): List<Ply> {
         history.historyIndex = -1
-        return composerMove(history.currentGame.shortRecord.finalPosition, true)
+        return composerPly(history.currentGame.shortRecord.finalPosition, true)
     }
 
     fun randomComputerMove() = gamePosition.randomComputerPly().update()

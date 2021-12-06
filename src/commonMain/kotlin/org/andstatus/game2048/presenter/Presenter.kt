@@ -413,7 +413,7 @@ class Presenter(val view: ViewData, history: History) {
         }
     }
 
-    fun composerMove(position: GamePosition) = model.composerMove(position, false).present()
+    fun composerMove(position: GamePosition) = model.composerPly(position, false).present()
 
     fun computerMove() = model.randomComputerMove().present()
 

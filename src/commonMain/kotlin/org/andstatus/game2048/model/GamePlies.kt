@@ -10,20 +10,25 @@ import org.andstatus.game2048.initAtomicReference
 import org.andstatus.game2048.myLog
 
 private const val keyPlayersMoves = "playersMoves"
+private const val keyPly = "ply"
 
 /** @author yvolk@yurivolkov.com */
-class Plies(iPlies: List<Ply>?, private val shortRecord: GameRecord.ShortRecord?, private val reader: StrReader?) {
+class GamePlies(private val shortRecord: ShortRecord, iPlies: List<Ply>?, private val reader: StrReader?) {
 
-    constructor(plies: List<Ply>) : this(plies, null, null) {
+    constructor(shortRecord: ShortRecord, plies: List<Ply>) : this(shortRecord, plies, null) {
         load()
     }
 
     private val pliesRef: KorAtomicRef<List<Ply>?> = initAtomicReference(iPlies)
     private val plies: List<Ply> get() = pliesRef.value ?: emptyList()
 
+    private fun plyPageKey(pageNumber: Int): String = "$keyPly${shortRecord.id}.$pageNumber".also {
+        if (shortRecord.id < 1 || pageNumber < 1) throw IllegalArgumentException(it)
+    }
+
     val notCompleted: Boolean get() = !pliesLoaded.isInitialized()
     private val pliesLoaded: Lazy<Boolean> = lazy {
-        if (shortRecord != null && reader != null) {
+        if (reader != null) {
             val list: MutableList<Ply> = ArrayList()
             try {
                 while (reader.hasMore) {
@@ -46,11 +51,11 @@ class Plies(iPlies: List<Ply>?, private val shortRecord: GameRecord.ShortRecord?
 
     operator fun get(index: Int): Ply = plies[index]
 
-    operator fun plus(ply: Ply): Plies = Plies(plies + ply)
+    operator fun plus(ply: Ply): GamePlies = GamePlies(shortRecord, plies + ply)
 
-    fun take(n: Int): Plies = Plies(plies.take(n))
+    fun take(n: Int): GamePlies = GamePlies(shortRecord, plies.take(n))
 
-    fun drop(n: Int): Plies = Plies(plies.drop(n))
+    fun drop(n: Int): GamePlies = GamePlies(shortRecord, plies.drop(n))
 
     fun isNotEmpty(): Boolean = notCompleted || plies.isNotEmpty()
 
@@ -61,20 +66,23 @@ class Plies(iPlies: List<Ply>?, private val shortRecord: GameRecord.ShortRecord?
     }.toString()
 
     companion object {
-        fun StringBuilder.appendPlies(plies: Plies): StringBuilder = apply {
-            plies.load()
-            plies.plies.forEach { ply ->
+        fun StringBuilder.appendPlies(gamePlies: GamePlies): StringBuilder = apply {
+            gamePlies.load()
+            gamePlies.plies.forEach { ply ->
                 ply.toMap().toJson()
                     .let { json -> append(json) }
             }
         }
 
-        fun fromId(settings: Settings, shortRecord: GameRecord.ShortRecord): Plies {
-            val json = settings.storage.getOrNull(keyGame + shortRecord.id) ?: return Plies(emptyList())
+        fun fromId(settings: Settings, shortRecord: ShortRecord): GamePlies {
+            val json = settings.storage.getOrNull(keyGame + shortRecord.id) ?: return GamePlies(
+                shortRecord,
+                emptyList()
+            )
             return fromSharedJson(json, shortRecord)
         }
 
-        fun fromSharedJson(json: String, shortRecord: GameRecord.ShortRecord): Plies {
+        fun fromSharedJson(json: String, shortRecord: ShortRecord): GamePlies {
             val reader = StrReader(json)
             val aMap: Map<String, Any> = reader.asJsonMap()
             return if (aMap.containsKey(keyPlayersMoves))
@@ -82,9 +90,9 @@ class Plies(iPlies: List<Ply>?, private val shortRecord: GameRecord.ShortRecord?
                 (aMap[keyPlayersMoves]?.asJsonArray()
                     ?.mapNotNull { Ply.fromJson(shortRecord.board, it) }
                     ?: emptyList())
-                    .let { Plies(it) }
+                    .let { GamePlies(shortRecord, it) }
             else {
-                Plies(null, shortRecord, reader)
+                GamePlies(shortRecord, null, reader)
             }.also {
                 if (it.size > shortRecord.finalPosition.plyNumber) {
                     // Fix for older versions, which didn't store move number

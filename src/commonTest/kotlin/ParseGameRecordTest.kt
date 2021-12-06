@@ -25,8 +25,8 @@ class ParseGameRecordTest: ViewsForTesting(log = true) {
         history.openGame(gameId)
         assertEquals(8, history.currentGame.score, "Score of: ${history.currentGame}")
         assertEquals(1, history.currentGame.shortRecord.bookmarks.size, "Bookmarks in: ${history.currentGame}")
-        history.currentGame.plies.load()
-        assertEquals(11, history.currentGame.plies.size, "Plies stored in: ${history.currentGame}")
+        history.currentGame.gamePlies.load()
+        assertEquals(11, history.currentGame.gamePlies.size, "Plies stored in: ${history.currentGame}")
     }
 
 }

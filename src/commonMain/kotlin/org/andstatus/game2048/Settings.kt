@@ -10,7 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.model.Board
-import org.andstatus.game2048.model.GameRecord
+import org.andstatus.game2048.model.ShortRecord
 import org.andstatus.game2048.view.ColorThemeEnum
 import org.andstatus.game2048.view.StringResources
 
@@ -64,7 +64,7 @@ class Settings(private val stage: Stage) {
         get() = storage.getOrNull(keyCurrentGame)
             ?.let {
                 // TODO: for compatibility with previous versions:
-                if (it.startsWith("{")) GameRecord.ShortRecord
+                if (it.startsWith("{")) ShortRecord
                     .fromSharedJson(this, it, null)
                     ?.id
                 else it.parseInt()

@@ -7,10 +7,10 @@ import com.soywiz.korge.view.position
 import com.soywiz.korge.view.roundRect
 import com.soywiz.korge.view.text
 import com.soywiz.korim.text.TextAlignment
-import org.andstatus.game2048.model.GameRecord
+import org.andstatus.game2048.model.ShortRecord
 import kotlin.math.max
 
-fun ViewData.showRecentGames(recentGames: List<GameRecord.ShortRecord>) = myWindow("recent_games") {
+fun ViewData.showRecentGames(recentGames: List<ShortRecord>) = myWindow("recent_games") {
     val listTop = winTop + cellMargin + buttonSize + buttonMargin
     val nItems = recentGames.size
     val itemHeight = buttonSize

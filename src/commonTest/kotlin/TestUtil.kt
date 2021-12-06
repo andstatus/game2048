@@ -51,10 +51,10 @@ fun ViewData.modelAndViews() =
         ind.toString() + ":" + (if (list.isEmpty()) "-" else list.joinToString(transform = { it.piece.text }))
     }
 
-fun ViewData.currentGameString(): String = "CurrentGame " + presenter.model.history.currentGame.plies.toLongString()
+fun ViewData.currentGameString(): String = "CurrentGame " + presenter.model.history.currentGame.gamePlies.toLongString()
 
 fun ViewData.historyString(): String = with(presenter.model.history) {
-    "History: index:$historyIndex, moves:${currentGame.plies.size}"
+    "History: index:$historyIndex, moves:${currentGame.gamePlies.size}"
 }
 
 fun ViewData.waitForMainViewShown(action: () -> Any? = { -> null }) {
