@@ -29,12 +29,16 @@ class MovesTest : ViewsForTesting(log = true) {
                     presenter.composerMove(GamePosition(board))
                 }
                 assertEquals(0, presenter.boardViews.blocks.size, modelAndViews())
+
                 val square1 = board.toSquare(1, 1)
                 val piece1 = PlacedPiece(Piece.N2, square1)
+                waitForMainViewShown {
+                    presenter.computerMove(piece1)
+                }
+                assertEquals(listOf(Piece.N2), this.blocksAt(square1), modelAndViews())
+
                 val square2 = board.toSquare(1, 2)
                 val piece2 = PlacedPiece(Piece.N2, square2)
-                presenter.computerMove(piece1)
-                assertEquals(listOf(Piece.N2), this.blocksAt(square1), modelAndViews())
                 presenter.computerMove(piece2)
                 assertEquals(listOf(Piece.N2), this.blocksAt(square2), modelAndViews())
                 val position1 = presenter.model.gamePosition.copy()

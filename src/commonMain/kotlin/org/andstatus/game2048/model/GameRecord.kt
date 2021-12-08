@@ -1,26 +1,19 @@
 package org.andstatus.game2048.model
 
-import com.soywiz.korio.serialization.json.toJson
 import org.andstatus.game2048.Settings
-import org.andstatus.game2048.model.GamePlies.Companion.appendPlies
 import org.andstatus.game2048.myLog
 
 const val keyGame = "game"
 
 class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
 
-    fun save(settings: Settings) {
+    fun save() {
         myLog("Starting to save $this")
-        toSharedJson().let {
-            settings.storage[keyGame + id] = it
-        }
+        shortRecord.save()
+        gamePlies.save()
     }
 
-    fun toSharedJson(): String = load()
-        .shortRecord.toMap().toJson()
-        .let { StringBuilder(it) }
-        .appendPlies(gamePlies)
-        .toString()
+    fun toSharedJson(): String = load().shortRecord.toSharedJson() + gamePlies.toSharedJson()
 
     var id: Int by shortRecord::id
     val score get() = shortRecord.finalPosition.score
@@ -29,14 +22,17 @@ class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
     val isReady: Boolean get() = !notCompleted
     val notCompleted: Boolean get() = gamePlies.notCompleted
 
+    fun toLongString(): String = toString() + if (isReady) gamePlies.toLongString() else ""
+
     override fun toString(): String = "$shortRecord, " +
             if (notCompleted) "loading..." else "${gamePlies.size} plies"
 
     companion object {
-        fun newWithPositionAndPlies(position: GamePosition, bookmarks: List<GamePosition>, plies: List<Ply>) =
-            ShortRecord(position.board, "", 0, position.startingDateTime, position, bookmarks).let {
-                GameRecord(it, GamePlies(it, plies))
-            }
+        fun newWithPositionAndPlies(
+            settings: Settings, position: GamePosition, id: Int, bookmarks: List<GamePosition>,
+            plies: List<Ply>
+        ) = ShortRecord(settings, position.board, "", id, position.startingDateTime, position, bookmarks)
+            .let { GameRecord(it, GamePlies.fromPlies(it, plies)) }
 
         fun fromId(settings: Settings, id: Int): GameRecord? {
             val shortRecord: ShortRecord? = ShortRecord.fromId(settings, id)
@@ -46,7 +42,7 @@ class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
             }
         }
 
-        fun fromSharedJson(settings: Settings, json: String, newId: Int? = null): GameRecord? {
+        fun fromSharedJson(settings: Settings, json: String, newId: Int): GameRecord? {
             myLog("Game fromSharedJson newId:$newId, length:${json.length} ${json.substring(0..200)}...")
             return ShortRecord.fromSharedJson(settings, json, newId)?.let { shortRecord ->
                 GameRecord(shortRecord, GamePlies.fromSharedJson(json, shortRecord))

@@ -1,86 +1,98 @@
 package org.andstatus.game2048.model
 
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
-import com.soywiz.korio.serialization.json.Json
-import com.soywiz.korio.serialization.json.toJson
 import com.soywiz.korio.util.StrReader
 import org.andstatus.game2048.Settings
-import org.andstatus.game2048.compareAndSetFixed
 import org.andstatus.game2048.initAtomicReference
-import org.andstatus.game2048.myLog
 
 private const val keyPlayersMoves = "playersMoves"
-private const val keyPly = "ply"
 
 /** @author yvolk@yurivolkov.com */
-class GamePlies(private val shortRecord: ShortRecord, iPlies: List<Ply>?, private val reader: StrReader?) {
+class GamePlies(private val shortRecord: ShortRecord, private val reader: StrReader? = null) {
 
-    constructor(shortRecord: ShortRecord, plies: List<Ply>) : this(shortRecord, plies, null) {
+    private constructor(shortRecord: ShortRecord, pages: List<PliesPage>) : this(shortRecord, null) {
+        pagesRef.value = pages
         load()
     }
 
-    private val pliesRef: KorAtomicRef<List<Ply>?> = initAtomicReference(iPlies)
-    private val plies: List<Ply> get() = pliesRef.value ?: emptyList()
-
-    private fun plyPageKey(pageNumber: Int): String = "$keyPly${shortRecord.id}.$pageNumber".also {
-        if (shortRecord.id < 1 || pageNumber < 1) throw IllegalArgumentException(it)
-    }
+    private val emptyFirstPage = PliesPage(shortRecord, 1, 1, 0, null)
+    private val pagesRef: KorAtomicRef<List<PliesPage>> = initAtomicReference(listOf(emptyFirstPage))
+    private val pages: List<PliesPage> get() = pagesRef.value
+    val lastPage get() = pages.last()
 
     val notCompleted: Boolean get() = !pliesLoaded.isInitialized()
     private val pliesLoaded: Lazy<Boolean> = lazy {
         if (reader != null) {
-            val list: MutableList<Ply> = ArrayList()
-            try {
-                while (reader.hasMore) {
-                    Json.parse(reader)
-                        ?.let { Ply.fromJson(shortRecord.board, it) }
-                        ?.let { list.add(it) }
-                }
-                myLog("Loaded ${list.size} plies")
-            } catch (e: Throwable) {
-                myLog("Failed to load ply ${list.size + 1}, at pos:${reader.pos}: $e")
+            var pageNumber = 1
+            var plyNumber = 1
+            while (reader.hasMore) {
+                val page = PliesPage.fromSharedJson(shortRecord, pageNumber, plyNumber, reader)
+                pagesRef.value = if (pageNumber == 1) listOf(page) else pagesRef.value + page
+                pageNumber += 1
+                plyNumber += page.size
             }
-            pliesRef.compareAndSetFixed(null, list)
         }
+        pages.forEach { it.load() }
         true
     }
 
     fun load() = pliesLoaded.value
 
-    val size: Int get() = plies.size
+    val size: Int get() = pages.sumOf { it.size }
 
-    operator fun get(index: Int): Ply = plies[index]
+    operator fun get(index: Int): Ply {
+        pages.forEach {
+            if (index < it.nextPagePlyNumber) {
+                return it.plies[index - it.plyNumber]
+            }
+        }
+        throw IllegalArgumentException("No ply with index:$index found. " + toLongString())
+    }
 
-    operator fun plus(ply: Ply): GamePlies = GamePlies(shortRecord, plies + ply)
+    operator fun plus(ply: Ply): GamePlies {
+        with(lastPage) {
+            val pagesNew = if (plies.size < shortRecord.settings.pliesPageSize) {
+                pages.take(pages.size - 1) + plus(ply)
+            } else {
+                pages + PliesPage(shortRecord, pageNumber + 1, nextPagePlyNumber, 1, listOf(ply))
+            }
+            return GamePlies(shortRecord, pagesNew)
+        }
+    }
 
-    fun take(n: Int): GamePlies = GamePlies(shortRecord, plies.take(n))
+    fun take(n: Int): GamePlies {
+        pages.forEach {
+            if (n < it.nextPagePlyNumber) {
+                return GamePlies(shortRecord, pages.take(it.pageNumber - 1) + it.take(n - it.plyNumber))
+            }
+        }
+        return this
+    }
 
-    fun drop(n: Int): GamePlies = GamePlies(shortRecord, plies.drop(n))
+    fun isNotEmpty(): Boolean = notCompleted || lastPage.plies.isNotEmpty()
 
-    fun isNotEmpty(): Boolean = notCompleted || plies.isNotEmpty()
+    fun lastOrNull(): Ply? = lastPage.plies.lastOrNull()
 
-    fun lastOrNull(): Ply? = plies.lastOrNull()
+    fun toLongString(): String = (if(pages.size > 1) "${pages.size} pages ..." else "") + lastPage.toLongString()
 
-    fun toLongString(): String = plies.mapIndexed { ind, playerMove ->
-        "\n" + (ind + 1).toString() + ":" + playerMove
+    fun save() = pages.forEach { it.save() }
+
+    fun toSharedJson(): String = StringBuilder().also { stringBuilder ->
+        pages.forEach {
+            it.toJson().let { json -> stringBuilder.append(json) }
+        }
     }.toString()
 
     companion object {
-        fun StringBuilder.appendPlies(gamePlies: GamePlies): StringBuilder = apply {
-            gamePlies.load()
-            gamePlies.plies.forEach { ply ->
-                ply.toMap().toJson()
-                    .let { json -> append(json) }
-            }
-        }
 
         fun fromId(settings: Settings, shortRecord: ShortRecord): GamePlies {
-            val json = settings.storage.getOrNull(keyGame + shortRecord.id) ?: return GamePlies(
-                shortRecord,
-                emptyList()
-            )
+            val json = settings.storage.getOrNull(keyGame + shortRecord.id)
+                ?: return GamePlies(shortRecord, null)
             return fromSharedJson(json, shortRecord)
         }
+
+        fun fromPlies(shortRecord: ShortRecord, plies: List<Ply>): GamePlies =
+            GamePlies(shortRecord, listOf(PliesPage(shortRecord, 1, 1, plies.size, plies)))
 
         fun fromSharedJson(json: String, shortRecord: ShortRecord): GamePlies {
             val reader = StrReader(json)
@@ -90,9 +102,9 @@ class GamePlies(private val shortRecord: ShortRecord, iPlies: List<Ply>?, privat
                 (aMap[keyPlayersMoves]?.asJsonArray()
                     ?.mapNotNull { Ply.fromJson(shortRecord.board, it) }
                     ?: emptyList())
-                    .let { GamePlies(shortRecord, it) }
+                    .let { fromPlies(shortRecord, it) }
             else {
-                GamePlies(shortRecord, null, reader)
+                GamePlies(shortRecord, reader)
             }.also {
                 if (it.size > shortRecord.finalPosition.plyNumber) {
                     // Fix for older versions, which didn't store move number

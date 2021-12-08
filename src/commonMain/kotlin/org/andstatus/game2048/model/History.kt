@@ -20,9 +20,12 @@ private const val maxOlderGames = 30
 
 /** @author yvolk@yurivolkov.com */
 class History(val settings: Settings,
-              var currentGame: GameRecord,
+              var currentGameIn: GameRecord?,
               var recentGames: List<ShortRecord> = emptyList()) {
     private val keyBest = "best"
+    var currentGame: GameRecord = currentGameIn
+        ?: GameRecord.newWithPositionAndPlies(
+            settings, GamePosition(settings.defaultBoard), idForNewGame(), emptyList(), emptyList())
 
     // 1. Info on previous games
     var bestScore: Int = settings.storage.getOrNull(keyBest)?.toInt() ?: 0
@@ -44,11 +47,6 @@ class History(val settings: Settings,
                 myMeasuredIt("Current game loaded") {
                     settings.currentGameId
                         ?.let { GameRecord.fromId(settings, it) }
-                        ?: GameRecord.newWithPositionAndPlies(
-                            GamePosition(settings.defaultBoard),
-                            emptyList(),
-                            emptyList()
-                        )
                 }
             }
             History(settings, dCurrentGame.await())
@@ -92,6 +90,7 @@ class History(val settings: Settings,
 
     fun saveCurrent(coroutineScope: CoroutineScope): History {
         settings.storage[keyGameMode] = gameMode.modeEnum.id
+        // TODO: id > 0 below
         val isNew = currentGame.id <= 0
 
         if (isNew && currentGame.score < 1) {
@@ -110,7 +109,7 @@ class History(val settings: Settings,
         coroutineScope.launch {
             myMeasuredIt((if (isNew) "New" else "Old") + " game saved") {
                 updateBestScore()
-                game.save(settings)
+                game.save()
                 gameIsLoading.compareAndSet(true, false)
                 game
             }
@@ -161,7 +160,7 @@ class History(val settings: Settings,
 
         currentGame = when (position.prevPly.plyEnum) {
             PlyEnum.LOAD -> {
-                GameRecord.newWithPositionAndPlies(position, emptyList(), emptyList())
+                GameRecord.newWithPositionAndPlies(settings, position, idForNewGame(), emptyList(), emptyList())
             }
             else -> {
                 val bookmarksNew = when {
@@ -180,17 +179,14 @@ class History(val settings: Settings,
                         currentGame.gamePlies
                     }
                     historyIndex == 0 -> {
-                        GamePlies(currentGame.shortRecord, emptyList())
+                        GamePlies(currentGame.shortRecord)
                     }
                     else -> {
                         currentGame.gamePlies.take(historyIndex)
                     }
-                }.let {
-                    val toDrop = it.size - settings.maxMovesToStore * 2 + 1
-                    if (toDrop > 0) it.drop(toDrop) else it
                 } + position.prevPly
                 with(currentGame.shortRecord) {
-                    GameRecord(ShortRecord(board, note, id, start, position, bookmarksNew), gamePliesNew)
+                    GameRecord(ShortRecord(settings, board, note, id, start, position, bookmarksNew), gamePliesNew)
                 }
             }
         }
@@ -203,7 +199,7 @@ class History(val settings: Settings,
 
         currentGame = with(currentGame.shortRecord) {
             GameRecord(
-                    ShortRecord(board, note, id, start, finalPosition,
+                    ShortRecord(settings, board, note, id, start, finalPosition,
                             bookmarks.filter { it.plyNumber != gamePosition.plyNumber } +
                                     gamePosition.copy()),
                     currentGame.gamePlies
@@ -216,7 +212,7 @@ class History(val settings: Settings,
 
         currentGame = with(currentGame.shortRecord) {
             GameRecord(
-                ShortRecord(board, note, id, start, finalPosition, bookmarks
+                ShortRecord(settings, board, note, id, start, finalPosition, bookmarks
                     .filterNot { it.plyNumber == gamePosition.plyNumber }),
                 currentGame.gamePlies
             )

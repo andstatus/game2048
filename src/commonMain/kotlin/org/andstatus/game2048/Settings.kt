@@ -37,11 +37,11 @@ class Settings(private val stage: Stage) {
     var allowUndo = storage.getBoolean(keyAllowUndo,true)
     var boardWidth = 4
     var boardHeight = boardWidth
-    var maxMovesToStore = storage.getInt(keyMaxMovesToStore, 100000)
     var colorThemeEnum: ColorThemeEnum = ColorThemeEnum.load(storage.getOrNull(keyColorTheme))
     var aiAlgorithm: AiAlgorithm = AiAlgorithm.load(storage.getOrNull(keyAiAlgorithm))
     var defaultBoard = Board(this)
     val isTestRun = "TestGameWindow" == stage.views.gameWindow::class.simpleName
+    val pliesPageSize = 10000
 
     companion object {
         fun load(stage: Stage): Settings = myMeasured("Settings loaded") { Settings(stage) }
@@ -64,9 +64,8 @@ class Settings(private val stage: Stage) {
         get() = storage.getOrNull(keyCurrentGame)
             ?.let {
                 // TODO: for compatibility with previous versions:
-                if (it.startsWith("{")) ShortRecord
-                    .fromSharedJson(this, it, null)
-                    ?.id
+                if (it.startsWith("{"))
+                    ShortRecord.sharedJsonToId(it, 1)
                 else it.parseInt()
             }
 

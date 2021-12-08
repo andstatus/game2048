@@ -338,7 +338,7 @@ class Presenter(val view: ViewData, history: History) {
         model.restart().present()
         gameIsLoading.value = true
         view.gameStage.loadJsonGameRecord {
-            GameRecord.fromSharedJson(model.history.settings, it)
+            GameRecord.fromSharedJson(model.history.settings, it, model.history.idForNewGame())
                 ?.also { model.history.openGame(it, model.history.idForNewGame()) }
                 ?.let { model.saveCurrent() }
                 ?: run { gameIsLoading.value = false }
