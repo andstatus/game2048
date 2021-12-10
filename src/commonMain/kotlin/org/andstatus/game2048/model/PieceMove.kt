@@ -1,6 +1,7 @@
 package org.andstatus.game2048.model
 
-private const val keyPieceMoveEnum = "moveName"
+private const val keyPieceMoveEnum = "move"
+private const val keyPieceMoveEnumV1 = "moveName"
 private const val keyFirst = "first"
 private const val keySecond = "second"
 private const val keyMerged = "merged"
@@ -36,7 +37,7 @@ sealed class PieceMove(val pieceMoveEnum: PieceMoveEnum) {
     companion object {
         fun fromJson(board: Board, json: Any): PieceMove? {
             val aMap: Map<String, Any> = json.asJsonMap()
-            val moveEnum = aMap[keyPieceMoveEnum]?.let { PieceMoveEnum.fromId(it as String) }
+            val moveEnum = (aMap[keyPieceMoveEnum] ?: aMap[keyPieceMoveEnumV1])?.let { PieceMoveEnum.fromId(it as String) }
             return when(moveEnum) {
                 PieceMoveEnum.ONE -> {
                     val first = aMap[keyFirst]?.let { PlacedPiece.fromJson(board, it) }

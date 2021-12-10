@@ -7,7 +7,8 @@ import com.soywiz.kmem.isOdd
 import org.andstatus.game2048.model.PlyEnum.Companion.UserPlies
 import kotlin.random.Random
 
-private const val keyPlyNumber = "moveNumber"
+private const val keyPlyNumber = "plyNumber"
+private const val keyPlyNumberV1 = "moveNumber"
 private const val keyPieces = "pieces"
 private const val keyScore = "score"
 private const val keyDateTime = "time"
@@ -50,7 +51,7 @@ class GamePosition(val board: Board,
             val score: Int? = aMap[keyScore] as Int?
             val dateTime: DateTimeTz? = aMap[keyDateTime]?.let { DateTime.parse(it as String)}
             val playedSeconds: Int = aMap[keyPlayedSeconds] as Int? ?: 0
-            val plyNumber: Int = aMap[keyPlyNumber] as Int? ?: 0
+            val plyNumber: Int = aMap[keyPlyNumber] as Int? ?: aMap[keyPlyNumberV1] as Int? ?: 0
             return if (pieces != null && score != null && dateTime != null && size == board.size)
                 GamePosition(board, Ply.emptyPly, pieces, score, dateTime, GameClock(playedSeconds), plyNumber)
             else null

@@ -34,7 +34,7 @@ class ShortRecord(val settings: Settings, val board: Board, val note: String, va
             keyFinalPosition to finalPosition.toMap(),
             keyBookmarks to bookmarks.map { it.toMap() },
             keyId to id,
-            "type" to "org.andstatus.game2048:GameRecord:1",
+            "type" to "org.andstatus.game2048:GameRecord:2",
     )
 
     companion object {

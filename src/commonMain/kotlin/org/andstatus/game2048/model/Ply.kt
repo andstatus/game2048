@@ -1,7 +1,9 @@
 package org.andstatus.game2048.model
 
-private const val keyPlayerEnum = "playerEnum"
-private const val keyPlyEnum = "moveEnum"
+private const val keyPlayerEnum = "player"
+private const val keyPlayerEnumV1 = "playerEnum"
+private const val keyPlyEnum = "ply"
+private const val keyPlyEnumV1 = "moveEnum"
 private const val keySeconds = "seconds"
 private const val keyMoves = "moves"
 
@@ -39,8 +41,8 @@ data class Ply(val player: PlayerEnum, val plyEnum: PlyEnum, val seconds: Int, v
 
         fun fromJson(board: Board, json: Any): Ply? {
             val aMap: Map<String, Any> = json.asJsonMap()
-            val player = aMap[keyPlayerEnum]?.let { PlayerEnum.fromId(it.toString()) }
-            val plyEnum = aMap[keyPlyEnum]?.let { PlyEnum.fromId(it.toString()) }
+            val player = (aMap[keyPlayerEnum] ?: aMap[keyPlayerEnumV1])?.let { PlayerEnum.fromId(it.toString()) }
+            val plyEnum = (aMap[keyPlyEnum] ?: aMap[keyPlyEnumV1])?.let { PlyEnum.fromId(it.toString()) }
             val seconds: Int = aMap[keySeconds] as Int? ?: 0
             val pieceMoves: List<PieceMove>? = aMap[keyMoves]?.asJsonArray()?.mapNotNull { PieceMove.fromJson(board, it) }
             return if (player != null && plyEnum != null && pieceMoves != null)
