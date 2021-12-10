@@ -138,9 +138,7 @@ class History(
         ?: gameIdsRange.first)
 
     fun deleteCurrent() {
-        if (currentGame.id == 0) return
-
-        settings.storage.native.remove(keyGame + currentGame.id)
+        GameRecord.delete(settings, currentGame.id)
         loadRecentGames()
     }
 
@@ -223,7 +221,7 @@ class History(
     fun undo(): Ply? {
         if (!canUndo()) {
             return null
-        } else if (redoPlyPointer < 1 && currentGame.gamePlies.isNotEmpty()) {
+        } else if (redoPlyPointer < 1 && currentGame.gamePlies.size > 0) {
             // Point to the last ply
             redoPlyPointer = currentGame.gamePlies.size
         } else if (redoPlyPointer > 1 && redoPlyPointer <= currentGame.gamePlies.size + 1)

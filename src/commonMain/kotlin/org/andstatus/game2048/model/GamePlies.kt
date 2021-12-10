@@ -40,7 +40,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
 
     fun load() = pliesLoaded.value
 
-    val size: Int get() = pages.sumOf { it.size }
+    val size: Int get() = lastPage.nextPageFirstPlyNumber - 1
 
     operator fun get(num: Int): Ply {
         pages.forEach {
@@ -70,8 +70,6 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
         }
         return this
     }
-
-    fun isNotEmpty(): Boolean = notCompleted || lastPage.plies.isNotEmpty()
 
     fun lastOrNull(): Ply? = lastPage.plies.lastOrNull()
 

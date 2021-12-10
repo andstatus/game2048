@@ -12,8 +12,12 @@ class RestartTest : ViewsForTesting(log = true) {
         viewsTest {
             unsetGameView()
             initializeViewDataInTest {
-                presenter.computerMove()
-                presenter.computerMove()
+                waitForMainViewShown {
+                    presenter.computerMove()
+                }
+                waitForMainViewShown {
+                    presenter.computerMove()
+                }
                 assertTrue(presenter.boardViews.blocks.size > 1, modelAndViews())
                 assertTrue(presenter.model.history.currentGame.isReady, currentGameString())
                 assertTrue(presenter.model.history.currentGame.gamePlies.size > 1, currentGameString())
@@ -21,13 +25,14 @@ class RestartTest : ViewsForTesting(log = true) {
                 waitForMainViewShown {
                     presenter.onRestartClick()
                 }
-
                 assertEquals(1, presenter.boardViews.blocks.size, modelAndViews())
                 assertEquals(1, presenter.model.history.currentGame.gamePlies.lastPage.firstPlyNumber, modelAndViews())
                 assertEquals( 1, presenter.model.gamePosition.pieces.count { it != null }, modelAndViews())
                 assertEquals(1, presenter.model.history.currentGame.gamePlies.size, currentGameString())
 
-                presenter.computerMove()
+                waitForMainViewShown {
+                    presenter.computerMove()
+                }
                 assertEquals(2, presenter.model.gamePosition.pieces.count { it != null }, modelAndViews())
                 assertEquals(2, presenter.model.history.currentGame.gamePlies.size, currentGameString())
 

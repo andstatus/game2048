@@ -69,7 +69,7 @@ class Presenter(val view: ViewData, history: History) {
     fun onAppEntry() = myMeasured("onAppEntry") {
         model.onAppEntry().present()
         presentGameClock(view.gameStage, model) { view.mainView.scoreBar.gameTime }
-        if (model.history.recentGames.isEmpty() && model.history.currentGame.id == 0) {
+        if (model.history.recentGames.isEmpty()) {
             view.showHelp()
         } else {
             asyncShowMainView()

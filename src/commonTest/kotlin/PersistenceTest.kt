@@ -25,15 +25,20 @@ class PersistenceTest : ViewsForTesting(log = true) {
     fun persistenceTest()  {
         val testWasExecuted = korAtomic(false)
         viewsTest {
-            unsetGameView()
-            val settings = Settings.load(stage)
-            assertEquals(4, settings.boardWidth, "Settings are not initialized")
-            assertTrue(settings.isTestRun, "Should be Test Run")
-            val history = saveTestHistory(settings)
 
+            var game1: GameRecord? = null
+            unsetGameView()
             initializeViewDataInTest {
-                persistGameRecordTest(history)
-                assertTestHistory(history)
+                val settings = Settings.load(stage)
+                assertEquals(4, settings.boardWidth, "Settings are not initialized")
+                assertTrue(settings.isTestRun, "Should be Test Run")
+                game1 = saveTestHistory(settings).currentGame
+            }
+
+            unsetGameView()
+            initializeViewDataInTest {
+                persistGameRecordTest()
+                assertTestHistory(game1!!)
                 testWasExecuted.value = true
             }
         }
@@ -65,18 +70,20 @@ class PersistenceTest : ViewsForTesting(log = true) {
             listOf(GamePosition(board), position),
             listOf(ply1, ply2, ply3)
         )
+        assertTrue(canUndo(),  currentGame.toLongString())
+        assertFalse(canRedo(), currentGame.toLongString())
         saveCurrent(CoroutineScope(coroutineContext)).also {
             waitFor { gameIsLoading.value == false }
         }
     }
 
-    private fun ViewData.persistGameRecordTest(history: History) {
-        persistGameRecordTest2(history, 0)
-        persistGameRecordTest2(history, 1)
-        persistGameRecordTest2(history, 2)
+    private fun ViewData.persistGameRecordTest() {
+        persistGameRecordTest2(0)
+        persistGameRecordTest2(1)
+        persistGameRecordTest2(2)
     }
 
-    private fun ViewData.persistGameRecordTest2(history: History, nPlies: Int) {
+    private fun ViewData.persistGameRecordTest2(nPlies: Int) {
         val board = presenter.model.gamePosition.board
         val plies = ArrayList<Ply>()
         var nPliesActual = 0
@@ -94,7 +101,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         val gameRecord = GameRecord.newWithPositionAndPlies(
             settings,
             GamePosition(board),
-            history.idForNewGame(),
+            presenter.model.history.idForNewGame(),
             emptyList(),
             plies
         )
@@ -104,20 +111,20 @@ class PersistenceTest : ViewsForTesting(log = true) {
         if (nPlies > 0) {
             assertTrue(sharedJson.contains("place"), message)
         }
-        val gameRecordOpened = GameRecord.fromSharedJson(settings, sharedJson, history.idForNewGame())
+        val gameRecordOpened = GameRecord.fromSharedJson(settings, sharedJson, presenter.model.history.idForNewGame())
         assertTrue(gameRecordOpened != null, message)
 
         gameRecordOpened.gamePlies.load()
         assertEquals(gameRecord.gamePlies.toLongString(), gameRecordOpened.gamePlies.toLongString(), message)
     }
 
-    private fun ViewData.assertTestHistory(expected: History) {
+    private fun ViewData.assertTestHistory(expected: GameRecord) {
         val actualGame = presenter.model.history.currentGame.load()
-        assertEquals(expected.currentGame.gamePlies.toLongString(), actualGame.gamePlies.toLongString(), modelAndViews())
-        assertEquals(expected.currentGame.score, actualGame.score, modelAndViews())
-        assertEquals(expected.currentGame.shortRecord.bookmarks.size, actualGame.shortRecord.bookmarks.size, modelAndViews())
-        assertEquals(expected.currentGame.toSharedJson(), actualGame.toSharedJson(), modelAndViews())
-        assertTrue(presenter.canUndo(), modelAndViews())
-        assertFalse(presenter.canRedo(), modelAndViews())
+        assertEquals(expected.gamePlies.toLongString(), actualGame.gamePlies.toLongString(), modelAndViews())
+        assertEquals(expected.score, actualGame.score, modelAndViews())
+        assertEquals(expected.shortRecord.bookmarks.size, actualGame.shortRecord.bookmarks.size, modelAndViews())
+        assertEquals(expected.toSharedJson(), actualGame.toSharedJson(), modelAndViews())
+        assertTrue(presenter.canUndo(), modelAndViews() + "\n" + currentGameString())
+        assertFalse(presenter.canRedo(), modelAndViews() + "\n" + currentGameString())
     }
 }

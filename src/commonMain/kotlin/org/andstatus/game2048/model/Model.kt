@@ -22,7 +22,7 @@ class Model(val history: History) {
     val nextComputerPlacedPeace: KorAtomicRef<PlacedPiece?> = korAtomic(null)
 
     fun onAppEntry(): List<Ply> {
-        return if (history.currentGame.id == 0)
+        return if (history.currentGame.isEmpty)
             restart()
         else
             composerPly(history.currentGame.shortRecord.finalPosition, true)

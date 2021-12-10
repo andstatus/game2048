@@ -18,7 +18,7 @@ class PliesPage(
     val pageNumber: Int,
     val firstPlyNumber: Int,
     val count: Int,
-    val iPlies: List<Ply>?
+    iPlies: List<Ply>?
 ) {
 
     val nextPageFirstPlyNumber get() = firstPlyNumber + size
@@ -41,7 +41,7 @@ class PliesPage(
 
     fun load() = pliesLoaded.value.let { if (pliesRef.value != null) this else null }
 
-    val size: Int get() = plies.size
+    val size: Int get() = if (notCompleted) count else plies.size
 
     operator fun get(index: Int): Ply = plies[index]
 
