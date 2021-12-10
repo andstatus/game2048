@@ -29,6 +29,11 @@ class MyStorage(views: Views) {
     }
     operator fun set(key: String, value: Int) = native.set(key, value.toString())
 
+    fun remove(key: String): Boolean = (native.keys().contains(key))
+        .also {
+            if (it) native.remove(key)
+        }
+
     override fun toString(): String =
         "Storage " + (native.getOrNull(keyOpened)?.let { "last opened: $it" } ?: "is new") +
                 "; Storage keys: ${native.keys().sorted()}; Platform:${OS.platformName}"

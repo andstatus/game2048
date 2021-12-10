@@ -1,5 +1,7 @@
 package org.andstatus.game2048.model
 
+import com.soywiz.korio.concurrent.atomic.KorAtomicRef
+import com.soywiz.korio.concurrent.atomic.korAtomic
 import org.andstatus.game2048.Settings
 
 /** @author yvolk@yurivolkov.com */
@@ -17,6 +19,7 @@ class Model(val history: History) {
     val score get() = gamePosition.score
 
     val gameMode: GameMode get() = history.gameMode
+    val nextComputerPlacedPeace: KorAtomicRef<PlacedPiece?> = korAtomic(null)
 
     fun onAppEntry(): List<Ply> {
         return if (history.currentGame.id == 0)
@@ -77,7 +80,7 @@ class Model(val history: History) {
     } ?: emptyList()
 
     fun undoToStart(): List<Ply> {
-        history.historyIndex = 0
+        history.redoPlyPointer = 1
         return composerPly(gamePosition.newEmpty(), true)
     }
 
@@ -90,11 +93,14 @@ class Model(val history: History) {
     } ?: emptyList()
 
     fun redoToCurrent(): List<Ply> {
-        history.historyIndex = -1
+        history.redoPlyPointer = 0
         return composerPly(history.currentGame.shortRecord.finalPosition, true)
     }
 
-    fun randomComputerMove() = gamePosition.randomComputerPly().update()
+    fun randomComputerMove() = (nextComputerPlacedPeace.value?.let {
+        nextComputerPlacedPeace.value = null
+        gamePosition.computerPly(it)
+    } ?: gamePosition.randomComputerPly()).update()
 
     fun computerMove(placedPiece: PlacedPiece) = gamePosition.computerPly(placedPiece).update()
 

@@ -41,8 +41,10 @@ class ShortRecord(val settings: Settings, val board: Board, val note: String, va
         val FILENAME_FORMAT = DateFormat("yyyy-MM-dd-HH-mm")
 
         fun fromId(settings: Settings, id: Int): ShortRecord? =
-            settings.storage.getOrNull(keyGame + id)
+            settings.storage.getOrNull(keyGameRecord(id))
                 ?.let { fromSharedJson(settings, it, id) }
+
+        private fun keyGameRecord(id: Int) = keyGame + id
 
         fun sharedJsonToId(json: String, defaultId: Int): Int = json.asJsonMap()[keyId] as Int? ?: defaultId
 
@@ -60,6 +62,9 @@ class ShortRecord(val settings: Settings, val board: Board, val note: String, va
                 ShortRecord(settings, board, note, newId, start, finalPosition, bookmarks)
             else null
         }
+
+        fun delete(settings: Settings, id: Int): Boolean =
+            settings.storage.remove(keyGameRecord(id))
 
     }
 }

@@ -18,7 +18,7 @@ private const val keyAllowResultingTileToMerge = "allowResultingTileToMerge"
 private const val keyAllowUsersMoveWithoutBlockMoves = "allowUsersMoveWithoutBlockMoves"
 private const val keyAllowUndo = "allowUndo"
 private const val keyMaxMovesToStore = "maxMovesToStore"
-const val keyCurrentGame = "current"
+const val keyCurrentGameId = "current"
 
 /** Game options / tweaks. Default values are for the original game,
 see https://en.wikipedia.org/wiki/2048_(video_game)
@@ -61,7 +61,7 @@ class Settings(private val stage: Stage) {
     }
 
     val currentGameId: Int?
-        get() = storage.getOrNull(keyCurrentGame)
+        get() = storage.getOrNull(keyCurrentGameId)
             ?.let {
                 // TODO: for compatibility with previous versions:
                 if (it.startsWith("{"))

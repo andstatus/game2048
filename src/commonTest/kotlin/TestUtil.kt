@@ -54,7 +54,7 @@ fun ViewData.modelAndViews() =
 fun ViewData.currentGameString(): String = "CurrentGame " + presenter.model.history.currentGame.toLongString()
 
 fun ViewData.historyString(): String = with(presenter.model.history) {
-    "History: index:$historyIndex, moves:${currentGame.gamePlies.size}"
+    "History: index:$redoPlyPointer, moves:${currentGame.gamePlies.size}"
 }
 
 fun ViewData.waitForMainViewShown(action: () -> Any? = { -> null }) {

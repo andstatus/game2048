@@ -18,7 +18,6 @@ class MovesTest : ViewsForTesting(log = true) {
         viewsTest {
             unsetGameView()
             initializeViewDataInTest {
-//                waitFor { -> presenter.boardViews.blocks.isNotEmpty() }
                 assertTrue(presenter.boardViews.blocks.isNotEmpty(), modelAndViews())
 
                 val board = presenter.model.gamePosition.board
@@ -28,7 +27,7 @@ class MovesTest : ViewsForTesting(log = true) {
                 waitForMainViewShown {
                     presenter.composerMove(GamePosition(board))
                 }
-                assertEquals(0, presenter.boardViews.blocks.size, modelAndViews())
+                assertEquals(0, presenter.boardViews.blocks.size, "Empty position. " + modelAndViews())
 
                 val square1 = board.toSquare(1, 1)
                 val piece1 = PlacedPiece(Piece.N2, square1)
@@ -37,14 +36,20 @@ class MovesTest : ViewsForTesting(log = true) {
                 }
                 assertEquals(listOf(Piece.N2), this.blocksAt(square1), modelAndViews())
 
-                val square2 = board.toSquare(1, 2)
+                val square2 = board.toSquare(3, 2)
                 val piece2 = PlacedPiece(Piece.N2, square2)
-                presenter.computerMove(piece2)
+                presenter.model.nextComputerPlacedPeace.value = piece2
+                waitForMainViewShown {
+                    presenter.onSwipe(SwipeDirection.RIGHT)
+                }
+                assertEquals(listOf(Piece.N2), this.blocksAt(board.toSquare(3, 1)), modelAndViews())
                 assertEquals(listOf(Piece.N2), this.blocksAt(square2), modelAndViews())
+
                 val position1 = presenter.model.gamePosition.copy()
                 val piecesOnBoardViews1 = this.presentedPieces()
                 assertEquals(position1.pieces.asList(), piecesOnBoardViews1, modelAndViews())
-                assertEquals(2, position1.plyNumber, modelAndViews())
+                assertEquals(3, position1.plyNumber, modelAndViews())
+
                 waitForMainViewShown {
                     presenter.onBookmarkClick()
                 }
@@ -53,27 +58,34 @@ class MovesTest : ViewsForTesting(log = true) {
                     presenter.model.history.currentGame.shortRecord.bookmarks[0].plyNumber,
                     modelAndViews()
                 )
-                presenter.onSwipe(SwipeDirection.BOTTOM)
-                assertEquals(listOf(Piece.N4), this.blocksAt(board.toSquare(1, 3)), modelAndViews())
+
+                waitForMainViewShown {
+                    presenter.onSwipe(SwipeDirection.BOTTOM)
+                }
+                assertEquals(listOf(Piece.N4), this.blocksAt(board.toSquare(3, 3)), modelAndViews())
                 assertEquals(2, presenter.boardViews.blocks.size, modelAndViews())
                 val position2 = presenter.model.gamePosition.copy()
                 val piecesOnBoardViews2 = this.presentedPieces()
                 assertEquals(2, position2.score, modelAndViews())
                 assertEquals(position2.pieces.asList(), piecesOnBoardViews2, modelAndViews())
                 assertTrue(presenter.canUndo(), this.historyString())
+
                 waitForMainViewShown {
                     presenter.onUndoClick()
                 }
                 val position3 = presenter.model.gamePosition.copy()
-                assertEquals(position1.pieces.asList(), position3.pieces.asList(), "Board after undo")
+                assertEquals(position1.pieces.asList(), position3.pieces.asList(), "Board after undo\n" +
+                    "Previous :" + position2.pieces.asList())
                 val piecesOnBoardViews3 = this.presentedPieces()
                 assertEquals(position3.pieces.asList(), piecesOnBoardViews3, "Board views after undo")
                 assertTrue(presenter.canRedo(), this.historyString())
+
                 waitForMainViewShown {
                     presenter.onRedoClick()
                 }
                 val position4 = presenter.model.gamePosition.copy()
-                assertEquals(position2.pieces.asList(), position4.pieces.asList(), "Board after redo")
+                assertEquals(position2.pieces.asList(), position4.pieces.asList(), "Board after redo\n" +
+                        "Previous :" + position3.pieces.asList())
                 val piecesOnBoardViews4 = this.presentedPieces()
                 assertEquals(position4.pieces.asList(), piecesOnBoardViews4, "Board views after redo")
                 assertFalse(presenter.canRedo(), this.historyString())

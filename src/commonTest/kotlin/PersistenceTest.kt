@@ -34,7 +34,6 @@ class PersistenceTest : ViewsForTesting(log = true) {
             initializeViewDataInTest {
                 persistGameRecordTest(history)
                 assertTestHistory(history)
-                restartTest()
                 testWasExecuted.value = true
             }
         }
@@ -120,25 +119,5 @@ class PersistenceTest : ViewsForTesting(log = true) {
         assertEquals(expected.currentGame.toSharedJson(), actualGame.toSharedJson(), modelAndViews())
         assertTrue(presenter.canUndo(), modelAndViews())
         assertFalse(presenter.canRedo(), modelAndViews())
-    }
-
-    private fun ViewData.restartTest() {
-        presenter.computerMove()
-        presenter.computerMove()
-        assertTrue(presenter.boardViews.blocks.size > 1, modelAndViews())
-        assertTrue(presenter.model.history.currentGame.isReady, currentGameString())
-        assertTrue(presenter.model.history.currentGame.gamePlies.size > 1, currentGameString())
-
-        waitForMainViewShown {
-            presenter.onRestartClick()
-        }
-
-        assertEquals(1, presenter.boardViews.blocks.size, modelAndViews())
-        assertEquals( 1, presenter.model.gamePosition.pieces.count { it != null }, modelAndViews())
-        assertEquals(1, presenter.model.history.currentGame.gamePlies.size, currentGameString())
-
-        presenter.computerMove()
-        assertEquals(2, presenter.model.gamePosition.pieces.count { it != null }, modelAndViews())
-        assertEquals(2, presenter.model.history.currentGame.gamePlies.size, currentGameString())
     }
 }

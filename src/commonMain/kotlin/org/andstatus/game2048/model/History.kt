@@ -8,7 +8,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.gameIsLoading
-import org.andstatus.game2048.keyCurrentGame
+import org.andstatus.game2048.keyCurrentGameId
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.myMeasuredIt
@@ -19,22 +19,26 @@ private val gameIdsRange = 1..60
 private const val maxOlderGames = 30
 
 /** @author yvolk@yurivolkov.com */
-class History(val settings: Settings,
-              var currentGameIn: GameRecord?,
-              var recentGames: List<ShortRecord> = emptyList()) {
+class History(
+    val settings: Settings,
+    currentGameIn: GameRecord?,
+    var recentGames: List<ShortRecord> = emptyList()
+) {
     private val keyBest = "best"
     var currentGame: GameRecord = currentGameIn
         ?: GameRecord.newWithPositionAndPlies(
-            settings, GamePosition(settings.defaultBoard), idForNewGame(), emptyList(), emptyList())
+            settings, GamePosition(settings.defaultBoard), idForNewGame(), emptyList(), emptyList()
+        )
 
     // 1. Info on previous games
     var bestScore: Int = settings.storage.getOrNull(keyBest)?.toInt() ?: 0
 
     // 2. This game, see for the inspiration https://en.wikipedia.org/wiki/Portable_Game_Notation
-    var historyIndex = -1
+    /** 0 means that the pointer is turned off */
+    var redoPlyPointer: Int = 0
     val gameMode: GameMode = GameMode().apply {
         modeEnum = GameModeEnum.fromId(settings.storage.getOrNull(keyGameMode) ?: "").let {
-            when(it) {
+            when (it) {
                 GameModeEnum.AI_PLAY, GameModeEnum.PLAY -> GameModeEnum.PLAY
                 else -> GameModeEnum.STOP
             }
@@ -80,7 +84,7 @@ class History(val settings: Settings,
                 it.id = id
             }
             currentGame = it
-            settings.storage[keyCurrentGame] = currentGame.id
+            settings.storage[keyCurrentGameId] = currentGame.id
             gameMode.modeEnum = GameModeEnum.STOP
         }
         ?: run {
@@ -90,24 +94,16 @@ class History(val settings: Settings,
 
     fun saveCurrent(coroutineScope: CoroutineScope): History {
         settings.storage[keyGameMode] = gameMode.modeEnum.id
-        // TODO: id > 0 below
-        val isNew = currentGame.id <= 0
-
-        if (isNew && currentGame.score < 1) {
-            // Store only the latest game without score
-            recentGames.filter { it.finalPosition.score < 1 }.forEach {
-                settings.storage.native.remove(keyGame + it.id)
-            }
+        if (currentGame.id <= 0) {
+            myLog("Nothing to save $currentGame")
+            return this
         }
 
-        val idToStore = if (isNew) idForNewGame().also {
-            currentGame.id = it
-        } else currentGame.id
-        settings.storage[keyCurrentGame] = currentGame.id
+        settings.storage[keyCurrentGameId] = currentGame.id
         val game = currentGame
 
         coroutineScope.launch {
-            myMeasuredIt((if (isNew) "New" else "Old") + " game saved") {
+            myMeasuredIt("Game ${game.id} saved") {
                 updateBestScore()
                 game.save()
                 gameIsLoading.compareAndSet(true, false)
@@ -125,22 +121,21 @@ class History(val settings: Settings,
         }
     }
 
-    fun idForNewGame(): Int {
-        val maxGames = gameIdsRange.last
-        if (recentGames.size > maxOlderGames) {
-            val keepAfter = DateTimeTz.nowLocal().minus(1.weeks)
-            val olderGames = recentGames.filter { it.finalPosition.startingDateTime < keepAfter }
-            val id = when {
-                olderGames.size > 20 -> olderGames.minByOrNull { it.finalPosition.score }?.id
-                recentGames.size >= maxGames -> recentGames.minByOrNull { it.finalPosition.score }?.id
-                else -> null
-            }
-            if (id != null) return id
+    fun idForNewGame(): Int = (idToDelete() ?: unusedGameId()).also { GameRecord.delete(settings, it) }
+
+    private fun idToDelete() = if (recentGames.size > maxOlderGames) {
+        val keepAfter = DateTimeTz.nowLocal().minus(1.weeks)
+        val olderGames = recentGames.filter { it.finalPosition.startingDateTime < keepAfter }
+        when {
+            olderGames.size > 20 -> olderGames.minByOrNull { it.finalPosition.score }?.id
+            recentGames.size >= gameIdsRange.last -> recentGames.minByOrNull { it.finalPosition.score }?.id
+            else -> null
         }
-        return (gameIdsRange.find { id -> recentGames.none { it.id == id } }
-            ?: recentGames.minByOrNull { it.finalPosition.startingDateTime }?.id
-            ?: gameIdsRange.first)
-    }
+    } else null
+
+    private fun unusedGameId() = (gameIdsRange.find { id -> recentGames.none { it.id == id } }
+        ?: recentGames.minByOrNull { it.finalPosition.startingDateTime }?.id
+        ?: gameIdsRange.first)
 
     fun deleteCurrent() {
         if (currentGame.id == 0) return
@@ -149,10 +144,10 @@ class History(val settings: Settings,
         loadRecentGames()
     }
 
-    private val currentPly: Ply?
+    private val plyToRedo: Ply?
         get() = when {
-            historyIndex < 0 || historyIndex >= currentGame.gamePlies.size -> null
-            else -> currentGame.gamePlies[historyIndex]
+            redoPlyPointer < 1 || redoPlyPointer > currentGame.gamePlies.size -> null
+            else -> currentGame.gamePlies[redoPlyPointer]
         }
 
     fun add(position: GamePosition) {
@@ -164,25 +159,25 @@ class History(val settings: Settings,
             }
             else -> {
                 val bookmarksNew = when {
-                    historyIndex < 0 -> {
+                    redoPlyPointer < 1 -> {
                         currentGame.shortRecord.bookmarks
                     }
-                    historyIndex == 0 -> {
+                    redoPlyPointer == 1 -> {
                         emptyList()
                     }
                     else -> {
-                        currentGame.shortRecord.bookmarks.filterNot { it.plyNumber > historyIndex }
+                        currentGame.shortRecord.bookmarks.filterNot { it.plyNumber >= redoPlyPointer }
                     }
                 }
                 val gamePliesNew = when {
-                    historyIndex < 0 -> {
+                    redoPlyPointer < 1 -> {
                         currentGame.gamePlies
                     }
-                    historyIndex == 0 -> {
+                    redoPlyPointer == 1 -> {
                         GamePlies(currentGame.shortRecord)
                     }
                     else -> {
-                        currentGame.gamePlies.take(historyIndex)
+                        currentGame.gamePlies.take(redoPlyPointer - 1)
                     }
                 } + position.prevPly
                 with(currentGame.shortRecord) {
@@ -191,7 +186,7 @@ class History(val settings: Settings,
             }
         }
         updateBestScore()
-        historyIndex = -1
+        redoPlyPointer = 0
     }
 
     fun createBookmark(gamePosition: GamePosition) {
@@ -199,10 +194,10 @@ class History(val settings: Settings,
 
         currentGame = with(currentGame.shortRecord) {
             GameRecord(
-                    ShortRecord(settings, board, note, id, start, finalPosition,
-                            bookmarks.filter { it.plyNumber != gamePosition.plyNumber } +
-                                    gamePosition.copy()),
-                    currentGame.gamePlies
+                ShortRecord(settings, board, note, id, start, finalPosition,
+                    bookmarks.filter { it.plyNumber != gamePosition.plyNumber } +
+                            gamePosition.copy()),
+                currentGame.gamePlies
             )
         }
     }
@@ -221,38 +216,39 @@ class History(val settings: Settings,
 
     fun canUndo(): Boolean = currentGame.isReady &&
             settings.allowUndo &&
-            historyIndex != 0 && historyIndex != 1 &&
+            redoPlyPointer != 1 && redoPlyPointer != 2 &&
             currentGame.gamePlies.size > 1 &&
             currentGame.gamePlies.lastOrNull()?.player == PlayerEnum.COMPUTER
 
     fun undo(): Ply? {
         if (!canUndo()) {
             return null
-        } else if (historyIndex < 0 && currentGame.gamePlies.isNotEmpty()) {
-            historyIndex = currentGame.gamePlies.size - 1
-        } else if (historyIndex > 0 && historyIndex < currentGame.gamePlies.size)
-            historyIndex--
+        } else if (redoPlyPointer < 1 && currentGame.gamePlies.isNotEmpty()) {
+            // Point to the last ply
+            redoPlyPointer = currentGame.gamePlies.size
+        } else if (redoPlyPointer > 1 && redoPlyPointer <= currentGame.gamePlies.size + 1)
+            redoPlyPointer--
         else {
             return null
         }
-        return currentPly
+        return plyToRedo
     }
 
     fun canRedo(): Boolean {
-        return currentGame.isReady &&  historyIndex >= 0 && historyIndex < currentGame.gamePlies.size
+        return currentGame.isReady && redoPlyPointer > 0 && redoPlyPointer <= currentGame.gamePlies.size
     }
 
     fun redo(): Ply? {
         if (canRedo()) {
-            return currentPly?.also {
-                if (historyIndex < currentGame.gamePlies.size - 1)
-                    historyIndex++
+            return plyToRedo?.also {
+                if (redoPlyPointer < currentGame.gamePlies.size)
+                    redoPlyPointer++
                 else {
-                    historyIndex = -1
+                    redoPlyPointer = 0
                 }
             }
         }
-        historyIndex = -1
+        redoPlyPointer = 0
         return null
     }
 
@@ -260,9 +256,9 @@ class History(val settings: Settings,
         if (currentGame.notCompleted) return
 
         if (position.plyNumber >= currentGame.shortRecord.finalPosition.plyNumber) {
-            historyIndex = -1
+            redoPlyPointer = 0
         } else {
-            historyIndex = position.plyNumber
+            redoPlyPointer = position.plyNumber + 1
         }
     }
 }

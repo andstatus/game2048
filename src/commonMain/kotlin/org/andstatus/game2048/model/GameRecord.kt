@@ -45,8 +45,13 @@ class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
         fun fromSharedJson(settings: Settings, json: String, newId: Int): GameRecord? {
             myLog("Game fromSharedJson newId:$newId, length:${json.length} ${json.substring(0..200)}...")
             return ShortRecord.fromSharedJson(settings, json, newId)?.let { shortRecord ->
-                GameRecord(shortRecord, GamePlies.fromSharedJson(json, shortRecord))
+                GameRecord(shortRecord, GamePlies.fromSharedJson(shortRecord, json))
             }
+        }
+
+        fun delete(settings: Settings, id: Int): Boolean {
+            GamePlies.delete(settings, id)
+            return ShortRecord.delete(settings, id)
         }
     }
 
