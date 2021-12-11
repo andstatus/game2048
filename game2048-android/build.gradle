@@ -4,8 +4,8 @@ buildscript {
 		mavenCentral()
 	}
     dependencies {
-		classpath 'com.android.tools.build:gradle:7.0.3';
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.0-RC2' }
+		classpath 'com.android.tools.build:gradle:7.0.4';
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.0' }
 
 }
 
@@ -96,18 +96,20 @@ if (project.hasProperty("andstatus.google-play-publisher")
 }
 
 dependencies {
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.0-RC2'
-    implementation 'com.soywiz.korlibs.klock:klock-android:2.4.8'
-    implementation 'com.soywiz.korlibs.kmem:kmem-android:2.4.8'
-    implementation 'com.soywiz.korlibs.kds:kds-android:2.4.8'
-    implementation 'com.soywiz.korlibs.krypto:krypto-android:2.4.8'
-    implementation 'com.soywiz.korlibs.korge2:korge-android:2.4.8'
-    implementation 'com.soywiz.korlibs.korma:korma-android:2.4.8'
-    implementation 'com.soywiz.korlibs.korio:korio-android:2.4.8'
-    implementation 'com.soywiz.korlibs.korim:korim-android:2.4.8'
-    implementation 'com.soywiz.korlibs.korau:korau-android:2.4.8'
-    implementation 'com.soywiz.korlibs.korgw:korgw-android:2.4.8'
-    implementation 'com.soywiz.korlibs.korinject:korinject-android:2.4.8'
-    implementation 'com.soywiz.korlibs.klogger:klogger-android:2.4.8'
-    implementation 'com.soywiz.korlibs.korte:korte-android:2.4.8'
+    def korgeVersion = '2.4.8'
+
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.0'
+    implementation "com.soywiz.korlibs.klock:klock-android:$korgeVersion"
+    implementation "com.soywiz.korlibs.kmem:kmem-android:$korgeVersion"
+    implementation "com.soywiz.korlibs.kds:kds-android:$korgeVersion"
+    implementation "com.soywiz.korlibs.krypto:krypto-android:$korgeVersion"
+    implementation "com.soywiz.korlibs.korge2:korge-android:$korgeVersion"
+    implementation "com.soywiz.korlibs.korma:korma-android:$korgeVersion"
+    implementation "com.soywiz.korlibs.korio:korio-android:$korgeVersion"
+    implementation "com.soywiz.korlibs.korim:korim-android:$korgeVersion"
+    implementation "com.soywiz.korlibs.korau:korau-android:$korgeVersion"
+    implementation "com.soywiz.korlibs.korgw:korgw-android:$korgeVersion"
+    implementation "com.soywiz.korlibs.korinject:korinject-android:$korgeVersion"
+    implementation "com.soywiz.korlibs.klogger:klogger-android:$korgeVersion"
+    implementation "com.soywiz.korlibs.korte:korte-android:$korgeVersion"
 }
