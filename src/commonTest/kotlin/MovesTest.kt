@@ -18,7 +18,9 @@ class MovesTest : ViewsForTesting(log = true) {
         viewsTest {
             unsetGameView()
             initializeViewDataInTest {
-                assertTrue(presenter.boardViews.blocks.isNotEmpty(), modelAndViews())
+                waitFor("Block is on board") {
+                    presenter.boardViews.blocks.isNotEmpty()
+                }
 
                 val board = presenter.model.gamePosition.board
                 waitForMainViewShown {

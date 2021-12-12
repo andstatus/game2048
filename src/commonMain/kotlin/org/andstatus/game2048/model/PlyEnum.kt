@@ -1,14 +1,16 @@
 package org.andstatus.game2048.model
 
-enum class PlyEnum(val id: String, val symbol: String) {
-    LEFT("left", "←"),
-    RIGHT("right", "→"),
-    UP("up", "↑"),
-    DOWN("down", "↓"),
-    PLACE("place", ""),
-    LOAD("load", ""),
-    DELAY("delay", ""),
-    EMPTY("empty", ""),
+import com.soywiz.korge.input.SwipeDirection
+
+enum class PlyEnum(val id: String, val symbol: String, val swipeDirection: SwipeDirection?) {
+    LEFT("left", "←", SwipeDirection.LEFT),
+    RIGHT("right", "→", SwipeDirection.RIGHT),
+    UP("up", "↑", SwipeDirection.TOP),
+    DOWN("down", "↓", SwipeDirection.BOTTOM),
+    PLACE("place", "", null),
+    LOAD("load", "", null),
+    DELAY("delay", "", null),
+    EMPTY("empty", "", null),
     ;
 
     fun isEmpty() = this == EMPTY

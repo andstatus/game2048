@@ -66,7 +66,10 @@ fun ViewData.waitForMainViewShown(action: () -> Any? = { -> null }) {
 fun waitFor(message: String = "???", condition: () -> Boolean) {
     val stopWatch = Stopwatch().start()
     while (stopWatch.elapsed.seconds < 20) {
-        if (condition()) return
+        if (condition()) {
+            myLog("Success waiting for: $message")
+            return
+        }
         Thread_sleep(50)
     }
     throw AssertionError("Condition wasn't met after timeout: $message")

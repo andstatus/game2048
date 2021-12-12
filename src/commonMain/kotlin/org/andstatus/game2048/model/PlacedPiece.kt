@@ -11,7 +11,7 @@ data class PlacedPiece(val piece: Piece, val square: Square) {
 
     companion object {
         fun fromJson(board: Board, json: Any): PlacedPiece? {
-            val aMap: Map<String, Any> = json.asJsonMap()
+            val aMap: Map<String, Any> = json.parseJsonMap()
             val piece = aMap[keyPiece]?.let { Piece.fromId(it as Int) }
             val square = aMap[keySquare]?.let { Square.fromJson(board, it) }
             return if (piece != null && square != null)

@@ -88,8 +88,8 @@ class PliesPage(
                 PliesPage(shortRecord, pageNumber, plyNumber, it.size, it)
             }.apply { load() }
 
-        fun fromId(shortRecord: ShortRecord, pageNumberIn: Int, headerJson: String): PliesPage =
-            headerJson.asJsonMap().let {
+        fun fromId(shortRecord: ShortRecord, pageNumberIn: Int, jsonHeader: Any): PliesPage =
+            jsonHeader.parseJsonMap().let {
                 val pageNumber: Int = it[keyPageNumber] as Int? ?: 0
                 val plyNumber: Int = it[keyFirstPlyNumber] as Int? ?: 0
                 val count: Int = it[keyCount] as Int? ?: 0

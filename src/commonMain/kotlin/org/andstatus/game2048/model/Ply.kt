@@ -40,11 +40,11 @@ data class Ply(val player: PlayerEnum, val plyEnum: PlyEnum, val seconds: Int, v
                 Ply(PlayerEnum.COMPOSER, PlyEnum.DELAY, 0, listOf(PieceMoveDelay(delayMs)))
 
         fun fromJson(board: Board, json: Any): Ply? {
-            val aMap: Map<String, Any> = json.asJsonMap()
+            val aMap: Map<String, Any> = json.parseJsonMap()
             val player = (aMap[keyPlayerEnum] ?: aMap[keyPlayerEnumV1])?.let { PlayerEnum.fromId(it.toString()) }
             val plyEnum = (aMap[keyPlyEnum] ?: aMap[keyPlyEnumV1])?.let { PlyEnum.fromId(it.toString()) }
             val seconds: Int = aMap[keySeconds] as Int? ?: 0
-            val pieceMoves: List<PieceMove>? = aMap[keyMoves]?.asJsonArray()?.mapNotNull { PieceMove.fromJson(board, it) }
+            val pieceMoves: List<PieceMove>? = aMap[keyMoves]?.parseJsonArray()?.mapNotNull { PieceMove.fromJson(board, it) }
             return if (player != null && plyEnum != null && pieceMoves != null)
                 Ply(player, plyEnum, seconds, pieceMoves)
             else

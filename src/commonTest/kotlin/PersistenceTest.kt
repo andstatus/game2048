@@ -131,10 +131,10 @@ class PersistenceTest : ViewsForTesting(log = true) {
 
     private fun ViewData.assertTestHistory(expected: GameRecord) {
         val actualGame = presenter.model.history.currentGame.load()
-        assertEquals(expected.gamePlies.toLongString(), actualGame.gamePlies.toLongString(), modelAndViews())
-        assertEquals(expected.score, actualGame.score, modelAndViews())
-        assertEquals(expected.shortRecord.bookmarks.size, actualGame.shortRecord.bookmarks.size, modelAndViews())
-        assertEquals(expected.toSharedJson(), actualGame.toSharedJson(), modelAndViews())
+        assertEquals(expected.gamePlies.toLongString(), actualGame.gamePlies.toLongString(), currentGameString())
+        assertEquals(expected.score, actualGame.score, currentGameString())
+        assertEquals(expected.shortRecord.bookmarks.size, actualGame.shortRecord.bookmarks.size, currentGameString())
+        assertEquals(expected.toSharedJson(), actualGame.toSharedJson(), currentGameString())
         assertTrue(presenter.canUndo(), modelAndViews() + "\n" + currentGameString())
         assertFalse(presenter.canRedo(), modelAndViews() + "\n" + currentGameString())
     }

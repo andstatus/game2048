@@ -31,7 +31,7 @@ data class Square(val x: Int, val y: Int) {
 
     companion object {
         fun fromJson(board: Board, json: Any): Square? {
-            val aMap: Map<String, Any> = json.asJsonMap()
+            val aMap: Map<String, Any> = json.parseJsonMap()
             val x = aMap[keyX] as Int?
             val y = aMap[keyY] as Int?
             return if (x != null && x >= 0 && y != null && y >= 0)

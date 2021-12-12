@@ -21,7 +21,7 @@ class AiPlayer(val settings: Settings) {
 
     fun nextPly(position: GamePosition): AiResult = Stopwatch().start().let { stopWatch ->
         when (settings.aiAlgorithm) {
-            AiAlgorithm.RANDOM -> AiResult(allowedRandomMove(position))
+            AiAlgorithm.RANDOM -> AiResult(allowedRandomPly(position))
             AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> moveWithMaxScore(position)
             AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(position, 12, 5)
             AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(position, 12, 5)
@@ -156,7 +156,7 @@ class AiPlayer(val settings: Settings) {
     private fun playRandomTillEnd(positionIn: GamePosition): GamePosition {
         var position = positionIn
         do {
-            position = allowedRandomMove(position)
+            position = allowedRandomPly(position)
             if (position.prevPly.isNotEmpty()) {
                 position = position.randomComputerPly()
             }
@@ -171,13 +171,14 @@ class AiPlayer(val settings: Settings) {
                 ?.let { FirstMove(plyEnum, listOf(it)) }
         }
 
-    private fun allowedRandomMove(position: GamePosition): GamePosition {
-        UserPlies.shuffled().forEach {
-            position.calcUserPly(it).also {
-                if (it.prevPly.isNotEmpty()) return it
+    companion object {
+        fun allowedRandomPly(position: GamePosition): GamePosition {
+            UserPlies.shuffled().forEach {
+                position.calcUserPly(it).also {
+                    if (it.prevPly.isNotEmpty()) return it
+                }
             }
+            return position.noPly()
         }
-        return position.noPly()
     }
-
 }

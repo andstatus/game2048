@@ -50,16 +50,16 @@ class ShortRecord(val settings: Settings, val board: Board, val note: String, va
 
         private fun keyGameRecord(id: Int) = keyGame + id
 
-        fun sharedJsonToId(json: String, defaultId: Int): Int = json.asJsonMap()[keyId] as Int? ?: defaultId
+        fun sharedJsonToId(json: String, defaultId: Int): Int = json.parseJsonMap()[keyId] as Int? ?: defaultId
 
         fun fromSharedJson(settings: Settings, json: String, newId: Int): ShortRecord? {
-            val aMap = json.asJsonMap()
+            val aMap = json.parseJsonMap()
             val board = settings.defaultBoard // TODO Create / load here
             val note: String = aMap[keyNote] as String? ?: ""
             val start: DateTimeTz? = aMap[keyStart]?.let { DateTime.parse(it as String) }
             val finalPosition: GamePosition? = aMap[keyFinalPosition]
                 ?.let { GamePosition.fromJson(board, it) }
-            val bookmarks: List<GamePosition> = aMap[keyBookmarks]?.asJsonArray()
+            val bookmarks: List<GamePosition> = aMap[keyBookmarks]?.parseJsonArray()
                 ?.mapNotNull { GamePosition.fromJson(board, it) }
                 ?: emptyList()
             return if (start != null && finalPosition != null)

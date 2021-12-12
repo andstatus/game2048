@@ -4,7 +4,7 @@ import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.util.StrReader
 import org.andstatus.game2048.myLog
 
-fun Any.asJsonArray(): List<Any> = try {
+fun Any.parseJsonArray(): List<Any> = try {
     when (this) {
         is String -> Json.parse(this)
         else -> this
@@ -15,10 +15,11 @@ fun Any.asJsonArray(): List<Any> = try {
         }
     }
 } catch (e: Exception) {
+    myLog("asJsonArray failed: '${this.toString().take(200)}': $e")
     emptyList()
 }
 
-fun Any.asJsonMap(): Map<String, Any> =
+fun Any.parseJsonMap(): Map<String, Any> =
     @Suppress("UNCHECKED_CAST")
     when (this) {
         is String -> try {

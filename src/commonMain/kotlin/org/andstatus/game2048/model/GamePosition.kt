@@ -44,8 +44,8 @@ class GamePosition(val board: Board,
         }
 
         fun fromJson(board: Board, json: Any): GamePosition? {
-            val aMap: Map<String, Any> = json.asJsonMap()
-            val pieces: Array<Piece?>? = aMap[keyPieces]?.asJsonArray()
+            val aMap: Map<String, Any> = json.parseJsonMap()
+            val pieces: Array<Piece?>? = aMap[keyPieces]?.parseJsonArray()
                 ?.map { Piece.fromId(it as Int) }?.toTypedArray()
             val size: Int = pieces?.size ?: 0
             val score: Int? = aMap[keyScore] as Int?

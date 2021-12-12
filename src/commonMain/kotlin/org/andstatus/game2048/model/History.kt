@@ -30,7 +30,7 @@ class History(
     val currentGame: GameRecord get() = currentGameRef.value ?: newEmptyGame.also {
         currentGameRef.value = it
     }
-    val newEmptyGame = GameRecord.newEmpty(settings, idForNewGame())
+    val newEmptyGame get() = GameRecord.newEmpty(settings, idForNewGame()).load()
 
     // 1. Info on previous games
     var bestScore: Int = settings.storage.getOrNull(keyBest)?.toInt() ?: 0

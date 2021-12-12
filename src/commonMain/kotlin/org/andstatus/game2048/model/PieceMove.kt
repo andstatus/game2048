@@ -36,7 +36,7 @@ sealed class PieceMove(val pieceMoveEnum: PieceMoveEnum) {
 
     companion object {
         fun fromJson(board: Board, json: Any): PieceMove? {
-            val aMap: Map<String, Any> = json.asJsonMap()
+            val aMap: Map<String, Any> = json.parseJsonMap()
             val moveEnum = (aMap[keyPieceMoveEnum] ?: aMap[keyPieceMoveEnumV1])?.let { PieceMoveEnum.fromId(it as String) }
             return when(moveEnum) {
                 PieceMoveEnum.ONE -> {

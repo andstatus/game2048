@@ -1,6 +1,7 @@
 package org.andstatus.game2048.model
 
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
+import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.util.StrReader
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.initAtomicReference
@@ -27,7 +28,9 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
 
     val notCompleted: Boolean get() = !pliesLoaded.isInitialized()
     private val pliesLoaded: Lazy<Boolean> = lazy {
-        if (reader != null) {
+        if (reader == null) {
+            pages.forEach { it.load() }
+        } else {
             var pageNumber = 1
             var plyNumber = 1
             while (reader.hasMore) {
@@ -81,7 +84,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
 
     fun save() {
         shortRecord.settings.storage[keyHead(shortRecord.id)] =
-            pages.map { it.toHeaderMap() }.asJsonArray().toString()
+            pages.map { it.toHeaderMap() }.let(Json::stringify)
         pages.forEach { it.save() }
     }
 
@@ -98,10 +101,9 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
     companion object {
 
         fun fromId(shortRecord: ShortRecord): GamePlies =
-            shortRecord.settings.storage.getOrNull(keyHead(shortRecord.id))?.asJsonArray()
-                ?.mapIndexed { index, headerJson ->
-                    PliesPage.fromId(shortRecord, index + 1, headerJson as String)
-                }
+            shortRecord.settings.storage.getOrNull(keyHead(shortRecord.id))
+                ?.parseJsonArray()
+                ?.mapIndexed { index, header -> PliesPage.fromId(shortRecord, index + 1, header) }
                 ?.let { GamePlies(shortRecord, it) }
                 ?: shortRecord.settings.storage.getOrNull(keyGame + shortRecord.id)?.let {
                     fromSharedJson(shortRecord, it)
@@ -145,10 +147,10 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
 
         fun fromSharedJson(shortRecord: ShortRecord, json: String): GamePlies {
             val reader = StrReader(json)
-            val aMap: Map<String, Any> = reader.asJsonMap()
+            val aMap: Map<String, Any> = reader.parseJsonMap()
             return if (aMap.containsKey(keyPlayersMoves)) {
                 // TODO: For compatibility with previous versions
-                (aMap[keyPlayersMoves]?.asJsonArray()
+                (aMap[keyPlayersMoves]?.parseJsonArray()
                     ?.mapNotNull { Ply.fromJson(shortRecord.board, it) }
                     ?: emptyList())
                     .let { fromPlies(shortRecord, it) }

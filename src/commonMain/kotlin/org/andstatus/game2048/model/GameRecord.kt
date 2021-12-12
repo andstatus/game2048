@@ -25,7 +25,7 @@ class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
     val isReady: Boolean get() = !notCompleted
     val notCompleted: Boolean get() = gamePlies.notCompleted
 
-    fun toLongString(): String = toString() + gamePlies.toLongString()
+    fun toLongString(): String = "$shortRecord, " + gamePlies.toLongString()
 
     override fun toString(): String = "$shortRecord, " + gamePlies.toShortString()
 
