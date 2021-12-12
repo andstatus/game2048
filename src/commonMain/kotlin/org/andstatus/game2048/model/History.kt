@@ -148,6 +148,7 @@ class History(
 
     fun deleteCurrent() {
         GameRecord.delete(settings, currentGame.id)
+        currentGameRef.value = null
         loadRecentGames()
     }
 

@@ -86,7 +86,7 @@ class PliesPage(
         fun fromSharedJson(shortRecord: ShortRecord, pageNumber: Int, plyNumber: Int, reader: StrReader?): PliesPage =
             readPlies(shortRecord, pageNumber, reader, false).let {
                 PliesPage(shortRecord, pageNumber, plyNumber, it.size, it)
-            }
+            }.apply { load() }
 
         fun fromId(shortRecord: ShortRecord, pageNumberIn: Int, headerJson: String): PliesPage =
             headerJson.asJsonMap().let {
@@ -104,9 +104,9 @@ class PliesPage(
             readAll: Boolean
         ): List<Ply> {
             val list: MutableList<Ply> = ArrayList()
-            if (reader != null && reader.hasMore && (readAll || list.size < shortRecord.settings.pliesPageSize)) {
+            if (reader != null && reader.hasMore) {
                 try {
-                    while (reader.hasMore) {
+                    while (reader.hasMore && (readAll || list.size < shortRecord.settings.pliesPageSize)) {
                         Json.parse(reader)
                             ?.let { Ply.fromJson(shortRecord.board, it) }
                             ?.let { list.add(it) }

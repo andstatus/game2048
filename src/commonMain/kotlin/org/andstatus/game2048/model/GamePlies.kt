@@ -5,6 +5,7 @@ import com.soywiz.korio.util.StrReader
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.initAtomicReference
 import org.andstatus.game2048.model.PliesPage.Companion.keyPliesPage
+import org.andstatus.game2048.myLog
 
 private const val keyPliesHead = "pliesHead"
 private const val keyPlayersMoves = "playersMoves"
@@ -13,8 +14,10 @@ private const val keyPlayersMoves = "playersMoves"
 class GamePlies(private val shortRecord: ShortRecord, private val reader: StrReader? = null) {
 
     private constructor(shortRecord: ShortRecord, pages: List<PliesPage>) : this(shortRecord, null) {
-        if (pages.isNotEmpty()) pagesRef.value = pages
-        load()
+        if (pages.isNotEmpty()) {
+            pagesRef.value = pages
+            load()
+        }
     }
 
     private val emptyFirstPage = PliesPage(shortRecord, 1, 1, 0, null)
@@ -34,7 +37,6 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
                 plyNumber += page.size
             }
         }
-        pages.forEach { it.load() }
         true
     }
 
@@ -95,13 +97,13 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
 
     companion object {
 
-        fun fromId(settings: Settings, shortRecord: ShortRecord): GamePlies =
-            settings.storage.getOrNull(keyHead(shortRecord.id))?.asJsonArray()
-                ?.mapIndexed { index, any ->
-                    PliesPage.fromId(shortRecord, index + 1, any as String)
+        fun fromId(shortRecord: ShortRecord): GamePlies =
+            shortRecord.settings.storage.getOrNull(keyHead(shortRecord.id))?.asJsonArray()
+                ?.mapIndexed { index, headerJson ->
+                    PliesPage.fromId(shortRecord, index + 1, headerJson as String)
                 }
                 ?.let { GamePlies(shortRecord, it) }
-                ?: settings.storage.getOrNull(keyGame + shortRecord.id)?.let {
+                ?: shortRecord.settings.storage.getOrNull(keyGame + shortRecord.id)?.let {
                     fromSharedJson(shortRecord, it)
                 }
                 ?: GamePlies(shortRecord, null)
@@ -113,7 +115,8 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
             while(index < plies.size) {
                 when {
                     plies.size - index <= shortRecord.settings.pliesPageSize -> {
-                        PliesPage(shortRecord, pages.size + 1, firstPlyNumber, plies.size, plies)
+                        PliesPage(shortRecord, pages.size + 1, firstPlyNumber,
+                            plies.size - index, plies.drop(index))
                     }
                     else -> {
                         PliesPage(shortRecord, pages.size + 1, firstPlyNumber,
@@ -126,24 +129,30 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
                     pages = pages + it
                 }
             }
-            return GamePlies(shortRecord, pages).let {
-                it.save()
-                if (it.pages.size > 1)
-                    // Effectively free memory of previous pages
-                    fromId(shortRecord.settings, shortRecord)
-                else it
+            return GamePlies(shortRecord, pages).let { gamePlies1 ->
+                myLog("Loaded ${gamePlies1.toShortString()}")
+                gamePlies1.save()
+                when{
+                    (gamePlies1.pages.size > 1) ->
+                            // Effectively free memory of previous pages
+                            fromId(shortRecord).also { gamePlies ->
+                                myLog("Reloaded multipage ${gamePlies.toShortString()}")
+                            }
+                    else -> gamePlies1
+                }
             }
         }
 
         fun fromSharedJson(shortRecord: ShortRecord, json: String): GamePlies {
             val reader = StrReader(json)
             val aMap: Map<String, Any> = reader.asJsonMap()
-            return if (aMap.containsKey(keyPlayersMoves))
-            // TODO: For compatibility with previous versions
+            return if (aMap.containsKey(keyPlayersMoves)) {
+                // TODO: For compatibility with previous versions
                 (aMap[keyPlayersMoves]?.asJsonArray()
                     ?.mapNotNull { Ply.fromJson(shortRecord.board, it) }
                     ?: emptyList())
                     .let { fromPlies(shortRecord, it) }
+            }
             else {
                 GamePlies(shortRecord, reader)
             }.also {

@@ -45,7 +45,7 @@ class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
         fun fromId(settings: Settings, id: Int): GameRecord? {
             val shortRecord: ShortRecord? = ShortRecord.fromId(settings, id)
             return shortRecord?.let {
-                val gamePlies: GamePlies = GamePlies.fromId(settings, it)
+                val gamePlies: GamePlies = GamePlies.fromId(it)
                 GameRecord(it, gamePlies)
             }
         }
