@@ -37,6 +37,10 @@ class ShortRecord(val settings: Settings, val board: Board, val note: String, va
             "type" to "org.andstatus.game2048:GameRecord:2",
     )
 
+    fun replayedAtPosition(position: GamePosition): ShortRecord =
+        ShortRecord(settings, board, note, id, start, position,
+            bookmarks.filterNot { it.plyNumber >= position.plyNumber })
+
     companion object {
         val FILENAME_FORMAT = DateFormat("yyyy-MM-dd-HH-mm")
 

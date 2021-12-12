@@ -41,7 +41,7 @@ class Settings(private val stage: Stage) {
     var aiAlgorithm: AiAlgorithm = AiAlgorithm.load(storage.getOrNull(keyAiAlgorithm))
     var defaultBoard = Board(this)
     val isTestRun = "TestGameWindow" == stage.views.gameWindow::class.simpleName
-    val pliesPageSize = 10000
+    val pliesPageSize = 1000
 
     companion object {
         fun load(stage: Stage): Settings = myMeasured("Settings loaded") { Settings(stage) }

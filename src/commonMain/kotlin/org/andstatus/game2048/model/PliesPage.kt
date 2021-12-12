@@ -32,9 +32,11 @@ class PliesPage(
 
     val notCompleted: Boolean get() = !pliesLoaded.isInitialized()
     private val pliesLoaded: Lazy<Boolean> = lazy {
-        val reader = shortRecord.settings.storage.getOrNull(keyPliesPage)?.let { StrReader(it) }
-        readPlies(shortRecord, pageNumber, reader, true).let {
-            pliesRef.compareAndSetFixed(null, it)
+        if (pliesRef.value == null) {
+            val reader = shortRecord.settings.storage.getOrNull(keyPliesPage)?.let { StrReader(it) }
+            readPlies(shortRecord, pageNumber, reader, true).let {
+                pliesRef.compareAndSetFixed(null, it)
+            }
         }
         true
     }

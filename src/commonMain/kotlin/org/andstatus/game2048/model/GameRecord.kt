@@ -1,5 +1,6 @@
 package org.andstatus.game2048.model
 
+import com.soywiz.klock.DateTimeTz
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.myLog
 
@@ -28,12 +29,18 @@ class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
 
     override fun toString(): String = "$shortRecord, " + gamePlies.toShortString()
 
+    fun replayedAtPosition(position: GamePosition): GameRecord =
+        if (position.plyNumber >= shortRecord.finalPosition.plyNumber)
+            this
+        else
+            shortRecord.replayedAtPosition(position).let {
+                GameRecord(it, gamePlies.take(position.plyNumber - 1))
+            }
+
     companion object {
-        fun newWithPositionAndPlies(
-            settings: Settings, position: GamePosition, id: Int, bookmarks: List<GamePosition>,
-            plies: List<Ply>
-        ) = ShortRecord(settings, position.board, "", id, position.startingDateTime, position, bookmarks)
-            .let { GameRecord(it, GamePlies.fromPlies(it, plies)) }
+        fun newEmpty(settings: Settings, id: Int) = ShortRecord(settings, settings.defaultBoard, "", id,
+            DateTimeTz.nowLocal(), GamePosition(settings.defaultBoard), emptyList())
+            .let { GameRecord(it, GamePlies.fromPlies(it, emptyList())) }
 
         fun fromId(settings: Settings, id: Int): GameRecord? {
             val shortRecord: ShortRecord? = ShortRecord.fromId(settings, id)

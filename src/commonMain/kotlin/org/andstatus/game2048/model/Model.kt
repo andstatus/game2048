@@ -47,9 +47,8 @@ class Model(val history: History) {
         saveCurrent()
     }
 
-    fun restart(): List<Ply> {
-        gameMode.modeEnum = GameModeEnum.PLAY
-        return composerPly(gamePosition.newEmpty(), false) + Ply.delay() + randomComputerMove()
+    fun restart(): List<Ply> = history.openNewGame().let {
+        composerPly(it.shortRecord.finalPosition, false) + Ply.delay() + randomComputerMove()
     }
 
     fun openGame(id: Int): List<Ply> {

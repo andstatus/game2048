@@ -26,11 +26,11 @@ class History(
     var recentGames: List<ShortRecord> = emptyList()
 ) {
     private val keyBest = "best"
-    private val currentGameRef: KorAtomicRef<GameRecord> = korAtomic(currentGameIn
-        ?: GameRecord.newWithPositionAndPlies(
-            settings, GamePosition(settings.defaultBoard), idForNewGame(), emptyList(), emptyList()
-        ))
-    val currentGame get() = currentGameRef.value
+    private val currentGameRef: KorAtomicRef<GameRecord?> = korAtomic(currentGameIn)
+    val currentGame: GameRecord get() = currentGameRef.value ?: newEmptyGame.also {
+        currentGameRef.value = it
+    }
+    val newEmptyGame = GameRecord.newEmpty(settings, idForNewGame())
 
     // 1. Info on previous games
     var bestScore: Int = settings.storage.getOrNull(keyBest)?.toInt() ?: 0
@@ -59,6 +59,8 @@ class History(
         }
     }
 
+    private fun ensureRecentGames(): History = if (recentGames.isEmpty()) loadRecentGames() else this
+
     fun loadRecentGames(): History {
         myMeasuredIt("Recent games loaded") {
             recentGames = gameIdsRange.fold(emptyList()) { acc, ind ->
@@ -69,6 +71,11 @@ class History(
         }
         return this
     }
+
+    fun openNewGame(): GameRecord = newEmptyGame.let {
+        openGame(it, it.id) ?: throw IllegalStateException("Failed to open new empty game")
+    }
+
 
     fun openGame(id: Int): GameRecord? =
         if (currentGame.id == id) currentGame
@@ -85,7 +92,7 @@ class History(
             }
             currentGameRef.value = it
             settings.storage[keyCurrentGameId] = currentGame.id
-            gameMode.modeEnum = GameModeEnum.STOP
+            gameMode.modeEnum = if (it.isEmpty) GameModeEnum.PLAY else GameModeEnum.STOP
         }
         ?: run {
             myLog("Failed to open game $id")
@@ -121,7 +128,9 @@ class History(
         }
     }
 
-    fun idForNewGame(): Int = (idToDelete() ?: unusedGameId()).also { GameRecord.delete(settings, it) }
+    fun idForNewGame(): Int = ensureRecentGames()
+        .let { idToDelete() ?: unusedGameId() }
+        .also { GameRecord.delete(settings, it) }
 
     private fun idToDelete() = if (recentGames.size > maxOlderGames) {
         val keepAfter = DateTimeTz.nowLocal().minus(1.weeks)
@@ -152,9 +161,7 @@ class History(
         if (currentGame.notCompleted) return
 
         currentGameRef.value = when (position.prevPly.plyEnum) {
-            PlyEnum.LOAD -> {
-                GameRecord.newWithPositionAndPlies(settings, position, idForNewGame(), emptyList(), emptyList())
-            }
+            PlyEnum.LOAD -> currentGame.replayedAtPosition(position)
             else -> {
                 val bookmarksNew = when {
                     redoPlyPointer < 1 -> {

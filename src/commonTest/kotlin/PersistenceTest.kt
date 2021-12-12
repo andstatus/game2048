@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.gameIsLoading
 import org.andstatus.game2048.model.GameClock
+import org.andstatus.game2048.model.GamePlies
 import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.GameRecord
 import org.andstatus.game2048.model.History
@@ -12,6 +13,7 @@ import org.andstatus.game2048.model.PieceMoveOne
 import org.andstatus.game2048.model.PlacedPiece
 import org.andstatus.game2048.model.Ply
 import org.andstatus.game2048.model.PlyEnum
+import org.andstatus.game2048.model.ShortRecord
 import org.andstatus.game2048.view.ViewData
 import kotlin.coroutines.coroutineContext
 import kotlin.test.Test
@@ -22,7 +24,7 @@ import kotlin.test.assertTrue
 class PersistenceTest : ViewsForTesting(log = true) {
 
     @Test
-    fun persistenceTest()  {
+    fun persistenceTest() {
         val testWasExecuted = korAtomic(false)
         viewsTest {
 
@@ -45,14 +47,21 @@ class PersistenceTest : ViewsForTesting(log = true) {
         waitFor("persistenceTest was executed") { -> testWasExecuted.value }
     }
 
-    private suspend fun saveTestHistory(settings: Settings): History = with (History.load(settings)) {
+    private suspend fun saveTestHistory(settings: Settings): History = with(History.load(settings)) {
         val board = settings.defaultBoard
         val placedPiece = PlacedPiece(Piece.N2, board.toSquare(1, 2))
         val ply1 = Ply.computerPly(placedPiece, 0)
-        val ply2 = Ply.userPly(PlyEnum.DOWN, 1, listOf(PieceMoveOne(placedPiece,
-            board.toSquare(1, 3))))
+        val ply2 = Ply.userPly(
+            PlyEnum.DOWN, 1, listOf(
+                PieceMoveOne(
+                    placedPiece,
+                    board.toSquare(1, 3)
+                )
+            )
+        )
         val ply3 = Ply.computerPly(PlacedPiece(Piece.N4, board.toSquare(2, 1)), 2)
-        val position = GamePosition(board, Ply.emptyPly,
+        val position = GamePosition(
+            board, Ply.emptyPly,
             pieces = arrayOf(
                 null, null, null, null,
                 null, null, null, null,
@@ -63,7 +72,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
             gameClock = GameClock(125),
             plyNumber = 3
         )
-        GameRecord.newWithPositionAndPlies(
+        newGameRecord(
             settings,
             position,
             idForNewGame(),
@@ -72,7 +81,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         ).let {
             openGame(it, it.id)
         }
-        assertTrue(canUndo(),  currentGame.toLongString())
+        assertTrue(canUndo(), currentGame.toLongString())
         assertFalse(canRedo(), currentGame.toLongString())
         saveCurrent(CoroutineScope(coroutineContext)).also {
             waitFor { gameIsLoading.value == false }
@@ -100,9 +109,9 @@ class PersistenceTest : ViewsForTesting(log = true) {
             nPliesActual++
         }
 
-        val gameRecord = GameRecord.newWithPositionAndPlies(
+        val gameRecord = newGameRecord(
             settings,
-            GamePosition(board),
+            GamePosition(board, plyNumber = nPlies),  // Final board is incorrect here - it is empty.
             presenter.model.history.idForNewGame(),
             emptyList(),
             plies
@@ -129,4 +138,11 @@ class PersistenceTest : ViewsForTesting(log = true) {
         assertTrue(presenter.canUndo(), modelAndViews() + "\n" + currentGameString())
         assertFalse(presenter.canRedo(), modelAndViews() + "\n" + currentGameString())
     }
+
+    fun newGameRecord(
+        settings: Settings, position: GamePosition, id: Int, bookmarks: List<GamePosition>,
+        plies: List<Ply>
+    ) = ShortRecord(settings, position.board, "", id, position.startingDateTime, position, bookmarks)
+        .let { GameRecord(it, GamePlies.fromPlies(it, plies)) }
+
 }

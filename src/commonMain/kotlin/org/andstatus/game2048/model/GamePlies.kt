@@ -62,13 +62,15 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
         }
     }
 
-    fun take(n: Int): GamePlies {
-        pages.forEach {
-            if (n < it.nextPageFirstPlyNumber) {
-                return GamePlies(shortRecord, pages.take(it.pageNumber - 1) + it.take(n - it.firstPlyNumber))
-            }
+    fun take(n: Int): GamePlies = when {
+        (n < 1) -> GamePlies(shortRecord, listOf(emptyFirstPage))
+        else -> pages.fold(this) { acc, it ->
+            if (n >= it.firstPlyNumber &&  n < it.nextPageFirstPlyNumber) {
+                GamePlies(shortRecord, pages.take(it.pageNumber - 1) + it.take(n - it.firstPlyNumber))
+            } else acc
         }
-        return this
+    }. also { newGamePlies ->
+        deletePagesStartingWith(shortRecord.settings, shortRecord.id, newGamePlies.pages.size + 1)
     }
 
     fun lastOrNull(): Ply? = lastPage.plies.lastOrNull()
@@ -154,10 +156,14 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
 
         fun delete(settings: Settings, id: Int) {
             if (settings.storage.remove(keyHead(id))) {
-                var pageNumber = 1
-                while (settings.storage.remove(keyPliesPage(id, pageNumber))) {
-                    pageNumber += 1
-                }
+                deletePagesStartingWith(settings, id, 1)
+            }
+        }
+
+        private fun deletePagesStartingWith(settings: Settings, id: Int, pageNumber: Int) {
+            var pageNumber1 = pageNumber
+            while (settings.storage.remove(keyPliesPage(id, pageNumber1))) {
+                pageNumber1 += 1
             }
         }
 
