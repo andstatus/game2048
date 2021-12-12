@@ -63,13 +63,15 @@ class PersistenceTest : ViewsForTesting(log = true) {
             gameClock = GameClock(125),
             plyNumber = 3
         )
-        currentGame = GameRecord.newWithPositionAndPlies(
+        GameRecord.newWithPositionAndPlies(
             settings,
             position,
             idForNewGame(),
             listOf(GamePosition(board), position),
             listOf(ply1, ply2, ply3)
-        )
+        ).let {
+            openGame(it, it.id)
+        }
         assertTrue(canUndo(),  currentGame.toLongString())
         assertFalse(canRedo(), currentGame.toLongString())
         saveCurrent(CoroutineScope(coroutineContext)).also {

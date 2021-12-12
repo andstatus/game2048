@@ -73,7 +73,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
 
     fun lastOrNull(): Ply? = lastPage.plies.lastOrNull()
 
-    fun toLongString(): String = (if (pages.size > 1) "${pages.size} pages ..." else "") + lastPage.toLongString()
+    fun toLongString(): String = toShortString() + " " + lastPage.toLongString()
 
     fun save() {
         shortRecord.settings.storage[keyHead(shortRecord.id)] =
@@ -86,6 +86,10 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
             it.toJson().let { json -> stringBuilder.append(json) }
         }
     }.toString()
+
+    fun toShortString(): String {
+        return "${size} plies in ${pages.size} pages" + if (notCompleted) ", loading..." else ""
+    }
 
     companion object {
 
@@ -100,8 +104,34 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
                 }
                 ?: GamePlies(shortRecord, null)
 
-        fun fromPlies(shortRecord: ShortRecord, plies: List<Ply>): GamePlies =
-            GamePlies(shortRecord, listOf(PliesPage(shortRecord, 1, 1, plies.size, plies)))
+        fun fromPlies(shortRecord: ShortRecord, plies: List<Ply>): GamePlies {
+            var pages: List<PliesPage> = emptyList()
+            var index = 0
+            var firstPlyNumber = 1
+            while(index < plies.size) {
+                when {
+                    plies.size - index <= shortRecord.settings.pliesPageSize -> {
+                        PliesPage(shortRecord, pages.size + 1, firstPlyNumber, plies.size, plies)
+                    }
+                    else -> {
+                        PliesPage(shortRecord, pages.size + 1, firstPlyNumber,
+                            shortRecord.settings.pliesPageSize, plies.drop(index).take(shortRecord.settings.pliesPageSize))
+                    }
+                }.also {
+                    firstPlyNumber += it.size
+                    index += it.size
+                    it.save()
+                    pages = pages + it
+                }
+            }
+            return GamePlies(shortRecord, pages).let {
+                it.save()
+                if (it.pages.size > 1)
+                    // Effectively free memory of previous pages
+                    fromId(shortRecord.settings, shortRecord)
+                else it
+            }
+        }
 
         fun fromSharedJson(shortRecord: ShortRecord, json: String): GamePlies {
             val reader = StrReader(json)

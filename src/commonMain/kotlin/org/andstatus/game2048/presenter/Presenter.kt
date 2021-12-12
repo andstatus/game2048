@@ -339,8 +339,12 @@ class Presenter(val view: ViewData, history: History) {
         gameIsLoading.value = true
         view.gameStage.loadJsonGameRecord {
             GameRecord.fromSharedJson(model.history.settings, it, model.history.idForNewGame())
-                ?.also { model.history.openGame(it, model.history.idForNewGame()) }
-                ?.let { model.saveCurrent() }
+                ?.also {
+                    it.load().save()
+                    model.history.loadRecentGames()
+                    model.openGame(it.id).present()
+                    gameIsLoading.value = false
+                }
                 ?: run { gameIsLoading.value = false }
         }
     }

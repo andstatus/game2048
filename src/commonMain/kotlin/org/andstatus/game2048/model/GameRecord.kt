@@ -11,6 +11,7 @@ class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
         myLog("Starting to save $this")
         shortRecord.save()
         gamePlies.save()
+        myLog("Saved $this")
     }
 
     fun toSharedJson(): String = load().shortRecord.toSharedJson() + gamePlies.toSharedJson()
@@ -23,10 +24,9 @@ class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
     val isReady: Boolean get() = !notCompleted
     val notCompleted: Boolean get() = gamePlies.notCompleted
 
-    fun toLongString(): String = toString() + if (isReady) gamePlies.toLongString() else ""
+    fun toLongString(): String = toString() + gamePlies.toLongString()
 
-    override fun toString(): String = "$shortRecord, " +
-            if (notCompleted) "loading..." else "${gamePlies.size} plies"
+    override fun toString(): String = "$shortRecord, " + gamePlies.toShortString()
 
     companion object {
         fun newWithPositionAndPlies(

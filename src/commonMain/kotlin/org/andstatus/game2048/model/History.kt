@@ -2,6 +2,8 @@ package org.andstatus.game2048.model
 
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.klock.weeks
+import com.soywiz.korio.concurrent.atomic.KorAtomicRef
+import com.soywiz.korio.concurrent.atomic.korAtomic
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -10,7 +12,6 @@ import org.andstatus.game2048.Settings
 import org.andstatus.game2048.gameIsLoading
 import org.andstatus.game2048.keyCurrentGameId
 import org.andstatus.game2048.myLog
-import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.myMeasuredIt
 
 const val keyGameMode = "gameMode"
@@ -25,10 +26,11 @@ class History(
     var recentGames: List<ShortRecord> = emptyList()
 ) {
     private val keyBest = "best"
-    var currentGame: GameRecord = currentGameIn
+    private val currentGameRef: KorAtomicRef<GameRecord> = korAtomic(currentGameIn
         ?: GameRecord.newWithPositionAndPlies(
             settings, GamePosition(settings.defaultBoard), idForNewGame(), emptyList(), emptyList()
-        )
+        ))
+    val currentGame get() = currentGameRef.value
 
     // 1. Info on previous games
     var bestScore: Int = settings.storage.getOrNull(keyBest)?.toInt() ?: 0
@@ -55,18 +57,16 @@ class History(
             }
             History(settings, dCurrentGame.await())
         }
-
-        private fun loadRecentGames(settings: Settings): List<ShortRecord> =
-            myMeasured("Recent games loaded") {
-                gameIdsRange.fold(emptyList()) { acc, ind ->
-                    ShortRecord.fromId(settings, ind)
-                        ?.let { acc + it } ?: acc
-                }
-            }
     }
 
     fun loadRecentGames(): History {
-        recentGames = loadRecentGames(settings)
+        myMeasuredIt("Recent games loaded") {
+            recentGames = gameIdsRange.fold(emptyList()) { acc, ind ->
+                ShortRecord.fromId(settings, ind)
+                    ?.let { acc + it } ?: acc
+            }
+            "${recentGames.size} records"
+        }
         return this
     }
 
@@ -83,7 +83,7 @@ class History(
                 myLog("Fixed id $id while opening game $it")
                 it.id = id
             }
-            currentGame = it
+            currentGameRef.value = it
             settings.storage[keyCurrentGameId] = currentGame.id
             gameMode.modeEnum = GameModeEnum.STOP
         }
@@ -103,7 +103,7 @@ class History(
         val game = currentGame
 
         coroutineScope.launch {
-            myMeasuredIt("Game ${game.id} saved") {
+            myMeasuredIt("Game saved") {
                 updateBestScore()
                 game.save()
                 gameIsLoading.compareAndSet(true, false)
@@ -151,7 +151,7 @@ class History(
     fun add(position: GamePosition) {
         if (currentGame.notCompleted) return
 
-        currentGame = when (position.prevPly.plyEnum) {
+        currentGameRef.value = when (position.prevPly.plyEnum) {
             PlyEnum.LOAD -> {
                 GameRecord.newWithPositionAndPlies(settings, position, idForNewGame(), emptyList(), emptyList())
             }
@@ -190,7 +190,7 @@ class History(
     fun createBookmark(gamePosition: GamePosition) {
         if (currentGame.notCompleted) return
 
-        currentGame = with(currentGame.shortRecord) {
+        currentGameRef.value = with(currentGame.shortRecord) {
             GameRecord(
                 ShortRecord(settings, board, note, id, start, finalPosition,
                     bookmarks.filter { it.plyNumber != gamePosition.plyNumber } +
@@ -203,7 +203,7 @@ class History(
     fun deleteBookmark(gamePosition: GamePosition) {
         if (currentGame.notCompleted) return
 
-        currentGame = with(currentGame.shortRecord) {
+        currentGameRef.value = with(currentGame.shortRecord) {
             GameRecord(
                 ShortRecord(settings, board, note, id, start, finalPosition, bookmarks
                     .filterNot { it.plyNumber == gamePosition.plyNumber }),
