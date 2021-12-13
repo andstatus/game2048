@@ -91,7 +91,7 @@ class History(
                 it.id = id
             }
             currentGameRef.value = it
-            settings.storage[keyCurrentGameId] = currentGame.id
+            settings.storage[keyCurrentGameId] = it.id
             gameMode.modeEnum = if (it.isEmpty) GameModeEnum.PLAY else GameModeEnum.STOP
         }
         ?: run {
@@ -159,8 +159,6 @@ class History(
         }
 
     fun add(position: GamePosition) {
-        if (currentGame.notCompleted) return
-
         currentGameRef.value = when (position.prevPly.plyEnum) {
             PlyEnum.LOAD -> currentGame.replayedAtPosition(position)
             else -> {
@@ -196,8 +194,6 @@ class History(
     }
 
     fun createBookmark(gamePosition: GamePosition) {
-        if (currentGame.notCompleted) return
-
         currentGameRef.value = with(currentGame.shortRecord) {
             GameRecord(
                 ShortRecord(settings, board, note, id, start, finalPosition,
@@ -209,8 +205,6 @@ class History(
     }
 
     fun deleteBookmark(gamePosition: GamePosition) {
-        if (currentGame.notCompleted) return
-
         currentGameRef.value = with(currentGame.shortRecord) {
             GameRecord(
                 ShortRecord(settings, board, note, id, start, finalPosition, bookmarks
@@ -220,8 +214,7 @@ class History(
         }
     }
 
-    fun canUndo(): Boolean = currentGame.isReady &&
-            settings.allowUndo &&
+    fun canUndo(): Boolean = settings.allowUndo &&
             redoPlyPointer != 1 && redoPlyPointer != 2 &&
             currentGame.gamePlies.size > 1 &&
             currentGame.gamePlies.lastOrNull()?.player == PlayerEnum.COMPUTER
@@ -241,7 +234,7 @@ class History(
     }
 
     fun canRedo(): Boolean {
-        return currentGame.isReady && redoPlyPointer > 0 && redoPlyPointer <= currentGame.gamePlies.size
+        return redoPlyPointer > 0 && redoPlyPointer <= currentGame.gamePlies.size
     }
 
     fun redo(): Ply? {
@@ -259,8 +252,6 @@ class History(
     }
 
     fun gotoBookmark(position: GamePosition) {
-        if (currentGame.notCompleted) return
-
         if (position.plyNumber >= currentGame.shortRecord.finalPosition.plyNumber) {
             redoPlyPointer = 0
         } else {

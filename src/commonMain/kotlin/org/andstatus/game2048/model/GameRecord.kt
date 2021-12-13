@@ -22,7 +22,6 @@ class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
 
     fun load(): GameRecord = gamePlies.load().let { this }
     val isEmpty: Boolean = shortRecord.finalPosition.placedPieces().isEmpty()
-    val isReady: Boolean get() = !notCompleted
     val notCompleted: Boolean get() = gamePlies.notCompleted
 
     fun toLongString(): String = "$shortRecord, " + gamePlies.toLongString()

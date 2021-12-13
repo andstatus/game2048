@@ -17,7 +17,6 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
     private constructor(shortRecord: ShortRecord, pages: List<PliesPage>) : this(shortRecord, null) {
         if (pages.isNotEmpty()) {
             pagesRef.value = pages
-            load()
         }
     }
 
@@ -29,7 +28,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
     val notCompleted: Boolean get() = !pliesLoaded.isInitialized()
     private val pliesLoaded: Lazy<Boolean> = lazy {
         if (reader == null) {
-            pages.forEach { it.load() }
+            lastPage.load()
         } else {
             var pageNumber = 1
             var plyNumber = 1
@@ -49,8 +48,8 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
 
     operator fun get(num: Int): Ply {
         pages.forEach {
-            if (num < it.nextPageFirstPlyNumber) {
-                return it.plies[num - it.firstPlyNumber]  // Numbers start with plyNumber
+            if (num >= it.firstPlyNumber && num < it.nextPageFirstPlyNumber) {
+                return it.load().plies[num - it.firstPlyNumber]  // Numbers start with plyNumber
             }
         }
         throw IllegalArgumentException("No ply with index:$num found. " + toLongString())
@@ -78,7 +77,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
         deletePagesStartingWith(shortRecord.settings, shortRecord.id, newGamePlies.pages.size + 1)
     }
 
-    fun lastOrNull(): Ply? = lastPage.plies.lastOrNull()
+    fun lastOrNull(): Ply? = lastPage.load().plies.lastOrNull()
 
     fun toLongString(): String = toShortString() + " " + lastPage.toLongString()
 
@@ -104,7 +103,11 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
             shortRecord.settings.storage.getOrNull(keyHead(shortRecord.id))
                 ?.parseJsonArray()
                 ?.mapIndexed { index, header -> PliesPage.fromId(shortRecord, index + 1, header) }
-                ?.let { GamePlies(shortRecord, it) }
+                ?.let {
+                    GamePlies(shortRecord, it).apply {
+                        load()
+                    }
+                }
                 ?: shortRecord.settings.storage.getOrNull(keyGame + shortRecord.id)?.let {
                     fromSharedJson(shortRecord, it)
                 }

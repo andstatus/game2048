@@ -1,6 +1,7 @@
 package org.andstatus.game2048.model
 
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
+import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.serialization.json.toJson
 import com.soywiz.korio.util.StrReader
@@ -27,23 +28,27 @@ class PliesPage(
         if (shortRecord.id < 1 || pageNumber < 1) throw IllegalArgumentException(it)
     }
 
+    val loaded get() = pliesRef.value != null
+    val saved get() = savedRef.value
+    private val savedRef = korAtomic(false)
+
     private val pliesRef: KorAtomicRef<List<Ply>?> = initAtomicReference(iPlies)
     val plies: List<Ply> get() = pliesRef.value ?: emptyList()
 
-    val notCompleted: Boolean get() = !pliesLoaded.isInitialized()
     private val pliesLoaded: Lazy<Boolean> = lazy {
         if (pliesRef.value == null) {
             val reader = shortRecord.settings.storage.getOrNull(keyPliesPage)?.let { StrReader(it) }
             readPlies(shortRecord, pageNumber, reader, true).let {
+                savedRef.value = true
                 pliesRef.compareAndSetFixed(null, it)
             }
         }
         true
     }
 
-    fun load() = pliesLoaded.value.let { if (pliesRef.value != null) this else null }
+    fun load() = pliesLoaded.value.let { this }
 
-    val size: Int get() = if (notCompleted) count else plies.size
+    val size: Int get() = if (loaded) plies.size else count
 
     operator fun get(index: Int): Ply = plies[index]
 
@@ -52,19 +57,18 @@ class PliesPage(
         plies + ply
     )
 
-    fun take(n: Int): PliesPage = PliesPage(shortRecord, pageNumber, firstPlyNumber, n, plies.take(n))
-
-    fun isNotEmpty(): Boolean = notCompleted || plies.isNotEmpty()
-
-    fun lastOrNull(): Ply? = plies.lastOrNull()
+    fun take(n: Int): PliesPage = with(load()) {
+        PliesPage(shortRecord, pageNumber, firstPlyNumber, n, plies.take(n))
+    }
 
     fun toLongString(): String = plies.mapIndexed { ind, playerMove ->
         "\n" + (ind + 1).toString() + ":" + playerMove
     }.toString()
 
     fun save() {
-        load()
-        shortRecord.settings.storage[keyPliesPage] = toJson()
+        if (loaded && savedRef.compareAndSet(false, true)) {
+            shortRecord.settings.storage[keyPliesPage] = toJson()
+        }
     }
 
     fun toHeaderMap(): Map<String, Any> = mapOf(

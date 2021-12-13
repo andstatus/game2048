@@ -3,6 +3,13 @@ import com.soywiz.korge.view.Stage
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
 import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.lang.Thread_sleep
+import kotlinx.coroutines.delay
+import org.andstatus.game2048.Settings
+import org.andstatus.game2048.model.GamePlies
+import org.andstatus.game2048.model.GamePosition
+import org.andstatus.game2048.model.GameRecord
+import org.andstatus.game2048.model.Ply
+import org.andstatus.game2048.model.ShortRecord
 import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.view.ViewData
@@ -74,3 +81,21 @@ fun waitFor(message: String = "???", condition: () -> Boolean) {
     }
     throw AssertionError("Condition wasn't met after timeout: $message")
 }
+
+suspend fun sWaitFor(message: String = "???", condition: () -> Boolean) {
+    val stopWatch = Stopwatch().start()
+    while (stopWatch.elapsed.seconds < 20) {
+        if (condition()) {
+            myLog("Success waiting for: $message")
+            return
+        }
+        delay(50)
+    }
+    throw AssertionError("Condition wasn't met after timeout: $message")
+}
+
+fun newGameRecord(
+    settings: Settings, position: GamePosition, id: Int, bookmarks: List<GamePosition>,
+    plies: List<Ply>
+) = ShortRecord(settings, position.board, "", id, position.startingDateTime, position, bookmarks)
+    .let { GameRecord(it, GamePlies.fromPlies(it, plies)) }
