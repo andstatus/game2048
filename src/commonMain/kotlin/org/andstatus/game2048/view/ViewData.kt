@@ -6,16 +6,31 @@ import com.soywiz.korev.PauseEvent
 import com.soywiz.korev.ResumeEvent
 import com.soywiz.korev.addEventListener
 import com.soywiz.korge.animate.Animator
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.view.*
+import com.soywiz.korge.input.singleTouch
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.Stage
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.position
+import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.font.Font
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.interpolation.Easing
-import kotlinx.coroutines.*
-import org.andstatus.game2048.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.andstatus.game2048.Settings
+import org.andstatus.game2048.defaultLanguage
+import org.andstatus.game2048.gameIsLoading
+import org.andstatus.game2048.loadFont
 import org.andstatus.game2048.model.History
 import org.andstatus.game2048.model.Square
+import org.andstatus.game2048.myLog
+import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.presenter.Presenter
 import org.andstatus.game2048.view.MainView.Companion.setupMainView
 import kotlin.properties.Delegates
@@ -111,8 +126,10 @@ class ViewData(viewDataQuick: ViewDataQuick,
         viewData(gameStage, animateViews, handler)
     }
 
-    fun Container.customOnClick(handler: () -> Unit) = onClick {
-        handler()
+    fun Container.customOnClick(handler: () -> Unit) = singleTouch {
+        tap {
+            handler()
+        }
     }
 
     fun Container.position(square: Square) {
