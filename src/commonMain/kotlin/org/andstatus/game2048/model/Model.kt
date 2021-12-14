@@ -21,13 +21,6 @@ class Model(val history: History) {
     val gameMode: GameMode get() = history.gameMode
     val nextComputerPlacedPeace: KorAtomicRef<PlacedPiece?> = korAtomic(null)
 
-    fun onAppEntry(): List<Ply> {
-        return if (history.currentGame.isEmpty)
-            restart()
-        else
-            composerPly(history.currentGame.shortRecord.finalPosition, true)
-    }
-
     fun gotoBookmark(position: GamePosition): List<Ply> {
         gameMode.modeEnum = GameModeEnum.STOP
         history.gotoBookmark(position)
