@@ -14,6 +14,7 @@ import com.soywiz.korge.view.addTo
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.font.Font
+import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.interpolation.Easing
@@ -118,12 +119,15 @@ class ViewData(viewDataQuick: ViewDataQuick,
     var mainView: MainView by Delegates.notNull()
 
     val closeables = mutableListOf<Closeable>()
-    var closed = false
+    private val closedRef = korAtomic(false)
+    val closed get() = closedRef.value
 
-    suspend fun reInitialize(handler: suspend ViewData.() -> Unit = {}) {
-        closed = true
+    fun reInitialize(handler: suspend ViewData.() -> Unit = {}) {
+        closedRef.value = true
         this.close()
-        viewData(gameStage, animateViews, handler)
+        gameStage.launch {
+            viewData(gameStage, animateViews, handler)
+        }
     }
 
     fun Container.customOnClick(handler: () -> Unit) = singleTouch {

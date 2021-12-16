@@ -15,29 +15,25 @@ fun Any.parseJsonArray(): List<Any> = try {
         }
     }
 } catch (e: Exception) {
-    myLog("asJsonArray failed: '${this.toString().take(200)}': $e")
+    myLog("Error parsing '${this.toString().take(200)}': $e")
     emptyList()
 }
 
 fun Any.parseJsonMap(): Map<String, Any> =
     @Suppress("UNCHECKED_CAST")
-    when (this) {
-        is String -> try {
-            Json.parse(this) as Map<String, Any>
-        } catch (e: Throwable) {
-            myLog("Error parsing $this\n$e")
-            emptyMap()
+    try {
+        when (this) {
+            is String -> Json.parse(this) as Map<String, Any>
+            is StrReader -> Json.parse(this) as Map<String, Any>
+            else -> this
         }
-        is StrReader -> try {
-            Json.parse(this) as Map<String, Any>
-        } catch (e: Throwable) {
-            myLog("Error parsing $this\n$e")
-            emptyMap()
-        }
-        else -> this
-    }.let {
-        when (it) {
-            is Map<*, *> -> it.filterValues { value -> value != null } as Map<String, Any>
-            else -> emptyMap()
-        }
+            .let {
+                when (it) {
+                    is Map<*, *> -> it.filterValues { value -> value != null } as Map<String, Any>
+                    else -> emptyMap()
+                }
+            }
+    } catch (e: Throwable) {
+        myLog("Error parsing '${this.toString().take(200)}': $e")
+        emptyMap()
     }

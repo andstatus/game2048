@@ -78,7 +78,7 @@ class PliesPage(
     )
 
     fun toJson(): String = StringBuilder().also { stringBuilder ->
-        plies.forEach { ply ->
+        load().plies.forEach { ply ->
             ply.toMap().toJson()
                 .let { json -> stringBuilder.append(json) }
         }

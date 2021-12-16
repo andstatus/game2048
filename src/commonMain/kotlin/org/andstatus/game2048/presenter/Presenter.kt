@@ -701,11 +701,11 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     fun onResumeEvent() {
-        logClick("onResumeEvent")
-        with(view) {
-            gameStage.launch {
-                reInitialize()
-            }
+        if (view.closed) {
+            logClick("onResumeEvent view closed")
+        } else {
+            logClick("onResumeEvent reinitializing...")
+            view.reInitialize()
         }
     }
 

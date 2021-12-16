@@ -101,11 +101,6 @@ class History(
 
     fun saveCurrent(coroutineScope: CoroutineScope): History {
         settings.storage[keyGameMode] = gameMode.modeEnum.id
-        if (currentGame.id <= 0) {
-            myLog("Nothing to save $currentGame")
-            return this
-        }
-
         settings.storage[keyCurrentGameId] = currentGame.id
         val game = currentGame
 
