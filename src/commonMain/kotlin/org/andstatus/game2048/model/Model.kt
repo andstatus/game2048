@@ -11,9 +11,9 @@ class Model(val history: History) {
 
     val moveNumber: Int get() = gamePosition.moveNumber
     val isBookmarked
-        get() = history.currentGame.shortRecord.bookmarks.any {
+        get() = history.currentGameRef.value?.shortRecord?.bookmarks?.any {
             it.plyNumber == gamePosition.plyNumber
-        }
+        } ?: false
     val gameClock get() = gamePosition.gameClock
     val bestScore get() = history.bestScore
     val score get() = gamePosition.score
@@ -84,10 +84,10 @@ class Model(val history: History) {
         gamePosition.play(it, true).update(true)
     } ?: emptyList()
 
-    fun redoToCurrent(): List<Ply> {
+    fun redoToCurrent(): List<Ply> = history.currentGameRef.value?.let { game ->
         history.redoPlyPointer = 0
-        return composerPly(history.currentGame.shortRecord.finalPosition, true)
-    }
+        return composerPly(game.shortRecord.finalPosition, true)
+    } ?: emptyList()
 
     fun randomComputerMove() = (nextComputerPlacedPeace.value?.let {
         nextComputerPlacedPeace.value = null
@@ -96,7 +96,7 @@ class Model(val history: History) {
 
     fun computerMove(placedPiece: PlacedPiece) = gamePosition.computerPly(placedPiece).update()
 
-    fun userMove(plyEnum: PlyEnum): List<Ply> = gamePosition.userPly(plyEnum).update()
+    fun userMove(plyEnum: PlyEnum): List<Ply> = gamePosition.userPly(plyEnum, history.plyToRedo).update()
 
     private fun GamePosition.update(isRedo: Boolean = false): List<Ply> {
         if (!isRedo && prevPly.isNotEmpty()) {

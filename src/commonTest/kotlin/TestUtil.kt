@@ -5,6 +5,7 @@ import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.lang.Thread_sleep
 import kotlinx.coroutines.delay
 import org.andstatus.game2048.Settings
+import org.andstatus.game2048.ai.AiPlayer
 import org.andstatus.game2048.model.GamePlies
 import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.GameRecord
@@ -14,6 +15,7 @@ import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.view.ViewData
 import org.andstatus.game2048.view.viewData
+import kotlin.test.assertEquals
 
 
 // TODO: Make some separate class for this...
@@ -36,6 +38,7 @@ suspend fun Stage.initializeViewDataInTest(handler: suspend ViewData.() -> Unit 
             myLog("Initialized in test")
             viewDataRef.value = this
             isViewDataInitialized.value = true
+            sWaitFor("Main view shown 1") { viewData.presenter.mainViewShown.value }
             viewData.handler()
         }
         myLog("initializeViewDataInTest after 'viewData' function ended")
@@ -64,10 +67,10 @@ fun ViewData.historyString(): String = with(presenter.model.history) {
     "History: index:$redoPlyPointer, moves:${currentGame.gamePlies.size}"
 }
 
-fun ViewData.waitForMainViewShown(action: () -> Any? = { -> null }) {
+fun ViewData.waitForMainViewShown(action: () -> Any? = { null }) {
     presenter.mainViewShown.value = false
     action()
-    waitFor("Main view shown") { -> presenter.mainViewShown.value }
+    waitFor("Main view shown") { presenter.mainViewShown.value }
 }
 
 fun waitFor(message: String = "???", condition: () -> Boolean) {
@@ -98,4 +101,35 @@ fun newGameRecord(
     settings: Settings, position: GamePosition, id: Int, bookmarks: List<GamePosition>,
     plies: List<Ply>
 ) = ShortRecord(settings, position.board, "", id, position.startingDateTime, position, bookmarks)
-    .let { GameRecord(it, GamePlies.fromPlies(it, plies)) }
+    .let {
+        GameRecord(it, GamePlies.fromPlies(it, plies))
+    }
+
+fun ViewData.generateGame(expectedPliesCount: Int) {
+    waitForMainViewShown {
+        presenter.onRestartClick()
+    }
+
+    var iteration = 0
+    while (presenter.model.gamePosition.plyNumber < expectedPliesCount &&
+        iteration < expectedPliesCount) {
+        AiPlayer.allowedRandomPly(presenter.model.gamePosition).prevPly.plyEnum.swipeDirection?.let {
+            waitForMainViewShown {
+                presenter.onSwipe(it)
+            }
+        }
+        iteration++
+    }
+    assertEquals(expectedPliesCount, presenter.model.gamePosition.plyNumber,
+        "Failed to generate game ${currentGameString()}")
+
+    waitForMainViewShown {
+        presenter.onPauseClick()
+    }
+
+    val id1 = presenter.model.history.currentGame.id
+    waitFor("Recent games reloaded with gameId:$id1") {
+        presenter.model.history.recentGames.any { it.id == id1 }
+    }
+
+}

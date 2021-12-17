@@ -42,7 +42,9 @@ suspend fun viewData(stage: Stage, animateViews: Boolean, handler: suspend ViewD
     coroutineScope {
         val outerScope = this
         val handlerInOuterScope: suspend ViewData.() -> Unit = {
-            outerScope.launch { handler() }
+            outerScope.launch {
+                handler()
+            }
         }
 
         val multithreadedScope: CoroutineScope = if (OS.isNative) outerScope else

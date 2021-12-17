@@ -67,12 +67,14 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     fun onAppEntry() = myMeasured("onAppEntry") {
+        val game = model.history.currentGameRef.value
         presentGameClock(view.gameStage, model) { view.mainView.scoreBar.gameTime }
-        if (model.history.currentGame.isEmpty) {
+        if (game?.isEmpty != false) {
+            myLog("Restarting and showing help...")
             model.restart().present()
             view.showHelp()
         } else {
-            model.composerPly(model.history.currentGame.shortRecord.finalPosition, true).present()
+            model.composerPly(game.shortRecord.finalPosition, true).present()
             asyncShowMainView()
             loadPlies()
         }
@@ -287,9 +289,9 @@ class Presenter(val view: ViewData, history: History) {
         model.restart().present()
     }
 
-    fun onBookmarksClick() {
+    fun onBookmarksClick() = model.history.currentGameRef.value?.also { game ->
         logClick("Bookmarks")
-        view.showBookmarks(model.history.currentGame)
+        view.showBookmarks(game)
     }
 
     fun onRecentClick() = afterStop {
@@ -315,23 +317,23 @@ class Presenter(val view: ViewData, history: History) {
         }
     }
 
-    private fun loadPlies() {
-        with(model.history.currentGame) {
-            if (notCompleted) afterStop {
-                multithreadedScope.launch {
-                    load()
-                    asyncShowMainView()
-                }
+    private fun loadPlies() = model.history.currentGameRef.value?.apply {
+        if (notCompleted) afterStop {
+            multithreadedScope.launch {
+                load()
+                asyncShowMainView()
             }
         }
     }
 
-    fun onShareClick() = afterStop {
-        logClick("Share")
-        view.gameStage.shareText(
-            view.stringResources.text("share"), model.history.currentGame.shortRecord.jsonFileName,
-            model.history.currentGame.toSharedJson()
-        )
+    fun onShareClick() = model.history.currentGameRef.value?.also { game ->
+        afterStop {
+            logClick("Share")
+            view.gameStage.shareText(
+                view.stringResources.text("share"), game.shortRecord.jsonFileName,
+                game.toSharedJson()
+            )
+        }
     }
 
     fun onLoadClick() = afterStop {

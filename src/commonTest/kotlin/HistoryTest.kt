@@ -52,7 +52,7 @@ class HistoryTest : ViewsForTesting(log = true) {
         val placedPiece = PlacedPiece(Piece.N2, board.toSquare(1, 2))
         val ply1 = Ply.computerPly(placedPiece, 0)
         val ply2 = Ply.userPly(
-            PlyEnum.DOWN, 1, listOf(
+            PlyEnum.DOWN, 1, 0, listOf(
                 PieceMoveOne(
                     placedPiece,
                     board.toSquare(1, 3)
@@ -79,6 +79,7 @@ class HistoryTest : ViewsForTesting(log = true) {
             listOf(GamePosition(board), position),
             listOf(ply1, ply2, ply3)
         ).let {
+            it.save()
             openGame(it, it.id)
         }
         assertTrue(canUndo(), currentGame.toLongString())

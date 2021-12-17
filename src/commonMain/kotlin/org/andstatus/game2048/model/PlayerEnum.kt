@@ -6,6 +6,6 @@ enum class PlayerEnum(val id: String) {
     COMPOSER("composer");
 
     companion object {
-        fun fromId(value: String): PlayerEnum? = PlayerEnum.values().firstOrNull { it.id == value}
+        fun fromId(value: String): PlayerEnum? = values().firstOrNull { it.id == value}
     }
 }

@@ -67,7 +67,11 @@ class PliesPage(
 
     fun save() {
         if (loaded && savedRef.compareAndSet(false, true)) {
-            shortRecord.settings.storage[keyPliesPage] = toJson()
+            if (count == 0) {
+                shortRecord.settings.storage.remove(keyPliesPage)
+            } else {
+                shortRecord.settings.storage[keyPliesPage] = toJson()
+            }
         }
     }
 

@@ -18,9 +18,10 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
         if (pages.isNotEmpty()) {
             pagesRef.value = pages
         }
+        pliesLoaded
     }
 
-    private val emptyFirstPage = PliesPage(shortRecord, 1, 1, 0, null)
+    private val emptyFirstPage = PliesPage(shortRecord, 1, 1, 0, emptyList())
     private val pagesRef: KorAtomicRef<List<PliesPage>> = initAtomicReference(listOf(emptyFirstPage))
     private val pages: List<PliesPage> get() = pagesRef.value
     val lastPage get() = pages.last()
@@ -42,7 +43,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
         true
     }
 
-    fun load() = pliesLoaded.value
+    fun load() = pliesLoaded.value.let { this }
 
     val size: Int get() = lastPage.nextPageFirstPlyNumber - 1
 
@@ -93,25 +94,27 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
         }
     }.toString()
 
-    fun toShortString(): String {
-        return "${size} plies in ${pages.size} pages" + if (notCompleted) ", loading..." else ""
+    fun toShortString(): String = if(lastPage === emptyFirstPage) {
+        "emptyLastPage" + if(pages.size > 1) " of ${pages.size}" else ""
+    } else {
+        "${size} plies in ${pages.size} pages" + if (notCompleted) ", loading..." else ""
     }
 
     companion object {
 
-        fun fromId(shortRecord: ShortRecord): GamePlies =
-            shortRecord.settings.storage.getOrNull(keyHead(shortRecord.id))
+        fun fromId(shortRecord: ShortRecord): GamePlies = (
+            shortRecord.settings.storage
+                .getOrNull(keyHead(shortRecord.id))
                 ?.parseJsonArray()
                 ?.mapIndexed { index, header -> PliesPage.fromId(shortRecord, index + 1, header) }
                 ?.let {
-                    GamePlies(shortRecord, it).apply {
-                        load()
-                    }
+                    if (it.isEmpty() || it.get(0).count == 0) emptyList() else it
                 }
-                ?: shortRecord.settings.storage.getOrNull(keyGame + shortRecord.id)?.let {
-                    fromSharedJson(shortRecord, it)
-                }
-                ?: GamePlies(shortRecord, null)
+                ?.let { GamePlies(shortRecord, it) }
+                ?: shortRecord.settings.storage.getOrNull(keyGame + shortRecord.id)
+                    ?.let { fromSharedJson(shortRecord, it) }
+                ?: GamePlies(shortRecord, emptyList())
+            ).load()
 
         fun fromPlies(shortRecord: ShortRecord, plies: List<Ply>): GamePlies {
             var pages: List<PliesPage> = emptyList()
@@ -135,7 +138,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
                 }
             }
             return GamePlies(shortRecord, pages).let { gamePlies1 ->
-                myLog("Loaded ${gamePlies1.toShortString()}")
+                myLog("$shortRecord, Loaded ${gamePlies1.toShortString()}")
                 gamePlies1.save()
                 when{
                     (gamePlies1.pages.size > 1) ->

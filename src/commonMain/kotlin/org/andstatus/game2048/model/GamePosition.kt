@@ -13,17 +13,21 @@ private const val keyPieces = "pieces"
 private const val keyScore = "score"
 private const val keyDateTime = "time"
 private const val keyPlayedSeconds = "playedSeconds"
+private const val keyRetries = "retries"
 
 private val SUMMARY_FORMAT = DateFormat("yyyy-MM-dd HH:mm")
 
 /** @author yvolk@yurivolkov.com */
-class GamePosition(val board: Board,
-                   val prevPly: Ply = Ply.emptyPly,
-                   val pieces: Array<Piece?> = Array(board.size) { null },
-                   var score: Int = 0,
-                   val startingDateTime: DateTimeTz = DateTimeTz.nowLocal(),
-                   val gameClock: GameClock = GameClock(),
-                   var plyNumber: Int = 0) {
+class GamePosition(
+    val board: Board,
+    val prevPly: Ply = Ply.emptyPly,
+    val pieces: Array<Piece?> = Array(board.size) { null },
+    var score: Int = 0,
+    val startingDateTime: DateTimeTz = DateTimeTz.nowLocal(),
+    val gameClock: GameClock = GameClock(),
+    val retries: Int = 0,
+    var plyNumber: Int = 0
+) {
 
     val startingDateTimeString get() = startingDateTime.format(SUMMARY_FORMAT)
 
@@ -39,7 +43,7 @@ class GamePosition(val board: Board,
             else -> Ply.emptyPly
         }.let { ply ->
             with(position) {
-                GamePosition(board, ply, pieces, score, startingDateTime, gameClock, plyNumber)
+                GamePosition(board, ply, pieces, score, startingDateTime, gameClock, retries + ply.retries, plyNumber)
             }
         }
 
@@ -51,15 +55,27 @@ class GamePosition(val board: Board,
             val score: Int? = aMap[keyScore] as Int?
             val dateTime: DateTimeTz? = aMap[keyDateTime]?.let { DateTime.parse(it as String)}
             val playedSeconds: Int = aMap[keyPlayedSeconds] as Int? ?: 0
+            val retries: Int = aMap[keyRetries] as Int? ?: 0
             val plyNumber: Int = aMap[keyPlyNumber] as Int? ?: aMap[keyPlyNumberV1] as Int? ?: 0
             return if (pieces != null && score != null && dateTime != null && size == board.size)
-                GamePosition(board, Ply.emptyPly, pieces, score, dateTime, GameClock(playedSeconds), plyNumber)
+                GamePosition(
+                    board,
+                    Ply.emptyPly,
+                    pieces,
+                    score,
+                    dateTime,
+                    GameClock(playedSeconds),
+                    retries,
+                    plyNumber
+                )
             else null
         }
     }
 
-    fun copy(): GamePosition = GamePosition(board, prevPly.copy(),
-        pieces.copyOf(), score, startingDateTime, gameClock.copy(), plyNumber)
+    fun copy(): GamePosition = GamePosition(
+        board, prevPly.copy(),
+        pieces.copyOf(), score, startingDateTime, gameClock.copy(), retries, plyNumber
+    )
 
     fun noPly() = Ply.emptyPly.nextPosition(this)
 
@@ -72,11 +88,14 @@ class GamePosition(val board: Board,
         score,
         startingDateTime,
         if (seconds == 0) gameClock.copy() else GameClock(seconds),
+        retries,
         plyNumber + (if (isForward) 1 else -1)
     )
 
-    private fun forNextPly() = GamePosition(board, Ply.emptyPly,
-        pieces.copyOf(), score, DateTimeTz.nowLocal(), gameClock, plyNumber + 1)
+    private fun forNextPly() = GamePosition(
+        board, Ply.emptyPly,
+        pieces.copyOf(), score, DateTimeTz.nowLocal(), gameClock, retries, plyNumber + 1
+    )
 
     fun composerPly(position: GamePosition, isRedo: Boolean = false): GamePosition {
         val ply = Ply.composerPly(position)
@@ -98,13 +117,13 @@ class GamePosition(val board: Board,
         }
     }
 
-    fun userPly(plyEnum: PlyEnum): GamePosition {
-        return calcUserPly(plyEnum).also {
+    fun userPly(plyEnum: PlyEnum, prevAttempt: Ply?): GamePosition {
+        return calcUserPly(plyEnum, prevAttempt).also {
             if (it.prevPly.isNotEmpty()) gameClock.start()
         }
     }
 
-    fun calcUserPly(plyEnum: PlyEnum): GamePosition = if (!UserPlies.contains(plyEnum)) {
+    fun calcUserPly(plyEnum: PlyEnum, prevAttempt: Ply? = null): GamePosition = if (!UserPlies.contains(plyEnum)) {
         noPly()
     } else with(forNextPly()) {
         val pieceMoves = mutableListOf<PieceMove>()
@@ -138,7 +157,8 @@ class GamePosition(val board: Board,
                 }
             }
         }
-        Ply.userPly(plyEnum, gameClock.playedSeconds, pieceMoves).nextPosition(this)
+        Ply.userPly(plyEnum, gameClock.playedSeconds, prevAttempt?.let { it.retries + 1 } ?: 0, pieceMoves)
+            .nextPosition(this)
     }
 
     /** Starting from the square, search for a block in the direction */
@@ -261,10 +281,18 @@ class GamePosition(val board: Board,
         keyScore to score,
         keyDateTime to startingDateTime.format(DateFormat.FORMAT1),
         keyPlayedSeconds to gameClock.playedSeconds
-    )
+    ).let {
+        if (retries == 0) it else it + (keyRetries to retries)
+    }
 
     override fun equals(other: Any?): Boolean {
         return other is GamePosition &&  prevPly.plyEnum == other.prevPly.plyEnum && plyNumber == other.plyNumber
+    }
+
+    override fun hashCode(): Int {
+        var result = prevPly.plyEnum.hashCode()
+        result = 31 * result + plyNumber
+        return result
     }
 
     override fun toString(): String = "$plyNumber. pieces:" + pieces.mapIndexed { ind, piece ->

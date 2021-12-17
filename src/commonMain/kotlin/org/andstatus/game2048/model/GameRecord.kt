@@ -41,12 +41,11 @@ class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
             DateTimeTz.nowLocal(), GamePosition(settings.defaultBoard), emptyList())
             .let { GameRecord(it, GamePlies.fromPlies(it, emptyList())) }
 
-        fun fromId(settings: Settings, id: Int): GameRecord? {
-            val shortRecord: ShortRecord? = ShortRecord.fromId(settings, id)
-            return shortRecord?.let {
-                val gamePlies: GamePlies = GamePlies.fromId(it)
-                GameRecord(it, gamePlies)
-            }
+        fun fromId(settings: Settings, id: Int): GameRecord? = ShortRecord.fromId(settings, id)?.makeGameRecord()
+
+        fun ShortRecord.makeGameRecord(): GameRecord {
+            val gamePlies: GamePlies = GamePlies.fromId(this)
+            return GameRecord(this, gamePlies)
         }
 
         fun fromSharedJson(settings: Settings, json: String, newId: Int): GameRecord? {

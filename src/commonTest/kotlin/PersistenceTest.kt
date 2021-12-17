@@ -4,6 +4,7 @@ import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.PlacedPiece
 import org.andstatus.game2048.model.Ply
+import org.andstatus.game2048.myLog
 import org.andstatus.game2048.view.ViewData
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -27,6 +28,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
     }
 
     private fun ViewData.persistGameRecordTest(nPlies: Int) {
+        myLog("persistGameRecordTest started, n=$nPlies")
         val board = presenter.model.gamePosition.board
         val plies = ArrayList<Ply>()
         var nPliesActual = 0
@@ -36,7 +38,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
                 else -> board.toSquare(1, 3)
             }
             val ply = Ply.computerPly(PlacedPiece(Piece.N2, square), 0)
-            assertTrue(ply.toMap().keys.size > 2, ply.toMap().toString())
+            assertTrue(ply.toMap().keys.size > 1, ply.toMap().toString())
             plies.add(ply)
             nPliesActual++
         }
@@ -54,12 +56,14 @@ class PersistenceTest : ViewsForTesting(log = true) {
         if (nPlies > 0) {
             assertTrue(sharedJson.contains("place"), message)
         }
+        myLog("Current game 1, n=$nPlies: ${presenter.model.history.currentGame}")
         presenter.loadSharedJson(sharedJson)
         waitFor("currentGame loaded") {
             !presenter.model.history.currentGame.gamePlies.notCompleted
         }
+        myLog("Current game 2, n=$nPlies: ${presenter.model.history.currentGame}")
 
         val gameRecordOpened = presenter.model.history.currentGame
-        assertEquals(gameRecord.gamePlies.toLongString(), gameRecordOpened.gamePlies.toLongString(), message)
+        assertEquals(gameRecord.toLongString(), gameRecordOpened.toLongString(), message)
     }
 }
