@@ -20,26 +20,27 @@ class RestartTest : ViewsForTesting(log = true) {
                     presenter.computerMove()
                 }
                 assertTrue(presenter.boardViews.blocks.size > 1, modelAndViews())
-                assertEquals(presenter.model.history.currentGame.gamePlies[1].player, PlayerEnum.COMPUTER, currentGameString())
-                assertTrue(presenter.model.history.currentGame.gamePlies.size > 1, currentGameString())
+                assertEquals(presenter.model.history.currentGame?.gamePlies?.get(1)?.player, PlayerEnum.COMPUTER, currentGameString())
+                assertTrue((presenter.model.history.currentGame?.gamePlies?.size ?: 0) > 1, currentGameString())
 
                 waitForMainViewShown {
                     presenter.onRestartClick()
                 }
                 assertEquals(1, presenter.boardViews.blocks.size, modelAndViews())
-                assertEquals(1, presenter.model.history.currentGame.gamePlies.lastPage.firstPlyNumber, modelAndViews())
+                assertEquals(1,
+                    presenter.model.history.currentGame?.gamePlies?.lastPage?.firstPlyNumber, modelAndViews())
                 assertEquals( 1, presenter.model.gamePosition.pieces.count { it != null }, modelAndViews())
-                assertEquals(1, presenter.model.history.currentGame.gamePlies.size, currentGameString())
+                assertEquals(1, presenter.model.history.currentGame?.gamePlies?.size, currentGameString())
 
                 waitForMainViewShown {
                     presenter.computerMove()
                 }
                 assertEquals(2, presenter.model.gamePosition.pieces.count { it != null }, modelAndViews())
-                assertEquals(2, presenter.model.history.currentGame.gamePlies.size, currentGameString())
+                assertEquals(2, presenter.model.history.currentGame?.gamePlies?.size, currentGameString())
 
                 testWasExecuted.value = true
             }
         }
-        waitFor("restartTest was executed") { -> testWasExecuted.value }
+        waitFor("restartTest was executed") { testWasExecuted.value }
     }
 }

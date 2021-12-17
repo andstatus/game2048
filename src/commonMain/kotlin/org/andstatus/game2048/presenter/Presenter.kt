@@ -67,7 +67,7 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     fun onAppEntry() = myMeasured("onAppEntry") {
-        val game = model.history.currentGameRef.value
+        val game = model.history.currentGame
         presentGameClock(view.gameStage, model) { view.mainView.scoreBar.gameTime }
         if (game?.isEmpty != false) {
             myLog("Restarting and showing help...")
@@ -289,7 +289,7 @@ class Presenter(val view: ViewData, history: History) {
         model.restart().present()
     }
 
-    fun onBookmarksClick() = model.history.currentGameRef.value?.also { game ->
+    fun onBookmarksClick() = model.history.currentGame?.also { game ->
         logClick("Bookmarks")
         view.showBookmarks(game)
     }
@@ -317,7 +317,7 @@ class Presenter(val view: ViewData, history: History) {
         }
     }
 
-    private fun loadPlies() = model.history.currentGameRef.value?.apply {
+    private fun loadPlies() = model.history.currentGame?.apply {
         if (notCompleted) afterStop {
             multithreadedScope.launch {
                 load()
@@ -326,7 +326,7 @@ class Presenter(val view: ViewData, history: History) {
         }
     }
 
-    fun onShareClick() = model.history.currentGameRef.value?.also { game ->
+    fun onShareClick() = model.history.currentGame?.also { game ->
         afterStop {
             logClick("Share")
             view.gameStage.shareText(

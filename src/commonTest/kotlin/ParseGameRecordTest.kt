@@ -23,10 +23,13 @@ class ParseGameRecordTest: ViewsForTesting(log = true) {
 
         val history = History.load(settings)
         history.openGame(gameId)
-        assertEquals(8, history.currentGame.score, "Score of: ${history.currentGame}")
-        assertEquals(1, history.currentGame.shortRecord.bookmarks.size, "Bookmarks in: ${history.currentGame}")
-        history.currentGame.gamePlies.load()
-        assertEquals(11, history.currentGame.gamePlies.size, "Plies stored in: ${history.currentGame}")
+        assertEquals(8, history.currentGame?.score, "Score of: ${history.currentGame}")
+        assertEquals(
+            1, history.currentGame?.shortRecord?.bookmarks?.size,
+            "Bookmarks in: ${history.currentGame}"
+        )
+        history.currentGame?.gamePlies?.load()
+        assertEquals(11, history.currentGame?.gamePlies?.size, "Plies stored in: ${history.currentGame}")
     }
 
 }

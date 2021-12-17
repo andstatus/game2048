@@ -57,7 +57,7 @@ class MovesTest : ViewsForTesting(log = true) {
                 }
                 assertEquals(
                     position1.plyNumber,
-                    presenter.model.history.currentGame.shortRecord.bookmarks[0].plyNumber,
+                    presenter.model.history.currentGame?.shortRecord?.bookmarks?.get(0)?.plyNumber,
                     modelAndViews()
                 )
 
@@ -96,10 +96,10 @@ class MovesTest : ViewsForTesting(log = true) {
                 assertFalse(presenter.canRedo(), this.historyString())
                 assertEquals(
                     position1.plyNumber,
-                    presenter.model.history.currentGame.shortRecord.bookmarks[0].plyNumber,
+                    presenter.model.history.currentGame?.shortRecord?.bookmarks?.get(0)?.plyNumber,
                     modelAndViews()
                 )
-                assertEquals(1, presenter.model.history.currentGame.shortRecord.bookmarks.size, modelAndViews())
+                assertEquals(1, presenter.model.history.currentGame?.shortRecord?.bookmarks?.size, modelAndViews())
                 waitForMainViewShown {
                     presenter.onUndoClick()
                 }
@@ -115,16 +115,16 @@ class MovesTest : ViewsForTesting(log = true) {
                     presenter.onSwipe(SwipeDirection.TOP)
                     assertTrue(started, "GameClock should start: $playedSeconds")
                     val stopWatch = Stopwatch().start()
-                    waitFor("Elapsed seconds 1") { -> stopWatch.elapsed.seconds > 1 }
+                    waitFor("Elapsed seconds 1") { stopWatch.elapsed.seconds > 1 }
                     val val1 = playedSeconds
                     assertTrue(val1 > 0, "GameClock should tick: $val1")
-                    waitFor("Elapsed seconds 3") { -> stopWatch.elapsed.seconds > 3 }
+                    waitFor("Elapsed seconds 3") { stopWatch.elapsed.seconds > 3 }
                     assertTrue(playedSeconds > val1, "GameClock should tick: $playedSeconds")
                 }
 
                 testWasExecuted.value = true
             }
         }
-        waitFor("MovesTest was executed") { -> testWasExecuted.value }
+        waitFor("MovesTest was executed") { testWasExecuted.value }
     }
 }
