@@ -17,9 +17,6 @@ import org.andstatus.game2048.myMeasuredIt
 
 const val keyGameMode = "gameMode"
 
-private val gameIdsRange = 1..60
-private const val maxOlderGames = 30
-
 /** @author yvolk@yurivolkov.com */
 class History(
     val settings: Settings,
@@ -27,11 +24,11 @@ class History(
     recentGamesIn: List<ShortRecord> = emptyList()
 ) {
     private val keyBest = "best"
+    private val stubGame: GameRecord = GameRecord.newEmpty(settings, settings.stubGameId).load()
     private val recentGamesRef: KorAtomicRef<List<ShortRecord>> = korAtomic(recentGamesIn)
     val recentGames get() = recentGamesRef.value
-    val currentGameRef: KorAtomicRef<GameRecord?> = korAtomic(currentGameIn)
-    val currentGame: GameRecord? get() = currentGameRef.value
-    private val newEmptyGame get() = GameRecord.newEmpty(settings, idForNewGame()).load()
+    private val currentGameRef: KorAtomicRef<GameRecord> = korAtomic(currentGameIn ?: stubGame)
+    val currentGame: GameRecord get() = currentGameRef.value
 
     // 1. Info on previous games
     var bestScore: Int = settings.storage.getOrNull(keyBest)?.toInt() ?: 0
@@ -64,7 +61,7 @@ class History(
 
     fun loadRecentGames(): History {
         myMeasuredIt("Recent games loaded") {
-            recentGamesRef.value = gameIdsRange.fold(emptyList()) { acc, ind ->
+            recentGamesRef.value = settings.gameIdsRange.fold(emptyList()) { acc, ind ->
                 ShortRecord.fromId(settings, ind)
                     ?.let { acc + it } ?: acc
             }
@@ -73,12 +70,12 @@ class History(
         return this
     }
 
-    fun openNewGame(): GameRecord = newEmptyGame.let {
-        openGame(it, it.id) ?: throw IllegalStateException("Failed to open new empty game")
+    fun openNewGame(): GameRecord = GameRecord.newEmpty(settings, idForNewGame()).load().let {
+        openGame(it, it.id) ?: throw IllegalStateException("Failed to open new game")
     }
 
     fun openGame(id: Int): GameRecord? =
-        currentGame?.let {
+        currentGame.let {
             if (it.id == id) return it
             else null
         }
@@ -104,7 +101,7 @@ class History(
 
     fun saveCurrent(coroutineScope: CoroutineScope): History {
         settings.storage[keyGameMode] = gameMode.modeEnum.id
-        currentGame?.let { game ->
+        currentGame.let { game ->
             settings.storage[keyCurrentGameId] = game.id
 
             coroutineScope.launch {
@@ -121,7 +118,7 @@ class History(
     }
 
     private fun updateBestScore() {
-        (currentGame?.score ?: 0).let { score ->
+        (currentGame.score).let { score ->
             if (bestScore < score) {
                 bestScore = score
                 settings.storage[keyBest] = score.toString()
@@ -136,48 +133,48 @@ class History(
             myLog("idForNewGame: $it")
         }
 
-    private fun idToDelete() = if (recentGames.size > maxOlderGames) {
+    private fun idToDelete() = if (recentGames.size > settings.maxOlderGames) {
         val keepAfter = DateTimeTz.nowLocal().minus(1.weeks)
         val olderGames = recentGames.filterNot {
-            it.finalPosition.startingDateTime >= keepAfter || it.id == currentGame?.id
+            it.finalPosition.startingDateTime >= keepAfter || it.id == currentGame.id
         }
         when {
             olderGames.size > 20 -> olderGames.minByOrNull { it.finalPosition.score }?.id
-            recentGames.size >= gameIdsRange.last -> recentGames.minByOrNull { it.finalPosition.score }?.id
+            recentGames.size >= settings.gameIdsRange.last -> recentGames.minByOrNull { it.finalPosition.score }?.id
             else -> null
         }
     } else null
 
-    private fun unusedGameId() = gameIdsRange.filterNot { it == currentGame?.id }
+    private fun unusedGameId() = settings.gameIdsRange.filterNot { it == currentGame.id }
         .find { id -> recentGames.none { it.id == id } }
-        ?: recentGames.filterNot { it.id == currentGame?.id }
+        ?: recentGames.filterNot { it.id == currentGame.id }
             .minByOrNull { it.finalPosition.startingDateTime }?.id
         ?: throw IllegalStateException("Failed to find unusedGameId")
 
-    fun deleteCurrent() = currentGame?.let { deleteGame(it.id) }
+    fun deleteCurrent() = deleteGame(currentGame.id)
 
-    fun deleteGame(id: Int) {
+    private fun deleteGame(id: Int) {
         GameRecord.delete(settings, id)
         recentGamesRef.value = recentGames.filterNot { it.id == id }
-        if (currentGame?.id == id) {
-            currentGameRef.value = latestOtherGame(id)
+        if (currentGame.id == id) {
+            currentGameRef.value = latestOtherGame(id) ?: stubGame
         }
     }
 
-    fun latestOtherGame(notTheId: Int): GameRecord? = recentGames
+    private fun latestOtherGame(notTheId: Int): GameRecord? = recentGames
         .filterNot { it.id == notTheId }
         .maxByOrNull { it.finalPosition.startingDateTime }
         ?.makeGameRecord()
 
     val plyToRedo: Ply?
-        get() = currentGame?.let { game ->
+        get() = currentGame.let { game ->
             when {
                 redoPlyPointer < 1 || redoPlyPointer > game.gamePlies.size -> null
                 else -> game.gamePlies[redoPlyPointer]
             }
         }
 
-    fun add(position: GamePosition) = currentGame?.let { game ->
+    fun add(position: GamePosition) = currentGame.let { game ->
         currentGameRef.value = when (position.prevPly.plyEnum) {
             PlyEnum.LOAD -> game.replayedAtPosition(position)
             else -> {
@@ -212,18 +209,18 @@ class History(
         redoPlyPointer = 0
     }
 
-    fun createBookmark(gamePosition: GamePosition) = currentGame?.let { game ->
+    fun createBookmark(gamePosition: GamePosition) = currentGame.let { game ->
         currentGameRef.value = with(game.shortRecord) {
             GameRecord(
                 ShortRecord(settings, board, note, id, start, finalPosition,
                     bookmarks.filter { it.plyNumber != gamePosition.plyNumber } +
-                            gamePosition.copy()),
+                        gamePosition.copy()),
                 game.gamePlies
             )
         }
     }
 
-    fun deleteBookmark(gamePosition: GamePosition) = currentGame?.let { game ->
+    fun deleteBookmark(gamePosition: GamePosition) = currentGame.let { game ->
         currentGameRef.value = with(game.shortRecord) {
             GameRecord(
                 ShortRecord(settings, board, note, id, start, finalPosition, bookmarks
@@ -233,14 +230,14 @@ class History(
         }
     }
 
-    fun canUndo(): Boolean = currentGame?.let { game ->
+    fun canUndo(): Boolean = currentGame.let { game ->
         settings.allowUndo &&
             redoPlyPointer != 1 && redoPlyPointer != 2 &&
             game.gamePlies.size > 1 &&
             game.gamePlies.lastOrNull()?.player == PlayerEnum.COMPUTER
-    } ?: false
+    }
 
-    fun undo(): Ply? = currentGame?.let { game ->
+    fun undo(): Ply? = currentGame.let { game ->
         if (!canUndo()) {
             return null
         } else if (redoPlyPointer < 1 && game.gamePlies.size > 0) {
@@ -254,11 +251,11 @@ class History(
         return plyToRedo
     }
 
-    fun canRedo(): Boolean = currentGame?.let { game ->
+    fun canRedo(): Boolean = currentGame.let { game ->
         return redoPlyPointer > 0 && redoPlyPointer <= game.gamePlies.size
-    } ?: false
+    }
 
-    fun redo(): Ply? = currentGame?.let { game ->
+    fun redo(): Ply? = currentGame.let { game ->
         if (canRedo()) {
             return plyToRedo?.also {
                 if (redoPlyPointer < game.gamePlies.size)
@@ -272,11 +269,8 @@ class History(
         return null
     }
 
-    fun gotoBookmark(position: GamePosition) = currentGame?.let { game ->
-        if (position.plyNumber >= game.shortRecord.finalPosition.plyNumber) {
-            redoPlyPointer = 0
-        } else {
-            redoPlyPointer = position.plyNumber + 1
-        }
+    fun gotoBookmark(position: GamePosition) = currentGame.let { game ->
+        redoPlyPointer = if (position.plyNumber >= game.shortRecord.finalPosition.plyNumber) 0
+        else position.plyNumber + 1
     }
 }

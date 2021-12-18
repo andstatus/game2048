@@ -53,18 +53,18 @@ fun ViewData.modelAndViews() =
     "Model:     " + presenter.model.gamePosition.pieces.mapIndexed { ind, piece ->
         ind.toString() + ":" + (piece?.text ?: "-")
     } +
-            (if (presenter.model.history.currentGame?.shortRecord?.bookmarks?.isNotEmpty() == true)
-                "  bookmarks: " + presenter.model.history.currentGame?.shortRecord?.bookmarks?.size
+            (if (presenter.model.history.currentGame.shortRecord.bookmarks.isNotEmpty())
+                "  bookmarks: " + presenter.model.history.currentGame.shortRecord.bookmarks.size
             else "") +
             "\n" +
             "BoardViews:" + presenter.boardViews.blocksOnBoard.mapIndexed { ind, list ->
         ind.toString() + ":" + (if (list.isEmpty()) "-" else list.joinToString(transform = { it.piece.text }))
     }
 
-fun ViewData.currentGameString(): String = "CurrentGame " + presenter.model.history.currentGame?.toLongString()
+fun ViewData.currentGameString(): String = "CurrentGame " + presenter.model.history.currentGame.toLongString()
 
 fun ViewData.historyString(): String = with(presenter.model.history) {
-    "History: index:$redoPlyPointer, moves:${currentGame?.gamePlies?.size}"
+    "History: index:$redoPlyPointer, moves:${currentGame.gamePlies.size}"
 }
 
 fun ViewData.waitForMainViewShown(action: () -> Any? = { null }) {
@@ -130,7 +130,7 @@ fun ViewData.generateGame(expectedPliesCount: Int) {
         presenter.onPauseClick()
     }
 
-    val id1 = presenter.model.history.currentGame?.id
+    val id1 = presenter.model.history.currentGame.id
     waitFor("Recent games reloaded with gameId:$id1") {
         presenter.model.history.recentGames.any { it.id == id1 }
     }

@@ -59,11 +59,11 @@ class PersistenceTest : ViewsForTesting(log = true) {
         myLog("Current game 1, n=$nPlies: ${presenter.model.history.currentGame}")
         presenter.loadSharedJson(sharedJson)
         waitFor("currentGame loaded") {
-            presenter.model.history.currentGame?.gamePlies?.notCompleted == false
+            presenter.model.history.currentGame.gamePlies.isReady
         }
         myLog("Current game 2, n=$nPlies: ${presenter.model.history.currentGame}")
 
         val gameRecordOpened = presenter.model.history.currentGame
-        assertEquals(gameRecord.toLongString(), gameRecordOpened?.toLongString(), message)
+        assertEquals(gameRecord.toLongString(), gameRecordOpened.toLongString(), message)
     }
 }

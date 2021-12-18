@@ -26,7 +26,12 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
     private val pages: List<PliesPage> get() = pagesRef.value
     val lastPage get() = pages.last()
 
-    val notCompleted: Boolean get() = !pliesLoaded.isInitialized()
+    val isReady: Boolean
+        get() = if (reader == null) {
+            lastPage.loaded
+        } else {
+            pliesLoaded.isInitialized()
+        }
     private val pliesLoaded: Lazy<Boolean> = lazy {
         if (reader == null) {
             lastPage.load()
@@ -83,6 +88,8 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
     fun toLongString(): String = toShortString() + " " + lastPage.toLongString()
 
     fun save() {
+        if (shortRecord.isStub) return
+
         shortRecord.settings.storage[keyHead(shortRecord.id)] =
             pages.map { it.toHeaderMap() }.let(Json::stringify)
         pages.forEach { it.save() }
@@ -97,7 +104,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
     fun toShortString(): String = if(lastPage === emptyFirstPage) {
         "emptyLastPage" + if(pages.size > 1) " of ${pages.size}" else ""
     } else {
-        "${size} plies in ${pages.size} pages" + if (notCompleted) ", loading..." else ""
+        "${size} plies in ${pages.size} pages" + if (isReady) "" else ", loading..."
     }
 
     companion object {

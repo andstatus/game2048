@@ -66,6 +66,8 @@ class PliesPage(
     }.toString()
 
     fun save() {
+        if (shortRecord.isStub) return
+
         if (loaded && savedRef.compareAndSet(false, true)) {
             if (count == 0) {
                 shortRecord.settings.storage.remove(keyPliesPage)

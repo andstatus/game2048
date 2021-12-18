@@ -82,19 +82,18 @@ class HistoryTest : ViewsForTesting(log = true) {
             it.save()
             openGame(it, it.id)
         }
-        assertTrue(canUndo(), currentGame?.toLongString())
-        assertFalse(canRedo(), currentGame?.toLongString())
+        assertTrue(canUndo(), currentGame.toLongString())
+        assertFalse(canRedo(), currentGame.toLongString())
         saveCurrent(CoroutineScope(coroutineContext)).also {
-            it.currentGame?.load()
+            it.currentGame.load()
             sWaitFor {
-                currentGame?.notCompleted == false
+                currentGame.isReady
             }
         }
     }
 
     private fun ViewData.assertTestHistory(expected: GameRecord) {
-        val actualGame = presenter.model.history.currentGame?.load()
-            ?: throw AssertionError("No current game")
+        val actualGame = presenter.model.history.currentGame.load()
         assertEquals(expected.gamePlies.toLongString(), actualGame.gamePlies.toLongString(), currentGameString())
         assertEquals(expected.score, actualGame.score, currentGameString())
         assertEquals(expected.shortRecord.bookmarks.size, actualGame.shortRecord.bookmarks.size, currentGameString())

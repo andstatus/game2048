@@ -57,7 +57,7 @@ class MovesTest : ViewsForTesting(log = true) {
                 }
                 assertEquals(
                     position1.plyNumber,
-                    presenter.model.history.currentGame?.shortRecord?.bookmarks?.get(0)?.plyNumber,
+                    presenter.model.history.currentGame.shortRecord.bookmarks[0].plyNumber,
                     modelAndViews()
                 )
 
@@ -96,10 +96,10 @@ class MovesTest : ViewsForTesting(log = true) {
                 assertFalse(presenter.canRedo(), this.historyString())
                 assertEquals(
                     position1.plyNumber,
-                    presenter.model.history.currentGame?.shortRecord?.bookmarks?.get(0)?.plyNumber,
+                    presenter.model.history.currentGame.shortRecord.bookmarks[0].plyNumber,
                     modelAndViews()
                 )
-                assertEquals(1, presenter.model.history.currentGame?.shortRecord?.bookmarks?.size, modelAndViews())
+                assertEquals(1, presenter.model.history.currentGame.shortRecord.bookmarks.size, modelAndViews())
                 waitForMainViewShown {
                     presenter.onUndoClick()
                 }

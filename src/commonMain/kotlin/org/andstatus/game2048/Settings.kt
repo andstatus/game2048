@@ -43,6 +43,10 @@ class Settings(private val stage: Stage) {
     val isTestRun = "TestGameWindow" == stage.views.gameWindow::class.simpleName
     var pliesPageSize = 5000
 
+    val stubGameId = 61
+    val gameIdsRange = 1 until stubGameId
+    val maxOlderGames = 30
+
     companion object {
         fun load(stage: Stage): Settings = myMeasured("Settings loaded") { Settings(stage) }
     }

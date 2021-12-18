@@ -18,14 +18,14 @@ class MultiPageTest : ViewsForTesting(log = true) {
                 presenter.model.settings.pliesPageSize = pliesPerPage
                 generateGame(expectedPliesCount)
 
-                val game1 = presenter.model.history.currentGame ?: throw AssertionError("No current game")
+                val game1 = presenter.model.history.currentGame
                 assertEquals(
                     expectedPages, game1.gamePlies.lastPage.pageNumber,
                     "Generated game pages ${currentGameString()}"
                 )
 
-                if (presenter.model.history.recentGames.none { it.id == game1.id }) {
-                    generateGame(expectedPliesCount + 3)
+                if (presenter.model.history.recentGames.none { it.id != game1.id }) {
+                    generateGame(expectedPliesCount + 4)
                 }
                 presenter.model.history.recentGames.first { it.id != game1.id }.let { shortRecord ->
                     waitForMainViewShown {
@@ -41,9 +41,9 @@ class MultiPageTest : ViewsForTesting(log = true) {
                     presenter.onHistoryItemClick(game1.id)
                 }
                 waitFor("Game ${game1.shortRecord} opened") {
-                    presenter.model.history.currentGame?.id == game1.id
+                    presenter.model.history.currentGame.id == game1.id
                 }
-                val game2 = presenter.model.history.currentGame ?: throw AssertionError("No current game")
+                val game2 = presenter.model.history.currentGame
                 assertEquals(
                     expectedPages, game2.gamePlies.lastPage.pageNumber,
                     "Restored from id ${currentGameString()}"

@@ -11,9 +11,9 @@ class Model(val history: History) {
 
     val moveNumber: Int get() = gamePosition.moveNumber
     val isBookmarked
-        get() = history.currentGame?.shortRecord?.bookmarks?.any {
+        get() = history.currentGame.shortRecord.bookmarks.any {
             it.plyNumber == gamePosition.plyNumber
-        } ?: false
+        }
     val gameClock get() = gamePosition.gameClock
     val bestScore get() = history.bestScore
     val score get() = gamePosition.score
@@ -61,7 +61,7 @@ class Model(val history: History) {
         saveCurrent()
     }
 
-    fun saveCurrent() = history.saveCurrent(history.settings.multithreadedScope)
+    private fun saveCurrent() = history.saveCurrent(history.settings.multithreadedScope)
 
     fun canUndo(): Boolean {
         return history.canUndo()
@@ -84,10 +84,10 @@ class Model(val history: History) {
         gamePosition.play(it, true).update(true)
     } ?: emptyList()
 
-    fun redoToCurrent(): List<Ply> = history.currentGame?.let { game ->
+    fun redoToCurrent(): List<Ply> = history.currentGame.let { game ->
         history.redoPlyPointer = 0
         return composerPly(game.shortRecord.finalPosition, true)
-    } ?: emptyList()
+    }
 
     fun randomComputerMove() = (nextComputerPlacedPeace.value?.let {
         nextComputerPlacedPeace.value = null

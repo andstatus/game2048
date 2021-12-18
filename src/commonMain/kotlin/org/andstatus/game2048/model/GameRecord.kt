@@ -9,6 +9,8 @@ const val keyGame = "game"
 class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
 
     fun save() {
+        if (shortRecord.isStub) return
+
         myLog("Starting to save $this")
         shortRecord.save()
         gamePlies.save()
@@ -22,7 +24,7 @@ class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
 
     fun load(): GameRecord = gamePlies.load().let { this }
     val isEmpty: Boolean = shortRecord.finalPosition.placedPieces().isEmpty()
-    val notCompleted: Boolean get() = gamePlies.notCompleted
+    val isReady: Boolean get() = gamePlies.isReady
 
     fun toLongString(): String = "$shortRecord, " + gamePlies.toLongString()
 

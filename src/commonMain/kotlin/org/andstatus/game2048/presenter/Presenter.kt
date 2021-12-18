@@ -69,7 +69,7 @@ class Presenter(val view: ViewData, history: History) {
     fun onAppEntry() = myMeasured("onAppEntry") {
         val game = model.history.currentGame
         presentGameClock(view.gameStage, model) { view.mainView.scoreBar.gameTime }
-        if (game?.isEmpty != false) {
+        if (game.isEmpty) {
             myLog("Restarting and showing help...")
             model.restart().present()
             view.showHelp()
@@ -129,7 +129,7 @@ class Presenter(val view: ViewData, history: History) {
         undo()
     }
 
-    fun undo() {
+    private fun undo() {
         if (!isPresenting.compareAndSet(expect = false, update = true)) return
 
         view.mainView.hideStatusBar()
@@ -142,7 +142,7 @@ class Presenter(val view: ViewData, history: History) {
         redo()
     }
 
-    fun redo() {
+    private fun redo() {
         if (!isPresenting.compareAndSet(expect = false, update = true)) return
 
         (model.redo() + Ply.delay() + model.redo() + Ply.delay()).present()
@@ -273,7 +273,7 @@ class Presenter(val view: ViewData, history: History) {
         pauseGame()
     }
 
-    fun hideMainView() {
+    private fun hideMainView() {
         view.mainView.removeFromParent()
     }
 
@@ -289,7 +289,7 @@ class Presenter(val view: ViewData, history: History) {
         model.restart().present()
     }
 
-    fun onBookmarksClick() = model.history.currentGame?.also { game ->
+    fun onBookmarksClick() = model.history.currentGame.also { game ->
         logClick("Bookmarks")
         view.showBookmarks(game)
     }
@@ -317,8 +317,8 @@ class Presenter(val view: ViewData, history: History) {
         }
     }
 
-    private fun loadPlies() = model.history.currentGame?.apply {
-        if (notCompleted) afterStop {
+    private fun loadPlies() = model.history.currentGame.apply {
+        if (!isReady) afterStop {
             multithreadedScope.launch {
                 load()
                 asyncShowMainView()
@@ -326,7 +326,7 @@ class Presenter(val view: ViewData, history: History) {
         }
     }
 
-    fun onShareClick() = model.history.currentGame?.also { game ->
+    fun onShareClick() = model.history.currentGame.also { game ->
         afterStop {
             logClick("Share")
             view.gameStage.shareText(
@@ -364,7 +364,7 @@ class Presenter(val view: ViewData, history: History) {
         view.showHelp()
     }
 
-    suspend fun onSelectColorTheme(colorThemeEnum: ColorThemeEnum) {
+    fun onSelectColorTheme(colorThemeEnum: ColorThemeEnum) {
         logClick("onSelectColorTheme $colorThemeEnum")
         if (colorThemeEnum == view.settings.colorThemeEnum) return
 
@@ -374,7 +374,7 @@ class Presenter(val view: ViewData, history: History) {
         view.reInitialize()
     }
 
-    fun pauseGame() {
+    private fun pauseGame() {
         clickCounter.incrementAndGet()
         model.pauseGame()
     }
