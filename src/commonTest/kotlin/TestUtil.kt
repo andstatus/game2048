@@ -26,10 +26,6 @@ private val viewData: ViewData
         ?: throw IllegalStateException("Value is not initialized yet")
     else throw IllegalStateException("Value is not initialized yet")
 
-fun unsetGameView() {
-    isViewDataInitialized.value = false
-}
-
 suspend fun Stage.initializeViewDataInTest(handler: suspend ViewData.() -> Unit = {}) {
     if (isViewDataInitialized.value) {
         viewData.handler()
@@ -105,7 +101,7 @@ fun newGameRecord(
         GameRecord(it, GamePlies.fromPlies(it, plies))
     }
 
-fun ViewData.generateGame(expectedPliesCount: Int) {
+fun ViewData.generateGame(expectedPliesCount: Int, bookmarkOnPly: Int? = null): GameRecord {
     waitForMainViewShown {
         presenter.onRestartClick()
     }
@@ -114,6 +110,13 @@ fun ViewData.generateGame(expectedPliesCount: Int) {
     while (presenter.model.gamePosition.plyNumber < expectedPliesCount &&
         iteration < expectedPliesCount
     ) {
+        bookmarkOnPly?.let { plyNumber ->
+            if (plyNumber == presenter.model.gamePosition.plyNumber) {
+                waitForMainViewShown {
+                    presenter.onBookmarkClick()
+                }
+            }
+        }
         AiPlayer.allowedRandomPly(presenter.model.gamePosition).prevPly.plyEnum.swipeDirection?.let {
             waitForMainViewShown {
                 presenter.onSwipe(it)
@@ -130,9 +133,9 @@ fun ViewData.generateGame(expectedPliesCount: Int) {
         presenter.onPauseClick()
     }
 
-    val id1 = presenter.model.history.currentGame.id
-    waitFor("Recent games reloaded with gameId:$id1") {
-        presenter.model.history.recentGames.any { it.id == id1 }
+    val game = presenter.model.history.currentGame
+    waitFor("Recent games reloaded with gameId:${game.id}") {
+        presenter.model.history.recentGames.any { it.id == game.id }
     }
-
+    return game
 }

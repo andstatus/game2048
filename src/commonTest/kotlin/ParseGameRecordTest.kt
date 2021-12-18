@@ -11,7 +11,6 @@ class ParseGameRecordTest: ViewsForTesting(log = true) {
 
     @Test
     fun parseGameRecordTest() = viewsTest {
-        unsetGameView()
         val settings = Settings.load(stage)
         testOneString(settings, gameRecordSingleJson)
         testOneString(settings, gameRecordConcatenatedJson)

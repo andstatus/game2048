@@ -16,7 +16,6 @@ class PersistenceTest : ViewsForTesting(log = true) {
     fun persistenceTest() {
         val testWasExecuted = korAtomic(false)
         viewsTest {
-            unsetGameView()
             initializeViewDataInTest {
                 persistGameRecordTest(0)
                 persistGameRecordTest(1)

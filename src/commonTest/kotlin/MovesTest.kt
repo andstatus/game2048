@@ -16,7 +16,6 @@ class MovesTest : ViewsForTesting(log = true) {
     fun movesTest() {
         val testWasExecuted = korAtomic(false)
         viewsTest {
-            unsetGameView()
             initializeViewDataInTest {
                 waitFor("Block is on board") {
                     presenter.boardViews.blocks.isNotEmpty()

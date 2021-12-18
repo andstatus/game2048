@@ -11,7 +11,6 @@ class RestartTest : ViewsForTesting(log = true) {
     fun restartTest() {
         val testWasExecuted = korAtomic(false)
         viewsTest {
-            unsetGameView()
             initializeViewDataInTest {
                 waitForMainViewShown {
                     presenter.computerMove()

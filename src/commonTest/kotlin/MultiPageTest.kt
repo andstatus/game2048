@@ -1,6 +1,7 @@
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korio.concurrent.atomic.korAtomic
 import org.andstatus.game2048.model.parseJsonArray
+import org.andstatus.game2048.myLog
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -10,8 +11,8 @@ class MultiPageTest : ViewsForTesting(log = true) {
     fun multiPageTest() {
         val testWasExecuted = korAtomic(false)
         viewsTest {
-            unsetGameView()
             initializeViewDataInTest {
+                val storedPliesPageSize = presenter.model.settings.pliesPageSize
                 val pliesPerPage = 6
                 val expectedPages = 3
                 val expectedPliesCount = pliesPerPage * expectedPages - 3
@@ -49,9 +50,18 @@ class MultiPageTest : ViewsForTesting(log = true) {
                     "Restored from id ${currentGameString()}"
                 )
 
+                presenter.model.settings.pliesPageSize = storedPliesPageSize
                 testWasExecuted.value = true
             }
         }
         waitFor("MultiPageTest was executed") { testWasExecuted.value }
+    }
+
+    @Test
+    fun stabilityTest() {
+        (1 .. 20).forEach {
+            myLog("stabilityTest $it")
+            multiPageTest()
+        }
     }
 }
