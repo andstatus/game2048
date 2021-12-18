@@ -1,5 +1,4 @@
 import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korio.concurrent.atomic.korAtomic
 import org.andstatus.game2048.model.GameRecord
 import org.andstatus.game2048.view.ViewData
 import kotlin.test.Test
@@ -11,23 +10,15 @@ import kotlin.test.assertTrue
 class HistoryTest : ViewsForTesting(log = true) {
 
     @Test
-    fun historyTest() {
-        val testWasExecuted = korAtomic(false)
-        viewsTest {
-            initializeViewDataInTest {
+    fun historyTest() = myViewsTest(this) {
+        val game1 = generateGame(7, 3)
+        assertEquals(1, game1.shortRecord.bookmarks.size, currentGameString())
 
-                val game1 = generateGame(7, 3)
-                assertEquals(1, game1.shortRecord.bookmarks.size, currentGameString())
-
-                if (presenter.model.history.recentGames.none { it.id != game1.id }) {
-                    generateGame(5)
-                }
-
-                assertTestHistory(game1)
-                testWasExecuted.value = true
-            }
+        if (presenter.model.history.recentGames.none { it.id != game1.id }) {
+            generateGame(5)
         }
-        waitFor("historyTest was executed") { testWasExecuted.value }
+
+        assertTestHistory(game1)
     }
 
     private fun ViewData.assertTestHistory(expected: GameRecord) {

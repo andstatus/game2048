@@ -1,5 +1,5 @@
 import com.soywiz.klock.Stopwatch
-import com.soywiz.korge.view.Stage
+import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
 import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.lang.Thread_sleep
@@ -26,19 +26,26 @@ private val viewData: ViewData
         ?: throw IllegalStateException("Value is not initialized yet")
     else throw IllegalStateException("Value is not initialized yet")
 
-suspend fun Stage.initializeViewDataInTest(handler: suspend ViewData.() -> Unit = {}) {
-    if (isViewDataInitialized.value) {
-        viewData.handler()
-    } else {
-        viewData(stage, animateViews = false) {
-            myLog("Initialized in test")
-            viewDataRef.value = this
-            isViewDataInitialized.value = true
-            sWaitFor("Main view shown 1") { viewData.presenter.mainViewShown.value }
+fun ViewsForTesting.myViewsTest(testObject: Any, handler: suspend ViewData.() -> Unit = {}) {
+    val testWasExecuted = korAtomic(false)
+    myLog("Test $testObject started")
+    viewsTest {
+        if (isViewDataInitialized.value) {
             viewData.handler()
+            testWasExecuted.value = true
+        } else {
+            viewData(stage, animateViews = false) {
+                myLog("Initialized in test")
+                viewDataRef.value = this
+                isViewDataInitialized.value = true
+                sWaitFor("Main view shown 1") { viewData.presenter.mainViewShown.value }
+                viewData.handler()
+                testWasExecuted.value = true
+            }
+            myLog("initializeViewDataInTest after 'viewData' function ended")
         }
-        myLog("initializeViewDataInTest after 'viewData' function ended")
     }
+    waitFor("Test $testObject was executed") { testWasExecuted.value }
 }
 
 fun ViewData.presentedPieces() = presenter.boardViews.blocksOnBoard.map { it.firstOrNull()?.piece }

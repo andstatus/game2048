@@ -8,11 +8,9 @@ import kotlin.test.assertEquals
 class ResourceStringsTest : ViewsForTesting(log = true) {
 
     @Test
-    fun resourceStringsTest() = viewsTest {
-        initializeViewDataInTest() {
-            testLanguageFallback()
-            collectCharacterCodes()
-        }
+    fun resourceStringsTest() = myViewsTest(this) {
+        testLanguageFallback()
+        collectCharacterCodes()
     }
 
     private suspend fun testLanguageFallback() {

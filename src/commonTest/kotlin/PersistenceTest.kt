@@ -1,5 +1,4 @@
 import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korio.concurrent.atomic.korAtomic
 import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.PlacedPiece
@@ -13,17 +12,10 @@ import kotlin.test.assertTrue
 class PersistenceTest : ViewsForTesting(log = true) {
 
     @Test
-    fun persistenceTest() {
-        val testWasExecuted = korAtomic(false)
-        viewsTest {
-            initializeViewDataInTest {
-                persistGameRecordTest(0)
-                persistGameRecordTest(1)
-                persistGameRecordTest(2)
-                testWasExecuted.value = true
-            }
-        }
-        waitFor("persistenceTest was executed") { testWasExecuted.value }
+    fun persistenceTest() = myViewsTest(this) {
+        persistGameRecordTest(0)
+        persistGameRecordTest(1)
+        persistGameRecordTest(2)
     }
 
     private fun ViewData.persistGameRecordTest(nPlies: Int) {
