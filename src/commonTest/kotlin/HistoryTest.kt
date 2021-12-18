@@ -1,6 +1,4 @@
 import com.soywiz.korge.tests.ViewsForTesting
-import org.andstatus.game2048.model.GameRecord
-import org.andstatus.game2048.view.ViewData
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -18,17 +16,14 @@ class HistoryTest : ViewsForTesting(log = true) {
             generateGame(5)
         }
 
-        assertTestHistory(game1)
-    }
-
-    private fun ViewData.assertTestHistory(expected: GameRecord) {
-        val actualGame = presenter.model.history.openGame(expected.id)?.load()
+        val actualGame = presenter.model.history.openGame(game1.id)?.load()
         assertNotNull(actualGame, currentGameString())
-        assertEquals(expected.toLongString(), actualGame.toLongString(), currentGameString())
-        assertEquals(expected.score, actualGame.score, currentGameString())
-        assertEquals(expected.shortRecord.bookmarks.size, actualGame.shortRecord.bookmarks.size, currentGameString())
-        assertEquals(expected.toSharedJson(), actualGame.toSharedJson(), currentGameString())
+        assertEquals(game1.toLongString(), actualGame.toLongString(), currentGameString())
+        assertEquals(game1.score, actualGame.score, currentGameString())
+        assertEquals(game1.shortRecord.bookmarks.size, actualGame.shortRecord.bookmarks.size, currentGameString())
+        assertEquals(game1.toSharedJson(), actualGame.toSharedJson(), currentGameString())
         assertTrue(presenter.canUndo(), modelAndViews() + "\n" + currentGameString())
         assertFalse(presenter.canRedo(), modelAndViews() + "\n" + currentGameString())
     }
+
 }

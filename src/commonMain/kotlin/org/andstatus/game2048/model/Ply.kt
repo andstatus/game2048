@@ -60,9 +60,10 @@ data class Ply(
             val plyEnum = (aMap[keyPlyEnum] ?: aMap[keyPlyEnumV1])?.let { PlyEnum.fromId(it.toString()) }
                 ?: PlyEnum.PLACE
             val seconds: Int = aMap[keySeconds] as Int? ?: 0
+            val retries: Int = aMap[keyRetries] as Int? ?: 0
             val pieceMoves: List<PieceMove>? = aMap[keyMoves]?.parseJsonArray()?.mapNotNull { PieceMove.fromJson(board, it) }
             return if (pieceMoves != null)
-                Ply(player, plyEnum, seconds, 0, pieceMoves)
+                Ply(player, plyEnum, seconds, retries, pieceMoves)
             else
                 null
         }

@@ -8,7 +8,7 @@ import org.andstatus.game2048.view.gameDefaultBackgroundColor
 import org.andstatus.game2048.view.viewData
 import kotlin.coroutines.coroutineContext
 
-val defaultPortraitGameWindowSize = SizeInt(720, 1280)
+val defaultPortraitGameWindowSize = SizeInt(720, 1440)
 val defaultPortraitRatio : Double = defaultPortraitGameWindowSize.width.toDouble() / defaultPortraitGameWindowSize.height
 val defaultDesktopGameWindowSize get() = SizeInt(defaultPortraitGameWindowSize.width / 2,
     defaultPortraitGameWindowSize.height / 2)

@@ -25,7 +25,7 @@ class GamePosition(
     var score: Int = 0,
     val startingDateTime: DateTimeTz = DateTimeTz.nowLocal(),
     val gameClock: GameClock = GameClock(),
-    val retries: Int = 0,
+    var retries: Int = 0,
     var plyNumber: Int = 0
 ) {
 
@@ -177,6 +177,7 @@ class GamePosition(
     fun play(ply: Ply, isRedo: Boolean = false): GamePosition {
         var newPosition = if (isRedo) forAutoPlaying(ply.seconds, true) else forNextPly()
 
+        newPosition.retries += ply.retries
         ply.pieceMoves.forEach { move ->
             newPosition.score += move.points()
             when (move) {
@@ -204,6 +205,7 @@ class GamePosition(
     fun playReversed(ply: Ply): GamePosition {
         var newPosition = forAutoPlaying(ply.seconds, false)
 
+        newPosition.retries -= ply.retries
         ply.pieceMoves.asReversed().forEach { move ->
             newPosition.score -= move.points()
             when (move) {

@@ -21,65 +21,99 @@ class ScoreBar(val viewData: ViewData): Container() {
     val moveNumber: Text
     var score: Text
     val bestScore: Text
+    val retries: Text
 
     init {
         with(viewData) {
             val scoreButtonWidth = (viewData.boardWidth - 2 * buttonMargin) / 3
-            val scoreButtonTop = buttonYs[2]
+            val barTopInd = 1
             val textYPadding = 28 * gameScale
             val scoreLabelSize = cellSize * 0.30
             val scoreTextSize = cellSize * 0.5
 
             var posX = boardLeft
             val bgScore = roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
-                position(posX, scoreButtonTop)
+                position(posX, buttonYs[barTopInd + 1])
             }
             text(stringResources.text("score_upper"), scoreLabelSize, gameColors.buttonLabelText, font,
                 TextAlignment.MIDDLE_CENTER
             ) {
                 positionX(bgScore.pos.x + scoreButtonWidth / 2)
-                positionY(scoreButtonTop + textYPadding)
+                positionY(buttonYs[barTopInd + 1] + textYPadding)
             }
             score = text("", scoreTextSize, gameColors.buttonText, font, TextAlignment.MIDDLE_CENTER) {
                 centerXOn(bgScore)
-                positionY(scoreButtonTop + scoreLabelSize + textYPadding)
+                positionY(buttonYs[barTopInd + 1] + scoreLabelSize + textYPadding)
+            }
+
+            val bgRetries = roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
+                position(posX, buttonYs[barTopInd + 2])
+            }
+            text(stringResources.text("retries"), scoreLabelSize, gameColors.buttonLabelText, font,
+                TextAlignment.MIDDLE_CENTER
+            ) {
+                positionX(bgRetries.pos.x + scoreButtonWidth / 2)
+                positionY(buttonYs[barTopInd + 2] + textYPadding)
+            }
+            retries = text("", scoreTextSize, gameColors.buttonText, font, TextAlignment.MIDDLE_CENTER) {
+                centerXOn(bgRetries)
+                positionY(buttonYs[barTopInd + 2] + scoreLabelSize + textYPadding)
             }
 
             posX += scoreButtonWidth + buttonMargin
             val bgBest = roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
-                position(posX, scoreButtonTop)
+                position(posX, buttonYs[barTopInd + 1])
             }
             text(stringResources.text("best"), scoreLabelSize, gameColors.buttonLabelText, font,
                 TextAlignment.MIDDLE_CENTER
             ) {
                 positionX(bgBest.pos.x + scoreButtonWidth / 2)
-                positionY(scoreButtonTop + textYPadding)
+                positionY(buttonYs[barTopInd + 1] + textYPadding)
             }
             bestScore = text("", scoreTextSize, gameColors.buttonText, font, TextAlignment.MIDDLE_CENTER) {
                 centerXOn(bgBest)
-                positionY(scoreButtonTop + scoreLabelSize + textYPadding)
+                positionY(buttonYs[barTopInd + 1] + scoreLabelSize + textYPadding)
             }
 
             posX += scoreButtonWidth + buttonMargin
-            gameTime = text("00:00:00", scoreLabelSize, gameColors.labelText, font, TextAlignment.MIDDLE_CENTER) {
-                positionX(posX + scoreButtonWidth / 2)
-                positionY(scoreButtonTop + textYPadding)
+            val bgMove = roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
+                position(posX, buttonYs[barTopInd + 1])
             }
-            moveNumber = text("", scoreTextSize, gameColors.labelText, font, TextAlignment.MIDDLE_CENTER) {
-                centerXOn(gameTime)
-                positionY(scoreButtonTop + scoreLabelSize + textYPadding)
+            text(stringResources.text("move_upper"), scoreLabelSize, gameColors.buttonLabelText, font,
+                TextAlignment.MIDDLE_CENTER
+            ) {
+                positionX(bgMove.pos.x + scoreButtonWidth / 2)
+                positionY(buttonYs[barTopInd + 1] + textYPadding)
+            }
+            moveNumber = text("", scoreTextSize, gameColors.buttonText, font, TextAlignment.MIDDLE_CENTER) {
+                centerXOn(bgMove)
+                positionY(buttonYs[barTopInd + 1] + scoreLabelSize + textYPadding)
             }
 
+            val bgTime = roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
+                position(posX, buttonYs[barTopInd + 2])
+            }
+            text(stringResources.text("time"), scoreLabelSize, gameColors.buttonLabelText, font,
+                TextAlignment.MIDDLE_CENTER
+            ) {
+                positionX(bgTime.pos.x + scoreButtonWidth / 2)
+                positionY(buttonYs[barTopInd + 2] + textYPadding)
+            }
+            gameTime = text("00:00:00", scoreLabelSize, gameColors.buttonText, font, TextAlignment.MIDDLE_CENTER) {
+                centerXOn(bgTime)
+                positionY(buttonYs[barTopInd + 2] + scoreLabelSize + textYPadding)
+            }
         }
     }
 
     fun show(parent: Container, playSpeed: Int) {
         addTo(parent)
         moveNumber.text = viewData.presenter.model.moveNumber.toString() +
-                (if (playSpeed < 0) " «" else "") +
-                (if (playSpeed > 0) " »" else "") +
-                (if (playSpeed != 0) abs(playSpeed) else "")
+            (if (playSpeed < 0) " «" else "") +
+            (if (playSpeed > 0) " »" else "") +
+            (if (playSpeed != 0) abs(playSpeed) else "")
         bestScore.text = viewData.presenter.bestScore.toString()
         score.text = viewData.presenter.score.toString()
+        retries.text = viewData.presenter.retries.toString()
     }
 }

@@ -24,13 +24,16 @@ Number 2048 is a good first win…</string>
   <string name="light">Light</string>
   <string name="load_game">Load game</string>
   <string name="move">Move</string>
+  <string name="move_upper">MOVE</string>
   <string name="milliseconds">ms</string>
   <string name="note">Note</string>
   <string name="recent_games">Recent games</string>
+  <string name="retries">RETRIES</string>
   <string name="score">Score</string>
   <string name="score_upper">SCORE</string>
   <string name="select_ai_algorithm">Select AI algorithm</string>
   <string name="select_theme">Select theme</string>
   <string name="share">Share game</string>
+  <string name="time">TIME</string>
   <string name="try_again">Try again</string>
 </resources>

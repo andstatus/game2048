@@ -22,7 +22,7 @@ class StatusBar(val viewData: ViewData): Container() {
     init {
         with(viewData) {
             val scoreButtonWidth = (viewData.boardWidth - 2 * buttonMargin) / 3
-            val barTop = buttonYs[8]
+            val barTop = buttonYs[9]
             val textYPadding = 28 * gameScale
             val scoreLabelSize = cellSize * 0.30
             val scoreTextSize = cellSize * 0.5

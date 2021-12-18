@@ -53,6 +53,7 @@ class Presenter(val view: ViewData, history: History) {
     val isPresenting = korAtomic(false)
     val score get() = model.score
     val bestScore get() = model.bestScore
+    val retries get() = model.gamePosition.retries
     var boardViews = BoardViews(view)
     val gameMode get() = model.gameMode
     var clickCounter = korAtomic(0)

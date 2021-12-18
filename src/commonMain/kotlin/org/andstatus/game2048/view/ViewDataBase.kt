@@ -9,6 +9,7 @@ import org.andstatus.game2048.defaultPortraitTextSize
 import org.andstatus.game2048.gameWindowSize
 import org.andstatus.game2048.myLog
 
+/** @author yvolk@yurivolkov.com */
 interface ViewDataBase {
     val gameStage: Stage
     val animateViews: Boolean
@@ -80,10 +81,10 @@ class ViewDataQuick(override val gameStage: Stage, override val animateViews: Bo
         buttonXs = (0 .. 4).fold(emptyList()) { acc, i ->
             acc + (boardLeft + i * (buttonSize + buttonMargin))
         }
-        buttonYs = (0 .. 8).fold(emptyList()) { acc, i ->
+        buttonYs = (0 .. 9).fold(emptyList()) { acc, i ->
             acc + (gameViewTop + buttonMargin + i * (buttonSize + buttonMargin))
         }
-        boardTop = buttonYs[3]
+        boardTop = buttonYs[4]
 
         myLog(
             "Window:${gameStage.coroutineContext.gameWindowSize.width}x${gameStage.coroutineContext.gameWindowSize.height}" +
