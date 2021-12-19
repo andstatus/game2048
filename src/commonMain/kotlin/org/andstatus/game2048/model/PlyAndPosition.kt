@@ -22,4 +22,14 @@ class PlyAndPosition(val ply:Ply, val position: GamePosition) {
 
     override fun toString(): String = "${ply.plyEnum.id}, $position"
 
+    companion object {
+        fun allowedRandomPly(position: GamePosition): PlyAndPosition {
+            PlyEnum.UserPlies.shuffled().forEach {
+                position.userPly(it).also {
+                    if (it.ply.isNotEmpty()) return it
+                }
+            }
+            return position.board.emptyPosition
+        }
+    }
 }

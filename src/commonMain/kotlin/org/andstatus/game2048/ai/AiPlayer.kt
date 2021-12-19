@@ -4,8 +4,10 @@ import com.soywiz.klock.Stopwatch
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.meanBy
 import org.andstatus.game2048.model.GamePosition
+import org.andstatus.game2048.model.PlayerEnum
 import org.andstatus.game2048.model.Ply
 import org.andstatus.game2048.model.PlyAndPosition
+import org.andstatus.game2048.model.PlyAndPosition.Companion.allowedRandomPly
 import org.andstatus.game2048.model.PlyEnum
 import org.andstatus.game2048.model.PlyEnum.Companion.UserPlies
 import org.andstatus.game2048.myLog
@@ -17,8 +19,10 @@ class AiPlayer(val settings: Settings) {
 
     private class FirstMove(val plyEnum: PlyEnum, val positions: List<GamePosition>) {
         fun randomComputerPly() = FirstMove(plyEnum, positions.map { it.randomComputerPly().position })
-        inline fun mapPositions(action: (List<GamePosition>) -> List<GamePosition>) =
-            FirstMove(plyEnum, action(positions))
+        inline fun mapPliesAndPositions(action: (List<GamePosition>) -> List<GamePosition>) =
+            FirstMove(plyEnum, action(this.positions))
+
+        override fun toString(): String = "$plyEnum, positions:${positions.size}"
     }
 
     fun nextPly(position: GamePosition): AiResult = Stopwatch().start().let { stopWatch ->
@@ -26,8 +30,8 @@ class AiPlayer(val settings: Settings) {
             AiAlgorithm.RANDOM -> AiResult(allowedRandomPly(position))
             AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> moveWithMaxScore(position)
             AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(position, 12, 5)
-            AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(position, 12, 5)
-            AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(position, 3, 10)
+            AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(position, 2, 325)
+            AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(position, 3, 1000)
         }.withContext(position, stopWatch.elapsed.millisecondsInt)
             .also { myLog(it) }
     }
@@ -72,7 +76,7 @@ class AiPlayer(val settings: Settings) {
             allMoves = if (allMoves.isEmpty()) {
                 playUserPlies(position).map { it.randomComputerPly() }
             } else allMoves.map {
-                it.mapPositions { positions: List<GamePosition> -> positions
+                it.mapPliesAndPositions { positions: List<GamePosition> -> positions
                     .flatMap {
                         if (timeIsUp()) return allMoves
                         playUserPlies(it)
@@ -137,17 +141,17 @@ class AiPlayer(val settings: Settings) {
         for (i in 1..attemptsPower.intPowerOf2() * 10) {
             allMoves = firstMoves.map { firstMove ->
                 val nextMove = firstMove.randomComputerPly()
-                    .mapPositions {
+                    .mapPliesAndPositions {
                         it.map { pos ->
                             if (timeIsUp() && allMoves.isNotEmpty()) return allMoves
 
-                            playRandomTillEnd(pos)
+                            playRandomTillEnd(firstMove.plyEnum, pos)
                         }
                     }
 
                 allMoves.find { it.plyEnum == firstMove.plyEnum }
                     ?.let { move ->
-                        nextMove.mapPositions { it + move.positions }
+                        nextMove.mapPliesAndPositions { it + move.positions }
                     }
                     ?: nextMove
             }
@@ -155,14 +159,17 @@ class AiPlayer(val settings: Settings) {
         return allMoves
     }
 
-    private fun playRandomTillEnd(positionIn: GamePosition): GamePosition {
-        var position = PlyAndPosition(Ply.emptyPly, positionIn)
+    private fun playRandomTillEnd(plyEnum: PlyEnum, positionIn: GamePosition): GamePosition {
+        var position = PlyAndPosition(Ply(PlayerEnum.USER,plyEnum,0, 0, emptyList()), positionIn)
         do {
-            position = allowedRandomPly(position.position)
-            if (position.ply.isNotEmpty()) {
-                position = position.position.randomComputerPly()
+            var nextPosition = allowedRandomPly(position.position)
+            if (nextPosition.ply.isNotEmpty()) {
+                nextPosition = nextPosition.position.randomComputerPly()
             }
-        } while (position.ply.isNotEmpty())
+            if (nextPosition.ply.isNotEmpty()) {
+                position = nextPosition
+            }
+        } while (nextPosition.ply.isNotEmpty())
         return position.position
     }
 
@@ -172,15 +179,4 @@ class AiPlayer(val settings: Settings) {
                 .takeIf { it.ply.isNotEmpty() }
                 ?.let { FirstMove(plyEnum, listOf(it.position)) }
         }
-
-    companion object {
-        fun allowedRandomPly(position: GamePosition): PlyAndPosition {
-            UserPlies.shuffled().forEach {
-                position.userPly(it).also {
-                    if (it.ply.isNotEmpty()) return it
-                }
-            }
-            return position.board.emptyPosition
-        }
-    }
 }

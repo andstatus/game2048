@@ -5,11 +5,11 @@ import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.lang.Thread_sleep
 import kotlinx.coroutines.delay
 import org.andstatus.game2048.Settings
-import org.andstatus.game2048.ai.AiPlayer
 import org.andstatus.game2048.model.GamePlies
 import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.GameRecord
 import org.andstatus.game2048.model.Ply
+import org.andstatus.game2048.model.PlyAndPosition.Companion.allowedRandomPly
 import org.andstatus.game2048.model.ShortRecord
 import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.myLog
@@ -124,7 +124,7 @@ fun ViewData.generateGame(expectedPliesCount: Int, bookmarkOnPly: Int? = null): 
                 }
             }
         }
-        AiPlayer.allowedRandomPly(presenter.model.gamePosition).ply.plyEnum.swipeDirection?.let {
+        allowedRandomPly(presenter.model.gamePosition).ply.plyEnum.swipeDirection?.let {
             waitForMainViewShown {
                 presenter.onSwipe(it)
             }
