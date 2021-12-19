@@ -30,8 +30,8 @@ class AiPlayer(val settings: Settings) {
             AiAlgorithm.RANDOM -> AiResult(allowedRandomPly(position))
             AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> moveWithMaxScore(position)
             AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(position, 12, 5)
-            AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(position, 2, 325)
-            AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(position, 3, 1000)
+            AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(position, 12, 5)
+            AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(position, 3, 10)
         }.withContext(position, stopWatch.elapsed.millisecondsInt)
             .also { myLog(it) }
     }
