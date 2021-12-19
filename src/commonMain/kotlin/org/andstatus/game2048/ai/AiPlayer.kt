@@ -4,6 +4,8 @@ import com.soywiz.klock.Stopwatch
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.meanBy
 import org.andstatus.game2048.model.GamePosition
+import org.andstatus.game2048.model.Ply
+import org.andstatus.game2048.model.PlyAndPosition
 import org.andstatus.game2048.model.PlyEnum
 import org.andstatus.game2048.model.PlyEnum.Companion.UserPlies
 import org.andstatus.game2048.myLog
@@ -14,7 +16,7 @@ import kotlin.math.pow
 class AiPlayer(val settings: Settings) {
 
     private class FirstMove(val plyEnum: PlyEnum, val positions: List<GamePosition>) {
-        fun randomComputerPly() = FirstMove(plyEnum, positions.map { it.randomComputerPly() })
+        fun randomComputerPly() = FirstMove(plyEnum, positions.map { it.randomComputerPly().position })
         inline fun mapPositions(action: (List<GamePosition>) -> List<GamePosition>) =
             FirstMove(plyEnum, action(positions))
     }
@@ -154,25 +156,25 @@ class AiPlayer(val settings: Settings) {
     }
 
     private fun playRandomTillEnd(positionIn: GamePosition): GamePosition {
-        var position = positionIn
+        var position = PlyAndPosition(Ply.emptyPly, positionIn)
         do {
-            position = allowedRandomPly(position)
+            position = allowedRandomPly(position.position)
             if (position.ply.isNotEmpty()) {
-                position = position.randomComputerPly()
+                position = position.position.randomComputerPly()
             }
         } while (position.ply.isNotEmpty())
-        return position
+        return position.position
     }
 
     private fun playUserPlies(position: GamePosition): List<FirstMove> = UserPlies
         .mapNotNull { plyEnum ->
             position.userPly(plyEnum)
                 .takeIf { it.ply.isNotEmpty() }
-                ?.let { FirstMove(plyEnum, listOf(it)) }
+                ?.let { FirstMove(plyEnum, listOf(it.position)) }
         }
 
     companion object {
-        fun allowedRandomPly(position: GamePosition): GamePosition {
+        fun allowedRandomPly(position: GamePosition): PlyAndPosition {
             UserPlies.shuffled().forEach {
                 position.userPly(it).also {
                     if (it.ply.isNotEmpty()) return it

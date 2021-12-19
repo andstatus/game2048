@@ -1,6 +1,7 @@
 package org.andstatus.game2048.ai
 
 import org.andstatus.game2048.model.GamePosition
+import org.andstatus.game2048.model.PlyAndPosition
 import org.andstatus.game2048.model.PlyEnum
 
 class AiResult(
@@ -17,12 +18,12 @@ class AiResult(
         note: String?, initialPosition: GamePosition):
             this(plyEnum, referencePosition, maxPosition, note, initialPosition, 0)
 
-    constructor(position: GamePosition): this(
-        position.ply.plyEnum,
-        position,
-        position,
+    constructor(plyAndPosition: PlyAndPosition): this(
+        plyAndPosition.ply.plyEnum,
+        plyAndPosition.position,
+        plyAndPosition.position,
         null,
-        position,
+        plyAndPosition.position,
         0
     )
 

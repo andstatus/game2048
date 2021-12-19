@@ -20,7 +20,6 @@ private val SUMMARY_FORMAT = DateFormat("yyyy-MM-dd HH:mm")
 /** @author yvolk@yurivolkov.com */
 class GamePosition(
     val board: Board,
-    var ply: Ply = Ply.emptyPly,
     val pieces: Array<Piece?> = Array(board.size) { null },
     var score: Int = 0,
     val startingDateTime: DateTimeTz = DateTimeTz.nowLocal(),
@@ -52,7 +51,6 @@ class GamePosition(
             return if (pieces != null && score != null && dateTime != null && size == board.size)
                 GamePosition(
                     board,
-                    Ply.emptyPly,
                     pieces,
                     score,
                     dateTime,
@@ -64,15 +62,14 @@ class GamePosition(
         }
     }
 
-    fun copy(plyNew: Ply = ply.copy()): GamePosition = GamePosition(
-        board, plyNew, pieces.copyOf(), score, startingDateTime, gameClock.copy(), retries, plyNumber
+    fun copy(): GamePosition = GamePosition(
+            board, pieces.copyOf(), score, startingDateTime, gameClock.copy(), retries, plyNumber
     )
 
     fun newEmpty() = GamePosition(board)
 
     private fun forAutoPlaying(seconds: Int, isForward: Boolean) = GamePosition(
         board,
-        ply.copy(),
         pieces.copyOf(),
         score,
         startingDateTime,
@@ -82,16 +79,15 @@ class GamePosition(
     )
 
     private fun forNextPly() = GamePosition(
-        board, Ply.emptyPly,
-        pieces.copyOf(), score, DateTimeTz.nowLocal(), gameClock, retries, plyNumber + 1
+        board, pieces.copyOf(), score, DateTimeTz.nowLocal(), gameClock, retries, plyNumber + 1
     )
 
-    fun composerPly(position: GamePosition, isRedo: Boolean = false): GamePosition {
+    fun composerPly(position: GamePosition, isRedo: Boolean = false): PlyAndPosition {
         val ply = Ply.composerPly(position)
         return play(ply, isRedo)
     }
 
-    fun randomComputerPly(piece: Piece = randomComputerPiece()): GamePosition {
+    fun randomComputerPly(piece: Piece = randomComputerPiece()): PlyAndPosition {
         return getRandomFreeSquare()?.let { square ->
             PlacedPiece(piece, square)
         }?.let { computerPly(it) } ?: board.emptyPosition
@@ -99,14 +95,14 @@ class GamePosition(
 
     private fun randomComputerPiece() = if (Random.nextDouble() < 0.9) Piece.N2 else Piece.N4
 
-    fun computerPly(placedPiece: PlacedPiece): GamePosition {
+    fun computerPly(placedPiece: PlacedPiece): PlyAndPosition {
         return placedPiece.let {
             val ply = Ply.computerPly(it, gameClock.playedSeconds)
             play(ply, false)
         }
     }
 
-    fun userPly(plyEnum: PlyEnum, prevAttempt: Ply? = null): GamePosition = if (!UserPlies.contains(plyEnum)) {
+    fun userPly(plyEnum: PlyEnum, prevAttempt: Ply? = null): PlyAndPosition = if (!UserPlies.contains(plyEnum)) {
         board.emptyPosition
     } else with(forNextPly()) {
         val pieceMoves = mutableListOf<PieceMove>()
@@ -141,11 +137,11 @@ class GamePosition(
             }
         }
         val plyRetries = if (prevAttempt == null) 0 else prevAttempt.retries + 1
-        ply = Ply.userPly(plyEnum, gameClock.playedSeconds, plyRetries, pieceMoves)
+        val ply = Ply.userPly(plyEnum, gameClock.playedSeconds, plyRetries, pieceMoves)
         retries += ply.retries
         if (ply.isValid(board)) {
             gameClock.start()
-            this
+            PlyAndPosition(ply,this)
         } else board.emptyPosition
     }
 
@@ -162,7 +158,7 @@ class GamePosition(
         return null
     }
 
-    fun play(ply: Ply, isRedo: Boolean = false): GamePosition =
+    fun play(ply: Ply, isRedo: Boolean = false): PlyAndPosition =
         (if (isRedo) forAutoPlaying(ply.seconds, true) else forNextPly()).apply {
             ply.pieceMoves.forEach { move ->
                 score += move.points()
@@ -171,7 +167,7 @@ class GamePosition(
                         set(move.first.square, move.first.piece)
                     }
                     is PieceMoveLoad -> {
-                        return move.position.copy(ply)
+                        return PlyAndPosition(ply, move.position.copy())
                     }
                     is PieceMoveOne -> {
                         set(move.first.square, null)
@@ -186,11 +182,12 @@ class GamePosition(
                 }
             }
             retries += ply.retries
-            this.ply = ply
+        }.let {
+            PlyAndPosition(ply, it)
         }
 
-    fun playReversed(ply: Ply): GamePosition {
-        var newPosition = forAutoPlaying(ply.seconds, false)
+    fun playReversed(ply: Ply): PlyAndPosition {
+        val newPosition = forAutoPlaying(ply.seconds, false)
 
         newPosition.retries -= ply.retries
         ply.pieceMoves.asReversed().forEach { move ->
@@ -200,7 +197,7 @@ class GamePosition(
                     newPosition[move.first.square] = null
                 }
                 is PieceMoveLoad -> {
-                    newPosition = move.position.copy()
+                    return PlyAndPosition(ply, move.position.copy())
                 }
                 is PieceMoveOne -> {
                     newPosition[move.destination] = null
@@ -214,9 +211,12 @@ class GamePosition(
                 is PieceMoveDelay -> Unit
             }
         }
-        return with(newPosition) {
-            GamePosition(board, ply, pieces, score, startingDateTime, gameClock, retries, plyNumber)
-        }
+        return PlyAndPosition(
+            ply,
+            with(newPosition) {
+                GamePosition(board, pieces, score, startingDateTime, gameClock, retries, plyNumber)
+            }
+        )
     }
 
     private fun getRandomFreeSquare(): Square? = freeCount().let {
@@ -276,18 +276,7 @@ class GamePosition(
         if (retries == 0) it else it + (keyRetries to retries)
     }
 
-    override fun equals(other: Any?): Boolean {
-        return other is GamePosition && ply.plyEnum == other.ply.plyEnum && plyNumber == other.plyNumber
-    }
-
-    override fun hashCode(): Int {
-        var result = ply.plyEnum.hashCode()
-        result = 31 * result + plyNumber
-        return result
-    }
-
     override fun toString(): String = "$plyNumber. pieces:" + pieces.mapIndexed { ind, piece ->
         ind.toString() + ":" + (piece ?: "-")
-    } + ", score:$score, time:${startingDateTime.format(DateFormat.FORMAT1)}" +
-        if (ply.isEmpty()) "" else ", ${ply.plyEnum.id}"
+    } + ", score:$score, time:${startingDateTime.format(DateFormat.FORMAT1)}, retries:$retries"
 }

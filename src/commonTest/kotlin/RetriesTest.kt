@@ -43,9 +43,7 @@ class RetriesTest : ViewsForTesting(log = true) {
             presenter.onUndoClick()
         }
         assertEquals(0, presenter.model.gamePosition.retries, currentGameString())
-        // ply is different
-        val position = presenter.model.gamePosition.apply { ply = positionAfterUndos.ply }
-        assertEquals(positionAfterUndos, position, currentGameString())
+        assertEquals(positionAfterUndos.toString(), presenter.model.gamePosition.toString(), currentGameString())
     }
 
 }

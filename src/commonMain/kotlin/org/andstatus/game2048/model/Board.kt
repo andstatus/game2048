@@ -11,7 +11,7 @@ class Board(settings: Settings) {
     val array: Array<Square> = Array(size) { ind ->
         Square(ind % width, (ind - ind % width) / width)
     }
-    val emptyPosition = GamePosition(this)
+    val emptyPosition = PlyAndPosition(Ply.emptyPly, GamePosition(this))
 
     init {
         for (ind in (0..size-1)) {
