@@ -1,7 +1,5 @@
 import com.soywiz.korge.tests.ViewsForTesting
 import org.andstatus.game2048.model.parseJsonArray
-import org.andstatus.game2048.myLog
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -48,14 +46,5 @@ class MultiPageTest : ViewsForTesting(log = true) {
         )
 
         presenter.model.settings.pliesPageSize = storedPliesPageSize
-    }
-
-    @Test
-    @Ignore
-    fun stabilityTest() {
-        (1 .. 20).forEach {
-            myLog("stabilityTest $it")
-            multiPageTest()
-        }
     }
 }

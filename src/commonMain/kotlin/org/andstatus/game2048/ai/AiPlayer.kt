@@ -31,9 +31,9 @@ class AiPlayer(val settings: Settings) {
     }
 
     private fun moveWithMaxScore(position: GamePosition): AiResult = UserPlies
-        .map(position::calcUserPly)
-        .filter { it.prevPly.isNotEmpty() }
-        .maxByOrNull { it.prevPly.points() }
+        .map(position::userPly)
+        .filter { it.ply.isNotEmpty() }
+        .maxByOrNull { it.ply.points() }
         ?.let(::AiResult)
         ?: AiResult.empty(position)
 
@@ -157,28 +157,28 @@ class AiPlayer(val settings: Settings) {
         var position = positionIn
         do {
             position = allowedRandomPly(position)
-            if (position.prevPly.isNotEmpty()) {
+            if (position.ply.isNotEmpty()) {
                 position = position.randomComputerPly()
             }
-        } while (position.prevPly.isNotEmpty())
+        } while (position.ply.isNotEmpty())
         return position
     }
 
     private fun playUserPlies(position: GamePosition): List<FirstMove> = UserPlies
         .mapNotNull { plyEnum ->
-            position.calcUserPly(plyEnum)
-                .takeIf { it.prevPly.isNotEmpty() }
+            position.userPly(plyEnum)
+                .takeIf { it.ply.isNotEmpty() }
                 ?.let { FirstMove(plyEnum, listOf(it)) }
         }
 
     companion object {
         fun allowedRandomPly(position: GamePosition): GamePosition {
             UserPlies.shuffled().forEach {
-                position.calcUserPly(it).also {
-                    if (it.prevPly.isNotEmpty()) return it
+                position.userPly(it).also {
+                    if (it.ply.isNotEmpty()) return it
                 }
             }
-            return position.noPly()
+            return position.board.emptyPosition
         }
     }
 }

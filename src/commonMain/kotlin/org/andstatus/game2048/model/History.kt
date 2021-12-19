@@ -175,7 +175,7 @@ class History(
         }
 
     fun add(position: GamePosition) = currentGame.let { game ->
-        currentGameRef.value = when (position.prevPly.plyEnum) {
+        currentGameRef.value = when (position.ply.plyEnum) {
             PlyEnum.LOAD -> game.replayedAtPosition(position)
             else -> {
                 val bookmarksNew = when {
@@ -199,7 +199,7 @@ class History(
                     else -> {
                         game.gamePlies.take(redoPlyPointer - 1)
                     }
-                } + position.prevPly
+                } + position.ply
                 with(game.shortRecord) {
                     GameRecord(ShortRecord(settings, board, note, id, start, position, bookmarksNew), gamePliesNew)
                 }

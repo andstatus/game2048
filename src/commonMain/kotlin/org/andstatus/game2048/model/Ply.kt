@@ -32,6 +32,9 @@ data class Ply(
 
     fun points(): Int = pieceMoves.map { it.points() }.sum()
 
+    fun isValid(board: Board): Boolean = this.isNotEmpty() && (this.pieceMoves.isNotEmpty() ||
+            (player == PlayerEnum.USER && board.allowUsersMoveWithoutBlockMoves))
+
     companion object{
         val emptyPly = Ply(PlayerEnum.COMPOSER, PlyEnum.EMPTY, 0, 0, emptyList())
 

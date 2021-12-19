@@ -124,7 +124,7 @@ fun ViewData.generateGame(expectedPliesCount: Int, bookmarkOnPly: Int? = null): 
                 }
             }
         }
-        AiPlayer.allowedRandomPly(presenter.model.gamePosition).prevPly.plyEnum.swipeDirection?.let {
+        AiPlayer.allowedRandomPly(presenter.model.gamePosition).ply.plyEnum.swipeDirection?.let {
             waitForMainViewShown {
                 presenter.onSwipe(it)
             }

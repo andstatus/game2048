@@ -18,7 +18,7 @@ class AiResult(
             this(plyEnum, referencePosition, maxPosition, note, initialPosition, 0)
 
     constructor(position: GamePosition): this(
-        position.prevPly.plyEnum,
+        position.ply.plyEnum,
         position,
         position,
         null,
