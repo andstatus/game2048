@@ -4,17 +4,27 @@ import com.soywiz.korge.view.addTo
 import com.soywiz.korge.view.position
 
 fun ViewData.showGameMenu(aiEnabled: Boolean) = myWindow("game_actions") {
-    var yInd: Int = 0
+    var xInd = 0
+    var yInd = 0
 
     suspend fun button(buttonEnum: GameMenuButtonsEnum, handler: () -> Unit) {
-        yInd++
-        if (yInd > 8) return
+        if (isPortrait) {
+            yInd++
+            if (yInd > 8) return
+        } else {
+            yInd++
+            if (yInd > 4 && xInd == 0) {
+                xInd = 5
+                yInd = 1
+            }
+            if (yInd > 4) return
+        }
 
         wideButton(buttonEnum.icon, buttonEnum.labelKey) {
             handler()
             window.removeFromParent()
         }.apply {
-            position(buttonXs[0], buttonYs[yInd])
+            position(buttonXs[xInd], buttonYs[yInd])
             addTo(window)
         }
     }

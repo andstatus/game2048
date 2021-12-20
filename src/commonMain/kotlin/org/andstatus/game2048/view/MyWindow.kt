@@ -42,8 +42,9 @@ class MyWindow(val viewData: ViewData, val titleKey: String) : Container() {
     val winHeight = viewData.gameViewHeight.toDouble()
 
     suspend fun ViewData.wideButton(icon: String, labelKey: String = "", handler: () -> Unit): Container = Container().apply {
+        val buttonWidth = if (isPortrait) winWidth - 2 * buttonMargin else winWidth / 2 - 2 * buttonMargin
         val borderWidth = 2.0
-        roundRect(winWidth - 2 * buttonMargin, buttonSize, buttonRadius,
+        roundRect(buttonWidth, buttonSize, buttonRadius,
                 fill = Colors.TRANSPARENT_BLACK,
                 stroke = gameColors.myWindowBorder, strokeThickness = borderWidth)
         roundRect(buttonSize, buttonSize - borderWidth * 2, buttonRadius, fill = gameColors.buttonBackground) {
@@ -74,7 +75,7 @@ class MyWindow(val viewData: ViewData, val titleKey: String) : Container() {
                 position(winLeft, winTop)
             }
 
-            val xPos = buttonXs[4]
+            val xPos = buttonXs[if (isPortrait) 4 else 9]
             val yPos = buttonYs[0]
             barButton("close") {
                 window.removeFromParent()

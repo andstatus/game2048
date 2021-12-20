@@ -30,9 +30,6 @@ import org.andstatus.game2048.view.AppBarButtonsEnum.WATCH
 
 class EButton(val enum: AppBarButtonsEnum, val container: Container = Container())
 
-private suspend fun ViewData.eButton(enum: AppBarButtonsEnum, icon: String, handler: () -> Unit): EButton =
-    EButton(enum, this.barButton(icon, handler))
-
 class AppBar private constructor(val viewData: ViewData, private val appBarButtons: List<EButton>) {
 
     fun show(parent: Container, appBarButtonsToShow: List<AppBarButtonsEnum>) {
@@ -41,7 +38,7 @@ class AppBar private constructor(val viewData: ViewData, private val appBarButto
 
         (0 .. 1).forEach { row ->
             val toShow = toShowAll.filter { eButton -> eButton.enum.row == row }
-            val remainingPos = viewData.buttonXs.toMutableList()
+            val remainingPos = viewData.buttonXs.take(5).toMutableList()
 
             // Left aligned buttons
             toShow.filter { it.enum.sortOrder < 0 }

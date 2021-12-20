@@ -18,10 +18,10 @@ suspend fun main() = main(null)
 
 suspend fun main(colorThemeEnum: ColorThemeEnum?) {
     val windowSize: SizeInt = coroutineContext.gameWindowSize
-    val windowRatio = windowSize.width.toDouble() /  windowSize.height
     val virtualWidth: Int
     val virtualHeight: Int
     if (windowSize.width < windowSize.height) {
+        val windowRatio = windowSize.width.toDouble() / windowSize.height
         if (windowRatio >= defaultPortraitRatio) {
             virtualHeight = defaultPortraitGameWindowSize.height
             virtualWidth = (virtualHeight * windowRatio).toInt()
@@ -30,8 +30,14 @@ suspend fun main(colorThemeEnum: ColorThemeEnum?) {
             virtualHeight = (virtualWidth / windowRatio).toInt()
         }
     } else {
-        virtualWidth = defaultPortraitGameWindowSize.height
-        virtualHeight = defaultPortraitGameWindowSize.width
+        val windowRatio = windowSize.height.toDouble() / windowSize.width
+        if (windowRatio >= defaultPortraitRatio) {
+            virtualHeight = defaultPortraitGameWindowSize.width
+            virtualWidth = (virtualHeight / windowRatio).toInt()
+        } else {
+            virtualWidth = defaultPortraitGameWindowSize.height
+            virtualHeight = (virtualWidth * windowRatio).toInt()
+        }
     }
     val color = colorThemeEnum?.let {
         when (it) {

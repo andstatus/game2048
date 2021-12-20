@@ -78,11 +78,20 @@ class ViewDataQuick(override val gameStage: Stage, override val animateViews: Bo
             defaultTextSize = if (gameViewHeight == defaultPortraitGameWindowSize.height) defaultPortraitTextSize
             else defaultPortraitTextSize * gameViewHeight / defaultPortraitGameWindowSize.height
         } else {
-            gameViewHeight = gameStage.views.virtualHeight
-            gameViewWidth = (gameViewHeight / defaultPortraitRatio).toInt()
-            gameViewLeft = (gameStage.views.virtualWidth - gameViewWidth) / 2
-            gameViewTop = 0
-            gameScale = gameViewWidth.toDouble() / defaultPortraitGameWindowSize.height
+            val windowRatio = gameStage.views.virtualHeight.toDouble() /  gameStage.views.virtualWidth
+            if (windowRatio >= defaultPortraitRatio) {
+                gameViewWidth = gameStage.views.virtualWidth
+                gameViewHeight = (gameViewWidth * defaultPortraitRatio).toInt()
+                gameViewLeft = 0
+                gameViewTop = (gameStage.views.virtualHeight - gameViewHeight) / 2
+                gameScale = gameViewHeight.toDouble() / defaultPortraitGameWindowSize.width
+            } else {
+                gameViewHeight = gameStage.views.virtualHeight
+                gameViewWidth = (gameViewHeight / defaultPortraitRatio).toInt()
+                gameViewLeft = (gameStage.views.virtualWidth - gameViewWidth) / 2
+                gameViewTop = 0
+                gameScale = gameViewWidth.toDouble() / defaultPortraitGameWindowSize.height
+            }
 
             defaultTextSize = if (gameViewWidth == defaultPortraitGameWindowSize.height) defaultPortraitTextSize
             else defaultPortraitTextSize * gameViewWidth / defaultPortraitGameWindowSize.height
@@ -102,10 +111,11 @@ class ViewDataQuick(override val gameStage: Stage, override val animateViews: Bo
         }
         statusBarLeft = gameViewLeft + buttonMargin
 
-        buttonXs = (0 .. 4).fold(emptyList()) { acc, i ->
-            acc + (statusBarLeft + i * (buttonSize + buttonMargin))
+        buttonXs = (0 .. if (isPortrait) 4 else 9).fold(emptyList()) { acc, i ->
+            acc + (statusBarLeft + i * (buttonSize + buttonMargin) +
+                    if (!isPortrait && (i > 4)) buttonMargin else 0.0)
         }
-        buttonYs = (0 .. 9).fold(emptyList()) { acc, i ->
+        buttonYs = (0 .. if (isPortrait) 9 else 4).fold(emptyList()) { acc, i ->
             acc + (gameViewTop + buttonMargin + i * (buttonSize + buttonMargin))
         }
 
