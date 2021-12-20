@@ -114,7 +114,9 @@ class ViewData(viewDataQuick: ViewDataQuick,
                val stringResources: StringResources,
                val gameColors: ColorTheme): ViewDataBase by viewDataQuick, Closeable {
 
-    val cellSize: Double = (gameViewWidth - cellMargin * (settings.boardWidth + 1) - 2 * buttonMargin) / settings.boardWidth
+    val cellSize: Double = (
+            (if (isPortrait) gameViewWidth else gameViewWidth / 2) -
+            cellMargin * (settings.boardWidth + 1) - 2 * buttonMargin) / settings.boardWidth
     val boardWidth: Double = cellSize * settings.boardWidth + cellMargin * (settings.boardWidth + 1)
 
     var presenter: Presenter by Delegates.notNull()

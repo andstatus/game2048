@@ -15,6 +15,7 @@ interface ViewDataBase {
     val animateViews: Boolean
     val id: Int
     val duplicateKeyPressFilter: DuplicateKeyPressFilter
+    val isPortrait: Boolean
     val gameViewLeft: Int
     val gameViewTop: Int
     val gameViewWidth: Int
@@ -29,6 +30,8 @@ interface ViewDataBase {
     val buttonXs: List<Double>
     val buttonYs: List<Double>
     val boardTop: Double
+    val statusBarLeft: Double
+    val statusBarTop: Double
 }
 
 /** The object is initialized instantly */
@@ -36,6 +39,7 @@ class ViewDataQuick(override val gameStage: Stage, override val animateViews: Bo
     override val id: Int = nextId()
     override val duplicateKeyPressFilter = DuplicateKeyPressFilter()
 
+    override val isPortrait: Boolean
     override val gameViewLeft: Int
     override val gameViewTop: Int
     override val gameViewWidth: Int
@@ -51,40 +55,67 @@ class ViewDataQuick(override val gameStage: Stage, override val animateViews: Bo
     override val buttonXs: List<Double>
     override val buttonYs: List<Double>
     override val boardTop: Double
+    override val statusBarLeft: Double
+    override val statusBarTop: Double
 
     init {
-        val windowRatio = gameStage.views.virtualWidth.toDouble() /  gameStage.views.virtualHeight
-        if (windowRatio >= defaultPortraitRatio) {
+        isPortrait = gameStage.views.virtualWidth < gameStage.views.virtualHeight
+        if (isPortrait) {
+            val windowRatio = gameStage.views.virtualWidth.toDouble() /  gameStage.views.virtualHeight
+            if (windowRatio >= defaultPortraitRatio) {
+                gameViewHeight = gameStage.views.virtualHeight
+                gameViewWidth = (gameViewHeight * defaultPortraitRatio).toInt()
+                gameViewLeft = (gameStage.views.virtualWidth - gameViewWidth) / 2
+                gameViewTop = 0
+                gameScale = gameViewHeight.toDouble() / defaultPortraitGameWindowSize.height
+            } else {
+                gameViewWidth = gameStage.views.virtualWidth
+                gameViewHeight = (gameViewWidth / defaultPortraitRatio).toInt()
+                gameViewLeft = 0
+                gameViewTop = (gameStage.views.virtualHeight - gameViewHeight) / 2
+                gameScale = gameViewWidth.toDouble() / defaultPortraitGameWindowSize.width
+            }
+            defaultTextSize = if (gameViewHeight == defaultPortraitGameWindowSize.height) defaultPortraitTextSize
+            else defaultPortraitTextSize * gameViewHeight / defaultPortraitGameWindowSize.height
+        } else {
             gameViewHeight = gameStage.views.virtualHeight
-            gameViewWidth = (gameViewHeight * defaultPortraitRatio).toInt()
+            gameViewWidth = (gameViewHeight / defaultPortraitRatio).toInt()
             gameViewLeft = (gameStage.views.virtualWidth - gameViewWidth) / 2
             gameViewTop = 0
-            gameScale = gameViewHeight.toDouble() / defaultPortraitGameWindowSize.height
-        } else {
-            gameViewWidth = gameStage.views.virtualWidth
-            gameViewHeight = (gameViewWidth / defaultPortraitRatio).toInt()
-            gameViewLeft = 0
-            gameViewTop = (gameStage.views.virtualHeight - gameViewHeight) / 2
-            gameScale = gameViewWidth.toDouble() / defaultPortraitGameWindowSize.width
+            gameScale = gameViewWidth.toDouble() / defaultPortraitGameWindowSize.height
+
+            defaultTextSize = if (gameViewWidth == defaultPortraitGameWindowSize.height) defaultPortraitTextSize
+            else defaultPortraitTextSize * gameViewWidth / defaultPortraitGameWindowSize.height
         }
-        defaultTextSize = if (gameViewHeight == defaultPortraitGameWindowSize.height) defaultPortraitTextSize
-        else defaultPortraitTextSize * gameViewHeight / defaultPortraitGameWindowSize.height
 
         buttonMargin = 27 * gameScale
 
         cellMargin = 15 * gameScale
         buttonRadius = 8 * gameScale
 
-        buttonSize = (gameViewWidth - buttonMargin * 6) / 5
-        boardLeft = gameViewLeft + buttonMargin
+        if (isPortrait) {
+            buttonSize = (gameViewWidth - buttonMargin * 6) / 5
+            boardLeft = gameViewLeft + buttonMargin
+        } else {
+            buttonSize = (gameViewWidth / 2 - buttonMargin * 6) / 5
+            boardLeft = gameViewLeft + gameViewWidth / 2 + buttonMargin
+        }
+        statusBarLeft = gameViewLeft + buttonMargin
 
         buttonXs = (0 .. 4).fold(emptyList()) { acc, i ->
-            acc + (boardLeft + i * (buttonSize + buttonMargin))
+            acc + (statusBarLeft + i * (buttonSize + buttonMargin))
         }
         buttonYs = (0 .. 9).fold(emptyList()) { acc, i ->
             acc + (gameViewTop + buttonMargin + i * (buttonSize + buttonMargin))
         }
-        boardTop = buttonYs[4]
+
+        if (isPortrait) {
+            boardTop = buttonYs[4]
+            statusBarTop = buttonYs[9]
+        } else {
+            boardTop = buttonYs[0]
+            statusBarTop = buttonYs[4]
+        }
 
         myLog(
             "Window:${gameStage.coroutineContext.gameWindowSize.width}x${gameStage.coroutineContext.gameWindowSize.height}" +

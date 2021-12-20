@@ -22,12 +22,12 @@ class StatusBar(val viewData: ViewData): Container() {
     init {
         with(viewData) {
             val scoreButtonWidth = (viewData.boardWidth - 2 * buttonMargin) / 3
-            val barTop = buttonYs[9]
+            val barTop = statusBarTop
             val textYPadding = 28 * gameScale
             val scoreLabelSize = cellSize * 0.30
             val scoreTextSize = cellSize * 0.5
 
-            var posX = boardLeft
+            var posX = statusBarLeft
             moveSuggested = text("", scoreTextSize, gameColors.labelText, font, TextAlignment.MIDDLE_CENTER) {
                 positionX(posX + scoreButtonWidth / 2)
                 positionY(barTop + scoreLabelSize)

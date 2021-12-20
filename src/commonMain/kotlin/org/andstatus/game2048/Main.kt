@@ -21,13 +21,17 @@ suspend fun main(colorThemeEnum: ColorThemeEnum?) {
     val windowRatio = windowSize.width.toDouble() /  windowSize.height
     val virtualWidth: Int
     val virtualHeight: Int
-    // TODO: We will set the width depending on orientation, when we have landscape layout...
-    if (windowRatio >= defaultPortraitRatio) {
-        virtualHeight = defaultPortraitGameWindowSize.height
-        virtualWidth = (virtualHeight * windowRatio).toInt()
+    if (windowSize.width < windowSize.height) {
+        if (windowRatio >= defaultPortraitRatio) {
+            virtualHeight = defaultPortraitGameWindowSize.height
+            virtualWidth = (virtualHeight * windowRatio).toInt()
+        } else {
+            virtualWidth = defaultPortraitGameWindowSize.width
+            virtualHeight = (virtualWidth / windowRatio).toInt()
+        }
     } else {
-        virtualWidth = defaultPortraitGameWindowSize.width
-        virtualHeight = (virtualWidth / windowRatio).toInt()
+        virtualWidth = defaultPortraitGameWindowSize.height
+        virtualHeight = defaultPortraitGameWindowSize.width
     }
     val color = colorThemeEnum?.let {
         when (it) {

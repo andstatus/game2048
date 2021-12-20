@@ -31,7 +31,7 @@ class ScoreBar(val viewData: ViewData): Container() {
             val scoreLabelSize = cellSize * 0.30
             val scoreTextSize = cellSize * 0.5
 
-            var posX = boardLeft
+            var posX = statusBarLeft
             val bgScore = roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
                 position(posX, buttonYs[barTopInd + 1])
             }
