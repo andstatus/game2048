@@ -1,1 +1,3 @@
-v.1.11.0. Optimized to allow games with more than 50 thousand moves.
+v.1.11.0. * Retries counter added.
+* Landscape screen layout added.
+* Optimized to allow games with more than 50 thousand moves.

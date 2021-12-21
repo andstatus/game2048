@@ -24,13 +24,16 @@
   <string name="light">Светлая</string>
   <string name="load_game">Загрузить игру</string>
   <string name="move">Ход</string>
+  <string name="move_upper">ХОД</string>
   <string name="milliseconds">мс</string>
   <string name="note">Примечание</string>
   <string name="recent_games">Недавние игры</string>
+  <string name="retries">ПОПЫТКИ</string>
   <string name="score">Счёт</string>
   <string name="score_upper">СЧЁТ</string>
   <string name="select_ai_algorithm">Выберите ИИ алгоритм</string>
   <string name="select_theme">Выберите тему</string>
   <string name="share">Поделиться игрой</string>
+  <string name="time">ВРЕМЯ</string>
   <string name="try_again">Попробуйте ещё раз</string>
 </resources>

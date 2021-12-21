@@ -31,8 +31,13 @@ see [User experience](doc/User-Experience.md).
 ### Features of "2048 Open Fun Game" that are not present in the original game
 
 * Unlimited and animated Undo and Redo.
+* Retries counter. When you make a move after Undo (no matter if it is the same move as before or another move),
+  number of Retries increases. The counter shows total number of retries done during the game
+  and allows comparing different results more fairly.
 * Select theme for the app: Device default (for Android 9+), Dark or Light.
   Dark theme for Android 9+ is turned on by default when system-wide "Dark theme" is turned on in device settings.
+* Different portrait and landscape screen layouts. Portrait layout is more or less classic for the 2048 game, 
+  and landscape layout allows using screen space better and have larger board.
 * Turn on AI (Artificial Intelligence) mode and let the AI play for you.
   Increase or decrease AI player speed. Stop it and continue playing yourself.
   Choose one of several AI algorithms, see how they play and compare them.
@@ -42,8 +47,8 @@ see [User experience](doc/User-Experience.md).
 * "Watch" mode. Auto replay current game forward and backwards at any speed,
   stop at any position.
   Switch to "Play" mode from that place and continue playing, overriding history.
-* The Latest games with all their moves, bookmarks and scores are stored in a history and can be watched.
-  Or you can play them again.
+* Recent games with all their moves, bookmarks and scores are stored in a history and can be watched.
+  Or you can play them again from any position / bookmark.
 * Game menu allows you to delete current game from history, to restart a game ("Try again")
   or to open recent game from a list.
 * When you tap "Try again" button or open recent game, current game is automatically saved to the history,
@@ -54,7 +59,7 @@ see [User experience](doc/User-Experience.md).
 <p>
 <img title="Main screen of Game2048 app. Play mode. You see Bookmark and Pause buttons" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/1.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Dark Theme. Play mode. You see Bookmark and Pause buttons. Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/2.png" height="400" />
+<img title="Dark Theme. Play mode in Landscape orientation. You see Bookmark button. Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/2.png" width="400" />
 <img src="doc/images/5x5.png" width="5" />
 <img title="Dark Theme. Watch mode. Now watching the game movements backwards. To the left: 'Game pad' button to switch to Play mode. Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/3.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
@@ -76,17 +81,18 @@ If you found the project useful, please
 
 ## About the project
 
-The project started from [RezMike/2048 KorGe tutorial project](https://github.com/RezMike/2048#readme), 
-but it's not a clone of that repository: it's a rewrite aiming at becoming a (board) game template
+The project started from the tutorial [RezMike/2048 KorGe tutorial project](https://github.com/RezMike/2048#readme), 
+and then it was rewritten aiming at becoming an open (board) game template
 that is easy to modify, to extend and to play with using [Kotlin](https://kotlinlang.org/) programming language
 and [KorGe game engine](https://korge.org/).
 
-Following this goal, the source code has been structured and cleaned. We're trying to use 
-board games terminology (e.g. [Glossary of chess](https://en.wikipedia.org/wiki/Glossary_of_chess))
+Following this goal:
+* We're using board games terminology as much as possible (e.g. [Glossary of chess](https://en.wikipedia.org/wiki/Glossary_of_chess))
 in order to ease understanding of implementation logic.
-
-Game exchange text format created (JSON based) to allow users share  
-and load shared games with all moves and bookmarks.
+* Adding lots of new [features](#features).
+* Add automated tests.
+* Structure and clean code.
+* Created Game exchange text format (JSON based) to allow users share and load shared games with all moves and bookmarks.
 
 ## Contribution
 
@@ -98,7 +104,13 @@ and load shared games with all moves and bookmarks.
 
 ## Changelog
 
-No changes yet, please see [Features](#features).
+### 2021-12-21 v.1.11.0 (33) Retries counter and Landscape layout.
+* Retries counter added. When you make a move after Undo (no matter if it is the same move as before or another move),
+  number of Retries increases. The counter shows total number of retries done during the game
+  and allows comparing different results more fairly.
+* Landscape screen layout added. Portrait layout is more or less classic for the 2048 game,
+  and landscape layout allows using screen space better and have larger board.
+* Optimized to allow games with more than 50 thousand moves.
 
 # How to run the project
 
