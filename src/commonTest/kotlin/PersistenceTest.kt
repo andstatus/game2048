@@ -55,6 +55,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         myLog("Current game 2, n=$nPlies: ${presenter.model.history.currentGame}")
 
         val gameRecordOpened = presenter.model.history.currentGame
+        gameRecord.id = gameRecordOpened.id
         assertEquals(gameRecord.toLongString(), gameRecordOpened.toLongString(), message)
     }
 }
