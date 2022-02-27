@@ -14,6 +14,7 @@ import org.andstatus.game2048.keyCurrentGameId
 import org.andstatus.game2048.model.GameRecord.Companion.makeGameRecord
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasuredIt
+import org.andstatus.game2048.stubGameId
 
 const val keyGameMode = "gameMode"
 
@@ -24,7 +25,7 @@ class History(
     recentGamesIn: List<ShortRecord> = emptyList()
 ) {
     private val keyBest = "best"
-    private val stubGame: GameRecord = GameRecord.newEmpty(settings, settings.stubGameId).load()
+    private val stubGame: GameRecord = GameRecord.newEmpty(settings, stubGameId).load()
     private val recentGamesRef: KorAtomicRef<List<ShortRecord>> = korAtomic(recentGamesIn)
     val recentGames get() = recentGamesRef.value
     private val currentGameRef: KorAtomicRef<GameRecord> = korAtomic(currentGameIn ?: stubGame)

@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.model.Board
+import org.andstatus.game2048.model.PliesPageData
 import org.andstatus.game2048.model.ShortRecord
 import org.andstatus.game2048.view.ColorThemeEnum
 import org.andstatus.game2048.view.StringResources
@@ -19,6 +20,7 @@ private const val keyAllowUsersMoveWithoutBlockMoves = "allowUsersMoveWithoutBlo
 private const val keyAllowUndo = "allowUndo"
 private const val keyMaxMovesToStore = "maxMovesToStore"
 const val keyCurrentGameId = "current"
+const val stubGameId = 61
 
 /** Game options / tweaks. Default values are for the original game,
 see https://en.wikipedia.org/wiki/2048_(video_game)
@@ -33,8 +35,8 @@ class Settings(private val stage: Stage) {
 
     // false: The resulting tile cannot merge with another tile again in the same move
     var allowResultingTileToMerge = storage.getBoolean(keyAllowResultingTileToMerge, false)
-    var allowUsersMoveWithoutBlockMoves = storage.getBoolean(keyAllowUsersMoveWithoutBlockMoves,false)
-    var allowUndo = storage.getBoolean(keyAllowUndo,true)
+    var allowUsersMoveWithoutBlockMoves = storage.getBoolean(keyAllowUsersMoveWithoutBlockMoves, false)
+    var allowUndo = storage.getBoolean(keyAllowUndo, true)
     var boardWidth = 4
     var boardHeight = boardWidth
     var colorThemeEnum: ColorThemeEnum = ColorThemeEnum.load(storage.getOrNull(keyColorTheme))
@@ -43,9 +45,9 @@ class Settings(private val stage: Stage) {
     val isTestRun = "TestGameWindow" == stage.views.gameWindow::class.simpleName
     var pliesPageSize = 5000
 
-    val stubGameId = 61
     val gameIdsRange = 1 until stubGameId
     val maxOlderGames = 30
+    val pliesPageData = PliesPageData(this)
 
     companion object {
         fun load(stage: Stage): Settings = myMeasured("Settings loaded") { Settings(stage) }
@@ -53,9 +55,9 @@ class Settings(private val stage: Stage) {
 
     fun save() {
         storage.native.setBoolean(keyAllowResultingTileToMerge, allowResultingTileToMerge)
-                .setBoolean(keyAllowUsersMoveWithoutBlockMoves, allowUsersMoveWithoutBlockMoves)
-                .setBoolean(keyAllowUndo, allowUndo)
-                .set(keyColorTheme, colorThemeEnum.labelKey)
+            .setBoolean(keyAllowUsersMoveWithoutBlockMoves, allowUsersMoveWithoutBlockMoves)
+            .setBoolean(keyAllowUndo, allowUndo)
+            .set(keyColorTheme, colorThemeEnum.labelKey)
         storage.native.set(keyAiAlgorithm, aiAlgorithm.id)
     }
 
@@ -76,7 +78,7 @@ class Settings(private val stage: Stage) {
 }
 
 suspend fun loadFont(strings: StringResources) = myMeasured("Font loaded") {
-    val fontFolder = when(strings.lang) {
+    val fontFolder = when (strings.lang) {
         "zh" -> "noto_sans_sc"
         "si" -> "abhaya_libre"
         else -> "clear_sans"

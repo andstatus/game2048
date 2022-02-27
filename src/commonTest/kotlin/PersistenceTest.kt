@@ -6,7 +6,9 @@ import org.andstatus.game2048.model.Ply
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.view.ViewData
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class PersistenceTest : ViewsForTesting(log = true) {
@@ -45,7 +47,9 @@ class PersistenceTest : ViewsForTesting(log = true) {
         val message = "nMoves:$nPlies, $sharedJson"
 
         if (nPlies > 0) {
-            assertTrue(sharedJson.contains("place"), message)
+            assertContains(sharedJson, "place", false, message)
+        } else {
+            assertFalse(sharedJson.contains("place"), message)
         }
         myLog("Current game 1, n=$nPlies: ${presenter.model.history.currentGame}")
         presenter.loadSharedJson(sharedJson)

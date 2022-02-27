@@ -5,7 +5,6 @@ import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.util.StrReader
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.initAtomicReference
-import org.andstatus.game2048.model.PliesPage.Companion.keyPliesPage
 import org.andstatus.game2048.myLog
 
 private const val keyPliesHead = "pliesHead"
@@ -21,7 +20,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
         pliesLoaded
     }
 
-    private val emptyFirstPage = PliesPage(shortRecord, 1, 1, 0, emptyList())
+    private val emptyFirstPage = PliesPage(shortRecord, 1, 1, 0, emptyList(), true)
     private val pagesRef: KorAtomicRef<List<PliesPage>> = initAtomicReference(listOf(emptyFirstPage))
     private val pages: List<PliesPage> get() = pagesRef.value
     val lastPage get() = pages.last()
@@ -40,6 +39,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
             var plyNumber = 1
             while (reader.hasMore) {
                 val page = PliesPage.fromSharedJson(shortRecord, pageNumber, plyNumber, reader)
+                    .save()
                 pagesRef.value = if (pageNumber == 1) listOf(page) else pagesRef.value + page
                 pageNumber += 1
                 plyNumber += page.size
@@ -97,7 +97,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
 
     fun toSharedJson(): String = StringBuilder().also { stringBuilder ->
         pages.forEach {
-            it.toJson().let { json -> stringBuilder.append(json) }
+            it.load().toJson().let { json -> stringBuilder.append(json) }
         }
     }.toString()
 
@@ -140,8 +140,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
                 }.also {
                     firstPlyNumber += it.size
                     index += it.size
-                    it.save()
-                    pages = pages + it
+                    pages = pages + it.save()
                 }
             }
             return GamePlies(shortRecord, pages).let { gamePlies1 ->
@@ -184,9 +183,9 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
             }
         }
 
-        private fun deletePagesStartingWith(settings: Settings, id: Int, pageNumber: Int) {
+        private fun deletePagesStartingWith(settings: Settings, gameId: Int, pageNumber: Int) {
             var pageNumber1 = pageNumber
-            while (settings.storage.remove(keyPliesPage(id, pageNumber1))) {
+            while (settings.pliesPageData.remove(gameId, pageNumber1)) {
                 pageNumber1 += 1
             }
         }

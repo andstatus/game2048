@@ -5,6 +5,7 @@ import com.soywiz.klock.DateTime
 import com.soywiz.klock.DateTimeTz
 import com.soywiz.korio.serialization.json.toJson
 import org.andstatus.game2048.Settings
+import org.andstatus.game2048.stubGameId
 
 private const val keyNote = "note"
 private const val keyId = "id"
@@ -15,7 +16,7 @@ private const val keyBookmarks = "bookmarks"
 class ShortRecord(val settings: Settings, val board: Board, val note: String, var id: Int, val start: DateTimeTz,
                   val finalPosition: GamePosition, val bookmarks: List<GamePosition>) {
 
-    val isStub = id == settings.stubGameId
+    val isStub = id == stubGameId
 
     override fun toString(): String =
         if (isStub) "Stub"

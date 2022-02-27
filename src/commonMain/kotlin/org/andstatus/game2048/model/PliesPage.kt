@@ -1,52 +1,43 @@
 package org.andstatus.game2048.model
 
-import com.soywiz.korio.concurrent.atomic.KorAtomicRef
 import com.soywiz.korio.concurrent.atomic.korAtomic
-import com.soywiz.korio.serialization.json.Json
-import com.soywiz.korio.serialization.json.toJson
 import com.soywiz.korio.util.StrReader
-import org.andstatus.game2048.compareAndSetFixed
-import org.andstatus.game2048.initAtomicReference
-import org.andstatus.game2048.myLog
 
 private const val keyPageNumber = "page"
 private const val keyFirstPlyNumber = "first"
 private const val keyCount = "count"
-private const val keyPlies = "plies"
 
 class PliesPage(
     val shortRecord: ShortRecord,
     val pageNumber: Int,
     val firstPlyNumber: Int,
     val count: Int,
-    iPlies: List<Ply>?
+    iPlies: List<Ply>?,
+    val isFirstEmpty: Boolean = false
 ) {
+    init {
+        iPlies?.let {
+            if (!isFirstEmpty) {
+                shortRecord.settings.pliesPageData.update(shortRecord, pageNumber, it)
+            }
+        }
+    }
 
     val nextPageFirstPlyNumber get() = firstPlyNumber + size
 
-    private val keyPliesPage: String = keyPliesPage(shortRecord.id, pageNumber).also {
-        if (shortRecord.id < 1 || pageNumber < 1) throw IllegalArgumentException(it)
-    }
-
-    val loaded get() = pliesRef.value != null
+    val loaded get() = isFirstEmpty || PliesPageData.isLoaded(shortRecord.id, pageNumber)
     val saved get() = savedRef.value
-    private val savedRef = korAtomic(false)
+    private val savedRef = korAtomic(isFirstEmpty)
 
-    private val pliesRef: KorAtomicRef<List<Ply>?> = initAtomicReference(iPlies)
-    val plies: List<Ply> get() = pliesRef.value ?: emptyList()
+    val plies: List<Ply> get() = if (isFirstEmpty) emptyList() else PliesPageData.getPlies(shortRecord.id, pageNumber)
 
-    private val pliesLoaded: Lazy<Boolean> = lazy {
-        if (pliesRef.value == null) {
-            val reader = shortRecord.settings.storage.getOrNull(keyPliesPage)?.let { StrReader(it) }
-            readPlies(shortRecord, pageNumber, reader, true).let {
-                savedRef.value = true
-                pliesRef.compareAndSetFixed(null, it)
-            }
+    fun load(): PliesPage {
+        if (!isFirstEmpty && !loaded) {
+            shortRecord.settings.pliesPageData.readPlies(shortRecord, pageNumber, null, true)
+            savedRef.value = true
         }
-        true
+        return this
     }
-
-    fun load() = pliesLoaded.value.let { this }
 
     val size: Int get() = if (loaded) plies.size else count
 
@@ -65,16 +56,11 @@ class PliesPage(
         "\n" + (ind + 1).toString() + ":" + playerMove
     }.toString()
 
-    fun save() {
-        if (shortRecord.isStub) return
-
+    fun save(): PliesPage {
         if (loaded && savedRef.compareAndSet(false, true)) {
-            if (count == 0) {
-                shortRecord.settings.storage.remove(keyPliesPage)
-            } else {
-                shortRecord.settings.storage[keyPliesPage] = toJson()
-            }
+            shortRecord.settings.pliesPageData.save(shortRecord, pageNumber)
         }
+        return this
     }
 
     fun toHeaderMap(): Map<String, Any> = mapOf(
@@ -83,20 +69,13 @@ class PliesPage(
         keyCount to count
     )
 
-    fun toJson(): String = StringBuilder().also { stringBuilder ->
-        load().plies.forEach { ply ->
-            ply.toMap().toJson()
-                .let { json -> stringBuilder.append(json) }
-        }
-    }.toString()
+    fun toJson(): String = PliesPageData.toJson(PliesPageData.getPlies(shortRecord.id, pageNumber))
 
     companion object {
-        fun keyPliesPage(gameId: Int, pageNumber: Int) = "$keyPlies$gameId.$pageNumber"
-
         fun fromSharedJson(shortRecord: ShortRecord, pageNumber: Int, plyNumber: Int, reader: StrReader?): PliesPage =
-            readPlies(shortRecord, pageNumber, reader, false).let {
+            shortRecord.settings.pliesPageData.readPlies(shortRecord, pageNumber, reader, false).let {
                 PliesPage(shortRecord, pageNumber, plyNumber, it.size, it)
-            }.apply { load() }
+            }
 
         fun fromId(shortRecord: ShortRecord, pageNumberIn: Int, jsonHeader: Any): PliesPage =
             jsonHeader.parseJsonMap().let {
@@ -106,29 +85,5 @@ class PliesPage(
                 if (pageNumber != pageNumberIn) throw IllegalArgumentException("Wrong page number stored: $pageNumber at $pageNumberIn position")
                 PliesPage(shortRecord, pageNumber, plyNumber, count, null)
             }
-
-        private fun readPlies(
-            shortRecord: ShortRecord,
-            pageNumber: Int,
-            reader: StrReader?,
-            readAll: Boolean
-        ): List<Ply> {
-            val list: MutableList<Ply> = ArrayList()
-            if (reader != null && reader.hasMore) {
-                try {
-                    while (reader.hasMore && (readAll || list.size < shortRecord.settings.pliesPageSize)) {
-                        Json.parse(reader)
-                            ?.let { Ply.fromJson(shortRecord.board, it) }
-                            ?.let { list.add(it) }
-                    }
-                    myLog("Loaded ${list.size} plies into page $pageNumber")
-                } catch (e: Throwable) {
-                    myLog("Failed to load ply ${list.size + 1}, at pos:${reader.pos}: $e")
-                    reader.skip(reader.available)
-                }
-            }
-            return list
-        }
-
     }
 }

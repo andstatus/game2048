@@ -16,6 +16,7 @@ import org.andstatus.game2048.myLog
 import org.andstatus.game2048.view.ViewData
 import org.andstatus.game2048.view.viewData
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 
 // TODO: Make some separate class for this...
@@ -131,10 +132,10 @@ fun ViewData.generateGame(expectedPliesCount: Int, bookmarkOnPly: Int? = null): 
         }
         iteration++
     }
-    assertEquals(
-        expectedPliesCount, presenter.model.gamePosition.plyNumber,
-        "Failed to generate game ${currentGameString()}"
-    )
+    val message = "Failed to generate game with $expectedPliesCount plies. ${currentGameString()}"
+    assertEquals(expectedPliesCount, presenter.model.gamePosition.plyNumber, message)
+    assertEquals(expectedPliesCount, presenter.model.history.currentGame.gamePlies.size, message)
+    assertNotNull(presenter.model.history.currentGame.gamePlies.get(expectedPliesCount), message)
 
     waitForMainViewShown {
         presenter.onPauseClick()
