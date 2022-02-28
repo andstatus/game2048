@@ -7,7 +7,7 @@ import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korma.geom.SizeInt
 import kotlin.coroutines.CoroutineContext
 
-const val platformSourceFolder = "jsMain"
+private const val platformSourceFolder = "jsMain"
 
 actual val CoroutineContext.gameWindowSize: SizeInt get() = defaultDesktopGameWindowSize
 
@@ -18,6 +18,9 @@ actual val defaultLanguage: String get() = ""
 actual fun Stage.shareText(actionTitle: String, fileName: String, value: String) {
     Console.log("$platformSourceFolder, shareText '$fileName' (${value.length} bytes):\n${value}")
 }
+
+actual fun Stage.shareFile(actionTitle: String, fileName: String, value: Sequence<String>) =
+    shareFileCommon(actionTitle, fileName, value)
 
 actual fun Stage.loadJsonGameRecord(sharedJsonHandler: (String) -> Unit) {
     Console.log("$platformSourceFolder, loadJsonGameRecord")

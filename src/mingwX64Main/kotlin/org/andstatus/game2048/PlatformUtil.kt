@@ -9,7 +9,7 @@ import com.soywiz.korma.geom.times
 import kotlin.coroutines.CoroutineContext
 import kotlin.native.concurrent.freeze
 
-const val platformSourceFolder = "mingwX64Main"
+private const val platformSourceFolder = "mingwX64Main"
 
 actual val CoroutineContext.gameWindowSize: SizeInt get() = defaultPortraitGameWindowSize * 0.66
 
@@ -20,6 +20,9 @@ actual val defaultLanguage: String get() = ""
 actual fun Stage.shareText(actionTitle: String, fileName: String, value: String) {
     Console.log("$platformSourceFolder, shareText '$fileName' (${value.length} bytes):\n${value}")
 }
+
+actual fun Stage.shareFile(actionTitle: String, fileName: String, value: Sequence<String>) =
+    shareFileCommon(actionTitle, fileName, value)
 
 actual fun Stage.loadJsonGameRecord(sharedJsonHandler: (String) -> Unit) {
     Console.log("$platformSourceFolder, loadJsonGameRecord")

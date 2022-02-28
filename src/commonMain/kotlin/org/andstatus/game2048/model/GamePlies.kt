@@ -75,11 +75,11 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
     fun take(n: Int): GamePlies = when {
         (n < 1) -> GamePlies(shortRecord, listOf(emptyFirstPage))
         else -> pages.fold(this) { acc, it ->
-            if (n >= it.firstPlyNumber &&  n < it.nextPageFirstPlyNumber) {
+            if (n >= it.firstPlyNumber && n < it.nextPageFirstPlyNumber) {
                 GamePlies(shortRecord, pages.take(it.pageNumber - 1) + it.take(n - it.firstPlyNumber))
             } else acc
         }
-    }. also { newGamePlies ->
+    }.also { newGamePlies ->
         deletePagesStartingWith(shortRecord.settings, shortRecord.id, newGamePlies.pages.size + 1)
     }
 
@@ -101,8 +101,18 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
         }
     }.toString()
 
-    fun toShortString(): String = if(lastPage === emptyFirstPage) {
-        "emptyLastPage" + if(pages.size > 1) " of ${pages.size}" else ""
+    fun toSharedJsonSequence(): Sequence<String> {
+        var pageNumber: Int = 0
+        return generateSequence {
+            if (pageNumber < pages.size) {
+                pageNumber += 1
+                pages[pageNumber - 1].load().toJson()
+            } else null
+        }
+    }
+
+    fun toShortString(): String = if (lastPage === emptyFirstPage) {
+        "emptyLastPage" + if (pages.size > 1) " of ${pages.size}" else ""
     } else {
         "${size} plies in ${pages.size} pages" + if (isReady) "" else ", loading..."
     }
@@ -127,15 +137,22 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
             var pages: List<PliesPage> = emptyList()
             var index = 0
             var firstPlyNumber = 1
-            while(index < plies.size) {
+            while (index < plies.size) {
                 when {
                     plies.size - index <= shortRecord.settings.pliesPageSize -> {
-                        PliesPage(shortRecord, pages.size + 1, firstPlyNumber,
-                            plies.size - index, plies.drop(index))
+                        PliesPage(
+                            shortRecord, pages.size + 1, firstPlyNumber,
+                            plies.size - index, plies.drop(index)
+                        )
                     }
                     else -> {
-                        PliesPage(shortRecord, pages.size + 1, firstPlyNumber,
-                            shortRecord.settings.pliesPageSize, plies.drop(index).take(shortRecord.settings.pliesPageSize))
+                        PliesPage(
+                            shortRecord,
+                            pages.size + 1,
+                            firstPlyNumber,
+                            shortRecord.settings.pliesPageSize,
+                            plies.drop(index).take(shortRecord.settings.pliesPageSize)
+                        )
                     }
                 }.also {
                     firstPlyNumber += it.size
@@ -146,12 +163,12 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
             return GamePlies(shortRecord, pages).let { gamePlies1 ->
                 myLog("$shortRecord, Loaded ${gamePlies1.toShortString()}")
                 gamePlies1.save()
-                when{
+                when {
                     (gamePlies1.pages.size > 1) ->
-                            // Effectively free memory of previous pages
-                            fromId(shortRecord).also { gamePlies ->
-                                myLog("Reloaded multipage ${gamePlies.toShortString()}")
-                            }
+                        // Effectively free memory of previous pages
+                        fromId(shortRecord).also { gamePlies ->
+                            myLog("Reloaded multipage ${gamePlies.toShortString()}")
+                        }
                     else -> gamePlies1
                 }
             }
@@ -166,8 +183,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
                     ?.mapNotNull { Ply.fromJson(shortRecord.board, it) }
                     ?: emptyList())
                     .let { fromPlies(shortRecord, it) }
-            }
-            else {
+            } else {
                 GamePlies(shortRecord, reader)
             }.also {
                 if (it.size > shortRecord.finalPosition.plyNumber) {

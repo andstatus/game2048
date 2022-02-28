@@ -35,6 +35,7 @@ import org.andstatus.game2048.model.PlyEnum
 import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
+import org.andstatus.game2048.shareFile
 import org.andstatus.game2048.shareText
 import org.andstatus.game2048.view.AppBarButtonsEnum
 import org.andstatus.game2048.view.ColorThemeEnum
@@ -330,10 +331,17 @@ class Presenter(val view: ViewData, history: History) {
     fun onShareClick() = model.history.currentGame.also { game ->
         afterStop {
             logClick("Share")
-            view.gameStage.shareText(
-                view.stringResources.text("share"), game.shortRecord.jsonFileName,
-                game.toSharedJson()
-            )
+            if (game.shortRecord.finalPosition.plyNumber < 10) {
+                view.gameStage.shareText(
+                    view.stringResources.text("share"), game.shortRecord.jsonFileName,
+                    game.toSharedJson()
+                )
+            } else {
+                view.gameStage.shareFile(
+                    view.stringResources.text("share"), game.shortRecord.jsonFileName,
+                    game.toSharedJsonSequence()
+                )
+            }
         }
     }
 

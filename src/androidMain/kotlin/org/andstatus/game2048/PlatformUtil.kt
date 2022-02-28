@@ -20,7 +20,7 @@ import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
 import kotlin.coroutines.CoroutineContext
 
-const val platformSourceFolder = "androidMain"
+private const val platformSourceFolder = "androidMain"
 
 actual val CoroutineContext.gameWindowSize: SizeInt get() =
     mainActivity?.let { context ->
@@ -50,6 +50,34 @@ actual fun Stage.shareText(actionTitle: String, fileName: String, value: String)
             shareShortText(context, actionTitle, fileName, value)
         } else {
             shareLongText(context, actionTitle, fileName, value)
+        }
+    }
+}
+
+actual fun Stage.shareFile(actionTitle: String, fileName: String, value: Sequence<String>) {
+    mainActivity?.let { context ->
+        val file = File(context.cacheDir, fileName)
+        try {
+            FileOutputStream(file).use { fileOutputStream ->
+                BufferedWriter(OutputStreamWriter(fileOutputStream, StandardCharsets.UTF_8)).use { out ->
+                    value.forEach {
+                        out.write(it)
+                        out.write("\n")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            myLog("Error saving ${file.absoluteFile}: ${e.message}")
+            return
+        }
+
+        Intent(Intent.ACTION_SEND).apply {
+            type = "*/*"
+            putExtra(Intent.EXTRA_SUBJECT, fileName)
+            putExtra(Intent.EXTRA_STREAM, FileProvider.cachedFilenameToUri(fileName))
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }.let { intent ->
+            context.startActivity(Intent.createChooser(intent, actionTitle))
         }
     }
 }
