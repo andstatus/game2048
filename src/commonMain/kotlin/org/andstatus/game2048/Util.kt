@@ -31,11 +31,11 @@ fun <T> KorAtomicRef<T>.update(updater: (T) -> T): T {
     return newValue
 }
 
-fun Stage.shareFileCommon(actionTitle: String, fileName: String, value: Sequence<String>) {
-    Console.log("---- $platformSourceFolder, shareFile '$fileName' start")
+fun Stage.shareTextCommon(actionTitle: String, fileName: String, value: Sequence<String>) {
+    Console.log("---- $platformSourceFolder, shareText '$fileName' start")
     Console.log("Title: $actionTitle")
     value.forEach { line ->
         Console.log(line)
     }
-    Console.log("---- $platformSourceFolder, shareFile '$fileName' end")
+    Console.log("---- $platformSourceFolder, shareText '$fileName' end")
 }

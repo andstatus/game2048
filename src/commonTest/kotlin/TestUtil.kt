@@ -147,3 +147,7 @@ fun ViewData.generateGame(expectedPliesCount: Int, bookmarkOnPly: Int? = null): 
     }
     return game
 }
+
+fun Sequence<String>.toTextLines(): String = fold(StringBuilder()) { acc, str ->
+    acc.append(str).append("\n")
+}.toString()

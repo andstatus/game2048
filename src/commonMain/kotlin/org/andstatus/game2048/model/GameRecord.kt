@@ -17,8 +17,6 @@ class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
         myLog("Saved $this")
     }
 
-    fun toSharedJson(): String = load().shortRecord.toSharedJson() + gamePlies.toSharedJson()
-
     fun toSharedJsonSequence(): Sequence<String> = sequence {
        yield(load().shortRecord.toSharedJson())
        yieldAll(gamePlies.toSharedJsonSequence())

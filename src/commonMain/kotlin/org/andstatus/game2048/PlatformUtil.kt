@@ -11,9 +11,7 @@ expect val CoroutineContext.isDarkThemeOn: Boolean
 
 expect val defaultLanguage: String
 
-expect fun Stage.shareText(actionTitle: String, fileName: String, value: String)
-
-expect fun Stage.shareFile(actionTitle: String, fileName: String, value: Sequence<String>)
+expect fun Stage.shareText(actionTitle: String, fileName: String, value: Sequence<String>)
 
 expect fun Stage.loadJsonGameRecord(sharedJsonHandler: (String) -> Unit)
 

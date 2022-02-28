@@ -20,12 +20,8 @@ actual val CoroutineContext.isDarkThemeOn: Boolean get() = System.getProperty("u
 
 actual val defaultLanguage: String get() = java.util.Locale.getDefault().language
 
-actual fun Stage.shareText(actionTitle: String, fileName: String, value: String) {
-    Console.log("$platformSourceFolder, shareText '$fileName' (${value.length} bytes):\n${value}")
-}
-
-actual fun Stage.shareFile(actionTitle: String, fileName: String, value: Sequence<String>) =
-    shareFileCommon(actionTitle, fileName, value)
+actual fun Stage.shareText(actionTitle: String, fileName: String, value: Sequence<String>) =
+    shareTextCommon(actionTitle, fileName, value)
 
 actual fun Stage.loadJsonGameRecord(sharedJsonHandler: (String) -> Unit) {
     Console.log("$platformSourceFolder, loadJsonGameRecord")

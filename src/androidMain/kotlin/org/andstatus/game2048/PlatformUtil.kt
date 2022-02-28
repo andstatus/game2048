@@ -10,7 +10,6 @@ import com.soywiz.korge.view.Stage
 import com.soywiz.korio.android.AndroidCoroutineContext
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
 import com.soywiz.korio.concurrent.atomic.korAtomic
-import com.soywiz.korio.lang.substr
 import com.soywiz.korma.geom.SizeInt
 import org.andstatus.game2048.data.FileProvider
 import java.io.BufferedWriter
@@ -43,28 +42,24 @@ actual val CoroutineContext.isDarkThemeOn: Boolean get() = mainActivity?.let { c
 
 actual val defaultLanguage: String get() = java.util.Locale.getDefault().language
 
-actual fun Stage.shareText(actionTitle: String, fileName: String, value: String) {
-    myLog("$platformSourceFolder, shareText '$fileName' (${value.length} bytes): ${value.substr(0, 500)}...")
-    mainActivity?.let { context ->
-        if (value.length < 100000) {
-            shareShortText(context, actionTitle, fileName, value)
-        } else {
-            shareLongText(context, actionTitle, fileName, value)
-        }
-    }
-}
-
-actual fun Stage.shareFile(actionTitle: String, fileName: String, value: Sequence<String>) {
+actual fun Stage.shareText(actionTitle: String, fileName: String, value: Sequence<String>) {
+    myLog("$platformSourceFolder, shareText '$fileName'")
     mainActivity?.let { context ->
         val file = File(context.cacheDir, fileName)
         try {
             FileOutputStream(file).use { fileOutputStream ->
+                var lineNumber = 0
+                var charsWritten = 0
                 BufferedWriter(OutputStreamWriter(fileOutputStream, StandardCharsets.UTF_8)).use { out ->
                     value.forEach {
+                        lineNumber++
+                        myLog("writing line $lineNumber, ${it.length} chars")
                         out.write(it)
                         out.write("\n")
+                        charsWritten += it.length
                     }
                 }
+                myLog("shareText '$fileName' completed, $lineNumber lines written, $charsWritten chars + line breaks")
             }
         } catch (e: Exception) {
             myLog("Error saving ${file.absoluteFile}: ${e.message}")

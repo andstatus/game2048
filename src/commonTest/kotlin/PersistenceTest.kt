@@ -43,7 +43,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
             emptyList(),
             plies
         )
-        val sharedJson = gameRecord.toSharedJson()
+        val sharedJson = gameRecord.toSharedJsonSequence().toTextLines()
         val message = "nMoves:$nPlies, $sharedJson"
 
         if (nPlies > 0) {

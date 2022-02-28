@@ -7,7 +7,6 @@ import com.soywiz.korio.util.StrReader
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.initAtomicReference
 import org.andstatus.game2048.myLog
-import org.andstatus.game2048.stubGameId
 import org.andstatus.game2048.update
 import kotlin.math.abs
 
@@ -58,8 +57,10 @@ class PliesPageData(val settings: Settings) {
             val mapKey = mapKey(shortRecord.id, pageNumber)
             map[mapKey] = list
             if (map.size > maxPagesStored) {
-                val pageToDelete = map.keys.maxOf { key -> abs(key - mapKey) }
-                map.remove(pageToDelete)
+                map.keys.maxByOrNull { key -> abs(key - mapKey) }?.let { keyToDelete ->
+                    myLog("Removing key $keyToDelete to store $mapKey")
+                    map.remove(keyToDelete)
+                }
             }
             map
         }
@@ -106,7 +107,7 @@ class PliesPageData(val settings: Settings) {
 
         private fun storageKey(gameId: Int, pageNumber: Int): String = "$keyPlies${gameId}.$pageNumber"
 
-        private fun mapKey(gameId: Int, pageNumber: Int): Int = gameId * stubGameId + pageNumber
+        private fun mapKey(gameId: Int, pageNumber: Int): Int = gameId * 1000 + pageNumber
 
         fun toJson(plies: List<Ply>): String = StringBuilder().also { stringBuilder ->
             plies.forEach { ply ->

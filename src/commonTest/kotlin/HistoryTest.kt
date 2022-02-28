@@ -21,7 +21,7 @@ class HistoryTest : ViewsForTesting(log = true) {
         assertEquals(game1.toLongString(), actualGame.toLongString(), currentGameString())
         assertEquals(game1.score, actualGame.score, currentGameString())
         assertEquals(game1.shortRecord.bookmarks.size, actualGame.shortRecord.bookmarks.size, currentGameString())
-        assertEquals(game1.toSharedJson(), actualGame.toSharedJson(), currentGameString())
+        assertEquals(game1.toSharedJsonSequence().toTextLines(), actualGame.toSharedJsonSequence().toTextLines(), currentGameString())
         assertTrue(presenter.canUndo(), modelAndViews() + "\n" + currentGameString())
         assertFalse(presenter.canRedo(), modelAndViews() + "\n" + currentGameString())
     }

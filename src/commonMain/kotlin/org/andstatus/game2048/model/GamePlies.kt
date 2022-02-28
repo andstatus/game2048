@@ -95,12 +95,6 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
         pages.forEach { it.save() }
     }
 
-    fun toSharedJson(): String = StringBuilder().also { stringBuilder ->
-        pages.forEach {
-            it.load().toJson().let { json -> stringBuilder.append(json) }
-        }
-    }.toString()
-
     fun toSharedJsonSequence(): Sequence<String> {
         var pageNumber: Int = 0
         return generateSequence {
