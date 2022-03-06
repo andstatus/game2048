@@ -7,6 +7,7 @@ import com.soywiz.korio.serialization.json.toJson
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.stubGameId
 
+private const val keyGame = "game"
 private const val keyNote = "note"
 private const val keyId = "id"
 private const val keyStart = "start"
@@ -29,7 +30,7 @@ class ShortRecord(val settings: Settings, val board: Board, val note: String, va
         if (isStub) return
 
         toSharedJson().let {
-            settings.storage[keyGame + id] = it
+            settings.storage[keyGameRecord] = it
         }
     }
 
@@ -44,6 +45,8 @@ class ShortRecord(val settings: Settings, val board: Board, val note: String, va
             "type" to "org.andstatus.game2048:GameRecord:2",
     )
 
+    val keyGameRecord get() = keyGameRecord(id)
+
     fun replayedAtPosition(position: GamePosition): ShortRecord =
         ShortRecord(settings, board, note, id, start, position,
             bookmarks.filterNot { it.plyNumber >= position.plyNumber })
@@ -53,13 +56,13 @@ class ShortRecord(val settings: Settings, val board: Board, val note: String, va
 
         fun fromId(settings: Settings, id: Int): ShortRecord? =
             settings.storage.getOrNull(keyGameRecord(id))
-                ?.let { fromSharedJson(settings, it, id) }
+                ?.let { fromSharedJson(settings, SequenceLineReader(sequenceOf(it)), id) }
 
         private fun keyGameRecord(id: Int) = keyGame + id
 
         fun sharedJsonToId(json: String, defaultId: Int): Int = json.parseJsonMap()[keyId] as Int? ?: defaultId
 
-        fun fromSharedJson(settings: Settings, json: String, newId: Int): ShortRecord? {
+        fun fromSharedJson(settings: Settings, json: SequenceLineReader, newId: Int): ShortRecord? {
             val aMap = json.parseJsonMap()
             val board = settings.defaultBoard // TODO Create / load here
             val note: String = aMap[keyNote] as String? ?: ""

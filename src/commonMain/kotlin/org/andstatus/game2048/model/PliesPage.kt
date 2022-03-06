@@ -1,7 +1,6 @@
 package org.andstatus.game2048.model
 
 import com.soywiz.korio.concurrent.atomic.korAtomic
-import com.soywiz.korio.util.StrReader
 
 private const val keyPageNumber = "page"
 private const val keyFirstPlyNumber = "first"
@@ -33,7 +32,7 @@ class PliesPage(
 
     fun load(): PliesPage {
         if (!isFirstEmpty && !loaded) {
-            shortRecord.settings.pliesPageData.readPlies(shortRecord, pageNumber, null, true)
+            shortRecord.settings.pliesPageData.readPlies(shortRecord, pageNumber, emptySequenceLineReader, true)
             savedRef.value = true
         }
         return this
@@ -72,7 +71,7 @@ class PliesPage(
     fun toJson(): String = PliesPageData.toJson(PliesPageData.getPlies(shortRecord.id, pageNumber))
 
     companion object {
-        fun fromSharedJson(shortRecord: ShortRecord, pageNumber: Int, plyNumber: Int, reader: StrReader?): PliesPage =
+        fun fromSharedJson(shortRecord: ShortRecord, pageNumber: Int, plyNumber: Int, reader: SequenceLineReader): PliesPage =
             shortRecord.settings.pliesPageData.readPlies(shortRecord, pageNumber, reader, false).let {
                 PliesPage(shortRecord, pageNumber, plyNumber, it.size, it)
             }

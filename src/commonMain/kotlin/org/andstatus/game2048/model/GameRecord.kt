@@ -4,8 +4,6 @@ import com.soywiz.klock.DateTimeTz
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.myLog
 
-const val keyGame = "game"
-
 class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
 
     fun save() {
@@ -53,10 +51,10 @@ class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
             return GameRecord(this, gamePlies)
         }
 
-        fun fromSharedJson(settings: Settings, json: String, newId: Int): GameRecord? {
-            myLog("Game fromSharedJson newId:$newId, length:${json.length} ${json.substring(0..200)}...")
-            return ShortRecord.fromSharedJson(settings, json, newId)?.let { shortRecord ->
-                GameRecord(shortRecord, GamePlies.fromSharedJson(shortRecord, json))
+        fun fromSharedJson(settings: Settings, reader: SequenceLineReader, newId: Int): GameRecord? {
+            myLog("Game fromSharedJson newId:$newId...")
+            return ShortRecord.fromSharedJson(settings, reader, newId)?.let { shortRecord ->
+                GameRecord(shortRecord, GamePlies.fromSharedJson(shortRecord, reader.unRead()))
             }
         }
 

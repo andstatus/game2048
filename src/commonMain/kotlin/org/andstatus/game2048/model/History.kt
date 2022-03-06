@@ -109,7 +109,7 @@ class History(
                 myMeasuredIt("Game saved") {
                     updateBestScore()
                     game.save()
-                    gameIsLoading.compareAndSet(true, false)
+                    gameIsLoading.compareAndSet(expect = true, update = false)
                     game
                 }
                 loadRecentGames()
@@ -195,7 +195,7 @@ class History(
                         game.gamePlies
                     }
                     redoPlyPointer == 1 -> {
-                        GamePlies(game.shortRecord)
+                        GamePlies(game.shortRecord, emptySequenceLineReader)
                     }
                     else -> {
                         game.gamePlies.take(redoPlyPointer - 1)

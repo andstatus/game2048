@@ -9,6 +9,7 @@ import com.soywiz.korge.view.Text
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.concurrent.atomic.incrementAndGet
 import com.soywiz.korio.concurrent.atomic.korAtomic
+import com.soywiz.korio.lang.use
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -32,6 +33,7 @@ import org.andstatus.game2048.model.PieceMovePlace
 import org.andstatus.game2048.model.PlacedPiece
 import org.andstatus.game2048.model.Ply
 import org.andstatus.game2048.model.PlyEnum
+import org.andstatus.game2048.model.SequenceLineReader
 import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
@@ -341,23 +343,25 @@ class Presenter(val view: ViewData, history: History) {
         logClick("Load")
         model.restart().present()
         gameIsLoading.value = true
-        view.gameStage.loadJsonGameRecord {
-            loadSharedJson(it)
+        view.gameStage.loadJsonGameRecord { sequence ->
+            loadSharedJson(sequence)
         }
     }
 
-    fun loadSharedJson(json: String) {
+    fun loadSharedJson(json: Sequence<String>) {
         gameIsLoading.value = true
-        GameRecord.fromSharedJson(model.history.settings, json, model.history.idForNewGame())
-            ?.also {
-                it.load().save()
-                model.history.loadRecentGames()
-                model.openGame(it.id).present()
-                gameIsLoading.value = false
-            }
-            ?: run {
-                gameIsLoading.value = false
-            }
+        SequenceLineReader(json).use { reader ->
+            GameRecord.fromSharedJson(model.history.settings, reader, model.history.idForNewGame())
+                ?.also {
+                    it.load().save()
+                    model.history.loadRecentGames()
+                    model.openGame(it.id).present()
+                    gameIsLoading.value = false
+                }
+                ?: run {
+                    gameIsLoading.value = false
+                }
+        }
     }
 
     fun onHelpClick() = afterStop {
@@ -482,7 +486,7 @@ class Presenter(val view: ViewData, history: History) {
     private fun showMainView() {
         if (!view.closed) {
             if (!model.settings.isTestRun) {
-                // TOD: Why this doesn't work in tests?
+                // TODO: Why this doesn't work in tests?
                 view.mainView.show(buttonsToShow(), gameMode.speed)
             }
             if (gameMode.aiEnabled && gameMode.speed == 0) {

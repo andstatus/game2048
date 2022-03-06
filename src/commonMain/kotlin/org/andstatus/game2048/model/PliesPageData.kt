@@ -3,7 +3,6 @@ package org.andstatus.game2048.model
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.serialization.json.toJson
-import com.soywiz.korio.util.StrReader
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.initAtomicReference
 import org.andstatus.game2048.myLog
@@ -20,28 +19,30 @@ class PliesPageData(val settings: Settings) {
     fun readPlies(
         shortRecord: ShortRecord,
         pageNumber: Int,
-        readerIn: StrReader?,
+        readerIn: SequenceLineReader,
         readAll: Boolean
     ): List<Ply> {
         if (shortRecord.isStub) return emptyList()
 
         val list: MutableList<Ply> = ArrayList()
         val storageKey = storageKey(shortRecord.id, pageNumber)
-        val reader: StrReader = readerIn
-            ?: settings.storage.getOrNull(storageKey)
-                ?.let { StrReader(it) }
-            ?: StrReader("")
-
-        try {
-            while (reader.hasMore && (readAll || list.size < settings.pliesPageSize)) {
-                Json.parse(reader)
+        val reader: SequenceLineReader = if (readerIn.isEmpty) {
+            settings.storage.getOrNull(storageKey)
+                ?.let { SequenceLineReader(sequenceOf(it)) } ?: emptySequenceLineReader
+        } else readerIn
+        reader.readNext { strReader ->
+            while (strReader.hasMore && (readAll || list.size < settings.pliesPageSize)) {
+                Json.parse(strReader)
                     ?.let { Ply.fromJson(shortRecord.board, it) }
                     ?.let { list.add(it) }
             }
-            myLog("Loaded ${list.size} plies from $storageKey")
-        } catch (e: Throwable) {
-            myLog("Failed to load ply ${list.size + 1}, at pos:${reader.pos}: $e")
-            reader.skip(reader.available)
+        }.onFailure {
+            myLog("Failed to parse page $pageNumber, loaded ${list.size} plies, pos:${reader.posFromInput}: $it")
+        }.onSuccess {
+            myLog(
+                "Loaded ${list.size} plies of $storageKey from " +
+                    if (readerIn.isEmpty) "storage" else readerIn::class.simpleName
+            )
         }
         update(shortRecord, pageNumber, list)
         return list
@@ -103,7 +104,8 @@ class PliesPageData(val settings: Settings) {
 
         fun isLoaded(gameId: Int, pageNumber: Int): Boolean = pliesMapRef.value[mapKey(gameId, pageNumber)] != null
 
-        fun getPlies(gameId: Int, pageNumber: Int): List<Ply> = pliesMapRef.value[mapKey(gameId, pageNumber)] ?: emptyList()
+        fun getPlies(gameId: Int, pageNumber: Int): List<Ply> =
+            pliesMapRef.value[mapKey(gameId, pageNumber)] ?: emptyList()
 
         private fun storageKey(gameId: Int, pageNumber: Int): String = "$keyPlies${gameId}.$pageNumber"
 

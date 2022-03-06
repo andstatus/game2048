@@ -43,13 +43,16 @@ class PersistenceTest : ViewsForTesting(log = true) {
             emptyList(),
             plies
         )
-        val sharedJson = gameRecord.toSharedJsonSequence().toTextLines()
-        val message = "nMoves:$nPlies, $sharedJson"
+        val id1 = gameRecord.id
+        val sharedJson = gameRecord.toSharedJsonSequence().toList().asSequence()
+        val sharedJsonLines = gameRecord.toSharedJsonSequence().toTextLines()
+        val longString1 = gameRecord.toLongString()
+        val message = "nMoves:$nPlies, $sharedJsonLines"
 
         if (nPlies > 0) {
-            assertContains(sharedJson, "place", false, message)
+            assertContains(sharedJsonLines, "place", false, message)
         } else {
-            assertFalse(sharedJson.contains("place"), message)
+            assertFalse(sharedJsonLines.contains("place"), message)
         }
         myLog("Current game 1, n=$nPlies: ${presenter.model.history.currentGame}")
         presenter.loadSharedJson(sharedJson)
@@ -59,7 +62,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         myLog("Current game 2, n=$nPlies: ${presenter.model.history.currentGame}")
 
         val gameRecordOpened = presenter.model.history.currentGame
-        gameRecord.id = gameRecordOpened.id
-        assertEquals(gameRecord.toLongString(), gameRecordOpened.toLongString(), message)
+        assertEquals(longString1, gameRecordOpened.toLongString()
+            .replace("\"id\":${gameRecordOpened.id}", "\"id\":$id1"), message)
     }
 }

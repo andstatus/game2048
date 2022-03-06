@@ -15,7 +15,7 @@ fun Any.parseJsonArray(): List<Any> = try {
         }
     }
 } catch (e: Exception) {
-    myLog("Error parsing '${this.toString().take(200)}': $e")
+    myLog("Error parseJsonArray '${this.toString().take(400)}': $e")
     emptyList()
 }
 
@@ -25,6 +25,10 @@ fun Any.parseJsonMap(): Map<String, Any> =
         when (this) {
             is String -> Json.parse(this) as Map<String, Any>
             is StrReader -> Json.parse(this) as Map<String, Any>
+            is SequenceLineReader -> this.readNext(StrReader::parseJsonMap).onFailure {
+                myLog("Error parseJsonMap '${this.toString().take(400)}': $it")
+                return emptyMap()
+            }.getOrNull()
             else -> this
         }
             .let {
@@ -34,6 +38,6 @@ fun Any.parseJsonMap(): Map<String, Any> =
                 }
             }
     } catch (e: Throwable) {
-        myLog("Error parsing '${this.toString().take(200)}': $e")
+        myLog("Error parseJsonMap '${this.toString().take(400)}': $e")
         emptyMap()
     }

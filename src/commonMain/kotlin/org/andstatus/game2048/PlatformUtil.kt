@@ -13,7 +13,7 @@ expect val defaultLanguage: String
 
 expect fun Stage.shareText(actionTitle: String, fileName: String, value: Sequence<String>)
 
-expect fun Stage.loadJsonGameRecord(sharedJsonHandler: (String) -> Unit)
+expect fun Stage.loadJsonGameRecord(sharedJsonHandler: (Sequence<String>) -> Unit)
 
 expect fun Stage.closeGameApp()
 

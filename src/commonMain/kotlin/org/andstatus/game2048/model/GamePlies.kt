@@ -2,7 +2,6 @@ package org.andstatus.game2048.model
 
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
 import com.soywiz.korio.serialization.json.Json
-import com.soywiz.korio.util.StrReader
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.initAtomicReference
 import org.andstatus.game2048.myLog
@@ -11,13 +10,12 @@ private const val keyPliesHead = "pliesHead"
 private const val keyPlayersMoves = "playersMoves"
 
 /** @author yvolk@yurivolkov.com */
-class GamePlies(private val shortRecord: ShortRecord, private val reader: StrReader? = null) {
+class GamePlies(private val shortRecord: ShortRecord, private val reader: SequenceLineReader) {
 
-    private constructor(shortRecord: ShortRecord, pages: List<PliesPage>) : this(shortRecord, null) {
+    private constructor(shortRecord: ShortRecord, pages: List<PliesPage>) : this(shortRecord, emptySequenceLineReader) {
         if (pages.isNotEmpty()) {
             pagesRef.value = pages
         }
-        pliesLoaded
     }
 
     private val emptyFirstPage = PliesPage(shortRecord, 1, 1, 0, emptyList(), true)
@@ -26,13 +24,13 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
     val lastPage get() = pages.last()
 
     val isReady: Boolean
-        get() = if (reader == null) {
+        get() = if (reader.isEmpty) {
             lastPage.loaded
         } else {
             pliesLoaded.isInitialized()
         }
     private val pliesLoaded: Lazy<Boolean> = lazy {
-        if (reader == null) {
+        if (reader.isEmpty) {
             lastPage.load()
         } else {
             var pageNumber = 1
@@ -40,12 +38,18 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
             while (reader.hasMore) {
                 val page = PliesPage.fromSharedJson(shortRecord, pageNumber, plyNumber, reader)
                     .save()
+                if (page.size == 0) break
+
                 pagesRef.value = if (pageNumber == 1) listOf(page) else pagesRef.value + page
                 pageNumber += 1
                 plyNumber += page.size
             }
         }
         true
+    }
+
+    init {
+        pliesLoaded
     }
 
     fun load() = pliesLoaded.value.let { this }
@@ -96,7 +100,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
     }
 
     fun toSharedJsonSequence(): Sequence<String> {
-        var pageNumber: Int = 0
+        var pageNumber = 0
         return generateSequence {
             if (pageNumber < pages.size) {
                 pageNumber += 1
@@ -108,7 +112,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
     fun toShortString(): String = if (lastPage === emptyFirstPage) {
         "emptyLastPage" + if (pages.size > 1) " of ${pages.size}" else ""
     } else {
-        "${size} plies in ${pages.size} pages" + if (isReady) "" else ", loading..."
+        "$size plies in ${pages.size} pages" + if (isReady) "" else ", loading..."
     }
 
     companion object {
@@ -119,11 +123,13 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
                 ?.parseJsonArray()
                 ?.mapIndexed { index, header -> PliesPage.fromId(shortRecord, index + 1, header) }
                 ?.let {
-                    if (it.isEmpty() || it.get(0).count == 0) emptyList() else it
+                    if (it.isEmpty() || it[0].count == 0) emptyList() else it
                 }
                 ?.let { GamePlies(shortRecord, it) }
-                ?: shortRecord.settings.storage.getOrNull(keyGame + shortRecord.id)
-                    ?.let { fromSharedJson(shortRecord, it) }
+                ?: shortRecord.settings.storage.getOrNull(shortRecord.keyGameRecord)
+                    ?.let { pliesInHeader ->
+                        fromSharedJson(shortRecord, SequenceLineReader(sequenceOf(pliesInHeader)))
+                    }
                 ?: GamePlies(shortRecord, emptyList())
             ).load()
 
@@ -168,8 +174,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: StrRea
             }
         }
 
-        fun fromSharedJson(shortRecord: ShortRecord, json: String): GamePlies {
-            val reader = StrReader(json)
+        fun fromSharedJson(shortRecord: ShortRecord, reader: SequenceLineReader): GamePlies {
             val aMap: Map<String, Any> = reader.parseJsonMap()
             return if (aMap.containsKey(keyPlayersMoves)) {
                 // TODO: For compatibility with previous versions

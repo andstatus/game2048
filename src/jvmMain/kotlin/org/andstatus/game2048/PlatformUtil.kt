@@ -23,9 +23,9 @@ actual val defaultLanguage: String get() = java.util.Locale.getDefault().languag
 actual fun Stage.shareText(actionTitle: String, fileName: String, value: Sequence<String>) =
     shareTextCommon(actionTitle, fileName, value)
 
-actual fun Stage.loadJsonGameRecord(sharedJsonHandler: (String) -> Unit) {
+actual fun Stage.loadJsonGameRecord(sharedJsonHandler: (Sequence<String>) -> Unit) {
     Console.log("$platformSourceFolder, loadJsonGameRecord")
-    sharedJsonHandler("")
+    sharedJsonHandler(emptySequence())
 }
 
 actual fun Stage.closeGameApp() {}
