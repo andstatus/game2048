@@ -43,7 +43,7 @@ class Settings(private val stage: Stage) {
     var aiAlgorithm: AiAlgorithm = AiAlgorithm.load(storage.getOrNull(keyAiAlgorithm))
     var defaultBoard = Board(this)
     val isTestRun = "TestGameWindow" == stage.views.gameWindow::class.simpleName
-    var pliesPageSize = 5000
+    var pliesPageSize = 1000
 
     val gameIdsRange = 1 until stubGameId
     val maxOlderGames = 30

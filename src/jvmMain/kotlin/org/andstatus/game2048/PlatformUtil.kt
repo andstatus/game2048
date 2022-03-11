@@ -25,7 +25,7 @@ actual fun Stage.shareText(actionTitle: String, fileName: String, value: Sequenc
 
 actual fun Stage.loadJsonGameRecord(sharedJsonHandler: (Sequence<String>) -> Unit) {
     Console.log("$platformSourceFolder, loadJsonGameRecord")
-    sharedJsonHandler(emptySequence())
+    sharedJsonHandler(FileSequence("./src/commonTest/resources/sharedGames/game1.json"))
 }
 
 actual fun Stage.closeGameApp() {}

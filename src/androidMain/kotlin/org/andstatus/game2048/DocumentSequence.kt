@@ -11,13 +11,14 @@ class DocumentSequence(val context: Context, val uri: Uri) : Sequence<String>, C
     private val bufferLength = 20000
     private val buffer = CharArray(bufferLength)
     private val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
-    private val inputStreamReader: InputStreamReader
+    private val inputStreamReader: InputStreamReader? = inputStream?.let {
+        InputStreamReader(it, StandardCharsets.UTF_8)
+    }
     private val sequence: Sequence<String>
 
     init {
-        inputStreamReader = InputStreamReader(inputStream ?: InputStream.nullInputStream(), StandardCharsets.UTF_8)
         sequence = generateSequence {
-            val count: Int = inputStreamReader.read(buffer)
+            val count: Int = inputStreamReader?.read(buffer) ?: -1
             if (count == -1) {
                 null
             } else {
