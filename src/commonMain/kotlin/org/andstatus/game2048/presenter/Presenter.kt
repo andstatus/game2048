@@ -343,7 +343,7 @@ class Presenter(val view: ViewData, history: History) {
         logClick("Load")
         model.restart().present()
         gameIsLoading.value = true
-        view.gameStage.loadJsonGameRecord { sequence ->
+        view.gameStage.loadJsonGameRecord(model.history.settings) { sequence ->
             loadSharedJson(sequence)
         }
     }

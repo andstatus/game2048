@@ -16,7 +16,7 @@ class FileSequence(path: String) : Sequence<String>, Closeable {
     init {
         val file = File(path)
         inputStream = if (file.exists()) {
-            myLog("Opening file '$path'")
+            myLog("Opening file '${file.absolutePath}'")
             file.inputStream()
         } else {
             myLog("File '$path' not found")

@@ -20,7 +20,7 @@ actual val defaultLanguage: String get() = ""
 actual fun Stage.shareText(actionTitle: String, fileName: String, value: Sequence<String>) =
     shareTextCommon(actionTitle, fileName, value)
 
-actual fun Stage.loadJsonGameRecord(sharedJsonHandler: (Sequence<String>) -> Unit) {
+actual fun Stage.loadJsonGameRecord(settings: Settings, sharedJsonHandler: (Sequence<String>) -> Unit) {
     Console.log("$platformSourceFolder, loadJsonGameRecord")
     sharedJsonHandler(emptySequence())
 }
