@@ -332,7 +332,7 @@ class Presenter(val view: ViewData, history: History) {
     fun onShareClick() = model.history.currentGame.also { game ->
         afterStop {
             logClick("Share")
-            view.gameStage.shareText(
+            shareText(
                 view.stringResources.text("share"), game.shortRecord.jsonFileName,
                 game.toSharedJsonSequence()
             )

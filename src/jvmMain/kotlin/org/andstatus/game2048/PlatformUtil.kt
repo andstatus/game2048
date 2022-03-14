@@ -5,6 +5,7 @@ import com.soywiz.korge.view.Stage
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
 import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korma.geom.SizeInt
+import org.andstatus.game2048.presenter.Presenter
 import java.io.File
 import java.io.OutputStreamWriter
 import kotlin.coroutines.CoroutineContext
@@ -22,16 +23,22 @@ actual val CoroutineContext.isDarkThemeOn: Boolean get() = System.getProperty("u
 
 actual val defaultLanguage: String get() = java.util.Locale.getDefault().language
 
-actual fun Stage.shareText(actionTitle: String, fileName: String, value: Sequence<String>) {
-    val file = File(fileName)
-    if (file.exists()) {
-        myLog("File already exists: '${file.absolutePath}'")
-    } else {
-        if (file.createNewFile()) {
-            saveToFile(file, value)
-            return
+actual fun Presenter.shareText(actionTitle: String, fileName: String, value: Sequence<String>) {
+    for (attempt in (0..100)) {
+        val fileNameNew = if (attempt == 0) fileName else fileName.appendToFileName(" ($attempt)")
+        val file = File(fileNameNew)
+        if (file.exists()) {
+            myLog("File already exists: '${file.absolutePath}'")
+        } else {
+            if (file.createNewFile()) {
+                saveToFile(file, value)
+                myLog("Saved: '${file.absolutePath}'")
+                asyncShowMainView()
+                return
+            }
+            myLog("Cannot create file: '${file.absolutePath}'")
+            break
         }
-        myLog("Cannot create file: '${file.absolutePath}'")
     }
     shareTextCommon(actionTitle, fileName, value)
 }

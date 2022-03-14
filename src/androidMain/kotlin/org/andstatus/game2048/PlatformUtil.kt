@@ -1,6 +1,5 @@
 package org.andstatus.game2048
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -12,6 +11,7 @@ import com.soywiz.korio.concurrent.atomic.KorAtomicRef
 import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korma.geom.SizeInt
 import org.andstatus.game2048.data.FileProvider
+import org.andstatus.game2048.presenter.Presenter
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileOutputStream
@@ -42,9 +42,9 @@ actual val CoroutineContext.isDarkThemeOn: Boolean get() = mainActivity?.let { c
 
 actual val defaultLanguage: String get() = java.util.Locale.getDefault().language
 
-actual fun Stage.shareText(actionTitle: String, fileName: String, value: Sequence<String>) {
+actual fun Presenter.shareText(actionTitle: String, fileName: String, value: Sequence<String>) {
     myLog("$platformSourceFolder, shareText '$fileName'")
-    mainActivity?.let { context ->
+    view.gameStage.mainActivity?.let { context ->
         val file = File(context.cacheDir, fileName)
         try {
             FileOutputStream(file).use { fileOutputStream ->
@@ -74,39 +74,6 @@ actual fun Stage.shareText(actionTitle: String, fileName: String, value: Sequenc
         }.let { intent ->
             context.startActivity(Intent.createChooser(intent, actionTitle))
         }
-    }
-}
-
-private fun shareShortText(context: Activity, actionTitle: String, fileName: String, value: String) {
-    Intent(Intent.ACTION_SEND).apply {
-        type = "*/*"
-        putExtra(Intent.EXTRA_SUBJECT, fileName)
-        putExtra(Intent.EXTRA_TEXT, value)
-    }.let { intent ->
-        context.startActivity(Intent.createChooser(intent, actionTitle))
-    }
-}
-
-private fun shareLongText(context: Activity, actionTitle: String, fileName: String, value: String) {
-    val file = File(context.cacheDir, fileName)
-    try {
-        FileOutputStream(file).use { fileOutputStream ->
-            BufferedWriter(OutputStreamWriter(fileOutputStream, StandardCharsets.UTF_8)).use { out ->
-                out.write(value)
-            }
-        }
-    } catch (e: Exception) {
-        myLog("Error saving ${file.absoluteFile}: ${e.message}")
-        return
-    }
-
-    Intent(Intent.ACTION_SEND).apply {
-        type = "*/*"
-        putExtra(Intent.EXTRA_SUBJECT, fileName)
-        putExtra(Intent.EXTRA_STREAM, FileProvider.cachedFilenameToUri(fileName))
-        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    }.let { intent ->
-        context.startActivity(Intent.createChooser(intent, actionTitle))
     }
 }
 

@@ -2,8 +2,9 @@ package org.andstatus.game2048
 
 import com.soywiz.klock.Stopwatch
 import com.soywiz.klogger.Console
-import com.soywiz.korge.view.Stage
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
+import com.soywiz.korio.lang.substr
+import org.andstatus.game2048.presenter.Presenter
 
 private const val platformSourceFolder = "jvmMain"
 
@@ -31,11 +32,21 @@ fun <T> KorAtomicRef<T>.update(updater: (T) -> T): T {
     return newValue
 }
 
-fun Stage.shareTextCommon(actionTitle: String, fileName: String, value: Sequence<String>) {
+fun Presenter.shareTextCommon(actionTitle: String, fileName: String, value: Sequence<String>) {
     Console.log("---- $platformSourceFolder, shareText '$fileName' start")
     Console.log("Title: $actionTitle")
     value.forEach { line ->
         Console.log(line)
     }
     Console.log("---- $platformSourceFolder, shareText '$fileName' end")
+    asyncShowMainView()
+}
+
+fun String.appendToFileName(suffix: String): String {
+    val dot = lastIndexOf('.')
+    return if (dot < 0) {
+        this + suffix
+    } else {
+        this.substr(0, dot) + suffix + this.substr(dot)
+    }
 }
