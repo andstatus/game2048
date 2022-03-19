@@ -115,9 +115,10 @@ fun ViewData.generateGame(expectedPliesCount: Int, bookmarkOnPly: Int? = null): 
     }
 
     var iteration = 0
-    while (presenter.model.gamePosition.plyNumber < expectedPliesCount &&
-        iteration < expectedPliesCount
-    ) {
+    while (iteration < expectedPliesCount) {
+        myLog("Iteration $iteration, current ply number: ${presenter.model.gamePosition.plyNumber}")
+        if (presenter.model.gamePosition.plyNumber >= expectedPliesCount) break
+
         bookmarkOnPly?.let { plyNumber ->
             if (plyNumber == presenter.model.gamePosition.plyNumber) {
                 waitForMainViewShown {
@@ -125,9 +126,14 @@ fun ViewData.generateGame(expectedPliesCount: Int, bookmarkOnPly: Int? = null): 
                 }
             }
         }
-        allowedRandomPly(presenter.model.gamePosition).ply.plyEnum.swipeDirection?.let {
-            waitForMainViewShown {
-                presenter.onSwipe(it)
+        allowedRandomPly(presenter.model.gamePosition).let { plyAndPosition ->
+            plyAndPosition.ply.plyEnum.swipeDirection?.let {
+                myLog("Iteration $iteration of $expectedPliesCount, $it")
+                waitForMainViewShown {
+                    presenter.onSwipe(it)
+                }
+            } ?: {
+                myLog("Iteration $iteration, no swipe for $plyAndPosition, prevPosition: ${presenter.model.gamePosition}")
             }
         }
         iteration++

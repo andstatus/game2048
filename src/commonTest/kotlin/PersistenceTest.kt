@@ -59,10 +59,10 @@ class PersistenceTest : ViewsForTesting(log = true) {
         waitFor("currentGame loaded") {
             presenter.model.history.currentGame.gamePlies.isReady
         }
-        myLog("Current game 2, n=$nPlies: ${presenter.model.history.currentGame}")
 
         val gameRecordOpened = presenter.model.history.currentGame
+        myLog("Opened game 2, n=$nPlies: $gameRecordOpened")
         assertEquals(longString1, gameRecordOpened.toLongString()
-            .replace("\"id\":${gameRecordOpened.id}", "\"id\":$id1"), message)
+            .replace("id:${gameRecordOpened.id} ", "id:$id1 "), message)
     }
 }

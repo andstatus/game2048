@@ -21,7 +21,7 @@ class RestartTest : ViewsForTesting(log = true) {
         waitForMainViewShown {
             presenter.onRestartClick()
         }
-        assertEquals(1, presenter.boardViews.blocks.size, modelAndViews())
+        assertEquals(1, presenter.boardViews.blocks.size, "Should be one block ${modelAndViews()}")
         assertEquals(1,
             presenter.model.history.currentGame.gamePlies.lastPage.firstPlyNumber, modelAndViews())
         assertEquals( 1, presenter.model.gamePosition.pieces.count { it != null }, modelAndViews())
