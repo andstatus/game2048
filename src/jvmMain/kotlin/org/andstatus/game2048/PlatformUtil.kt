@@ -81,7 +81,9 @@ private fun findSharedGameToLoad(): String? {
         ?.absolutePath
 }
 
-actual fun Stage.closeGameApp() {}
+actual fun Stage.exitApp() {
+    System.exit(0)
+}
 
 actual fun <T> initAtomicReference(initial: T): KorAtomicRef<T> = korAtomic(initial)
 

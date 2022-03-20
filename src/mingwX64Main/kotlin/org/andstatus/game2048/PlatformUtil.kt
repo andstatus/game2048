@@ -7,6 +7,7 @@ import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korma.geom.SizeInt
 import com.soywiz.korma.geom.times
 import org.andstatus.game2048.presenter.Presenter
+import platform.posix.exit
 import kotlin.coroutines.CoroutineContext
 import kotlin.native.concurrent.freeze
 
@@ -26,7 +27,9 @@ actual fun Stage.loadJsonGameRecord(settings: Settings, sharedJsonHandler: (Sequ
     sharedJsonHandler(emptySequence())
 }
 
-actual fun Stage.closeGameApp() {}
+actual fun Stage.exitApp() {
+    exit(0)
+}
 
 actual fun <T> initAtomicReference(initial: T): KorAtomicRef<T> = korAtomic(initial.freeze())
 

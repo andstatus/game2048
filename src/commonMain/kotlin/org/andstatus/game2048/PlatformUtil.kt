@@ -16,7 +16,7 @@ expect fun Presenter.shareText(actionTitle: String, fileName: String, value: Seq
 
 expect fun Stage.loadJsonGameRecord(settings: Settings, sharedJsonHandler: (Sequence<String>) -> Unit)
 
-expect fun Stage.closeGameApp()
+expect fun Stage.exitApp()
 
 expect fun <T> initAtomicReference(initial: T): KorAtomicRef<T>
 

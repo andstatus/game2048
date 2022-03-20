@@ -10,4 +10,5 @@ enum class GameMenuButtonsEnum(val icon: String, val labelKey: String) {
     DELETE("delete", "delete_game"),
     SELECT_THEME("palette", "select_theme"),
     SELECT_AI_ALGORITHM("magic", "select_ai_algorithm"),
+    EXIT("exit", "exit"),
 }

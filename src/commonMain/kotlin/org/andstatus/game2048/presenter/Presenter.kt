@@ -16,7 +16,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.ai.AiPlayer
-import org.andstatus.game2048.closeGameApp
+import org.andstatus.game2048.exitApp
 import org.andstatus.game2048.gameIsLoading
 import org.andstatus.game2048.gameStopWatch
 import org.andstatus.game2048.loadJsonGameRecord
@@ -221,11 +221,11 @@ class Presenter(val view: ViewData, history: History) {
         asyncShowMainView()
     }
 
-    fun onCloseGameWindowClick() {
-        logClick("onCloseGameWindow")
+    fun onExitAppClick() {
+        logClick("onExitApp")
         pauseGame()
         view.gameStage.gameWindow.close()
-        view.gameStage.closeGameApp()
+        view.gameStage.exitApp()
     }
 
     fun onWatchClick() = afterStop {

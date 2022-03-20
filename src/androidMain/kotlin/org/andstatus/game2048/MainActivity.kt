@@ -26,6 +26,7 @@ class MainActivity : KorgwActivity() {
 
     override fun finish() {
         myLog("activityMain finish")
+        finishAffinity()
         super.finish()
     }
 

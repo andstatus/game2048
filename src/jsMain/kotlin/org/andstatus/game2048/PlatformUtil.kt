@@ -24,7 +24,7 @@ actual fun Stage.loadJsonGameRecord(settings: Settings, sharedJsonHandler: (Sequ
     sharedJsonHandler(emptySequence())
 }
 
-actual fun Stage.closeGameApp() {}
+actual fun Stage.exitApp() {}
 
 actual fun <T> initAtomicReference(initial: T): KorAtomicRef<T> = korAtomic(initial)
 

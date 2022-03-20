@@ -11,6 +11,7 @@
   <string name="delete_game">Delete game</string>
   <string name="device_default">Device default</string>
   <string name="duration">Duration</string>
+  <string name="exit">Exit app</string>
   <string name="game_actions">Game actions</string>
   <string name="game_over">Game Over</string>
   <string name="goto_bookmark">Go to bookmark</string>

@@ -56,7 +56,7 @@ class BoardView(val viewData: ViewData): Container() {
                 ifKey(Key.DOWN) { presenter.onSwipe(SwipeDirection.BOTTOM) }
                 ifKey(Key.SPACE, presenter::onPauseClick)
                 ifKey(Key.M, presenter::onGameMenuClick)
-                ifKey(Key.BACKSPACE, presenter::onCloseGameWindowClick)
+                ifKey(Key.BACKSPACE, presenter::onExitAppClick)
             }
 
             gameOver = getGameOver()

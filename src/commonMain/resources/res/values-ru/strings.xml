@@ -11,6 +11,7 @@
   <string name="delete_game">Удалить игру</string>
   <string name="device_default">По умолчанию</string>
   <string name="duration">Длительность</string>
+  <string name="exit">Выйти из приложения</string>
   <string name="game_actions">Действия с игрой</string>
   <string name="game_over">Игра окончена</string>
   <string name="goto_bookmark">Перейти к закладке</string>

@@ -10,7 +10,7 @@ fun ViewData.showGameMenu(aiEnabled: Boolean) = myWindow("game_actions") {
     suspend fun button(buttonEnum: GameMenuButtonsEnum, handler: () -> Unit) {
         if (isPortrait) {
             yInd++
-            if (yInd > 8) return
+            if (yInd > 9) return
         } else {
             yInd++
             if (yInd > 4 && xInd == 0) {
@@ -39,5 +39,6 @@ fun ViewData.showGameMenu(aiEnabled: Boolean) = myWindow("game_actions") {
     button(GameMenuButtonsEnum.SHARE, presenter::onShareClick)
     button(GameMenuButtonsEnum.LOAD, presenter::onLoadClick)
     button(GameMenuButtonsEnum.SELECT_THEME) { selectTheme(settings) }
+    button(GameMenuButtonsEnum.EXIT, presenter::onExitAppClick)
     button(GameMenuButtonsEnum.HELP, presenter::onHelpClick)
 }

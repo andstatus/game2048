@@ -82,7 +82,7 @@ actual fun Stage.loadJsonGameRecord(settings: Settings, sharedJsonHandler: (Sequ
     mainActivity?.openJsonGameRecord(sharedJsonHandler)
 }
 
-actual fun Stage.closeGameApp() = mainActivity?.finish() ?: Unit
+actual fun Stage.exitApp() = mainActivity?.finish() ?: Unit
 
 actual fun <T> initAtomicReference(initial: T): KorAtomicRef<T> = korAtomic(initial)
 
