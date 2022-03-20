@@ -31,7 +31,8 @@ class MyStorage(views: Views) {
 
     fun remove(key: String): Boolean = (native.keys().contains(key))
         .also {
-            if (it) native.remove(key)
+            // Don't believe "contains", try to delete anyway
+            native.remove(key)
         }
 
     override fun toString(): String =

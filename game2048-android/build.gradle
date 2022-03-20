@@ -103,7 +103,7 @@ if (project.hasProperty("andstatus.google-play-publisher")
 }
 
 dependencies {
-    def korgeVersion = '2.5.2'
+    def korgeVersion = '2.6.3'
 
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10'
     implementation "com.soywiz.korlibs.klock:klock-android:$korgeVersion"

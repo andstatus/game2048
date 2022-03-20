@@ -193,9 +193,8 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: Sequen
         }
 
         fun delete(settings: Settings, id: Int) {
-            if (settings.storage.remove(keyHead(id))) {
-                deletePagesStartingWith(settings, id, 1)
-            }
+            settings.storage.remove(keyHead(id))
+            deletePagesStartingWith(settings, id, 1)
         }
 
         private fun deletePagesStartingWith(settings: Settings, gameId: Int, pageNumber: Int) {

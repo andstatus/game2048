@@ -447,7 +447,7 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     private fun List<Ply>.present(index: Int = 0) {
-        if (gameMode.modeEnum != GameModeEnum.AI_PLAY || gameMode.speed != 1) {
+        if (gameMode.modeEnum != GameModeEnum.AI_PLAY || gameMode.speed !in 1..3) {
             view.mainView.hideStatusBar()
         }
         if (isEmpty()) {
