@@ -289,6 +289,8 @@ class Presenter(val view: ViewData, history: History) {
         if (model.history.currentGame.isEmpty) {
             myLog("Restarting...")
             model.restart().present()
+        } else {
+            asyncShowMainView()
         }
     }
 
