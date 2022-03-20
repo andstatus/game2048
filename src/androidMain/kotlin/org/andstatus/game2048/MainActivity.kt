@@ -2,6 +2,7 @@ package org.andstatus.game2048
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.WindowManager
 import com.soywiz.korgw.KorgwActivity
 
 class MainActivity : KorgwActivity() {
@@ -11,6 +12,7 @@ class MainActivity : KorgwActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         myLog("onCreate MainActivity")
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     override suspend fun activityMain() {

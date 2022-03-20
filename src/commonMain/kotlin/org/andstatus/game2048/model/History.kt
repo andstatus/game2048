@@ -235,7 +235,7 @@ class History(
         settings.allowUndo &&
             redoPlyPointer != 1 && redoPlyPointer != 2 &&
             game.gamePlies.size > 1 &&
-            game.gamePlies.lastOrNull()?.player == PlayerEnum.COMPUTER
+            (redoPlyPointer > 2 || game.gamePlies.lastOrNull()?.player == PlayerEnum.COMPUTER)
     }
 
     fun undo(): Ply? = currentGame.let { game ->
