@@ -73,8 +73,7 @@ class Presenter(val view: ViewData, history: History) {
         val game = model.history.currentGame
         presentGameClock(view.gameStage, model) { view.mainView.scoreBar.gameTime }
         if (game.isEmpty) {
-            myLog("Restarting and showing help...")
-            model.restart().present()
+            myLog("Showing help...")
             view.showHelp()
         } else {
             model.composerPly(game.shortRecord.finalPosition, true).present()
@@ -283,6 +282,14 @@ class Presenter(val view: ViewData, history: History) {
     fun onCloseMyWindowClick() {
         logClick("CloseMyWindow")
         asyncShowMainView()
+    }
+
+    fun onCloseHelpClick() {
+        logClick("CloseHelp")
+        if (model.history.currentGame.isEmpty) {
+            myLog("Restarting...")
+            model.restart().present()
+        }
     }
 
     fun onDeleteGameClick() = afterStop {

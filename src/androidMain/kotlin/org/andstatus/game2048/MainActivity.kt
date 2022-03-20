@@ -1,5 +1,6 @@
 package org.andstatus.game2048
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
@@ -13,6 +14,8 @@ class MainActivity : KorgwActivity() {
         myLog("onCreate MainActivity")
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        gameWindow.fullscreen = getSharedPreferences("KorgeNativeStorage", Context.MODE_PRIVATE)
+            .getString(keyFullscreen, "true").toBoolean()
     }
 
     override suspend fun activityMain() {

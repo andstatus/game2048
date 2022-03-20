@@ -10,6 +10,6 @@ fun ViewData.showHelp(): Container = myWindow("help_title") {
     }
     customOnClick {
         this.removeFromParent()
-        presenter.onCloseMyWindowClick()
+        presenter.onCloseHelpClick()
     }
 }

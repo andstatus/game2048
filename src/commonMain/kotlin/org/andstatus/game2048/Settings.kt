@@ -18,6 +18,7 @@ import org.andstatus.game2048.view.StringResources
 private const val keyAllowResultingTileToMerge = "allowResultingTileToMerge"
 private const val keyAllowUsersMoveWithoutBlockMoves = "allowUsersMoveWithoutBlockMoves"
 private const val keyAllowUndo = "allowUndo"
+public const val keyFullscreen = "fullscreen"
 private const val keyMaxMovesToStore = "maxMovesToStore"
 const val keyCurrentGameId = "current"
 const val stubGameId = 61
@@ -57,7 +58,10 @@ class Settings(private val stage: Stage) {
         storage.native.setBoolean(keyAllowResultingTileToMerge, allowResultingTileToMerge)
             .setBoolean(keyAllowUsersMoveWithoutBlockMoves, allowUsersMoveWithoutBlockMoves)
             .setBoolean(keyAllowUndo, allowUndo)
+            // TODO: Separate screen needed
+            //  .setBoolean(keyFullscreen, colorThemeEnum == ColorThemeEnum.DEVICE_DEFAULT)
             .set(keyColorTheme, colorThemeEnum.labelKey)
+
         storage.native.set(keyAiAlgorithm, aiAlgorithm.id)
     }
 
@@ -67,14 +71,7 @@ class Settings(private val stage: Stage) {
     }
 
     val currentGameId: Int?
-        get() = storage.getOrNull(keyCurrentGameId)
-            ?.let {
-                // TODO: for compatibility with previous versions:
-                if (it.startsWith("{"))
-                    ShortRecord.sharedJsonToId(it, 1)
-                else it.parseInt()
-            }
-
+        get() = storage.getOrNull(keyCurrentGameId)?.parseInt()
 }
 
 suspend fun loadFont(strings: StringResources) = myMeasured("Font loaded") {
