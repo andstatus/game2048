@@ -7,6 +7,7 @@ import com.soywiz.korge.view.position
 import com.soywiz.korge.view.roundRect
 import com.soywiz.korge.view.text
 import com.soywiz.korim.text.TextAlignment
+import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.GameRecord
 import kotlin.math.max
 
@@ -24,7 +25,7 @@ fun ViewData.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
     }
 
     fun Container.oneRow(index: Int, score: String, moveNumber: String, lastChanged: String, duration: String,
-                         action: () -> Unit) {
+                         action: () -> Unit = {}) {
         container {
             roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
             var xPos = cellMargin
@@ -41,6 +42,19 @@ fun ViewData.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
         }
     }
 
+    fun Container.onePositionRow(index: Int, position: GamePosition) {
+        oneRow(
+            index,
+            position.score.toString(),
+            position.moveNumber.toString(),
+            position.startingDateTimeString,
+            position.gameClock.playedSecondsString
+        ) {
+            window.removeFromParent()
+            presenter.onGoToBookmarkClick(position)
+        }
+    }
+
     uiScrollableArea(config = {
         position(winLeft + cellMargin, listTop)
         buttonSize = itemHeight
@@ -49,27 +63,19 @@ fun ViewData.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
         scaledHeight = winTop + winHeight - listTop - cellMargin
         contentHeight = max((itemHeight + cellMargin) * (nItems + 1), height)
     }) {
-        oneRow(0, stringResources.text("score"),
-                stringResources.text("move"),
-                stringResources.text("last_changed"),
-                stringResources.text("duration")) {}
-        with(game.shortRecord.finalPosition) {
-            oneRow(1, score.toString(),
-                    moveNumber.toString(),
-                    startingDateTimeString,
-                    gameClock.playedSecondsString) {
-                window.removeFromParent()
-                presenter.onGoToBookmarkClick(this)
-            }
+        var index = 0
+        oneRow(
+            index++,
+            stringResources.text("score"),
+            stringResources.text("move"),
+            stringResources.text("last_changed"),
+            stringResources.text("duration")
+        )
+        if (game.shortRecord.bookmarks.none { it.plyNumber == game.shortRecord.finalPosition.plyNumber }) {
+            onePositionRow(index++, game.shortRecord.finalPosition)
         }
-        game.shortRecord.bookmarks.reversed().forEachIndexed {index, position ->
-            oneRow(index + 2, position.score.toString(),
-                    position.moveNumber.toString(),
-                    position.startingDateTimeString,
-                position.gameClock.playedSecondsString) {
-                window.removeFromParent()
-                presenter.onGoToBookmarkClick(position)
-            }
-        }
+        game.shortRecord.bookmarks
+            .sortedByDescending { it.plyNumber }
+            .forEach { position -> onePositionRow(index++, position) }
     }
 }
