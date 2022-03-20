@@ -1,3 +1,4 @@
-v.1.11.0. * Retries counter added.
-* Landscape screen layout added.
-* Optimized to allow games with more than 50 thousand moves.
+v.1.12.0. * Now we can Share and load huge game histories.
+* Keep the game screen on during inactivity.
+* "Exit app" button added to the "Game actions" menu.
+* Fixed "How to play" screen overlays with main screen or "Game actions" opens after closing the "How to play" screen.

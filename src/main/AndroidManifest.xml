@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
 	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
 	package="org.andstatus.game2048"
 >
 	<application
@@ -12,10 +13,11 @@
 	>
 		<provider android:name="org.andstatus.game2048.data.FileProvider"
 			android:authorities="org.andstatus.game2048.data.FileProvider"
-			android:exported="true" />
+			android:exported="true"
+			tools:ignore="ExportedContentProvider" />
 
 		<activity android:name=".MainActivity"
-			android:label="@string/app_name">
+			android:exported="true">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN"/>
 				<category android:name="android.intent.category.LAUNCHER"/>

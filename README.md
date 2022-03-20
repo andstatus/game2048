@@ -104,6 +104,17 @@ in order to ease understanding of implementation logic.
 
 ## Changelog
 
+### 2022-03-20 v.1.12.0 (34) Share and Load huge game histories.
+* Now we can Share and Load huge game histories. Successfully tested with
+  a game having 120 thousand moves.
+  [#8](https://github.com/andstatus/game2048/issues/8)
+* Keep the game screen on during inactivity.
+* "Exit app" button added to the "Game actions" menu.
+  [#6](https://github.com/andstatus/game2048/issues/6)
+* Fixed "How to play" screen overlays with main screen or "Game actions" opens after closing the "How to play" screen.
+* Share and Load game for JVM platform. Files are saved to and loaded from the root project folder.
+  Convenient for the developer's testing.
+
 ### 2021-12-21 v.1.11.0 (33) Retries counter and Landscape layout.
 * Retries counter added. When you make a move after Undo (no matter if it is the same move as before or another move),
   number of Retries increases. The counter shows total number of retries done during the game
