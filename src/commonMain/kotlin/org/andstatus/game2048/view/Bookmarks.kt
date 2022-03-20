@@ -1,6 +1,7 @@
 package org.andstatus.game2048.view
 
-import com.soywiz.korge.ui.uiScrollableArea
+import com.soywiz.korge.annotations.KorgeExperimental
+import com.soywiz.korge.ui.uiScrollable
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.container
 import com.soywiz.korge.view.position
@@ -9,8 +10,8 @@ import com.soywiz.korge.view.text
 import com.soywiz.korim.text.TextAlignment
 import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.GameRecord
-import kotlin.math.max
 
+@OptIn(KorgeExperimental::class)
 fun ViewData.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
     val listTop = winTop + cellMargin + buttonSize + buttonMargin
     val nItems = game.shortRecord.bookmarks.size + 1
@@ -30,9 +31,9 @@ fun ViewData.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
             roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
             var xPos = cellMargin
             rowText(score, xPos)
-            xPos += textSize * 2.8
+            xPos += textSize * 3.1
             rowText(moveNumber, xPos)
-            xPos += textSize * 2.4
+            xPos += textSize * 2.7
             rowText(lastChanged, xPos)
             xPos += textSize * 6.4
             rowText(duration, xPos)
@@ -55,13 +56,11 @@ fun ViewData.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
         }
     }
 
-    uiScrollableArea(config = {
+    uiScrollable(config = {
         position(winLeft + cellMargin, listTop)
-        buttonSize = itemHeight
         scaledWidth = winWidth - cellMargin * 2
-        contentWidth = textWidth
         scaledHeight = winTop + winHeight - listTop - cellMargin
-        contentHeight = max((itemHeight + cellMargin) * (nItems + 1), height)
+        backgroundColor = gameColors.stageBackground
     }) {
         var index = 0
         oneRow(

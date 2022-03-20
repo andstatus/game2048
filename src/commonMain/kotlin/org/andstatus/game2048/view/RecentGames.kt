@@ -1,5 +1,7 @@
 package org.andstatus.game2048.view
 
+import com.soywiz.korge.annotations.KorgeExperimental
+import com.soywiz.korge.ui.uiScrollable
 import com.soywiz.korge.ui.uiScrollableArea
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.container
@@ -10,6 +12,7 @@ import com.soywiz.korim.text.TextAlignment
 import org.andstatus.game2048.model.ShortRecord
 import kotlin.math.max
 
+@OptIn(KorgeExperimental::class)
 fun ViewData.showRecentGames(recentGames: List<ShortRecord>) = myWindow("recent_games") {
     val listTop = winTop + cellMargin + buttonSize + buttonMargin
     val nItems = recentGames.size
@@ -29,7 +32,7 @@ fun ViewData.showRecentGames(recentGames: List<ShortRecord>) = myWindow("recent_
             roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
             var xPos = cellMargin
             rowText(score, xPos)
-            xPos += textSize * 2.8
+            xPos += textSize * 3.1
             rowText(lastChanged, xPos)
             xPos += textSize * 6.4
             rowText(duration, xPos)
@@ -45,13 +48,11 @@ fun ViewData.showRecentGames(recentGames: List<ShortRecord>) = myWindow("recent_
         }
     }
 
-    uiScrollableArea(config = {
+    uiScrollable(config = {
         position(winLeft + cellMargin, listTop)
-        buttonSize = itemHeight
         scaledWidth = winWidth - cellMargin * 2
-        contentWidth = textWidth
         scaledHeight = winTop + winHeight - listTop - cellMargin
-        contentHeight = max((itemHeight + cellMargin) * (nItems + 1), height)
+        backgroundColor = gameColors.stageBackground
     }) {
         oneRow(0, stringResources.text("score"), stringResources.text("last_changed"),
             stringResources.text("duration"), stringResources.text("id"),
