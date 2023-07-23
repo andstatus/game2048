@@ -1,7 +1,7 @@
 package org.andstatus.game2048.view
 
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.position
+import korlibs.korge.view.addTo
+import korlibs.korge.view.position
 
 fun ViewData.showGameMenu(aiEnabled: Boolean) = myWindow("game_actions") {
     var xInd = 0

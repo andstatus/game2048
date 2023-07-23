@@ -1,12 +1,12 @@
-import com.soywiz.klock.seconds
-import com.soywiz.korge.input.onClick
-import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tween
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korim.color.Colors
-import com.soywiz.korio.concurrent.atomic.korAtomic
-import com.soywiz.korma.geom.Rectangle
+import korlibs.time.seconds
+import korlibs.korge.input.onClick
+import korlibs.korge.tests.ViewsForTesting
+import korlibs.korge.tween.get
+import korlibs.korge.tween.tween
+import korlibs.korge.view.solidRect
+import korlibs.image.color.Colors
+import korlibs.io.concurrent.atomic.korAtomic
+import korlibs.math.geom.Rectangle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

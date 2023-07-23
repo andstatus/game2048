@@ -1,12 +1,12 @@
 package org.andstatus.game2048
 
-import com.soywiz.klock.DateTime
-import com.soywiz.korge.service.storage.NativeStorage
-import com.soywiz.korge.service.storage.get
-import com.soywiz.korge.view.Stage
-import com.soywiz.korge.view.Views
-import com.soywiz.korio.lang.parseInt
-import com.soywiz.korio.util.OS
+import korlibs.time.DateTime
+import korlibs.korge.service.storage.NativeStorage
+import korlibs.korge.service.storage.get
+import korlibs.korge.view.Stage
+import korlibs.korge.view.Views
+import korlibs.io.lang.parseInt
+import korlibs.memory.Platform
 
 private val keyOpened = "opened"
 
@@ -37,7 +37,7 @@ class MyStorage(views: Views) {
 
     override fun toString(): String =
         "Storage " + (native.getOrNull(keyOpened)?.let { "last opened: $it" } ?: "is new") +
-                "; Storage keys: ${native.keys().sorted()}; Platform:${OS.platformName}"
+                "; Storage keys: ${native.keys().sorted()}; Platform:${Platform.rawPlatformName}"
 
     companion object {
         fun load(stage: Stage): MyStorage = myMeasuredIt("NativeStorage") {

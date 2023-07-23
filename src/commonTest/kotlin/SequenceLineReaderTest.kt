@@ -1,4 +1,4 @@
-import com.soywiz.korio.serialization.json.Json
+import korlibs.io.serialization.json.Json
 import org.andstatus.game2048.model.SequenceLineReader
 import kotlin.test.Test
 import kotlin.test.assertEquals

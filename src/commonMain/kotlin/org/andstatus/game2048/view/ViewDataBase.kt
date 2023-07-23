@@ -1,8 +1,8 @@
 package org.andstatus.game2048.view
 
-import com.soywiz.korge.view.Stage
-import com.soywiz.korio.concurrent.atomic.incrementAndGet
-import com.soywiz.korio.concurrent.atomic.korAtomic
+import korlibs.korge.view.Stage
+import korlibs.io.concurrent.atomic.incrementAndGet
+import korlibs.io.concurrent.atomic.korAtomic
 import org.andstatus.game2048.defaultPortraitGameWindowSize
 import org.andstatus.game2048.defaultPortraitRatio
 import org.andstatus.game2048.defaultPortraitTextSize
@@ -20,18 +20,18 @@ interface ViewDataBase {
     val gameViewTop: Int
     val gameViewWidth: Int
     val gameViewHeight: Int
-    val gameScale: Double
-    val defaultTextSize: Double
-    val buttonMargin: Double
-    val cellMargin: Double
-    val buttonRadius: Double
-    val buttonSize : Double
-    val boardLeft: Double
-    val buttonXs: List<Double>
-    val buttonYs: List<Double>
-    val boardTop: Double
-    val statusBarLeft: Double
-    val statusBarTop: Double
+    val gameScale: Float
+    val defaultTextSize: Float
+    val buttonMargin: Float
+    val cellMargin: Float
+    val buttonRadius: Float
+    val buttonSize : Float
+    val boardLeft: Float
+    val buttonXs: List<Float>
+    val buttonYs: List<Float>
+    val boardTop: Float
+    val statusBarLeft: Float
+    val statusBarTop: Float
 }
 
 /** The object is initialized instantly */
@@ -45,52 +45,52 @@ class ViewDataQuick(override val gameStage: Stage, override val animateViews: Bo
     override val gameViewWidth: Int
     override val gameViewHeight: Int
 
-    override val gameScale: Double
-    override val defaultTextSize: Double
-    override val buttonMargin: Double
-    override val cellMargin: Double
-    override val buttonRadius: Double
-    override val buttonSize : Double
-    override val boardLeft: Double
-    override val buttonXs: List<Double>
-    override val buttonYs: List<Double>
-    override val boardTop: Double
-    override val statusBarLeft: Double
-    override val statusBarTop: Double
+    override val gameScale: Float
+    override val defaultTextSize: Float
+    override val buttonMargin: Float
+    override val cellMargin: Float
+    override val buttonRadius: Float
+    override val buttonSize : Float
+    override val boardLeft: Float
+    override val buttonXs: List<Float>
+    override val buttonYs: List<Float>
+    override val boardTop: Float
+    override val statusBarLeft: Float
+    override val statusBarTop: Float
 
     init {
         isPortrait = gameStage.views.virtualWidth < gameStage.views.virtualHeight
         if (isPortrait) {
-            val windowRatio = gameStage.views.virtualWidth.toDouble() /  gameStage.views.virtualHeight
+            val windowRatio = gameStage.views.virtualWidth.toFloat() /  gameStage.views.virtualHeight
             if (windowRatio >= defaultPortraitRatio) {
                 gameViewHeight = gameStage.views.virtualHeight
                 gameViewWidth = (gameViewHeight * defaultPortraitRatio).toInt()
                 gameViewLeft = (gameStage.views.virtualWidth - gameViewWidth) / 2
                 gameViewTop = 0
-                gameScale = gameViewHeight.toDouble() / defaultPortraitGameWindowSize.height
+                gameScale = gameViewHeight.toFloat() / defaultPortraitGameWindowSize.height
             } else {
                 gameViewWidth = gameStage.views.virtualWidth
                 gameViewHeight = (gameViewWidth / defaultPortraitRatio).toInt()
                 gameViewLeft = 0
                 gameViewTop = (gameStage.views.virtualHeight - gameViewHeight) / 2
-                gameScale = gameViewWidth.toDouble() / defaultPortraitGameWindowSize.width
+                gameScale = gameViewWidth.toFloat() / defaultPortraitGameWindowSize.width
             }
             defaultTextSize = if (gameViewHeight == defaultPortraitGameWindowSize.height) defaultPortraitTextSize
             else defaultPortraitTextSize * gameViewHeight / defaultPortraitGameWindowSize.height
         } else {
-            val windowRatio = gameStage.views.virtualHeight.toDouble() /  gameStage.views.virtualWidth
+            val windowRatio = gameStage.views.virtualHeight.toFloat() /  gameStage.views.virtualWidth
             if (windowRatio >= defaultPortraitRatio) {
                 gameViewWidth = gameStage.views.virtualWidth
                 gameViewHeight = (gameViewWidth * defaultPortraitRatio).toInt()
                 gameViewLeft = 0
                 gameViewTop = (gameStage.views.virtualHeight - gameViewHeight) / 2
-                gameScale = gameViewHeight.toDouble() / defaultPortraitGameWindowSize.width
+                gameScale = gameViewHeight.toFloat() / defaultPortraitGameWindowSize.width
             } else {
                 gameViewHeight = gameStage.views.virtualHeight
                 gameViewWidth = (gameViewHeight / defaultPortraitRatio).toInt()
                 gameViewLeft = (gameStage.views.virtualWidth - gameViewWidth) / 2
                 gameViewTop = 0
-                gameScale = gameViewWidth.toDouble() / defaultPortraitGameWindowSize.height
+                gameScale = gameViewWidth.toFloat() / defaultPortraitGameWindowSize.height
             }
 
             defaultTextSize = if (gameViewWidth == defaultPortraitGameWindowSize.height) defaultPortraitTextSize
@@ -113,7 +113,7 @@ class ViewDataQuick(override val gameStage: Stage, override val animateViews: Bo
 
         buttonXs = (0 .. if (isPortrait) 4 else 9).fold(emptyList()) { acc, i ->
             acc + (statusBarLeft + i * (buttonSize + buttonMargin) +
-                    if (!isPortrait && (i > 4)) buttonMargin else 0.0)
+                    if (!isPortrait && (i > 4)) buttonMargin else 0.0f)
         }
         buttonYs = (0 .. if (isPortrait) 9 else 4).fold(emptyList()) { acc, i ->
             acc + (gameViewTop + buttonMargin + i * (buttonSize + buttonMargin))

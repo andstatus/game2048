@@ -1,13 +1,13 @@
 package org.andstatus.game2048.view
 
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Stage
-import com.soywiz.korge.view.container
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.size
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.file.std.resourcesVfs
+import korlibs.korge.view.Container
+import korlibs.korge.view.Stage
+import korlibs.korge.view.container
+import korlibs.korge.view.image
+import korlibs.korge.view.position
+import korlibs.korge.view.size
+import korlibs.image.format.readBitmap
+import korlibs.io.file.std.resourcesVfs
 import kotlin.math.min
 
 suspend fun Stage.splashScreen(quick: ViewDataQuick, colorThemeEnum: ColorThemeEnum): Container = container {

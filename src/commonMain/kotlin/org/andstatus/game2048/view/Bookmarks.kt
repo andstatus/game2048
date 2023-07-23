@@ -1,13 +1,15 @@
 package org.andstatus.game2048.view
 
-import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.ui.uiScrollable
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.container
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.roundRect
-import com.soywiz.korge.view.text
-import com.soywiz.korim.text.TextAlignment
+import korlibs.korge.annotations.KorgeExperimental
+import korlibs.korge.ui.uiScrollable
+import korlibs.korge.view.Container
+import korlibs.korge.view.container
+import korlibs.korge.view.position
+import korlibs.korge.view.roundRect
+import korlibs.korge.view.text
+import korlibs.image.text.TextAlignment
+import korlibs.math.geom.RectCorners
+import korlibs.math.geom.Size
 import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.GameRecord
 
@@ -19,7 +21,7 @@ fun ViewData.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
     val textWidth = winWidth * 2
     val textSize = defaultTextSize
 
-    fun Container.rowText(value: String, xPosition: Double) = text(value, textSize,
+    fun Container.rowText(value: String, xPosition: Float) = text(value, textSize,
         gameColors.buttonText, font, TextAlignment.MIDDLE_LEFT
     ) {
         position(xPosition, itemHeight / 2)
@@ -28,17 +30,17 @@ fun ViewData.showBookmarks(game: GameRecord) = myWindow("goto_bookmark") {
     fun Container.oneRow(index: Int, score: String, moveNumber: String, lastChanged: String, duration: String,
                          action: () -> Unit = {}) {
         container {
-            roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
+            roundRect(Size(textWidth, itemHeight), RectCorners(buttonRadius), fill = gameColors.buttonBackground)
             var xPos = cellMargin
             rowText(score, xPos)
-            xPos += textSize * 3.1
+            xPos += textSize * 3.1f
             rowText(moveNumber, xPos)
-            xPos += textSize * 2.7
+            xPos += textSize * 2.7f
             rowText(lastChanged, xPos)
-            xPos += textSize * 6.4
+            xPos += textSize * 6.4f
             rowText(duration, xPos)
 
-            position(0.0, index * (itemHeight + cellMargin))
+            position(0.0f, index * (itemHeight + cellMargin))
             customOnClick { action() }
         }
     }

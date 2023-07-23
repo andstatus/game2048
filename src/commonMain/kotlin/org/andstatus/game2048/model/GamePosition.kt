@@ -1,9 +1,9 @@
 package org.andstatus.game2048.model
 
-import com.soywiz.klock.DateFormat
-import com.soywiz.klock.DateTime
-import com.soywiz.klock.DateTimeTz
-import com.soywiz.kmem.isOdd
+import korlibs.time.DateFormat
+import korlibs.time.DateTime
+import korlibs.time.DateTimeTz
+import korlibs.memory.isOdd
 import org.andstatus.game2048.model.PlyEnum.Companion.UserPlies
 import kotlin.random.Random
 

@@ -1,8 +1,10 @@
 package org.andstatus.game2048
 
-import com.soywiz.korge.Korge
-import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.SizeInt
+import korlibs.image.color.Colors
+import korlibs.korge.Korge
+import korlibs.math.geom.Size
+import korlibs.math.geom.SizeInt
+import korlibs.math.geom.toFloat
 import org.andstatus.game2048.view.ColorThemeEnum
 import org.andstatus.game2048.view.gameDefaultBackgroundColor
 import org.andstatus.game2048.view.viewData
@@ -12,7 +14,7 @@ val defaultPortraitGameWindowSize = SizeInt(720, 1440)
 val defaultPortraitRatio : Double = defaultPortraitGameWindowSize.width.toDouble() / defaultPortraitGameWindowSize.height
 val defaultDesktopGameWindowSize get() = SizeInt(defaultPortraitGameWindowSize.width / 2,
     defaultPortraitGameWindowSize.height / 2)
-const val defaultPortraitTextSize = 64.0
+const val defaultPortraitTextSize = 64.0f
 
 suspend fun main() = main(null)
 
@@ -46,8 +48,8 @@ suspend fun main(colorThemeEnum: ColorThemeEnum?) {
             ColorThemeEnum.LIGHT -> gameDefaultBackgroundColor
         }
     } ?: if (coroutineContext.isDarkThemeOn) Colors.BLACK else gameDefaultBackgroundColor
-    Korge(width = windowSize.width, height = windowSize.height,
-            virtualWidth = virtualWidth, virtualHeight = virtualHeight,
+    Korge(windowSize = windowSize.toFloat(),
+            virtualSize = Size(virtualWidth, virtualHeight),
             bgcolor = color,
             gameId = "org.andstatus.game2048") {
         myLog("Stage is ready")

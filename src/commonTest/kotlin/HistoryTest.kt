@@ -1,4 +1,4 @@
-import com.soywiz.korge.tests.ViewsForTesting
+import korlibs.korge.tests.ViewsForTesting
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

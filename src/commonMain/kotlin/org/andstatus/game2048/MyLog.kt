@@ -1,8 +1,8 @@
 package org.andstatus.game2048
 
-import com.soywiz.klock.Stopwatch
-import com.soywiz.korio.concurrent.atomic.korAtomic
-import com.soywiz.korio.lang.currentThreadId
+import korlibs.time.Stopwatch
+import korlibs.io.concurrent.atomic.korAtomic
+import korlibs.io.lang.currentThreadId
 
 val gameStopWatch = Stopwatch().start()
 val gameIsLoading = korAtomic(false)

@@ -1,19 +1,20 @@
 package org.andstatus.game2048.view
 
-import com.soywiz.korev.Key
-import com.soywiz.korge.input.SwipeDirection
-import com.soywiz.korge.input.onSwipe
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.SolidRect
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.graphics
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.roundRect
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.text
-import com.soywiz.korim.text.TextAlignment
-import com.soywiz.korma.geom.vector.roundRect
+import korlibs.event.Key
+import korlibs.korge.input.SwipeDirection
+import korlibs.korge.input.onSwipe
+import korlibs.korge.view.Container
+import korlibs.korge.view.SolidRect
+import korlibs.korge.view.addTo
+import korlibs.korge.view.addUpdater
+import korlibs.korge.view.graphics
+import korlibs.korge.view.position
+import korlibs.korge.view.roundRect
+import korlibs.korge.view.solidRect
+import korlibs.korge.view.text
+import korlibs.image.text.TextAlignment
+import korlibs.math.geom.RectCorners
+import korlibs.math.geom.Size
 
 class BoardView(val viewData: ViewData): Container() {
     private val controlsArea: SolidRect
@@ -23,7 +24,7 @@ class BoardView(val viewData: ViewData): Container() {
         with(viewData) {
             position(boardLeft, boardTop)
 
-            roundRect(boardWidth, boardWidth, buttonRadius, fill = gameColors.buttonBackground)
+            roundRect(Size(boardWidth, boardWidth), RectCorners(buttonRadius), fill = gameColors.buttonBackground)
             graphics {
                 fill(gameColors.cellBackground) {
                     for (x in 0 until settings.boardWidth) {
@@ -88,7 +89,7 @@ class BoardView(val viewData: ViewData): Container() {
 
             graphics {
                 fill(gameColors.gameOverBackground) {
-                    roundRect(0.0, 0.0, boardWidth, boardWidth, buttonRadius)
+                    roundRect(0.0f, 0.0f, boardWidth, boardWidth, buttonRadius, buttonRadius)
                 }
             }
             text(stringResources.text("game_over"),

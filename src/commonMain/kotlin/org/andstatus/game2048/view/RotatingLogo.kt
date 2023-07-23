@@ -1,11 +1,11 @@
 package org.andstatus.game2048.view
 
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.addTo
+import korlibs.korge.view.Container
+import korlibs.korge.view.addTo
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.presenter.Block
 
-fun rotatingLogo(viewData: ViewData, buttonSize: Double): EButton {
+fun rotatingLogo(viewData: ViewData, buttonSize: Float): EButton {
     val container = Container()
     var piece: Piece = Piece.N2048
 

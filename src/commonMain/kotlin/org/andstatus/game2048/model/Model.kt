@@ -1,7 +1,7 @@
 package org.andstatus.game2048.model
 
-import com.soywiz.korio.concurrent.atomic.KorAtomicRef
-import com.soywiz.korio.concurrent.atomic.korAtomic
+import korlibs.io.concurrent.atomic.KorAtomicRef
+import korlibs.io.concurrent.atomic.korAtomic
 import org.andstatus.game2048.Settings
 
 /** @author yvolk@yurivolkov.com */

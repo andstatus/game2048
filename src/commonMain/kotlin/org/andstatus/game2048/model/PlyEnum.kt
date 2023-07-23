@@ -1,6 +1,6 @@
 package org.andstatus.game2048.model
 
-import com.soywiz.korge.input.SwipeDirection
+import korlibs.korge.input.SwipeDirection
 
 enum class PlyEnum(val id: String, val symbol: String, val swipeDirection: SwipeDirection?) {
     LEFT("left", "←", SwipeDirection.LEFT),

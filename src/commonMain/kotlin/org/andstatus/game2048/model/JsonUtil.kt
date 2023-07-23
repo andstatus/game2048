@@ -1,7 +1,7 @@
 package org.andstatus.game2048.model
 
-import com.soywiz.korio.serialization.json.Json
-import com.soywiz.korio.util.StrReader
+import korlibs.io.serialization.json.Json
+import korlibs.io.util.StrReader
 import org.andstatus.game2048.myLog
 
 fun Any.parseJsonArray(): List<Any> = try {

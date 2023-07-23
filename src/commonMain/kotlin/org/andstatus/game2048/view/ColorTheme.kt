@@ -1,8 +1,8 @@
 package org.andstatus.game2048.view
 
-import com.soywiz.korge.view.Stage
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
+import korlibs.korge.view.Stage
+import korlibs.image.color.Colors
+import korlibs.image.color.RGBA
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.view.ColorThemeEnum.Companion.deviceDefault

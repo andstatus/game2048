@@ -1,4 +1,4 @@
-import com.soywiz.korge.tests.ViewsForTesting
+import korlibs.korge.tests.ViewsForTesting
 import org.andstatus.game2048.gameIsLoading
 import kotlin.test.Test
 import kotlin.test.assertEquals

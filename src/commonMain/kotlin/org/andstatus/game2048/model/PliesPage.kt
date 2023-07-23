@@ -1,6 +1,6 @@
 package org.andstatus.game2048.model
 
-import com.soywiz.korio.concurrent.atomic.korAtomic
+import korlibs.io.concurrent.atomic.korAtomic
 
 private const val keyPageNumber = "page"
 private const val keyFirstPlyNumber = "first"

@@ -1,9 +1,9 @@
 package org.andstatus.game2048.model
 
-import com.soywiz.klock.DateTimeTz
-import com.soywiz.klock.weeks
-import com.soywiz.korio.concurrent.atomic.KorAtomicRef
-import com.soywiz.korio.concurrent.atomic.korAtomic
+import korlibs.time.DateTimeTz
+import korlibs.time.weeks
+import korlibs.io.concurrent.atomic.KorAtomicRef
+import korlibs.io.concurrent.atomic.korAtomic
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope

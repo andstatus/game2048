@@ -1,6 +1,6 @@
-import com.soywiz.klock.Stopwatch
-import com.soywiz.korge.input.SwipeDirection
-import com.soywiz.korge.tests.ViewsForTesting
+import korlibs.time.Stopwatch
+import korlibs.korge.input.SwipeDirection
+import korlibs.korge.tests.ViewsForTesting
 import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.PlacedPiece

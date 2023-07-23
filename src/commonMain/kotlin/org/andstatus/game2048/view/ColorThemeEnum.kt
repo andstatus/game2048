@@ -1,6 +1,6 @@
 package org.andstatus.game2048.view
 
-import com.soywiz.korge.view.Stage
+import korlibs.korge.view.Stage
 import org.andstatus.game2048.isDarkThemeOn
 
 enum class ColorThemeEnum(val labelKey: String) {

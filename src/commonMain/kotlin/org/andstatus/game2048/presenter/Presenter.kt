@@ -1,16 +1,16 @@
 package org.andstatus.game2048.presenter
 
-import com.soywiz.klock.milliseconds
-import com.soywiz.korge.animate.Animator
-import com.soywiz.korge.animate.animateSequence
-import com.soywiz.korge.input.SwipeDirection
-import com.soywiz.korge.tween.get
-import com.soywiz.korge.view.Text
-import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.concurrent.atomic.incrementAndGet
-import com.soywiz.korio.concurrent.atomic.korAtomic
-import com.soywiz.korio.lang.use
-import com.soywiz.korma.interpolation.Easing
+import korlibs.time.milliseconds
+import korlibs.korge.input.SwipeDirection
+import korlibs.korge.tween.get
+import korlibs.korge.view.Text
+import korlibs.io.async.launchImmediately
+import korlibs.io.concurrent.atomic.incrementAndGet
+import korlibs.io.concurrent.atomic.korAtomic
+import korlibs.io.lang.use
+import korlibs.korge.animate.*
+import korlibs.math.geom.Scale
+import korlibs.math.interpolation.Easing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -584,7 +584,7 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     private fun present(ply: Ply, onEnd: () -> Unit) = view.gameStage.launchImmediately {
-        view.gameStage.animateSequence {
+        view.gameStage.animate {
             parallel {
                 ply.pieceMoves.forEach { move ->
                     when (move) {
@@ -635,7 +635,7 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     private fun presentReversed(ply: Ply, onEnd: () -> Unit) = view.gameStage.launchImmediately {
-        view.gameStage.animateSequence {
+        view.gameStage.animate {
             parallel {
                 ply.pieceMoves.asReversed().forEach { move ->
                     when (move) {
@@ -699,12 +699,12 @@ class Presenter(val view: ViewData, history: History) {
         val x = block.x
         val y = block.y
         val scale = block.scale
-        val scaleChange = 0.1
+        val scaleChange = 0.1f
         val shift = block.scaledWidth * scaleChange / 2
         animator.tween(
             block::x[x - shift],
             block::y[y - shift],
-            block::scale[scale + scaleChange],
+            block::scale[Scale(scale.scaleX + scaleChange, scale.scaleY + scaleChange)],
             time = gameMode.resultingBlockMs.milliseconds,
             easing = Easing.LINEAR
         )

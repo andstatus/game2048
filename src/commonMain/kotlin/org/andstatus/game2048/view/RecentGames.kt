@@ -1,16 +1,16 @@
 package org.andstatus.game2048.view
 
-import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.ui.uiScrollable
-import com.soywiz.korge.ui.uiScrollableArea
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.container
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.roundRect
-import com.soywiz.korge.view.text
-import com.soywiz.korim.text.TextAlignment
+import korlibs.image.text.TextAlignment
+import korlibs.korge.annotations.KorgeExperimental
+import korlibs.korge.ui.uiScrollable
+import korlibs.korge.view.Container
+import korlibs.korge.view.container
+import korlibs.korge.view.position
+import korlibs.korge.view.roundRect
+import korlibs.korge.view.text
+import korlibs.math.geom.RectCorners
+import korlibs.math.geom.Size
 import org.andstatus.game2048.model.ShortRecord
-import kotlin.math.max
 
 @OptIn(KorgeExperimental::class)
 fun ViewData.showRecentGames(recentGames: List<ShortRecord>) = myWindow("recent_games") {
@@ -20,30 +20,33 @@ fun ViewData.showRecentGames(recentGames: List<ShortRecord>) = myWindow("recent_
     val textWidth = winWidth * 2
     val textSize = defaultTextSize
 
-    fun Container.rowText(value: String, xPosition: Double) = text(value, textSize,
+    fun Container.rowText(value: String, xPosition: Float) = text(
+        value, textSize,
         gameColors.buttonText, font, TextAlignment.MIDDLE_LEFT
     ) {
         position(xPosition, itemHeight / 2)
     }
 
-    fun Container.oneRow(index: Int, score: String, lastChanged: String, duration: String, id: String,
-                         note: String, action: () -> Unit) {
+    fun Container.oneRow(
+        index: Int, score: String, lastChanged: String, duration: String, id: String,
+        note: String, action: () -> Unit
+    ) {
         container {
-            roundRect(textWidth, itemHeight, buttonRadius, fill = gameColors.buttonBackground)
+            roundRect(Size(textWidth, itemHeight), RectCorners(buttonRadius), fill = gameColors.buttonBackground)
             var xPos = cellMargin
             rowText(score, xPos)
-            xPos += textSize * 3.1
+            xPos += textSize * 3.1f
             rowText(lastChanged, xPos)
-            xPos += textSize * 6.4
+            xPos += textSize * 6.4f
             rowText(duration, xPos)
-            xPos += textSize * 4.6
+            xPos += textSize * 4.6f
             rowText(id, xPos)
             if (note.isNotBlank()) {
-                xPos += textSize * 1.4
+                xPos += textSize * 1.4f
                 rowText(note, xPos)
             }
 
-            position(0.0, index * (itemHeight + cellMargin))
+            position(0.0f, index * (itemHeight + cellMargin))
             customOnClick { action() }
         }
     }
@@ -54,9 +57,11 @@ fun ViewData.showRecentGames(recentGames: List<ShortRecord>) = myWindow("recent_
         scaledHeight = winTop + winHeight - listTop - cellMargin
         backgroundColor = gameColors.stageBackground
     }) {
-        oneRow(0, stringResources.text("score"), stringResources.text("last_changed"),
+        oneRow(
+            0, stringResources.text("score"), stringResources.text("last_changed"),
             stringResources.text("duration"), stringResources.text("id"),
-            stringResources.text("note")) {}
+            stringResources.text("note")
+        ) {}
 
         recentGames.sortedByDescending { it.finalPosition.startingDateTime }.forEachIndexed { index, game ->
             oneRow(

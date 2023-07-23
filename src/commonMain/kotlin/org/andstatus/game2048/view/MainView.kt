@@ -1,7 +1,7 @@
 package org.andstatus.game2048.view
 
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.addTo
+import korlibs.korge.view.Container
+import korlibs.korge.view.addTo
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import org.andstatus.game2048.ai.AiResult

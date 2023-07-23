@@ -1,8 +1,8 @@
 package org.andstatus.game2048.model
 
-import com.soywiz.korio.concurrent.atomic.KorAtomicRef
-import com.soywiz.korio.serialization.json.Json
-import com.soywiz.korio.serialization.json.toJson
+import korlibs.io.concurrent.atomic.KorAtomicRef
+import korlibs.io.serialization.json.Json
+import korlibs.io.serialization.json.toJson
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.initAtomicReference
 import org.andstatus.game2048.myLog

@@ -1,9 +1,9 @@
 package org.andstatus.game2048
 
-import com.soywiz.klock.Stopwatch
-import com.soywiz.klogger.Console
-import com.soywiz.korio.concurrent.atomic.KorAtomicRef
-import com.soywiz.korio.lang.substr
+import korlibs.time.Stopwatch
+import korlibs.logger.Console
+import korlibs.io.concurrent.atomic.KorAtomicRef
+import korlibs.io.lang.substr
 import org.andstatus.game2048.presenter.Presenter
 
 private const val platformSourceFolder = "jvmMain"

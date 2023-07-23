@@ -1,9 +1,9 @@
 package org.andstatus.game2048.model
 
-import com.soywiz.klock.DateFormat
-import com.soywiz.klock.DateTime
-import com.soywiz.klock.DateTimeTz
-import com.soywiz.korio.serialization.json.toJson
+import korlibs.time.DateFormat
+import korlibs.time.DateTime
+import korlibs.time.DateTimeTz
+import korlibs.io.serialization.json.toJson
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.stubGameId
 

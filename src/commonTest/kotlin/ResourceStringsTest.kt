@@ -1,4 +1,4 @@
-import com.soywiz.korge.tests.ViewsForTesting
+import korlibs.korge.tests.ViewsForTesting
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.view.StringResources
 import org.andstatus.game2048.view.StringResources.Companion.existingLangCodes

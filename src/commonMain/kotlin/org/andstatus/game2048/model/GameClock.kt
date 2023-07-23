@@ -1,7 +1,7 @@
 package org.andstatus.game2048.model
 
-import com.soywiz.klock.DateTimeTz
-import com.soywiz.korio.lang.format
+import korlibs.time.DateTimeTz
+import korlibs.io.lang.format
 import org.andstatus.game2048.compareAndSetFixed
 import org.andstatus.game2048.initAtomicReference
 

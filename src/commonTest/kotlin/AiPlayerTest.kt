@@ -1,4 +1,4 @@
-import com.soywiz.korge.tests.ViewsForTesting
+import korlibs.korge.tests.ViewsForTesting
 import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.ai.AiPlayer
 import kotlin.test.Test

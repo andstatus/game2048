@@ -81,15 +81,15 @@ If you found the project useful, please
 
 ## About the project
 
-The project started from the tutorial [RezMike/2048 KorGe tutorial project](https://github.com/RezMike/2048#readme), 
-and then it was rewritten aiming at becoming an open (board) game template
+The project started in 2020 from the tutorial [RezMike/2048 KorGe tutorial project](https://github.com/RezMike/2048#readme), 
+and then it was rewritten and is being extended aiming at becoming an open (board) game template
 that is easy to modify, to extend and to play with using [Kotlin](https://kotlinlang.org/) programming language
 and [KorGe game engine](https://korge.org/).
 
 Following this goal:
-* We're using board games terminology as much as possible (e.g. [Glossary of chess](https://en.wikipedia.org/wiki/Glossary_of_chess))
+* We use board games terminology as much as possible (e.g. [Glossary of chess](https://en.wikipedia.org/wiki/Glossary_of_chess))
 in order to ease understanding of implementation logic.
-* Adding lots of new [features](#features).
+* Add lots of new [features](#features).
 * Add automated tests.
 * Structure and clean code.
 * Created Game exchange text format (JSON based) to allow users share and load shared games with all moves and bookmarks.

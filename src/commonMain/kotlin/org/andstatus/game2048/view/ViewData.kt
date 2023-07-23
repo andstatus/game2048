@@ -1,23 +1,23 @@
 package org.andstatus.game2048.view
 
-import com.soywiz.klock.Stopwatch
-import com.soywiz.klock.TimeSpan
-import com.soywiz.korev.PauseEvent
-import com.soywiz.korev.ResumeEvent
-import com.soywiz.korev.addEventListener
-import com.soywiz.korge.animate.Animator
-import com.soywiz.korge.input.singleTouch
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Stage
-import com.soywiz.korge.view.View
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.solidRect
-import com.soywiz.korim.font.Font
-import com.soywiz.korio.concurrent.atomic.korAtomic
-import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.util.OS
-import com.soywiz.korma.interpolation.Easing
+import korlibs.event.PauseEvent
+import korlibs.event.ResumeEvent
+import korlibs.image.font.Font
+import korlibs.io.concurrent.atomic.korAtomic
+import korlibs.io.lang.Closeable
+import korlibs.korge.animate.Animator
+import korlibs.korge.animate.moveTo
+import korlibs.korge.input.singleTouch
+import korlibs.korge.view.Container
+import korlibs.korge.view.Stage
+import korlibs.korge.view.View
+import korlibs.korge.view.addTo
+import korlibs.korge.view.position
+import korlibs.korge.view.solidRect
+import korlibs.math.interpolation.Easing
+import korlibs.memory.Platform
+import korlibs.time.Stopwatch
+import korlibs.time.TimeSpan
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -47,53 +47,56 @@ suspend fun viewData(stage: Stage, animateViews: Boolean, handler: suspend ViewD
             }
         }
 
-        val multithreadedScope: CoroutineScope = if (OS.isNative) outerScope else
+        val multithreadedScope: CoroutineScope = if (Platform.isNative) outerScope else
             CoroutineScope(outerScope.coroutineContext + Dispatchers.Default)
         multithreadedScope.initialize(stage, animateViews, handlerInOuterScope)
     }
 }
 
-private fun CoroutineScope.initialize(stage: Stage, animateViews: Boolean, handler: suspend ViewData.() -> Unit = {}) = launch {
-    val quick = ViewDataQuick(stage, animateViews)
-    val splashDefault = stage.splashScreen(quick, ColorThemeEnum.deviceDefault(stage))
-    waitForGameLoading()
-    val strings = async { StringResources.load(defaultLanguage) }
-    val font = async { loadFont(strings.await()) }
-    val settings = async { Settings.load(stage) }
-    val history = async { History.load(settings.await()) }
+private fun CoroutineScope.initialize(stage: Stage, animateViews: Boolean, handler: suspend ViewData.() -> Unit = {}) =
     launch {
-        history.await().loadRecentGames()
-    }
-    val gameColors = async { ColorTheme.load(stage, settings.await()) }
+        val quick = ViewDataQuick(stage, animateViews)
+        val splashDefault = stage.splashScreen(quick, ColorThemeEnum.deviceDefault(stage))
+        waitForGameLoading()
+        val strings = async { StringResources.load(defaultLanguage) }
+        val font = async { loadFont(strings.await()) }
+        val settings = async { Settings.load(stage) }
+        val history = async { History.load(settings.await()) }
+        launch {
+            history.await().loadRecentGames()
+        }
+        val gameColors = async { ColorTheme.load(stage, settings.await()) }
 
-    val splashThemed = if (settings.await().colorThemeEnum == ColorThemeEnum.deviceDefault(stage))
-        splashDefault else stage.splashScreen(quick, settings.await().colorThemeEnum)
-    stage.solidRect(stage.views.virtualWidth, stage.views.virtualHeight,
-            color = gameColors.await().stageBackground)
+        val splashThemed = if (settings.await().colorThemeEnum == ColorThemeEnum.deviceDefault(stage))
+            splashDefault else stage.splashScreen(quick, settings.await().colorThemeEnum)
+        stage.solidRect(
+            stage.views.virtualWidth, stage.views.virtualHeight,
+            color = gameColors.await().stageBackground
+        )
 
-    splashThemed.addTo(stage)
-    if (splashThemed != splashDefault) {
-        splashDefault.removeFromParent()
-    }
+        splashThemed.addTo(stage)
+        if (splashThemed != splashDefault) {
+            splashDefault.removeFromParent()
+        }
 
-    if (!OS.isAndroid) launch {
-        // We set window title in Android via AndroidManifest.xml
-        stage.gameWindow.title = strings.await().text("app_name")
-    }
+        if (!Platform.isAndroid) launch {
+            // We set window title in Android via AndroidManifest.xml
+            stage.gameWindow.title = strings.await().text("app_name")
+        }
 
-    val view = ViewData(quick, settings.await(), font.await(), strings.await(), gameColors.await())
-    view.presenter = myMeasured("Presenter${view.id} created") { Presenter(view, history.await()) }
-    view.mainView = myMeasured("MainView${view.id} created") { view.setupMainView(this) }
+        val view = ViewData(quick, settings.await(), font.await(), strings.await(), gameColors.await())
+        view.presenter = myMeasured("Presenter${view.id} created") { Presenter(view, history.await()) }
+        view.mainView = myMeasured("MainView${view.id} created") { view.setupMainView(this) }
 
-    splashThemed.removeFromParent()
-    view.presenter.onAppEntry()
-    view.gameStage.gameWindow.addEventListener<PauseEvent> { view.presenter.onPauseEvent() }
+        splashThemed.removeFromParent()
+        view.presenter.onAppEntry()
+        view.gameStage.gameWindow.onEvent(PauseEvent) { view.presenter.onPauseEvent() }
             .also { view.closeables.add(it) }
-    view.gameStage.gameWindow.addEventListener<ResumeEvent> { view.presenter.onResumeEvent() }
+        view.gameStage.gameWindow.onEvent(ResumeEvent) { view.presenter.onResumeEvent() }
             .also { view.closeables.add(it) }
-    myLog("GameView${view.id} initialized")
-    view.handler()
-}
+        myLog("GameView${view.id} initialized")
+        view.handler()
+    }
 
 suspend fun waitForGameLoading() {
     if (!gameIsLoading.value) return
@@ -108,16 +111,18 @@ suspend fun waitForGameLoading() {
 
 }
 
-class ViewData(viewDataQuick: ViewDataQuick,
-               val settings: Settings,
-               val font: Font,
-               val stringResources: StringResources,
-               val gameColors: ColorTheme): ViewDataBase by viewDataQuick, Closeable {
+class ViewData(
+    viewDataQuick: ViewDataQuick,
+    val settings: Settings,
+    val font: Font,
+    val stringResources: StringResources,
+    val gameColors: ColorTheme
+) : ViewDataBase by viewDataQuick, Closeable {
 
-    val cellSize: Double = (
+    val cellSize: Float = (
             (if (isPortrait) gameViewWidth else gameViewWidth / 2) -
-            cellMargin * (settings.boardWidth + 1) - 2 * buttonMargin) / settings.boardWidth
-    val boardWidth: Double = cellSize * settings.boardWidth + cellMargin * (settings.boardWidth + 1)
+                    cellMargin * (settings.boardWidth + 1) - 2 * buttonMargin) / settings.boardWidth
+    val boardWidth: Float = cellSize * settings.boardWidth + cellMargin * (settings.boardWidth + 1)
 
     var presenter: Presenter by Delegates.notNull()
     var mainView: MainView by Delegates.notNull()
@@ -145,7 +150,7 @@ class ViewData(viewDataQuick: ViewDataQuick,
     }
 
     fun Animator.moveTo(view: View, square: Square, time: TimeSpan, easing: Easing) {
-        view.moveTo(square.positionX(), square.positionY(), time, easing)
+        this.moveTo(view, square.positionX(), square.positionY(), time, easing)
     }
 
     private fun Square.positionX() = cellMargin + (cellSize + cellMargin) * x

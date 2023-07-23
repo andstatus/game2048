@@ -1,23 +1,25 @@
 package org.andstatus.game2048.view
 
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.centerOn
-import com.soywiz.korge.view.container
-import com.soywiz.korge.view.image
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.roundRect
-import com.soywiz.korge.view.size
-import com.soywiz.korge.view.text
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korim.text.TextAlignment
-import com.soywiz.korio.async.launch
-import com.soywiz.korio.file.std.resourcesVfs
+import korlibs.korge.view.Container
+import korlibs.korge.view.addTo
+import korlibs.korge.view.addUpdater
+import korlibs.korge.view.container
+import korlibs.korge.view.image
+import korlibs.korge.view.position
+import korlibs.korge.view.roundRect
+import korlibs.korge.view.size
+import korlibs.korge.view.text
+import korlibs.image.color.Colors
+import korlibs.image.format.readBitmap
+import korlibs.image.text.TextAlignment
+import korlibs.io.async.launch
+import korlibs.io.file.std.resourcesVfs
+import korlibs.korge.view.align.centerOn
+import korlibs.math.geom.RectCorners
+import korlibs.math.geom.Size
 
 suspend fun ViewData.barButton(icon: String, handler: () -> Unit): Container = Container().apply {
-    val background = roundRect(buttonSize, buttonSize, buttonRadius, fill = gameColors.buttonBackground)
+    val background = roundRect(Size(buttonSize, buttonSize), RectCorners(buttonRadius), fill = gameColors.buttonBackground)
     image(resourcesVfs["assets/$icon.png"].readBitmap()) {
         size(buttonSize * 0.6, buttonSize * 0.6)
         centerOn(background)
@@ -36,18 +38,18 @@ fun ViewData.myWindow(titleKey: String, action: suspend MyWindow.() -> Unit) =
 
 class MyWindow(val viewData: ViewData, val titleKey: String) : Container() {
     val window = this
-    val winLeft = viewData.gameViewLeft.toDouble()
-    val winTop = viewData.gameViewTop.toDouble()
-    val winWidth = viewData.gameViewWidth.toDouble()
-    val winHeight = viewData.gameViewHeight.toDouble()
+    val winLeft = viewData.gameViewLeft.toFloat()
+    val winTop = viewData.gameViewTop.toFloat()
+    val winWidth = viewData.gameViewWidth.toFloat()
+    val winHeight = viewData.gameViewHeight.toFloat()
 
     suspend fun ViewData.wideButton(icon: String, labelKey: String = "", handler: () -> Unit): Container = Container().apply {
         val buttonWidth = if (isPortrait) winWidth - 2 * buttonMargin else winWidth / 2 - 2 * buttonMargin
-        val borderWidth = 2.0
-        roundRect(buttonWidth, buttonSize, buttonRadius,
-                fill = Colors.TRANSPARENT_BLACK,
+        val borderWidth = 2.0f
+        roundRect(Size(buttonWidth, buttonSize), RectCorners(buttonRadius),
+                fill = Colors.TRANSPARENT,
                 stroke = gameColors.myWindowBorder, strokeThickness = borderWidth)
-        roundRect(buttonSize, buttonSize - borderWidth * 2, buttonRadius, fill = gameColors.buttonBackground) {
+        roundRect(Size(buttonSize, buttonSize - borderWidth * 2), RectCorners(buttonRadius), fill = gameColors.buttonBackground) {
             position(borderWidth, borderWidth)
         }
         image(resourcesVfs["assets/$icon.png"].readBitmap()) {
@@ -69,8 +71,8 @@ class MyWindow(val viewData: ViewData, val titleKey: String) : Container() {
     suspend fun Container.show() {
         with(viewData) {
             roundRect(
-                winWidth, winHeight, buttonRadius, stroke = gameColors.myWindowBorder,
-                strokeThickness = 2.0, fill = gameColors.myWindowBackground
+                Size(winWidth, winHeight), RectCorners(buttonRadius), stroke = gameColors.myWindowBorder,
+                strokeThickness = 2.0f, fill = gameColors.myWindowBackground
             ) {
                 position(winLeft, winTop)
             }
@@ -88,7 +90,7 @@ class MyWindow(val viewData: ViewData, val titleKey: String) : Container() {
                 text(stringResources.text(titleKey), defaultTextSize, gameColors.labelText, font,
                     TextAlignment.MIDDLE_CENTER
                 ) {
-                    position((winLeft + xPos - cellMargin) / 2, winTop + cellMargin + buttonSize / 2)
+                    position((winLeft + xPos - cellMargin) / 2f, winTop + cellMargin + buttonSize / 2f)
                 }
             }
 

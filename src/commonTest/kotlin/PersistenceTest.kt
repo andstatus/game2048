@@ -1,4 +1,4 @@
-import com.soywiz.korge.tests.ViewsForTesting
+import korlibs.korge.tests.ViewsForTesting
 import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.PlacedPiece

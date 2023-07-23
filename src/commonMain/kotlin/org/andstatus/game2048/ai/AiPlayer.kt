@@ -1,6 +1,6 @@
 package org.andstatus.game2048.ai
 
-import com.soywiz.klock.Stopwatch
+import korlibs.time.Stopwatch
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.meanBy
 import org.andstatus.game2048.model.GamePosition

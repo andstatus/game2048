@@ -1,10 +1,10 @@
 package org.andstatus.game2048
 
-import com.soywiz.korge.service.storage.NativeStorage
-import com.soywiz.korge.view.Stage
-import com.soywiz.korim.font.readBitmapFont
-import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korio.lang.parseInt
+import korlibs.korge.service.storage.NativeStorage
+import korlibs.korge.view.Stage
+import korlibs.image.font.readBitmapFont
+import korlibs.io.file.std.resourcesVfs
+import korlibs.io.lang.parseInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

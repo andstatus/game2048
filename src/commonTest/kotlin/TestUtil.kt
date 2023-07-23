@@ -1,8 +1,8 @@
-import com.soywiz.klock.Stopwatch
-import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korio.concurrent.atomic.KorAtomicRef
-import com.soywiz.korio.concurrent.atomic.korAtomic
-import com.soywiz.korio.lang.Thread_sleep
+import korlibs.time.Stopwatch
+import korlibs.korge.tests.ViewsForTesting
+import korlibs.io.concurrent.atomic.KorAtomicRef
+import korlibs.io.concurrent.atomic.korAtomic
+import korlibs.io.lang.Thread_sleep
 import kotlinx.coroutines.delay
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.model.GamePlies
@@ -90,6 +90,7 @@ fun waitFor(message: String = "???", condition: () -> Boolean) {
 }
 
 suspend fun sWaitFor(message: String = "???", condition: () -> Boolean) {
+    myLog("Waiting for: $message")
     val stopWatch = Stopwatch().start()
     while (stopWatch.elapsed.seconds < 300) {
         if (condition()) {

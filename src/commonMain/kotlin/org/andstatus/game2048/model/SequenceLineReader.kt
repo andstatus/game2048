@@ -1,8 +1,8 @@
 package org.andstatus.game2048.model
 
-import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.lang.substr
-import com.soywiz.korio.util.StrReader
+import korlibs.io.lang.Closeable
+import korlibs.io.lang.substr
+import korlibs.io.util.StrReader
 
 val emptySequenceLineReader: SequenceLineReader = SequenceLineReader(emptySequence())
 

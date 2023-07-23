@@ -1,5 +1,5 @@
-import com.soywiz.korio.concurrent.atomic.incrementAndGet
-import com.soywiz.korio.concurrent.atomic.korAtomic
+import korlibs.io.concurrent.atomic.incrementAndGet
+import korlibs.io.concurrent.atomic.korAtomic
 import org.andstatus.game2048.model.GameClock
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -1,8 +1,8 @@
 package org.andstatus.game2048.view
 
-import com.soywiz.klock.DateTime
-import com.soywiz.korev.Key
-import com.soywiz.korge.input.Input
+import korlibs.time.DateTime
+import korlibs.event.Key
+import korlibs.korge.input.Input
 import kotlin.math.abs
 
 class DuplicateKeyPressFilter {
@@ -16,7 +16,7 @@ class DuplicateKeyPressFilter {
     }
 
     fun onPress(key: Key, action: () -> Unit) {
-        val now = DateTime.nowUnixLong()
+        val now = DateTime.nowUnixMillisLong()
         pressed[key]?.let{
             if (abs(now - it) < minMillisBetweenPresses) return
         }

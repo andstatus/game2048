@@ -1,5 +1,5 @@
-import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korio.lang.Thread_sleep
+import korlibs.korge.tests.ViewsForTesting
+import korlibs.io.lang.Thread_sleep
 import kotlinx.coroutines.delay
 import org.andstatus.game2048.model.PlyAndPosition.Companion.allowedRandomPly
 import kotlin.test.Test

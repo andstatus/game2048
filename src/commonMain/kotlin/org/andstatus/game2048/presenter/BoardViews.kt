@@ -1,6 +1,6 @@
 package org.andstatus.game2048.presenter
 
-import com.soywiz.korio.concurrent.atomic.KorAtomicRef
+import korlibs.io.concurrent.atomic.KorAtomicRef
 import org.andstatus.game2048.initAtomicReference
 import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.PlacedPiece

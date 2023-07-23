@@ -2,7 +2,7 @@ package org.andstatus.game2048
 
 import android.content.Context
 import android.net.Uri
-import com.soywiz.korio.lang.Closeable
+import korlibs.io.lang.Closeable
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets

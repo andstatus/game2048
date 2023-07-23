@@ -1,6 +1,6 @@
 package org.andstatus.game2048.presenter
 
-import com.soywiz.klock.Stopwatch
+import korlibs.time.Stopwatch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

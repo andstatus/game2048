@@ -1,6 +1,6 @@
 package org.andstatus.game2048.model
 
-import com.soywiz.klock.DateTimeTz
+import korlibs.time.DateTimeTz
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.myLog
 

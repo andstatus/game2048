@@ -5,11 +5,11 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.util.DisplayMetrics
 import android.view.WindowManager
-import com.soywiz.korge.view.Stage
-import com.soywiz.korio.android.AndroidCoroutineContext
-import com.soywiz.korio.concurrent.atomic.KorAtomicRef
-import com.soywiz.korio.concurrent.atomic.korAtomic
-import com.soywiz.korma.geom.SizeInt
+import korlibs.korge.view.Stage
+import korlibs.io.android.AndroidCoroutineContext
+import korlibs.io.concurrent.atomic.KorAtomicRef
+import korlibs.io.concurrent.atomic.korAtomic
+import korlibs.math.geom.SizeInt
 import org.andstatus.game2048.data.FileProvider
 import org.andstatus.game2048.presenter.Presenter
 import java.io.BufferedWriter

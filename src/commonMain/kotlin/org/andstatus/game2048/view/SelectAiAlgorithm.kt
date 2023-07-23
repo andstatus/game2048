@@ -1,11 +1,11 @@
 package org.andstatus.game2048.view
 
-import com.soywiz.klock.milliseconds
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.position
-import com.soywiz.korio.async.delay
-import com.soywiz.korio.async.launch
+import korlibs.time.milliseconds
+import korlibs.korge.view.Container
+import korlibs.korge.view.addTo
+import korlibs.korge.view.position
+import korlibs.io.async.delay
+import korlibs.io.async.launch
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.ai.AiAlgorithm
 

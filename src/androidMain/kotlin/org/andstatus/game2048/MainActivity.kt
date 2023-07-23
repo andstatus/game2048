@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
-import com.soywiz.korgw.KorgwActivity
+import korlibs.render.KorgwActivity
 
 class MainActivity : KorgwActivity() {
     private val REQUEST_CODE_OPEN_JSON_GAME = 1

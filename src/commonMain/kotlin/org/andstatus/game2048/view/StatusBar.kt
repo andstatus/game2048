@@ -1,12 +1,12 @@
 package org.andstatus.game2048.view
 
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Text
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.positionX
-import com.soywiz.korge.view.positionY
-import com.soywiz.korge.view.text
-import com.soywiz.korim.text.TextAlignment
+import korlibs.korge.view.Container
+import korlibs.korge.view.Text
+import korlibs.korge.view.addTo
+import korlibs.korge.view.positionX
+import korlibs.korge.view.positionY
+import korlibs.korge.view.text
+import korlibs.image.text.TextAlignment
 import org.andstatus.game2048.ai.AiResult
 
 fun ViewData.setupStatusBar(): StatusBar {
@@ -24,8 +24,8 @@ class StatusBar(val viewData: ViewData): Container() {
             val scoreButtonWidth = (viewData.boardWidth - 2 * buttonMargin) / 3
             val barTop = statusBarTop
             val textYPadding = 28 * gameScale
-            val scoreLabelSize = cellSize * 0.30
-            val scoreTextSize = cellSize * 0.5
+            val scoreLabelSize = cellSize * 0.30f
+            val scoreTextSize = cellSize * 0.5f
 
             var posX = statusBarLeft
             moveSuggested = text("", scoreTextSize, gameColors.labelText, font, TextAlignment.MIDDLE_CENTER) {

@@ -1,21 +1,30 @@
-import com.soywiz.korge.gradle.KorgeGradlePlugin
-import com.soywiz.korge.gradle.korge
+import korlibs.korge.gradle.korge
 
-buildscript {
-    val korgePluginVersion: String by project
+plugins {
+    alias(libs.plugins.korge)
+}
 
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        google()
-        maven { url = uri("https://plugins.gradle.org/m2/") }
-    }
-    dependencies {
-        classpath("com.soywiz.korlibs.korge.plugins:korge-gradle-plugin:$korgePluginVersion")
+project.afterEvaluate {
+//    tasks.map {
+//        println("After evaluate Task: $it")
+//    }
+    tasks.findByName("preBuild")?.let {
+        val taskToFix = "jvmProcessResources"
+        println("Fixing dependency: $it depends on $taskToFix")
+        it.dependsOn(taskToFix)
+//        it.mustRunAfter(taskToFix)
     }
 }
 
-apply<KorgeGradlePlugin>()
+gradle.taskGraph.whenReady(closureOf<TaskExecutionGraph> {
+    println("Found ${allTasks.size} tasks in task graph: $this")
+    allTasks.forEach { task ->
+        println(task)
+        task.dependsOn.forEach { dep ->
+            println("  - $dep")
+        }
+    }
+})
 
 korge {
     id = "org.andstatus.game2048"
@@ -27,16 +36,19 @@ korge {
 
     androidMinSdk = 24
     androidCompileSdk = 30
-    androidTargetSdk = 30
+    androidTargetSdk = 31
+
+    versionCode = 35
+    version = "1.13.0"
 
     targetJvm()
     targetJs()
     targetDesktop()
-
-    // We need to switch to the "indirect" target only to generate build.gradle
-    // and manually sync it with our customized game2048-android/build.gradle
-    //targetAndroidIndirect()
-
-    // The below stopped working after upgrade to Kotlin 1.5.0, etc.
-    //targetAndroidDirect()
+    targetAndroid()
 }
+
+//try {
+//    tasks.named("lintVitalReportRelease").dependsOn("jvmProcessResources")
+//} catch (e: Exception) {
+//    // Ignored
+//}

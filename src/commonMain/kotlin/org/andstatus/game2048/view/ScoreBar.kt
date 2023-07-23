@@ -1,15 +1,17 @@
 package org.andstatus.game2048.view
 
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Text
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.centerXOn
-import com.soywiz.korge.view.position
-import com.soywiz.korge.view.positionX
-import com.soywiz.korge.view.positionY
-import com.soywiz.korge.view.roundRect
-import com.soywiz.korge.view.text
-import com.soywiz.korim.text.TextAlignment
+import korlibs.image.text.TextAlignment
+import korlibs.korge.view.Container
+import korlibs.korge.view.Text
+import korlibs.korge.view.addTo
+import korlibs.korge.view.align.centerXOn
+import korlibs.korge.view.position
+import korlibs.korge.view.positionX
+import korlibs.korge.view.positionY
+import korlibs.korge.view.roundRect
+import korlibs.korge.view.text
+import korlibs.math.geom.RectCorners
+import korlibs.math.geom.Size
 import kotlin.math.abs
 
 fun ViewData.setupScoreBar(): ScoreBar {
@@ -28,11 +30,11 @@ class ScoreBar(val viewData: ViewData): Container() {
             val scoreButtonWidth = (viewData.boardWidth - 2 * buttonMargin) / 3
             val barTopInd = 1
             val textYPadding = 28 * gameScale
-            val scoreLabelSize = cellSize * 0.30
-            val scoreTextSize = cellSize * 0.5
+            val scoreLabelSize = cellSize * 0.30f
+            val scoreTextSize = cellSize * 0.5f
 
             var posX = statusBarLeft
-            val bgScore = roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
+            val bgScore = roundRect(Size(scoreButtonWidth, buttonSize), RectCorners(buttonRadius), fill = gameColors.buttonBackground) {
                 position(posX, buttonYs[barTopInd + 1])
             }
             text(stringResources.text("score_upper"), scoreLabelSize, gameColors.buttonLabelText, font,
@@ -46,7 +48,7 @@ class ScoreBar(val viewData: ViewData): Container() {
                 positionY(buttonYs[barTopInd + 1] + scoreLabelSize + textYPadding)
             }
 
-            val bgRetries = roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
+            val bgRetries = roundRect(Size(scoreButtonWidth, buttonSize), RectCorners(buttonRadius), fill = gameColors.buttonBackground) {
                 position(posX, buttonYs[barTopInd + 2])
             }
             text(stringResources.text("retries"), scoreLabelSize, gameColors.buttonLabelText, font,
@@ -61,7 +63,7 @@ class ScoreBar(val viewData: ViewData): Container() {
             }
 
             posX += scoreButtonWidth + buttonMargin
-            val bgBest = roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
+            val bgBest = roundRect(Size(scoreButtonWidth, buttonSize), RectCorners(buttonRadius), fill = gameColors.buttonBackground) {
                 position(posX, buttonYs[barTopInd + 1])
             }
             text(stringResources.text("best"), scoreLabelSize, gameColors.buttonLabelText, font,
@@ -76,7 +78,7 @@ class ScoreBar(val viewData: ViewData): Container() {
             }
 
             posX += scoreButtonWidth + buttonMargin
-            val bgMove = roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
+            val bgMove = roundRect(Size(scoreButtonWidth, buttonSize), RectCorners(buttonRadius), fill = gameColors.buttonBackground) {
                 position(posX, buttonYs[barTopInd + 1])
             }
             text(stringResources.text("move_upper"), scoreLabelSize, gameColors.buttonLabelText, font,
@@ -90,7 +92,7 @@ class ScoreBar(val viewData: ViewData): Container() {
                 positionY(buttonYs[barTopInd + 1] + scoreLabelSize + textYPadding)
             }
 
-            val bgTime = roundRect(scoreButtonWidth, buttonSize, buttonRadius, fill = gameColors.buttonBackground) {
+            val bgTime = roundRect(Size(scoreButtonWidth, buttonSize), RectCorners(buttonRadius), fill = gameColors.buttonBackground) {
                 position(posX, buttonYs[barTopInd + 2])
             }
             text(stringResources.text("time"), scoreLabelSize, gameColors.buttonLabelText, font,

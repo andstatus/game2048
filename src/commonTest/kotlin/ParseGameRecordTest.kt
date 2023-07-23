@@ -1,4 +1,4 @@
-import com.soywiz.korge.tests.ViewsForTesting
+import korlibs.korge.tests.ViewsForTesting
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.model.History
 import kotlin.test.Test

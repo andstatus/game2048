@@ -1,6 +1,6 @@
 package org.andstatus.game2048
 
-import com.soywiz.korio.lang.Closeable
+import korlibs.io.lang.Closeable
 import java.io.File
 import java.io.InputStream
 import java.io.InputStreamReader

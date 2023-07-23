@@ -1,8 +1,8 @@
 package org.andstatus.game2048
 
-import com.soywiz.korge.view.Stage
-import com.soywiz.korio.concurrent.atomic.KorAtomicRef
-import com.soywiz.korma.geom.SizeInt
+import korlibs.korge.view.Stage
+import korlibs.io.concurrent.atomic.KorAtomicRef
+import korlibs.math.geom.SizeInt
 import org.andstatus.game2048.presenter.Presenter
 import kotlin.coroutines.CoroutineContext
 
