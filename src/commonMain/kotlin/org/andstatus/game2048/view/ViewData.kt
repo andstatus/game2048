@@ -47,8 +47,9 @@ suspend fun viewData(stage: Stage, animateViews: Boolean, handler: suspend ViewD
             }
         }
 
-        val multithreadedScope: CoroutineScope = if (Platform.isNative) outerScope else
-            CoroutineScope(outerScope.coroutineContext + Dispatchers.Default)
+        val multithreadedScope: CoroutineScope = outerScope
+        if (Platform.isNative) outerScope
+        else CoroutineScope(outerScope.coroutineContext + Dispatchers.Default)
         multithreadedScope.initialize(stage, animateViews, handlerInOuterScope)
     }
 }

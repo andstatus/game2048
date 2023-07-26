@@ -1,25 +1,27 @@
 package org.andstatus.game2048.view
 
+import korlibs.image.color.Colors
+import korlibs.image.format.readBitmap
+import korlibs.image.text.TextAlignment
+import korlibs.io.async.launch
+import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.view.Container
 import korlibs.korge.view.addTo
 import korlibs.korge.view.addUpdater
+import korlibs.korge.view.align.centerOn
 import korlibs.korge.view.container
 import korlibs.korge.view.image
 import korlibs.korge.view.position
 import korlibs.korge.view.roundRect
 import korlibs.korge.view.size
 import korlibs.korge.view.text
-import korlibs.image.color.Colors
-import korlibs.image.format.readBitmap
-import korlibs.image.text.TextAlignment
-import korlibs.io.async.launch
-import korlibs.io.file.std.resourcesVfs
-import korlibs.korge.view.align.centerOn
 import korlibs.math.geom.RectCorners
 import korlibs.math.geom.Size
+import org.andstatus.game2048.myLog
 
 suspend fun ViewData.barButton(icon: String, handler: () -> Unit): Container = Container().apply {
-    val background = roundRect(Size(buttonSize, buttonSize), RectCorners(buttonRadius), fill = gameColors.buttonBackground)
+    val background =
+        roundRect(Size(buttonSize, buttonSize), RectCorners(buttonRadius), fill = gameColors.buttonBackground)
     image(resourcesVfs["assets/$icon.png"].readBitmap()) {
         size(buttonSize * 0.6, buttonSize * 0.6)
         centerOn(background)
@@ -27,7 +29,7 @@ suspend fun ViewData.barButton(icon: String, handler: () -> Unit): Container = C
     customOnClick { handler() }
 }
 
-fun ViewData.myWindow(titleKey: String, action: suspend MyWindow.() -> Unit) =
+fun ViewData.myWindow(titleKey: String, action: suspend MyWindow.() -> Unit): MyWindow =
     MyWindow(this, titleKey).apply {
         gameStage.launch {
             show()
@@ -37,36 +39,48 @@ fun ViewData.myWindow(titleKey: String, action: suspend MyWindow.() -> Unit) =
     }
 
 class MyWindow(val viewData: ViewData, val titleKey: String) : Container() {
+    init {
+        myLog("MyWindow: $titleKey")
+    }
+
     val window = this
     val winLeft = viewData.gameViewLeft.toFloat()
     val winTop = viewData.gameViewTop.toFloat()
     val winWidth = viewData.gameViewWidth.toFloat()
     val winHeight = viewData.gameViewHeight.toFloat()
 
-    suspend fun ViewData.wideButton(icon: String, labelKey: String = "", handler: () -> Unit): Container = Container().apply {
-        val buttonWidth = if (isPortrait) winWidth - 2 * buttonMargin else winWidth / 2 - 2 * buttonMargin
-        val borderWidth = 2.0f
-        roundRect(Size(buttonWidth, buttonSize), RectCorners(buttonRadius),
+    suspend fun ViewData.wideButton(icon: String, labelKey: String = "", handler: () -> Unit): Container =
+        Container().apply {
+            val buttonWidth = if (isPortrait) winWidth - 2 * buttonMargin else winWidth / 2 - 2 * buttonMargin
+            val borderWidth = 2.0f
+            roundRect(
+                Size(buttonWidth, buttonSize), RectCorners(buttonRadius),
                 fill = Colors.TRANSPARENT,
-                stroke = gameColors.myWindowBorder, strokeThickness = borderWidth)
-        roundRect(Size(buttonSize, buttonSize - borderWidth * 2), RectCorners(buttonRadius), fill = gameColors.buttonBackground) {
-            position(borderWidth, borderWidth)
-        }
-        image(resourcesVfs["assets/$icon.png"].readBitmap()) {
-            size(buttonSize * 0.6, buttonSize * 0.6)
-            position(buttonSize / 5, buttonSize / 5)
-        }
-        if (labelKey.isNotEmpty()) {
-            container {
-                text(stringResources.text(labelKey), defaultTextSize, gameColors.labelText,
-                    font, TextAlignment.MIDDLE_LEFT
-                ) {
-                    position(buttonSize + cellMargin, buttonSize / 2)
+                stroke = gameColors.myWindowBorder, strokeThickness = borderWidth
+            )
+            roundRect(
+                Size(buttonSize, buttonSize - borderWidth * 2),
+                RectCorners(buttonRadius),
+                fill = gameColors.buttonBackground
+            ) {
+                position(borderWidth, borderWidth)
+            }
+            image(resourcesVfs["assets/$icon.png"].readBitmap()) {
+                size(buttonSize * 0.6, buttonSize * 0.6)
+                position(buttonSize / 5, buttonSize / 5)
+            }
+            if (labelKey.isNotEmpty()) {
+                container {
+                    text(
+                        stringResources.text(labelKey), defaultTextSize, gameColors.labelText,
+                        font, TextAlignment.MIDDLE_LEFT
+                    ) {
+                        position(buttonSize + cellMargin, buttonSize / 2)
+                    }
                 }
             }
+            customOnClick { handler() }
         }
-        customOnClick { handler() }
-    }
 
     suspend fun Container.show() {
         with(viewData) {
@@ -87,7 +101,8 @@ class MyWindow(val viewData: ViewData, val titleKey: String) : Container() {
             }.addTo(window)
 
             if (titleKey.isNotEmpty()) {
-                text(stringResources.text(titleKey), defaultTextSize, gameColors.labelText, font,
+                text(
+                    stringResources.text(titleKey), defaultTextSize, gameColors.labelText, font,
                     TextAlignment.MIDDLE_CENTER
                 ) {
                     position((winLeft + xPos - cellMargin) / 2f, winTop + cellMargin + buttonSize / 2f)

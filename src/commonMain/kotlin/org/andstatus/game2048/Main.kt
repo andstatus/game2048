@@ -5,20 +5,20 @@ import korlibs.korge.Korge
 import korlibs.math.geom.Size
 import korlibs.math.geom.SizeInt
 import korlibs.math.geom.toFloat
-import org.andstatus.game2048.view.ColorThemeEnum
 import org.andstatus.game2048.view.gameDefaultBackgroundColor
 import org.andstatus.game2048.view.viewData
 import kotlin.coroutines.coroutineContext
 
 val defaultPortraitGameWindowSize = SizeInt(720, 1440)
-val defaultPortraitRatio : Double = defaultPortraitGameWindowSize.width.toDouble() / defaultPortraitGameWindowSize.height
-val defaultDesktopGameWindowSize get() = SizeInt(defaultPortraitGameWindowSize.width / 2,
-    defaultPortraitGameWindowSize.height / 2)
+val defaultPortraitRatio: Double = defaultPortraitGameWindowSize.width.toDouble() / defaultPortraitGameWindowSize.height
+val defaultDesktopGameWindowSize
+    get() = SizeInt(
+        defaultPortraitGameWindowSize.width / 2,
+        defaultPortraitGameWindowSize.height / 2
+    )
 const val defaultPortraitTextSize = 64.0f
 
-suspend fun main() = main(null)
-
-suspend fun main(colorThemeEnum: ColorThemeEnum?) {
+suspend fun main() {
     val windowSize: SizeInt = coroutineContext.gameWindowSize
     val virtualWidth: Int
     val virtualHeight: Int
@@ -41,17 +41,13 @@ suspend fun main(colorThemeEnum: ColorThemeEnum?) {
             virtualHeight = (virtualWidth * windowRatio).toInt()
         }
     }
-    val color = colorThemeEnum?.let {
-        when (it) {
-            ColorThemeEnum.DEVICE_DEFAULT -> null
-            ColorThemeEnum.DARK -> Colors.BLACK
-            ColorThemeEnum.LIGHT -> gameDefaultBackgroundColor
-        }
-    } ?: if (coroutineContext.isDarkThemeOn) Colors.BLACK else gameDefaultBackgroundColor
-    Korge(windowSize = windowSize.toFloat(),
-            virtualSize = Size(virtualWidth, virtualHeight),
-            bgcolor = color,
-            gameId = "org.andstatus.game2048") {
+    val color = if (coroutineContext.isDarkThemeOn) Colors.BLACK else gameDefaultBackgroundColor
+    Korge(
+        windowSize = windowSize.toFloat(),
+        virtualSize = Size(virtualWidth, virtualHeight),
+        bgcolor = color,
+        gameId = "org.andstatus.game2048"
+    ) {
         myLog("Stage is ready")
         viewData(this, true)
     }

@@ -1,9 +1,9 @@
 package org.andstatus.game2048
 
-import korlibs.logger.Console
-import korlibs.korge.view.Stage
 import korlibs.io.concurrent.atomic.KorAtomicRef
 import korlibs.io.concurrent.atomic.korAtomic
+import korlibs.korge.view.Stage
+import korlibs.logger.Console
 import korlibs.math.geom.SizeInt
 import org.andstatus.game2048.presenter.Presenter
 import java.io.File
@@ -12,12 +12,13 @@ import kotlin.coroutines.CoroutineContext
 
 private const val platformSourceFolder = "jvmMain"
 
-actual val CoroutineContext.gameWindowSize: SizeInt get() =
-    when (System.getProperty("user.screen.orientation")) {
-        "landscape" -> SizeInt(defaultPortraitGameWindowSize.height, defaultPortraitGameWindowSize.width)
-        "tall" -> SizeInt(defaultDesktopGameWindowSize.width, defaultDesktopGameWindowSize.height + 64)
-        else -> defaultDesktopGameWindowSize
-    }
+actual val CoroutineContext.gameWindowSize: SizeInt
+    get() =
+        when (System.getProperty("user.screen.orientation")) {
+            "landscape" -> SizeInt(defaultPortraitGameWindowSize.height, defaultPortraitGameWindowSize.width)
+            "tall" -> SizeInt(defaultDesktopGameWindowSize.width, defaultDesktopGameWindowSize.height + 64)
+            else -> defaultDesktopGameWindowSize
+        }
 
 actual val CoroutineContext.isDarkThemeOn: Boolean get() = System.getProperty("user.color.theme") == "dark"
 
@@ -55,7 +56,7 @@ fun saveToFile(file: File, value: Sequence<String>) {
 }
 
 actual fun Stage.loadJsonGameRecord(settings: Settings, sharedJsonHandler: (Sequence<String>) -> Unit) {
-    val fileName = if (settings.isTestRun) {
+    val fileName = if (isTestRun.value) {
         "./src/commonTest/resources/sharedGames/game1.json"
     } else findSharedGameToLoad()
     Console.log("$platformSourceFolder, loadJsonGameRecord from file: $fileName")

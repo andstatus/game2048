@@ -1,16 +1,20 @@
 package org.andstatus.game2048.presenter
 
-import korlibs.time.milliseconds
-import korlibs.korge.input.SwipeDirection
-import korlibs.korge.tween.get
-import korlibs.korge.view.Text
 import korlibs.io.async.launchImmediately
 import korlibs.io.concurrent.atomic.incrementAndGet
 import korlibs.io.concurrent.atomic.korAtomic
 import korlibs.io.lang.use
-import korlibs.korge.animate.*
+import korlibs.korge.animate.Animator
+import korlibs.korge.animate.animate
+import korlibs.korge.animate.block
+import korlibs.korge.animate.tween
+import korlibs.korge.input.SwipeDirection
+import korlibs.korge.tween.get
+import korlibs.korge.view.Text
+import korlibs.korge.view.onNextFrame
 import korlibs.math.geom.Scale
 import korlibs.math.interpolation.Easing
+import korlibs.time.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -19,6 +23,7 @@ import org.andstatus.game2048.ai.AiPlayer
 import org.andstatus.game2048.exitApp
 import org.andstatus.game2048.gameIsLoading
 import org.andstatus.game2048.gameStopWatch
+import org.andstatus.game2048.isTestRun
 import org.andstatus.game2048.loadJsonGameRecord
 import org.andstatus.game2048.model.GameModeEnum
 import org.andstatus.game2048.model.GamePosition
@@ -36,6 +41,7 @@ import org.andstatus.game2048.model.PlyEnum
 import org.andstatus.game2048.model.SequenceLineReader
 import org.andstatus.game2048.model.Square
 import org.andstatus.game2048.myLog
+import org.andstatus.game2048.myLogInTest
 import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.shareText
 import org.andstatus.game2048.view.AppBarButtonsEnum
@@ -69,12 +75,18 @@ class Presenter(val view: ViewData, history: History) {
         }
     }
 
-    fun onAppEntry() = myMeasured("onAppEntry") {
+    fun onAppEntry(): Unit = myMeasured("onAppEntry") {
         val game = model.history.currentGame
         presentGameClock(view.gameStage, model) { view.mainView.scoreBar.gameTime }
         if (game.isEmpty) {
             myLog("Showing help...")
-            view.showHelp()
+            if (isTestRun.value) {
+                view.showHelp().onNextFrame {
+                    myLog("Closing help in tests")
+                    this.removeFromParent()
+                    onCloseHelpClick()
+                }
+            }
         } else {
             model.composerPly(game.shortRecord.finalPosition, true).present()
             asyncShowMainView()
@@ -168,6 +180,7 @@ class Presenter(val view: ViewData, history: History) {
                     }
                 }
             }
+
             GameModeEnum.PLAY -> {
                 userMove(
                     when (swipeDirection) {
@@ -178,16 +191,19 @@ class Presenter(val view: ViewData, history: History) {
                     }
                 )
             }
+
             GameModeEnum.AI_PLAY -> {
                 when (swipeDirection) {
                     SwipeDirection.LEFT -> {
                         gameMode.decrementSpeed()
                         asyncShowMainView()
                     }
+
                     SwipeDirection.RIGHT -> {
                         gameMode.incrementSpeed()
                         asyncShowMainView()
                     }
+
                     else -> {
                         onAiStopClicked()
                     }
@@ -493,17 +509,16 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     private fun showMainView() {
+        myLogInTest { "showMainView started" }
         if (!view.closed) {
-            if (!model.settings.isTestRun) {
-                // TODO: Why this doesn't work in tests?
-                view.mainView.show(buttonsToShow(), gameMode.speed)
-            }
+            view.mainView.show(buttonsToShow(), gameMode.speed)
             if (gameMode.aiEnabled && gameMode.speed == 0) {
                 multithreadedScope.showAiTip(this@Presenter)
                 myLog("After AI Launch")
             }
         }
         mainViewShown.value = true
+        myLogInTest { "showMainView ended" }
     }
 
     private fun buttonsToShow(): List<AppBarButtonsEnum> {
@@ -536,6 +551,7 @@ class Presenter(val view: ViewData, history: History) {
 
                 list.add(AppBarButtonsEnum.GAME_MENU)
             }
+
             GameModeEnum.AI_PLAY -> {
                 list.add(AppBarButtonsEnum.PLAY)
                 list.add(AppBarButtonsEnum.AI_ON)
@@ -543,6 +559,7 @@ class Presenter(val view: ViewData, history: History) {
                 list.add(AppBarButtonsEnum.AI_STOP)
                 list.add(AppBarButtonsEnum.AI_FORWARD)
             }
+
             else -> {
                 list.add(AppBarButtonsEnum.WATCH)
                 list.add(
@@ -610,6 +627,7 @@ class Presenter(val view: ViewData, history: History) {
                                 }
                             }
                         }
+
                         is PieceMoveDelay -> with(view) {
                             if (animateViews) boardViews.blocks.lastOrNull()?.also {
                                 moveTo(it.block, it.square, gameMode.delayMs.milliseconds, Easing.LINEAR)
@@ -646,10 +664,12 @@ class Presenter(val view: ViewData, history: History) {
                                 }
                             }
                             ?: myLog("No Block at destination during undo: $move")
+
                         is PieceMoveLoad -> boardViews.load(move.position)
                         is PieceMoveOne -> boardViews[PlacedPiece(move.first.piece, move.destination)]
                             ?.move(this, move.first.square)
                             ?: myLog("No Block at destination during undo: $move")
+
                         is PieceMoveMerge -> {
                             val destination = move.merged.square
                             val effectiveBlock = boardViews[move.merged]
@@ -670,6 +690,7 @@ class Presenter(val view: ViewData, history: History) {
                                 }
                             }
                         }
+
                         is PieceMoveDelay -> with(view) {
                             if (animateViews) boardViews.blocks.lastOrNull()?.also {
                                 moveTo(it.block, it.square, gameMode.delayMs.milliseconds, Easing.LINEAR)

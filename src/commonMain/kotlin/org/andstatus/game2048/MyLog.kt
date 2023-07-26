@@ -1,13 +1,19 @@
 package org.andstatus.game2048
 
-import korlibs.time.Stopwatch
 import korlibs.io.concurrent.atomic.korAtomic
 import korlibs.io.lang.currentThreadId
+import korlibs.time.Stopwatch
 
+val isTestRun = korAtomic(false)
 val gameStopWatch = Stopwatch().start()
 val gameIsLoading = korAtomic(false)
 
-fun myLog(message: Any?) = println("game2048.log ${gameStopWatch.elapsed.milliseconds.toInt()} [${currentThreadId}] $message")
+fun myLogInTest(messageSupplier: () -> String): Unit {
+    if (isTestRun.value) myLog(messageSupplier())
+}
+
+fun myLog(message: Any?) =
+    println("game2048.log ${gameStopWatch.elapsed.milliseconds.toInt()} [${currentThreadId}] $message")
 
 inline fun <T> myMeasured(message: Any?, measuredAction: () -> T): T =
     Stopwatch().start().let { stopWatch ->

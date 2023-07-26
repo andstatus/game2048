@@ -1,17 +1,16 @@
 package org.andstatus.game2048
 
-import korlibs.korge.service.storage.NativeStorage
-import korlibs.korge.view.Stage
 import korlibs.image.font.readBitmapFont
 import korlibs.io.file.std.resourcesVfs
 import korlibs.io.lang.parseInt
+import korlibs.korge.service.storage.NativeStorage
+import korlibs.korge.view.Stage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.model.Board
 import org.andstatus.game2048.model.PliesPageData
-import org.andstatus.game2048.model.ShortRecord
 import org.andstatus.game2048.view.ColorThemeEnum
 import org.andstatus.game2048.view.StringResources
 
@@ -43,7 +42,6 @@ class Settings(private val stage: Stage) {
     var colorThemeEnum: ColorThemeEnum = ColorThemeEnum.load(storage.getOrNull(keyColorTheme))
     var aiAlgorithm: AiAlgorithm = AiAlgorithm.load(storage.getOrNull(keyAiAlgorithm))
     var defaultBoard = Board(this)
-    val isTestRun = "TestGameWindow" == stage.views.gameWindow::class.simpleName
     var pliesPageSize = 1000
 
     val gameIdsRange = 1 until stubGameId

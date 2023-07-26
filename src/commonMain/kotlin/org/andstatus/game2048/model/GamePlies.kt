@@ -145,6 +145,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: Sequen
                             plies.size - index, plies.drop(index)
                         )
                     }
+
                     else -> {
                         PliesPage(
                             shortRecord,
@@ -169,6 +170,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: Sequen
                         fromId(shortRecord).also { gamePlies ->
                             myLog("Reloaded multipage ${gamePlies.toShortString()}")
                         }
+
                     else -> gamePlies1
                 }
             }

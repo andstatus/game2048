@@ -20,7 +20,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         persistGameRecordTest(2)
     }
 
-    private fun ViewData.persistGameRecordTest(nPlies: Int) {
+    private suspend fun ViewData.persistGameRecordTest(nPlies: Int) {
         myLog("persistGameRecordTest started, n=$nPlies")
         val board = presenter.model.gamePosition.board
         val plies = ArrayList<Ply>()
@@ -62,7 +62,9 @@ class PersistenceTest : ViewsForTesting(log = true) {
 
         val gameRecordOpened = presenter.model.history.currentGame
         myLog("Opened game 2, n=$nPlies: $gameRecordOpened")
-        assertEquals(longString1, gameRecordOpened.toLongString()
-            .replace("id:${gameRecordOpened.id} ", "id:$id1 "), message)
+        assertEquals(
+            longString1, gameRecordOpened.toLongString()
+                .replace("id:${gameRecordOpened.id} ", "id:$id1 "), message
+        )
     }
 }

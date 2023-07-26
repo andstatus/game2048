@@ -1,5 +1,4 @@
 import korlibs.korge.tests.ViewsForTesting
-import korlibs.io.lang.Thread_sleep
 import kotlinx.coroutines.delay
 import org.andstatus.game2048.model.PlyAndPosition.Companion.allowedRandomPly
 import kotlin.test.Test
@@ -22,7 +21,7 @@ class RetriesTest : ViewsForTesting(log = true) {
 
         allowedRandomPly(presenter.model.gamePosition).ply.plyEnum.swipeDirection?.let {
             waitForMainViewShown {
-                Thread_sleep(2000)
+                delay(2000)
                 presenter.onSwipe(it)
             }
         }
@@ -32,8 +31,10 @@ class RetriesTest : ViewsForTesting(log = true) {
             presenter.onUndoClick()
         }
         presenter.model.history.currentGame.gamePlies.get(presenter.model.history.redoPlyPointer).let { redoPly ->
-            assertEquals(1, redoPly.retries, "redoPly: " +
-                "$redoPly, " + currentGameString())
+            assertEquals(
+                1, redoPly.retries, "redoPly: " +
+                        "$redoPly, " + currentGameString()
+            )
         }
         assertEquals(0, presenter.model.gamePosition.retries, currentGameString())
 
