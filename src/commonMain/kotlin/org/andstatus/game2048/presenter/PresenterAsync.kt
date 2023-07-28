@@ -4,6 +4,7 @@ import korlibs.time.Stopwatch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.andstatus.game2048.model.GameModeEnum
 import org.andstatus.game2048.myLog
 
@@ -14,7 +15,7 @@ fun CoroutineScope.showAiTip(presenter: Presenter) = launch {
         val gamePosition = model.gamePosition
         aiPlayer.nextPly(gamePosition).also {
             if (model.gamePosition === gamePosition) {
-                view.gameStage.launch {
+                withContext(view.korgeCoroutineContext) {
                     myLog("Showing AI tip 0: ${it.plyEnum}")
                     view.mainView.showStatusBar(it)
                 }
@@ -26,26 +27,29 @@ fun CoroutineScope.showAiTip(presenter: Presenter) = launch {
 fun CoroutineScope.aiPlayLoop(presenter: Presenter, startCount: Int) = launch {
     with(presenter) {
         while (startCount == clickCounter.value && !model.noMoreMoves()
-                && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
+            && gameMode.modeEnum == GameModeEnum.AI_PLAY
+        ) {
             Stopwatch().start().let { stopWatch ->
                 presenter.delayWhilePresenting()
                 val gamePosition = model.gamePosition
                 aiPlayer.nextPly(gamePosition).also { aiResult ->
                     if (gameMode.speed in 1..3) {
                         myLog("Showing AI tip ${gameMode.speed}: ${aiResult.plyEnum}")
-                        view.mainView.showStatusBar(aiResult)
+                        withContext(view.korgeCoroutineContext) {
+                            view.mainView.showStatusBar(aiResult)
+                        }
                     }
                     delay(gameMode.delayMs.toLong() - stopWatch.elapsed.millisecondsLong)
                     if (!isPresenting.value && model.gamePosition === gamePosition && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
-                        view.gameStage.launch {
+                        withContext(view.korgeCoroutineContext) {
                             userMove(aiResult.plyEnum)
-                        }.join()
+                        }
                     }
                 }
             }
         }
         if (gameMode.modeEnum == GameModeEnum.AI_PLAY) {
-            view.gameStage.launch {
+            withContext(view.korgeCoroutineContext) {
                 onAiStopClicked()
             }
         }

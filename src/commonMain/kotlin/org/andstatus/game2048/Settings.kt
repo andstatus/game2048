@@ -28,7 +28,9 @@ and for the game in browser: https://play2048.co/
 For now you can modify settings in the "game.storage" file. */
 class Settings(private val stage: Stage) {
     val multithreadedScope: CoroutineScope
-        get() = CoroutineScope(stage.coroutineContext + Job() + Dispatchers.Default)
+        get() = CoroutineScope(stage.coroutineContext + Job()
+            + Dispatchers.Default
+        )
     val storage: MyStorage = MyStorage.load(stage)
     val keyColorTheme = "colorTheme"
     val keyAiAlgorithm = "aiAlgorithm"

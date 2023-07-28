@@ -19,7 +19,6 @@ import korlibs.memory.Platform
 import korlibs.time.Stopwatch
 import korlibs.time.TimeSpan
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -34,70 +33,54 @@ import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.presenter.Presenter
 import org.andstatus.game2048.view.MainView.Companion.setupMainView
+import kotlin.coroutines.CoroutineContext
 import kotlin.properties.Delegates
 
 /** @author yvolk@yurivolkov.com */
-suspend fun viewData(stage: Stage, animateViews: Boolean, handler: suspend ViewData.() -> Unit = {}) {
+suspend fun viewData(stage: Stage, animateViews: Boolean, block: suspend ViewData.() -> Unit = {}) = coroutineScope {
     stage.removeChildren()
-    coroutineScope {
-        val outerScope = this
-        val handlerInOuterScope: suspend ViewData.() -> Unit = {
-            outerScope.launch {
-                handler()
-            }
-        }
-
-        val multithreadedScope: CoroutineScope = outerScope
-        if (Platform.isNative) outerScope
-        else CoroutineScope(outerScope.coroutineContext + Dispatchers.Default)
-        multithreadedScope.initialize(stage, animateViews, handlerInOuterScope)
-    }
-}
-
-private fun CoroutineScope.initialize(stage: Stage, animateViews: Boolean, handler: suspend ViewData.() -> Unit = {}) =
+    val quick = ViewDataQuick(stage, animateViews)
+    val splashDefault = stage.splashScreen(quick, ColorThemeEnum.deviceDefault(stage))
+    waitForGameLoading()
+    val strings = async { StringResources.load(defaultLanguage) }
+    val font = async { loadFont(strings.await()) }
+    val settings = async { Settings.load(stage) }
+    val history = async { History.load(settings.await()) }
     launch {
-        val quick = ViewDataQuick(stage, animateViews)
-        val splashDefault = stage.splashScreen(quick, ColorThemeEnum.deviceDefault(stage))
-        waitForGameLoading()
-        val strings = async { StringResources.load(defaultLanguage) }
-        val font = async { loadFont(strings.await()) }
-        val settings = async { Settings.load(stage) }
-        val history = async { History.load(settings.await()) }
-        launch {
-            history.await().loadRecentGames()
-        }
-        val gameColors = async { ColorTheme.load(stage, settings.await()) }
-
-        val splashThemed = if (settings.await().colorThemeEnum == ColorThemeEnum.deviceDefault(stage))
-            splashDefault else stage.splashScreen(quick, settings.await().colorThemeEnum)
-        stage.solidRect(
-            stage.views.virtualWidth, stage.views.virtualHeight,
-            color = gameColors.await().stageBackground
-        )
-
-        splashThemed.addTo(stage)
-        if (splashThemed != splashDefault) {
-            splashDefault.removeFromParent()
-        }
-
-        if (!Platform.isAndroid) launch {
-            // We set window title in Android via AndroidManifest.xml
-            stage.gameWindow.title = strings.await().text("app_name")
-        }
-
-        val view = ViewData(quick, settings.await(), font.await(), strings.await(), gameColors.await())
-        view.presenter = myMeasured("Presenter${view.id} created") { Presenter(view, history.await()) }
-        view.mainView = myMeasured("MainView${view.id} created") { view.setupMainView(this) }
-
-        splashThemed.removeFromParent()
-        view.presenter.onAppEntry()
-        view.gameStage.gameWindow.onEvent(PauseEvent) { view.presenter.onPauseEvent() }
-            .also { view.closeables.add(it) }
-        view.gameStage.gameWindow.onEvent(ResumeEvent) { view.presenter.onResumeEvent() }
-            .also { view.closeables.add(it) }
-        myLog("GameView${view.id} initialized")
-        view.handler()
+        history.await().loadRecentGames()
     }
+    val gameColors = async { ColorTheme.load(stage, settings.await()) }
+
+    val splashThemed = if (settings.await().colorThemeEnum == ColorThemeEnum.deviceDefault(stage))
+        splashDefault else stage.splashScreen(quick, settings.await().colorThemeEnum)
+    stage.solidRect(
+        stage.views.virtualWidth, stage.views.virtualHeight,
+        color = gameColors.await().stageBackground
+    )
+
+    splashThemed.addTo(stage)
+    if (splashThemed != splashDefault) {
+        splashDefault.removeFromParent()
+    }
+
+    if (!Platform.isAndroid) launch {
+        // We set window title in Android via AndroidManifest.xml
+        stage.gameWindow.title = strings.await().text("app_name")
+    }
+
+    val view = ViewData(quick, settings.await(), font.await(), strings.await(), gameColors.await())
+    view.presenter = myMeasured("Presenter${view.id} created") { Presenter(view, history.await()) }
+    view.mainView = myMeasured("MainView${view.id} created") { view.setupMainView(this) }
+
+    splashThemed.removeFromParent()
+    view.presenter.onAppEntry()
+    view.gameStage.gameWindow.onEvent(PauseEvent) { view.presenter.onPauseEvent() }
+        .also { view.closeables.add(it) }
+    view.gameStage.gameWindow.onEvent(ResumeEvent) { view.presenter.onResumeEvent() }
+        .also { view.closeables.add(it) }
+    myLog("GameView${view.id} initialized")
+    view.block()
+}
 
 suspend fun waitForGameLoading() {
     if (!gameIsLoading.value) return
@@ -119,10 +102,12 @@ class ViewData(
     val stringResources: StringResources,
     val gameColors: ColorTheme
 ) : ViewDataBase by viewDataQuick, Closeable {
+    val korgeCoroutineScope: CoroutineScope get() = gameStage.views
+    val korgeCoroutineContext: CoroutineContext get() = gameStage.views.coroutineContext
 
     val cellSize: Float = (
-            (if (isPortrait) gameViewWidth else gameViewWidth / 2) -
-                    cellMargin * (settings.boardWidth + 1) - 2 * buttonMargin) / settings.boardWidth
+        (if (isPortrait) gameViewWidth else gameViewWidth / 2) -
+            cellMargin * (settings.boardWidth + 1) - 2 * buttonMargin) / settings.boardWidth
     val boardWidth: Float = cellSize * settings.boardWidth + cellMargin * (settings.boardWidth + 1)
 
     var presenter: Presenter by Delegates.notNull()
@@ -135,7 +120,7 @@ class ViewData(
     fun reInitialize(handler: suspend ViewData.() -> Unit = {}) {
         closedRef.value = true
         this.close()
-        gameStage.launch {
+        korgeCoroutineScope.launch {
             viewData(gameStage, animateViews, handler)
         }
     }

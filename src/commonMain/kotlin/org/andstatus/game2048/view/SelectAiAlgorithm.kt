@@ -51,7 +51,7 @@ fun ViewData.selectAiAlgorithm(settings: Settings) = myWindow("select_ai_algorit
 
     fun onSelected(algorithm: AiAlgorithm) {
         selected = algorithm
-        gameStage.launch {
+        korgeCoroutineScope.launch {
             showOptions {}
             delay(100.milliseconds)
             presenter.onAiAlgorithmSelect(selected)

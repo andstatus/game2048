@@ -1,4 +1,5 @@
 import korlibs.korge.tests.ViewsForTesting
+import kotlinx.coroutines.withContext
 import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.PlacedPiece
@@ -54,12 +55,13 @@ class PersistenceTest : ViewsForTesting(log = true) {
         } else {
             assertFalse(sharedJsonString.contains("place"), message)
         }
-        myLog("Current game 1, n=$nPlies: ${presenter.model.history.currentGame}")
-        presenter.loadSharedJson(sharedJson)
-        waitFor("currentGame loaded") {
-            presenter.model.history.currentGame.gamePlies.isReady
+        withContext(korgeCoroutineContext) {
+            myLog("Current game 1, n=$nPlies: ${presenter.model.history.currentGame}")
+            presenter.loadSharedJson(sharedJson)
+            waitFor("currentGame loaded") {
+                presenter.model.history.currentGame.gamePlies.isReady
+            }
         }
-
         val gameRecordOpened = presenter.model.history.currentGame
         myLog("Opened game 2, n=$nPlies: $gameRecordOpened")
         assertEquals(

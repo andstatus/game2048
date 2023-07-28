@@ -16,6 +16,7 @@ import korlibs.time.seconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.andstatus.game2048.Settings
+import org.andstatus.game2048.gameIsLoading
 import org.andstatus.game2048.isTestRun
 import org.andstatus.game2048.model.GamePlies
 import org.andstatus.game2048.model.GamePosition
@@ -83,7 +84,7 @@ fun ViewsForTesting.viewsTest2(
     var completed = false
     var completedException: Throwable? = null
 
-    launch {
+    views.stage.launch {
         try {
             block(views.stage)
         } catch (e: Throwable) {
@@ -93,32 +94,14 @@ fun ViewsForTesting.viewsTest2(
         }
     }
 
-//    dispatcher.dispatch(coroutineContext, Runnable {
-//        launchImmediately(views.coroutineContext + dispatcher) {
-//            try {
-//                block(views.stage)
-//            } catch (e: Throwable) {
-//                completedException = e
-//            } finally {
-//                completed = true
-//            }
-//        }
-//    })
-
-    println("[a0]")
     withTimeout(timeout ?: TimeSpan.NIL) {
-        println("[a1]")
         while (!completed) {
-            //println("FRAME")
             delayFrame() //simulateFrame() is private
             delay(50)
             dispatcher.executePending(availableTime = 1.seconds)
         }
-
-        println("[a2]")
         if (completedException != null) throw completedException!!
     }
-    println("[a3]")
 }
 
 fun ViewData.presentedPieces() = presenter.boardViews.blocksOnBoard.map { it.firstOrNull()?.piece }
@@ -146,14 +129,16 @@ fun ViewData.historyString(): String = with(presenter.model.history) {
 suspend fun ViewData.waitForMainViewShown(action: suspend () -> Any? = { null }) {
     presenter.mainViewShown.value = false
     action()
-    waitFor("Main view shown") { presenter.mainViewShown.value }
+    waitFor("Main view shown") {
+        presenter.mainViewShown.value && !presenter.isPresenting.value && !gameIsLoading.value
+    }
 }
 
 suspend fun waitFor(message: String = "???", condition: () -> Boolean) {
     myLog("Waiting for: $message")
     val stopWatch = Stopwatch().start()
     while (stopWatch.elapsed.seconds < 300) {
-        delay(500)  // TODO: Why lower delay causes e.g. HistoryTest failure?
+        delay(100)  // TODO: Why lower delay causes e.g. HistoryTest failure?
         if (condition()) {
             myLog("Success waiting for: $message")
             delay(100)

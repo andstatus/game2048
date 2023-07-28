@@ -31,7 +31,7 @@ suspend fun ViewData.barButton(icon: String, handler: () -> Unit): Container = C
 
 fun ViewData.myWindow(titleKey: String, action: suspend MyWindow.() -> Unit): MyWindow =
     MyWindow(this, titleKey).apply {
-        gameStage.launch {
+        korgeCoroutineScope.launch {
             show()
             action()
             addTo(gameStage)

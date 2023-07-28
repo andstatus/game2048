@@ -1,6 +1,5 @@
 package org.andstatus.game2048.presenter
 
-import korlibs.io.async.launchImmediately
 import korlibs.io.concurrent.atomic.incrementAndGet
 import korlibs.io.concurrent.atomic.korAtomic
 import korlibs.io.lang.use
@@ -18,6 +17,7 @@ import korlibs.time.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.ai.AiPlayer
 import org.andstatus.game2048.exitApp
@@ -80,8 +80,8 @@ class Presenter(val view: ViewData, history: History) {
         presentGameClock(view.gameStage, model) { view.mainView.scoreBar.gameTime }
         if (game.isEmpty) {
             myLog("Showing help...")
-            if (isTestRun.value) {
-                view.showHelp().onNextFrame {
+            view.showHelp().onNextFrame {
+                if (isTestRun.value) {
                     myLog("Closing help in tests")
                     this.removeFromParent()
                     onCloseHelpClick()
@@ -89,7 +89,6 @@ class Presenter(val view: ViewData, history: History) {
             }
         } else {
             model.composerPly(game.shortRecord.finalPosition, true).present()
-            asyncShowMainView()
             loadPlies()
         }
     }
@@ -164,7 +163,7 @@ class Presenter(val view: ViewData, history: History) {
 
     fun onRestartClick() = afterStop {
         logClick("Restart")
-        asyncShowMainView()
+        showMainView()
         model.pauseGame()
         model.restart().present()
     }
@@ -216,19 +215,19 @@ class Presenter(val view: ViewData, history: History) {
     fun onBookmarkClick() = afterStop {
         logClick("Bookmark")
         model.createBookmark()
-        asyncShowMainView()
+        showMainView()
     }
 
     fun onBookmarkedClick() = afterStop {
         logClick("Bookmarked")
         model.deleteBookmark()
-        asyncShowMainView()
+        showMainView()
     }
 
     fun onPauseClick() = afterStop {
         logClick("Pause")
         pauseGame()
-        asyncShowMainView()
+        showMainView()
     }
 
     fun onPauseEvent() {
@@ -247,14 +246,14 @@ class Presenter(val view: ViewData, history: History) {
     fun onWatchClick() = afterStop {
         logClick("Watch")
         gameMode.modeEnum = GameModeEnum.PLAY
-        asyncShowMainView()
+        showMainView()
     }
 
     fun onPlayClick() = afterStop {
         logClick("Play")
         gameMode.modeEnum = GameModeEnum.STOP
         pauseGame()
-        asyncShowMainView()
+        showMainView()
     }
 
     fun onBackwardsClick() {
@@ -265,7 +264,7 @@ class Presenter(val view: ViewData, history: History) {
     fun onStopClick() = afterStop {
         logClick("Stop")
         gameMode.modeEnum = GameModeEnum.STOP
-        asyncShowMainView()
+        showMainView()
     }
 
     fun onForwardClick() {
@@ -312,7 +311,7 @@ class Presenter(val view: ViewData, history: History) {
 
     fun onDeleteGameClick() = afterStop {
         logClick("DeleteGame")
-        asyncShowMainView()
+        showMainView()
         model.history.deleteCurrent()
         model.restart().present()
     }
@@ -330,7 +329,7 @@ class Presenter(val view: ViewData, history: History) {
 
     fun onGoToBookmarkClick(position: GamePosition) = afterStop {
         logClick("GoTo${position.plyNumber}")
-        asyncShowMainView()
+        showMainView()
         if (isPresenting.compareAndSet(expect = false, update = true)) {
             model.gotoBookmark(position).present()
         }
@@ -338,7 +337,7 @@ class Presenter(val view: ViewData, history: History) {
 
     fun onHistoryItemClick(id: Int) = afterStop {
         logClick("History$id")
-        asyncShowMainView()
+        showMainView()
         if (isPresenting.compareAndSet(expect = false, update = true)) {
             model.openGame(id).present()
             loadPlies()
@@ -349,7 +348,9 @@ class Presenter(val view: ViewData, history: History) {
         if (!isReady) afterStop {
             multithreadedScope.launch {
                 load()
-                asyncShowMainView()
+                withContext(view.korgeCoroutineContext) {
+                    showMainView()
+                }
             }
         }
     }
@@ -417,7 +418,7 @@ class Presenter(val view: ViewData, history: History) {
             afterStop {
                 val startCount = clickCounter.incrementAndGet()
                 gameMode.modeEnum = newMode
-                asyncShowMainView()
+                showMainView()
                 multithreadedScope.launch {
                     while (startCount == clickCounter.value &&
                         if (gameMode.modeEnum == GameModeEnum.BACKWARDS) canUndo() else canRedo()
@@ -428,7 +429,9 @@ class Presenter(val view: ViewData, history: History) {
                         }
                     }
                     gameMode.stop()
-                    asyncShowMainView()
+                    withContext(view.korgeCoroutineContext) {
+                        showMainView()
+                    }
                 }
             }
         }
@@ -437,7 +440,7 @@ class Presenter(val view: ViewData, history: History) {
     private fun startAiPlay() = afterStop {
         val startCount = clickCounter.incrementAndGet()
         gameMode.modeEnum = GameModeEnum.AI_PLAY
-        asyncShowMainView()
+        showMainView()
         multithreadedScope.aiPlayLoop(this, startCount)
     }
 
@@ -452,8 +455,10 @@ class Presenter(val view: ViewData, history: History) {
             while (gameMode.autoPlaying && startCount == clickCounter.value) {
                 delay(100)
             }
-            delayWhilePresenting()
-            action()
+            withContext(view.korgeCoroutineContext) {
+                delayWhilePresenting()
+                action()
+            }
         }
     }
 
@@ -471,11 +476,9 @@ class Presenter(val view: ViewData, history: History) {
         }.present()
     }
 
-    private fun List<Ply>.present(index: Int = 0) {
-        if (gameMode.modeEnum != GameModeEnum.AI_PLAY || gameMode.speed !in 1..3) {
-            view.mainView.hideStatusBar()
-        }
-        if (isEmpty()) {
+    private fun List<Ply>.present() {
+        view.korgeCoroutineScope.launch {
+            present2()
             onPresentEnd()
             if (model.noMoreMoves()) {
                 boardViews = boardViews
@@ -486,39 +489,51 @@ class Presenter(val view: ViewData, history: History) {
                         pauseGame()
                     }
             }
-        } else if (index < size) {
+        }
+    }
+
+    private suspend fun List<Ply>.present2(index: Int = 0) {
+        if (gameMode.modeEnum != GameModeEnum.AI_PLAY || gameMode.speed !in 1..3) {
+            view.mainView.hideStatusBar()
+        }
+        if (index < size) {
             present(this[index]) {
-                present(index + 1)
+                present2(index + 1)
             }
-        } else {
-            onPresentEnd()
         }
     }
 
     private fun onPresentEnd() {
-        view.gameStage.launch {
-            showMainView()
-            isPresenting.value = false
-        }
+        showMainView()
+        isPresenting.value = false
     }
 
     fun asyncShowMainView() {
-        view.gameStage.launch {
+        view.korgeCoroutineScope.launch {
             showMainView()
         }
     }
 
+    val showMainViewStarted = korAtomic(false)
     private fun showMainView() {
-        myLogInTest { "showMainView started" }
-        if (!view.closed) {
-            view.mainView.show(buttonsToShow(), gameMode.speed)
-            if (gameMode.aiEnabled && gameMode.speed == 0) {
-                multithreadedScope.showAiTip(this@Presenter)
-                myLog("After AI Launch")
+        if (showMainViewStarted.compareAndSet(false, true)) {
+            try {
+                myLogInTest { "showMainView started" }
+                if (!view.closed) {
+                    view.mainView.show(buttonsToShow(), gameMode.speed)
+                    if (gameMode.aiEnabled && gameMode.speed == 0) {
+                        multithreadedScope.showAiTip(this@Presenter)
+                        myLog("After AI Launch")
+                    }
+                }
+                mainViewShown.value = true
+                myLogInTest { "showMainView ended" }
+            } finally {
+                showMainViewStarted.value = false
             }
+        } else {
+            myLogInTest { "showMainView already started" }
         }
-        mainViewShown.value = true
-        myLogInTest { "showMainView ended" }
     }
 
     private fun buttonsToShow(): List<AppBarButtonsEnum> {
@@ -600,7 +615,7 @@ class Presenter(val view: ViewData, history: History) {
         return list
     }
 
-    private fun present(ply: Ply, onEnd: () -> Unit) = view.gameStage.launchImmediately {
+    private suspend fun present(ply: Ply, onEnd: suspend () -> Unit) {
         view.gameStage.animate {
             parallel {
                 ply.pieceMoves.forEach { move ->
@@ -636,23 +651,26 @@ class Presenter(val view: ViewData, history: History) {
                     }
                 }
             }
-            block {
-                onEnd()
-            }
         }
+        onEnd()
     }
 
-    private fun List<Ply>.presentReversed(index: Int = 0) {
-        if (index < size) {
-            presentReversed(this[index]) {
-                presentReversed(index + 1)
-            }
-        } else {
+    private fun List<Ply>.presentReversed() {
+        view.korgeCoroutineScope.launch {
+            presentReversed2()
             onPresentEnd()
         }
     }
 
-    private fun presentReversed(ply: Ply, onEnd: () -> Unit) = view.gameStage.launchImmediately {
+    private suspend fun List<Ply>.presentReversed2(index: Int = 0) {
+        if (index < size) {
+            presentReversed(this[index]) {
+                presentReversed2(index + 1)
+            }
+        }
+    }
+
+    private suspend fun presentReversed(ply: Ply, onEnd: suspend () -> Unit) {
         view.gameStage.animate {
             parallel {
                 ply.pieceMoves.asReversed().forEach { move ->
@@ -699,10 +717,8 @@ class Presenter(val view: ViewData, history: History) {
                     }
                 }
             }
-            block {
-                onEnd()
-            }
         }
+        onEnd()
     }
 
     private fun Block.move(animator: Animator, to: Square) {

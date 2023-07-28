@@ -33,7 +33,7 @@ fun ViewData.selectTheme(settings: Settings) = myWindow("select_theme") {
 
     fun onSelected(colorTheme: ColorThemeEnum) {
         selected = colorTheme
-        gameStage.launch {
+        korgeCoroutineScope.launch {
             showOptions {}
             delay(100.milliseconds)
             presenter.onSelectColorTheme(selected)
