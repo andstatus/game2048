@@ -84,7 +84,7 @@ fun ViewsForTesting.viewsTest2(
     var completed = false
     var completedException: Throwable? = null
 
-    views.stage.launch {
+    views.launch {
         try {
             block(views.stage)
         } catch (e: Throwable) {
@@ -138,10 +138,9 @@ suspend fun waitFor(message: String = "???", condition: () -> Boolean) {
     myLog("Waiting for: $message")
     val stopWatch = Stopwatch().start()
     while (stopWatch.elapsed.seconds < 300) {
-        delay(100)  // TODO: Why lower delay causes e.g. HistoryTest failure?
+        delay(50)  // TODO: Why lower delay causes e.g. HistoryTest failure?
         if (condition()) {
             myLog("Success waiting for: $message")
-            delay(100)
             return
         }
         myLog("Waiting for: $message")

@@ -66,18 +66,16 @@ class Presenter(val view: ViewData, history: History) {
     val gameMode get() = model.gameMode
     var clickCounter = korAtomic(0)
 
-    private fun presentGameClock(coroutineScope: CoroutineScope, model: Model, textSupplier: () -> Text) {
-        coroutineScope.launch {
-            while (true) {
-                textSupplier().text = model.gameClock.playedSecondsString
-                delay(1000)
-            }
+    private fun CoroutineScope.presentGameClock(model: Model, textSupplier: () -> Text) = launch {
+        while (true) {
+            textSupplier().text = model.gameClock.playedSecondsString
+            delay(1000)
         }
     }
 
     fun onAppEntry(): Unit = myMeasured("onAppEntry") {
         val game = model.history.currentGame
-        presentGameClock(view.gameStage, model) { view.mainView.scoreBar.gameTime }
+        view.korgeCoroutineScope.presentGameClock(model) { view.mainView.scoreBar.gameTime }
         if (game.isEmpty) {
             myLog("Showing help...")
             view.showHelp().onNextFrame {
@@ -88,7 +86,9 @@ class Presenter(val view: ViewData, history: History) {
                 }
             }
         } else {
-            model.composerPly(game.shortRecord.finalPosition, true).present()
+            present {
+                model.composerPly(game.shortRecord.finalPosition, true)
+            }
             loadPlies()
         }
     }
@@ -142,12 +142,10 @@ class Presenter(val view: ViewData, history: History) {
         undo()
     }
 
-    private fun undo() {
-        if (!isPresenting.compareAndSet(expect = false, update = true)) return
-
+    private fun undo() = presentReversed {
         view.mainView.hideStatusBar()
         boardViews.hideGameOver()
-        (model.undo() + Ply.delay() + model.undo() + Ply.delay()).presentReversed()
+        model.undo() + Ply.delay() + model.undo() + Ply.delay()
     }
 
     fun onRedoClick() = afterStop {
@@ -155,17 +153,17 @@ class Presenter(val view: ViewData, history: History) {
         redo()
     }
 
-    private fun redo() {
-        if (!isPresenting.compareAndSet(expect = false, update = true)) return
-
-        (model.redo() + Ply.delay() + model.redo() + Ply.delay()).present()
+    private fun redo() = present {
+        model.redo() + Ply.delay() + model.redo() + Ply.delay()
     }
 
     fun onRestartClick() = afterStop {
         logClick("Restart")
         showMainView()
         model.pauseGame()
-        model.restart().present()
+        present {
+            model.restart()
+        }
     }
 
     fun onSwipe(swipeDirection: SwipeDirection) {
@@ -275,12 +273,16 @@ class Presenter(val view: ViewData, history: History) {
     fun onToStartClick() = afterStop {
         logClick("ToStart")
         boardViews.hideGameOver()
-        (model.undoToStart() + Ply.delay() + model.redo()).present()
+        present {
+            model.undoToStart() + Ply.delay() + model.redo()
+        }
     }
 
     fun onToCurrentClick() = afterStop {
         logClick("ToCurrent")
-        model.redoToCurrent().present()
+        present {
+            model.redoToCurrent()
+        }
     }
 
     fun onGameMenuClick() = afterStop {
@@ -302,8 +304,10 @@ class Presenter(val view: ViewData, history: History) {
     fun onCloseHelpClick() {
         logClick("CloseHelp")
         if (model.history.currentGame.isEmpty) {
-            myLog("Restarting...")
-            model.restart().present()
+            present {
+                myLog("Trying again...")
+                model.restart()
+            }
         } else {
             asyncShowMainView()
         }
@@ -313,7 +317,9 @@ class Presenter(val view: ViewData, history: History) {
         logClick("DeleteGame")
         showMainView()
         model.history.deleteCurrent()
-        model.restart().present()
+        present {
+            model.restart()
+        }
     }
 
     fun onBookmarksClick() = model.history.currentGame.also { game ->
@@ -330,17 +336,18 @@ class Presenter(val view: ViewData, history: History) {
     fun onGoToBookmarkClick(position: GamePosition) = afterStop {
         logClick("GoTo${position.plyNumber}")
         showMainView()
-        if (isPresenting.compareAndSet(expect = false, update = true)) {
-            model.gotoBookmark(position).present()
+        present {
+            model.gotoBookmark(position)
         }
     }
 
     fun onHistoryItemClick(id: Int) = afterStop {
         logClick("History$id")
         showMainView()
-        if (isPresenting.compareAndSet(expect = false, update = true)) {
-            model.openGame(id).present()
-            loadPlies()
+        present {
+            model.openGame(id).also {
+                loadPlies()
+            }
         }
     }
 
@@ -367,10 +374,11 @@ class Presenter(val view: ViewData, history: History) {
 
     fun onLoadClick() = afterStop {
         logClick("Load")
-        model.restart().present()
-        gameIsLoading.value = true
-        view.gameStage.loadJsonGameRecord(model.history.settings) { sequence ->
-            loadSharedJson(sequence)
+        presentAnd({ model.restart() }) {
+            gameIsLoading.value = true
+            view.gameStage.loadJsonGameRecord(model.history.settings) { sequence ->
+                loadSharedJson(sequence)
+            }
         }
     }
 
@@ -381,8 +389,11 @@ class Presenter(val view: ViewData, history: History) {
                 ?.also {
                     it.load().save()
                     model.history.loadRecentGames()
-                    model.openGame(it.id).present()
-                    gameIsLoading.value = false
+                    present {
+                        model.openGame(it.id).also {
+                            gameIsLoading.value = false
+                        }
+                    }
                 }
                 ?: run {
                     gameIsLoading.value = false
@@ -462,32 +473,44 @@ class Presenter(val view: ViewData, history: History) {
         }
     }
 
-    fun composerMove(position: GamePosition) = model.composerPly(position, false).present()
-
-    fun computerMove() = model.randomComputerMove().present()
-
-    fun computerMove(placedPiece: PlacedPiece) = model.computerMove(placedPiece).present()
-
-    fun userMove(plyEnum: PlyEnum) {
-        if (!isPresenting.compareAndSet(expect = false, update = true)) return
-
-        model.userMove(plyEnum).let {
-            if (it.isEmpty()) it else it + model.randomComputerMove()
-        }.present()
+    fun composerMove(position: GamePosition) = present {
+        model.composerPly(position, false)
     }
 
-    private fun List<Ply>.present() {
-        view.korgeCoroutineScope.launch {
-            present2()
-            onPresentEnd()
-            if (model.noMoreMoves()) {
-                boardViews = boardViews
-                    .hideGameOver()
-                    .copy()
-                    .apply {
-                        view.mainView.boardView.showGameOver()
-                        pauseGame()
-                    }
+    fun computerMove() = present {
+        model.randomComputerMove()
+    }
+
+    fun computerMove(placedPiece: PlacedPiece) = present {
+        model.computerMove(placedPiece)
+    }
+
+    fun userMove(plyEnum: PlyEnum) {
+        present {
+            model.userMove(plyEnum).let {
+                if (it.isEmpty()) it else it + model.randomComputerMove()
+            }
+        }
+    }
+
+    private fun presentAnd(block: () -> List<Ply>, next: () -> Unit) = present(next, block)
+
+    private fun present(next: () -> Unit = {}, block: () -> List<Ply>) {
+        if (isPresenting.compareAndSet(expect = false, update = true)) with(block()) {
+            view.korgeCoroutineScope.launch {
+                present2()
+                showMainView()
+                isPresenting.value = false
+                if (model.noMoreMoves()) {
+                    boardViews = boardViews
+                        .hideGameOver()
+                        .copy()
+                        .apply {
+                            view.mainView.boardView.showGameOver()
+                            pauseGame()
+                        }
+                }
+                next()
             }
         }
     }
@@ -497,15 +520,9 @@ class Presenter(val view: ViewData, history: History) {
             view.mainView.hideStatusBar()
         }
         if (index < size) {
-            present(this[index]) {
-                present2(index + 1)
-            }
+            present3(this[index])
+            present2(index + 1)
         }
-    }
-
-    private fun onPresentEnd() {
-        showMainView()
-        isPresenting.value = false
     }
 
     fun asyncShowMainView() {
@@ -615,110 +632,106 @@ class Presenter(val view: ViewData, history: History) {
         return list
     }
 
-    private suspend fun present(ply: Ply, onEnd: suspend () -> Unit) {
-        view.gameStage.animate {
-            parallel {
-                ply.pieceMoves.forEach { move ->
-                    when (move) {
-                        is PieceMovePlace -> boardViews.addBlock(move.first)
-                        is PieceMoveLoad -> boardViews.load(move.position)
-                        is PieceMoveOne -> boardViews[move.first]?.move(this, move.destination)
-                        is PieceMoveMerge -> {
-                            val firstBlock = boardViews[move.first]
-                            val secondBlock = boardViews[move.second]
-                            sequence {
-                                parallel {
-                                    firstBlock?.move(this, move.merged.square)
-                                    secondBlock?.move(this, move.merged.square)
-                                }
-                                block {
-                                    firstBlock?.remove()
-                                    secondBlock?.remove()
-                                    boardViews.addBlock(move.merged)
-                                }
-                                sequenceLazy {
-                                    if (view.animateViews) boardViews[move.merged]
-                                        ?.let { animateResultingBlock(this, it) }
-                                }
+    private suspend fun present3(ply: Ply) = view.gameStage.animate {
+        parallel {
+            ply.pieceMoves.forEach { move ->
+                when (move) {
+                    is PieceMovePlace -> boardViews.addBlock(move.first)
+                    is PieceMoveLoad -> boardViews.load(move.position)
+                    is PieceMoveOne -> boardViews[move.first]?.move(this, move.destination)
+                    is PieceMoveMerge -> {
+                        val firstBlock = boardViews[move.first]
+                        val secondBlock = boardViews[move.second]
+                        sequence {
+                            parallel {
+                                firstBlock?.move(this, move.merged.square)
+                                secondBlock?.move(this, move.merged.square)
+                            }
+                            block {
+                                firstBlock?.remove()
+                                secondBlock?.remove()
+                                boardViews.addBlock(move.merged)
+                            }
+                            sequenceLazy {
+                                if (view.animateViews) boardViews[move.merged]
+                                    ?.let { animateResultingBlock(this, it) }
                             }
                         }
+                    }
 
-                        is PieceMoveDelay -> with(view) {
-                            if (animateViews) boardViews.blocks.lastOrNull()?.also {
-                                moveTo(it.block, it.square, gameMode.delayMs.milliseconds, Easing.LINEAR)
-                            }
+                    is PieceMoveDelay -> with(view) {
+                        if (animateViews) boardViews.blocks.lastOrNull()?.also {
+                            moveTo(it.block, it.square, gameMode.delayMs.milliseconds, Easing.LINEAR)
                         }
                     }
                 }
             }
         }
-        onEnd()
     }
 
-    private fun List<Ply>.presentReversed() {
-        view.korgeCoroutineScope.launch {
-            presentReversed2()
-            onPresentEnd()
+    private fun presentReversed(block: () -> List<Ply>) {
+        if (isPresenting.compareAndSet(expect = false, update = true)) with(block()) {
+            view.korgeCoroutineScope.launch {
+                presentReversed2()
+                showMainView()
+                isPresenting.value = false
+            }
         }
     }
 
     private suspend fun List<Ply>.presentReversed2(index: Int = 0) {
         if (index < size) {
-            presentReversed(this[index]) {
-                presentReversed2(index + 1)
-            }
+            presentReversed3(this[index])
+            presentReversed2(index + 1)
         }
     }
 
-    private suspend fun presentReversed(ply: Ply, onEnd: suspend () -> Unit) {
-        view.gameStage.animate {
-            parallel {
-                ply.pieceMoves.asReversed().forEach { move ->
-                    when (move) {
-                        is PieceMovePlace -> boardViews[move.first]
-                            ?.also { b ->
-                                sequenceLazy {
-                                    b.remove()
-                                }
+    private suspend fun presentReversed3(ply: Ply) = view.gameStage.animate {
+        parallel {
+            ply.pieceMoves.asReversed().forEach { move ->
+                when (move) {
+                    is PieceMovePlace -> boardViews[move.first]
+                        ?.also { b ->
+                            sequenceLazy {
+                                b.remove()
                             }
-                            ?: myLog("No Block at destination during undo: $move")
+                        }
+                        ?: myLog("No Block at destination during undo: $move")
 
-                        is PieceMoveLoad -> boardViews.load(move.position)
-                        is PieceMoveOne -> boardViews[PlacedPiece(move.first.piece, move.destination)]
-                            ?.move(this, move.first.square)
-                            ?: myLog("No Block at destination during undo: $move")
+                    is PieceMoveLoad -> boardViews.load(move.position)
+                    is PieceMoveOne -> boardViews[PlacedPiece(move.first.piece, move.destination)]
+                        ?.move(this, move.first.square)
+                        ?: myLog("No Block at destination during undo: $move")
 
-                        is PieceMoveMerge -> {
-                            val destination = move.merged.square
-                            val effectiveBlock = boardViews[move.merged]
-                            sequence {
-                                sequenceLazy {
-                                    if (view.animateViews) effectiveBlock?.let { animateResultingBlock(this, it) }
-                                }
-                                block {
-                                    effectiveBlock?.remove()
-                                        ?: myLog("No Block at destination during undo: $move")
-                                    parallel {
-                                        val secondBlock =
-                                            boardViews.addBlock(PlacedPiece(move.second.piece, destination))
-                                        val firstBlock = boardViews.addBlock(PlacedPiece(move.first.piece, destination))
-                                        secondBlock.move(this, move.second.square)
-                                        firstBlock.move(this, move.first.square)
-                                    }
+                    is PieceMoveMerge -> {
+                        val destination = move.merged.square
+                        val effectiveBlock = boardViews[move.merged]
+                        sequence {
+                            sequenceLazy {
+                                if (view.animateViews) effectiveBlock?.let { animateResultingBlock(this, it) }
+                            }
+                            block {
+                                effectiveBlock?.remove()
+                                    ?: myLog("No Block at destination during undo: $move")
+                                parallel {
+                                    val secondBlock =
+                                        boardViews.addBlock(PlacedPiece(move.second.piece, destination))
+                                    val firstBlock = boardViews.addBlock(PlacedPiece(move.first.piece, destination))
+                                    secondBlock.move(this, move.second.square)
+                                    firstBlock.move(this, move.first.square)
                                 }
                             }
                         }
+                    }
 
-                        is PieceMoveDelay -> with(view) {
-                            if (animateViews) boardViews.blocks.lastOrNull()?.also {
-                                moveTo(it.block, it.square, gameMode.delayMs.milliseconds, Easing.LINEAR)
-                            }
+                    is PieceMoveDelay -> with(view) {
+                        if (animateViews) boardViews.blocks.lastOrNull()?.also {
+                            moveTo(it.block, it.square, gameMode.delayMs.milliseconds, Easing.LINEAR)
                         }
                     }
                 }
             }
         }
-        onEnd()
     }
 
     private fun Block.move(animator: Animator, to: Square) {

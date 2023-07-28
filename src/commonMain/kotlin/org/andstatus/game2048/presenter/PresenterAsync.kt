@@ -41,9 +41,7 @@ fun CoroutineScope.aiPlayLoop(presenter: Presenter, startCount: Int) = launch {
                     }
                     delay(gameMode.delayMs.toLong() - stopWatch.elapsed.millisecondsLong)
                     if (!isPresenting.value && model.gamePosition === gamePosition && gameMode.modeEnum == GameModeEnum.AI_PLAY) {
-                        withContext(view.korgeCoroutineContext) {
-                            userMove(aiResult.plyEnum)
-                        }
+                        userMove(aiResult.plyEnum)
                     }
                 }
             }
