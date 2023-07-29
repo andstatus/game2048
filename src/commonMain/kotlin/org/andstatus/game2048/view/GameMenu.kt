@@ -34,11 +34,12 @@ fun ViewData.showGameMenu(aiEnabled: Boolean) = myWindow("game_actions") {
     }
     button(GameMenuButtonsEnum.BOOKMARKS, presenter::onBookmarksClick)
     button(GameMenuButtonsEnum.RECENT, presenter::onRecentClick)
-    button(GameMenuButtonsEnum.RESTART, presenter::onRestartClick)
+    button(GameMenuButtonsEnum.TRY_AGAIN, presenter::onTryAgainClick)
     button(GameMenuButtonsEnum.DELETE, presenter::onDeleteGameClick)
     button(GameMenuButtonsEnum.SHARE, presenter::onShareClick)
     button(GameMenuButtonsEnum.LOAD, presenter::onLoadClick)
     button(GameMenuButtonsEnum.SELECT_THEME) { selectTheme(settings) }
+    button(GameMenuButtonsEnum.SELECT_BOARD_SIZE) { selectBoardSize(settings) }
     button(GameMenuButtonsEnum.EXIT, presenter::onExitAppClick)
     button(GameMenuButtonsEnum.HELP, presenter::onHelpClick)
 }

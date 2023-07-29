@@ -40,7 +40,7 @@ class Model(val history: History) {
         saveCurrent()
     }
 
-    fun restart(): List<Ply> = history.openNewGame().let {
+    fun tryAgain(): List<Ply> = history.openNewGame().let {
         composerPly(it.shortRecord.finalPosition, false) + Ply.delay() + randomComputerMove()
     }
 

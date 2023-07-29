@@ -37,7 +37,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.properties.Delegates
 
 /** @author yvolk@yurivolkov.com */
-suspend fun viewData(stage: Stage, animateViews: Boolean) : ViewData = coroutineScope {
+suspend fun viewData(stage: Stage, animateViews: Boolean): ViewData = coroutineScope {
     stage.removeChildren()
     val quick = ViewDataQuick(stage, animateViews)
     val splashDefault = stage.splashScreen(quick, ColorThemeEnum.deviceDefault(stage))
@@ -67,9 +67,15 @@ suspend fun viewData(stage: Stage, animateViews: Boolean) : ViewData = coroutine
         // We set window title in Android via AndroidManifest.xml
         stage.gameWindow.title = strings.await().text("app_name")
     }
+    val historyLoaded: History = history.await().apply {
+        if (currentGame.shortRecord.board.width != this.settings.boardWidth) {
+            this.settings.boardWidth = currentGame.shortRecord.board.width
+            this.settings.save()
+        }
+    }
 
-    val view = ViewData(quick, settings.await(), font.await(), strings.await(), gameColors.await())
-    view.presenter = myMeasured("Presenter${view.id} created") { Presenter(view, history.await()) }
+    val view = ViewData(quick, historyLoaded.settings, font.await(), strings.await(), gameColors.await())
+    view.presenter = myMeasured("Presenter${view.id} created") { Presenter(view, historyLoaded) }
     view.mainView = myMeasured("MainView${view.id} created") { view.setupMainView(this) }
 
     splashThemed.removeFromParent()

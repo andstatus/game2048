@@ -105,7 +105,7 @@ class BoardView(val viewData: ViewData): Container() {
                 position(boardWidth / 2, (boardWidth + textSize) / 2)
                 customOnClick {
                     window.removeFromParent()
-                    presenter.onRestartClick()
+                    presenter.onTryAgainClick()
                 }
             }
         }

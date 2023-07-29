@@ -2,11 +2,11 @@ package org.andstatus.game2048.model
 
 import org.andstatus.game2048.Settings
 
-class Board(settings: Settings) {
+class Board(settings: Settings, boardWidth: Int = settings.boardWidth) {
     val allowUsersMoveWithoutBlockMoves = settings.allowUsersMoveWithoutBlockMoves
     val allowResultingTileToMerge = settings.allowResultingTileToMerge
-    val width = settings.boardWidth
-    val height = settings.boardHeight
+    val width = boardWidth
+    val height = boardWidth
     val size = width * height
     val array: Array<Square> = Array(size) { ind ->
         Square(ind % width, (ind - ind % width) / width)

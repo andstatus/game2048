@@ -19,7 +19,7 @@ class RestartTest : ViewsForTesting(log = true) {
         assertTrue(presenter.model.history.currentGame.gamePlies.size > 1, currentGameString())
 
         waitForNextPresented {
-            presenter.onRestartClick()
+            presenter.onTryAgainClick()
         }
         assertEquals(1, presenter.boardViews.blocks.size, "Should be one block ${modelAndViews()}")
         assertEquals(1,

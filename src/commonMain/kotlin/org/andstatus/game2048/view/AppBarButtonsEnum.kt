@@ -7,7 +7,7 @@ enum class AppBarButtonsEnum(val icon: String, val row: Int, val sortOrder: Int)
     AI_OFF("no_magic", 0, -4),
     AI_ON("magic", 0, -4),
 
-    RESTART("restart", 0, 9),
+    TRY_AGAIN("try_again", 0, 9),
     GAME_MENU("menu", 0, 10),
 
     PLAY("play", 0, -5),

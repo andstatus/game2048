@@ -20,7 +20,7 @@ import org.andstatus.game2048.view.AppBarButtonsEnum.PAUSE
 import org.andstatus.game2048.view.AppBarButtonsEnum.PLAY
 import org.andstatus.game2048.view.AppBarButtonsEnum.REDO
 import org.andstatus.game2048.view.AppBarButtonsEnum.REDO_PLACEHOLDER
-import org.andstatus.game2048.view.AppBarButtonsEnum.RESTART
+import org.andstatus.game2048.view.AppBarButtonsEnum.TRY_AGAIN
 import org.andstatus.game2048.view.AppBarButtonsEnum.STOP
 import org.andstatus.game2048.view.AppBarButtonsEnum.STOP_PLACEHOLDER
 import org.andstatus.game2048.view.AppBarButtonsEnum.TO_CURRENT
@@ -75,7 +75,7 @@ class AppBar private constructor(val viewData: ViewData, private val appBarButto
                 AI_OFF.button(presenter::onNoMagicClicked),
                 AI_ON.button(presenter::onMagicClicked),
 
-                RESTART.button(presenter::onRestartClick),
+                TRY_AGAIN.button(presenter::onTryAgainClick),
                 GAME_MENU.button(presenter::onGameMenuClick),
 
                 PLAY.button(presenter::onPlayClick),

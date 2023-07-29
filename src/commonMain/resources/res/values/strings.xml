@@ -33,6 +33,7 @@ Number 2048 is a good first win…</string>
   <string name="score">Score</string>
   <string name="score_upper">SCORE</string>
   <string name="select_ai_algorithm">Select AI algorithm</string>
+  <string name="select_board_size">Select board size</string>
   <string name="select_theme">Select theme</string>
   <string name="share">Share game</string>
   <string name="time">TIME</string>

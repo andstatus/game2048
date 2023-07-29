@@ -78,13 +78,17 @@ class Presenter(val view: ViewData, history: History) {
         val game = model.history.currentGame
         view.korgeCoroutineScope.presentGameClock(model) { view.mainView.scoreBar.gameTime }
         if (game.isEmpty) {
-            myLog("Showing help...")
-            view.showHelp().onNextFrame {
-                if (isTestRun.value) {
-                    myLog("Closing help in tests")
-                    this.removeFromParent()
-                    onCloseHelpClick()
+            if (model.history.recentGames.isEmpty()) {
+                myLog("Showing help...")
+                view.showHelp().onNextFrame {
+                    if (isTestRun.value) {
+                        myLog("Closing help in tests")
+                        this.removeFromParent()
+                        onCloseHelpClick()
+                    }
                 }
+            } else {
+                onTryAgainClick()
             }
         } else {
             present {
@@ -158,12 +162,12 @@ class Presenter(val view: ViewData, history: History) {
         model.redo() + Ply.delay() + model.redo() + Ply.delay()
     }
 
-    fun onRestartClick() = afterStop {
-        logClick("Restart")
+    fun onTryAgainClick() = afterStop {
+        logClick("TryAgain")
         showMainView()
         model.pauseGame()
         present {
-            model.restart()
+            model.tryAgain()
         }
     }
 
@@ -307,7 +311,7 @@ class Presenter(val view: ViewData, history: History) {
         if (model.history.currentGame.isEmpty) {
             present {
                 myLog("Trying again...")
-                model.restart()
+                model.tryAgain()
             }
         } else {
             asyncShowMainView()
@@ -319,7 +323,7 @@ class Presenter(val view: ViewData, history: History) {
         showMainView()
         model.history.deleteCurrent()
         present {
-            model.restart()
+            model.tryAgain()
         }
     }
 
@@ -375,7 +379,7 @@ class Presenter(val view: ViewData, history: History) {
 
     fun onLoadClick() = afterStop {
         logClick("Load")
-        presentAnd({ model.restart() }) {
+        presentAnd({ model.tryAgain() }) {
             gameIsLoading.value = true
             view.gameStage.loadJsonGameRecord(model.history.settings) { sequence ->
                 loadSharedJson(sequence)
@@ -412,6 +416,17 @@ class Presenter(val view: ViewData, history: History) {
         if (colorThemeEnum == view.settings.colorThemeEnum) return
 
         view.settings.colorThemeEnum = colorThemeEnum
+        view.settings.save()
+        pauseGame()
+        view.reInitialize()
+    }
+
+    fun onSelectBoardSize(boardSize: Int) {
+        logClick("onSelectBoardSize $boardSize")
+        if (boardSize == view.settings.boardWidth) return
+
+        view.settings.boardWidth = boardSize
+        model.tryAgain()
         view.settings.save()
         pauseGame()
         view.reInitialize()
@@ -573,7 +588,7 @@ class Presenter(val view: ViewData, history: History) {
                 } else {
                     list.add(AppBarButtonsEnum.APP_LOGO)
                     if (!canRedo()) {
-                        list.add(AppBarButtonsEnum.RESTART)
+                        list.add(AppBarButtonsEnum.TRY_AGAIN)
                     }
                 }
                 list.add(

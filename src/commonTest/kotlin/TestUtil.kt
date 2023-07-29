@@ -168,7 +168,7 @@ fun newGameRecord(
 
 suspend fun ViewData.generateGame(expectedPliesCount: Int, bookmarkOnPly: Int? = null): GameRecord {
     waitForNextPresented {
-        presenter.onRestartClick()
+        presenter.onTryAgainClick()
     }
 
     var iteration = 0

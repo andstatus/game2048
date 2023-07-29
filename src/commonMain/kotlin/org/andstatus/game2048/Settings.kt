@@ -11,14 +11,17 @@ import kotlinx.coroutines.Job
 import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.model.Board
 import org.andstatus.game2048.model.PliesPageData
+import org.andstatus.game2048.view.BoardSizeEnum.Companion.BOARD_SIZE_DEFAULT
+import org.andstatus.game2048.view.BoardSizeEnum.Companion.fixBoardSize
 import org.andstatus.game2048.view.ColorThemeEnum
 import org.andstatus.game2048.view.StringResources
 
 private const val keyAllowResultingTileToMerge = "allowResultingTileToMerge"
 private const val keyAllowUsersMoveWithoutBlockMoves = "allowUsersMoveWithoutBlockMoves"
 private const val keyAllowUndo = "allowUndo"
-public const val keyFullscreen = "fullscreen"
+private const val keyFullscreen = "fullscreen"
 private const val keyMaxMovesToStore = "maxMovesToStore"
+private const val keyBoardSize = "boardSize"
 const val keyCurrentGameId = "current"
 const val stubGameId = 61
 
@@ -28,8 +31,9 @@ and for the game in browser: https://play2048.co/
 For now you can modify settings in the "game.storage" file. */
 class Settings(private val stage: Stage) {
     val multithreadedScope: CoroutineScope
-        get() = CoroutineScope(stage.coroutineContext + Job()
-            + Dispatchers.Default
+        get() = CoroutineScope(
+            stage.coroutineContext + Job()
+                + Dispatchers.Default
         )
     val storage: MyStorage = MyStorage.load(stage)
     val keyColorTheme = "colorTheme"
@@ -39,8 +43,9 @@ class Settings(private val stage: Stage) {
     var allowResultingTileToMerge = storage.getBoolean(keyAllowResultingTileToMerge, false)
     var allowUsersMoveWithoutBlockMoves = storage.getBoolean(keyAllowUsersMoveWithoutBlockMoves, false)
     var allowUndo = storage.getBoolean(keyAllowUndo, true)
-    var boardWidth = 4
-    var boardHeight = boardWidth
+    var boardWidth = storage.getInt(keyBoardSize, BOARD_SIZE_DEFAULT.size).let(::fixBoardSize)
+
+    val boardHeight get() =  boardWidth
     var colorThemeEnum: ColorThemeEnum = ColorThemeEnum.load(storage.getOrNull(keyColorTheme))
     var aiAlgorithm: AiAlgorithm = AiAlgorithm.load(storage.getOrNull(keyAiAlgorithm))
     var defaultBoard = Board(this)
@@ -58,6 +63,7 @@ class Settings(private val stage: Stage) {
         storage.native.setBoolean(keyAllowResultingTileToMerge, allowResultingTileToMerge)
             .setBoolean(keyAllowUsersMoveWithoutBlockMoves, allowUsersMoveWithoutBlockMoves)
             .setBoolean(keyAllowUndo, allowUndo)
+            .setInt(keyBoardSize, boardWidth)
             // TODO: Separate screen needed
             //  .setBoolean(keyFullscreen, colorThemeEnum == ColorThemeEnum.DEVICE_DEFAULT)
             .set(keyColorTheme, colorThemeEnum.labelKey)
@@ -67,6 +73,11 @@ class Settings(private val stage: Stage) {
 
     private fun NativeStorage.setBoolean(key: String, value: Boolean): NativeStorage {
         set(key, if (value) "true" else "false")
+        return this
+    }
+
+    private fun NativeStorage.setInt(key: String, value: Int): NativeStorage {
+        set(key, value.toString())
         return this
     }
 

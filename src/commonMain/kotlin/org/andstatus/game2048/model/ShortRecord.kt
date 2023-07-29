@@ -1,9 +1,9 @@
 package org.andstatus.game2048.model
 
+import korlibs.io.serialization.json.toJson
 import korlibs.time.DateFormat
 import korlibs.time.DateTime
 import korlibs.time.DateTimeTz
-import korlibs.io.serialization.json.toJson
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.stubGameId
 
@@ -14,8 +14,10 @@ private const val keyStart = "start"
 private const val keyFinalPosition = "finalBoard"
 private const val keyBookmarks = "bookmarks"
 
-class ShortRecord(val settings: Settings, val board: Board, val note: String, var id: Int, val start: DateTimeTz,
-                  val finalPosition: GamePosition, val bookmarks: List<GamePosition>) {
+class ShortRecord(
+    val settings: Settings, val board: Board, val note: String, var id: Int, val start: DateTimeTz,
+    val finalPosition: GamePosition, val bookmarks: List<GamePosition>
+) {
 
     val isStub = id == stubGameId
 
@@ -23,8 +25,9 @@ class ShortRecord(val settings: Settings, val board: Board, val note: String, va
         if (isStub) "Stub"
         else "id:$id score:${finalPosition.score} ${finalPosition.startingDateTimeString}"
 
-    val jsonFileName: String get() =
-        "${start.format(FILENAME_FORMAT)}_${finalPosition.score}.game2048.json"
+    val jsonFileName: String
+        get() =
+            "${start.format(FILENAME_FORMAT)}_${finalPosition.score}.game2048.json"
 
     fun save() {
         if (isStub) return
@@ -37,12 +40,12 @@ class ShortRecord(val settings: Settings, val board: Board, val note: String, va
     fun toSharedJson(): String = toMap().toJson()
 
     fun toMap(): Map<String, Any> = mapOf(
-            keyNote to note,
-            keyStart to start.format(DateFormat.FORMAT1),
-            keyFinalPosition to finalPosition.toMap(),
-            keyBookmarks to bookmarks.map { it.toMap() },
-            keyId to id,
-            "type" to "org.andstatus.game2048:GameRecord:2",
+        keyNote to note,
+        keyStart to start.format(DateFormat.FORMAT1),
+        keyFinalPosition to finalPosition.toMap(),
+        keyBookmarks to bookmarks.map { it.toMap() },
+        keyId to id,
+        "type" to "org.andstatus.game2048:GameRecord:2",
     )
 
     val keyGameRecord get() = keyGameRecord(id)
@@ -64,17 +67,18 @@ class ShortRecord(val settings: Settings, val board: Board, val note: String, va
 
         fun fromSharedJson(settings: Settings, json: SequenceLineReader, newId: Int): ShortRecord? {
             val aMap = json.parseJsonMap()
-            val board = settings.defaultBoard // TODO Create / load here
             val note: String = aMap[keyNote] as String? ?: ""
-            val start: DateTimeTz? = aMap[keyStart]?.let { DateTime.parse(it as String) }
-            val finalPosition: GamePosition? = aMap[keyFinalPosition]
-                ?.let { GamePosition.fromJson(board, it) }
+            val start: DateTimeTz = aMap[keyStart]?.let { DateTime.parse(it as String) } ?: return null
+
+            val finalPosition: GamePosition = aMap[keyFinalPosition]
+                ?.let { GamePosition.fromJson(json = it, settings = settings) }
+                ?: return null
+
+            val board = Board(settings, finalPosition.board.width)
             val bookmarks: List<GamePosition> = aMap[keyBookmarks]?.parseJsonArray()
-                ?.mapNotNull { GamePosition.fromJson(board, it) }
+                ?.mapNotNull { GamePosition.fromJson(json = it, settings = settings) }
                 ?: emptyList()
-            return if (start != null && finalPosition != null)
-                ShortRecord(settings, board, note, newId, start, finalPosition, bookmarks)
-            else null
+            return ShortRecord(settings, board, note, newId, start, finalPosition, bookmarks)
         }
 
         fun delete(settings: Settings, id: Int): Boolean =

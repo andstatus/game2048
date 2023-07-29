@@ -33,6 +33,7 @@
   <string name="score">Счёт</string>
   <string name="score_upper">СЧЁТ</string>
   <string name="select_ai_algorithm">Выберите ИИ алгоритм</string>
+  <string name="select_board_size">Выберите размер поля</string>
   <string name="select_theme">Выберите тему</string>
   <string name="share">Поделиться игрой</string>
   <string name="time">ВРЕМЯ</string>

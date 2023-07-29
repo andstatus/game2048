@@ -1,10 +1,14 @@
 package org.andstatus.game2048.model
 
+import korlibs.math.squared
+import korlibs.memory.isOdd
 import korlibs.time.DateFormat
 import korlibs.time.DateTime
 import korlibs.time.DateTimeTz
-import korlibs.memory.isOdd
+import org.andstatus.game2048.Settings
 import org.andstatus.game2048.model.PlyEnum.Companion.UserPlies
+import org.andstatus.game2048.view.BoardSizeEnum.Companion.isValidBoardSize
+import org.andstatus.game2048.view.BoardSizeEnum.Companion.squaredToSize
 import kotlin.random.Random
 
 private const val keyPlyNumber = "plyNumber"
@@ -38,32 +42,36 @@ class GamePosition(
 
     companion object {
 
-        fun fromJson(board: Board, json: Any): GamePosition? {
+        fun fromJson(boardIn: Board? = null, json: Any, settings: Settings? = null): GamePosition? {
             val aMap: Map<String, Any> = json.parseJsonMap()
-            val pieces: Array<Piece?>? = aMap[keyPieces]?.parseJsonArray()
+            val pieces: Array<Piece?> = aMap[keyPieces]?.parseJsonArray()
                 ?.map { Piece.fromId(it as Int) }?.toTypedArray()
-            val size: Int = pieces?.size ?: 0
-            val score: Int? = aMap[keyScore] as Int?
-            val dateTime: DateTimeTz? = aMap[keyDateTime]?.let { DateTime.parse(it as String) }
+                ?: return null
+            val boardWidth = squaredToSize(pieces.size).also {
+                if (!isValidBoardSize(it)) return null
+            }
+            val board = boardIn?.also { if (it.width != boardWidth) return null }
+                ?: settings?.let { Board(settings, boardWidth) }
+                ?: throw IllegalArgumentException("No Board or Settings provided")
+            val score: Int = aMap[keyScore] as Int? ?: return null
+            val dateTime: DateTimeTz = aMap[keyDateTime]?.let { DateTime.parse(it as String) } ?: return null
             val playedSeconds: Int = aMap[keyPlayedSeconds] as Int? ?: 0
             val retries: Int = aMap[keyRetries] as Int? ?: 0
             val plyNumber: Int = aMap[keyPlyNumber] as Int? ?: aMap[keyPlyNumberV1] as Int? ?: 0
-            return if (pieces != null && score != null && dateTime != null && size == board.size)
-                GamePosition(
-                    board,
-                    pieces,
-                    score,
-                    dateTime,
-                    GameClock(playedSeconds),
-                    retries,
-                    plyNumber
-                )
-            else null
+            return GamePosition(
+                board,
+                pieces,
+                score,
+                dateTime,
+                GameClock(playedSeconds),
+                retries,
+                plyNumber
+            )
         }
     }
 
     fun copy(): GamePosition = GamePosition(
-            board, pieces.copyOf(), score, startingDateTime, gameClock.copy(), retries, plyNumber
+        board, pieces.copyOf(), score, startingDateTime, gameClock.copy(), retries, plyNumber
     )
 
     fun newEmpty() = GamePosition(board)
@@ -141,7 +149,7 @@ class GamePosition(
         retries += ply.retries
         if (ply.isValid(board)) {
             gameClock.start()
-            PlyAndPosition(ply,this)
+            PlyAndPosition(ply, this)
         } else board.emptyPosition
     }
 
@@ -166,18 +174,22 @@ class GamePosition(
                     is PieceMovePlace -> {
                         set(move.first.square, move.first.piece)
                     }
+
                     is PieceMoveLoad -> {
                         return PlyAndPosition(ply, move.position.copy())
                     }
+
                     is PieceMoveOne -> {
                         set(move.first.square, null)
                         set(move.destination, move.first.piece)
                     }
+
                     is PieceMoveMerge -> {
                         set(move.first.square, null)
                         set(move.second.square, null)
                         set(move.merged.square, move.merged.piece)
                     }
+
                     is PieceMoveDelay -> Unit
                 }
             }
@@ -196,18 +208,22 @@ class GamePosition(
                 is PieceMovePlace -> {
                     newPosition[move.first.square] = null
                 }
+
                 is PieceMoveLoad -> {
                     return PlyAndPosition(ply, move.position.copy())
                 }
+
                 is PieceMoveOne -> {
                     newPosition[move.destination] = null
                     newPosition[move.first.square] = move.first.piece
                 }
+
                 is PieceMoveMerge -> {
                     newPosition[move.merged.square] = null
                     newPosition[move.second.square] = move.second.piece
                     newPosition[move.first.square] = move.first.piece
                 }
+
                 is PieceMoveDelay -> Unit
             }
         }
