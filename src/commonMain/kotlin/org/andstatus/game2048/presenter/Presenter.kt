@@ -349,10 +349,18 @@ class Presenter(val view: ViewData, history: History) {
     fun onHistoryItemClick(id: Int) = afterStop {
         logClick("History$id")
         showMainView()
-        present {
-            model.openGame(id).also {
-                loadPlies()
+
+        val openGamePlies = model.openGame(id)
+        val newBoardWidth = model.history.currentGame.shortRecord.board.width
+        if (newBoardWidth == model.settings.boardWidth) {
+            present {
+                openGamePlies.also {
+                    loadPlies()
+                }
             }
+        } else {
+            myLog("Reinitializing as board size changed ${model.settings.boardWidth} -> $newBoardWidth")
+            view.reInitialize()
         }
     }
 
