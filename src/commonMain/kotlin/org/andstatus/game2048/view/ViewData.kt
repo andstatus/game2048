@@ -37,7 +37,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.properties.Delegates
 
 /** @author yvolk@yurivolkov.com */
-suspend fun viewData(stage: Stage, animateViews: Boolean, block: suspend ViewData.() -> Unit = {}) = coroutineScope {
+suspend fun viewData(stage: Stage, animateViews: Boolean) : ViewData = coroutineScope {
     stage.removeChildren()
     val quick = ViewDataQuick(stage, animateViews)
     val splashDefault = stage.splashScreen(quick, ColorThemeEnum.deviceDefault(stage))
@@ -79,7 +79,7 @@ suspend fun viewData(stage: Stage, animateViews: Boolean, block: suspend ViewDat
     view.gameStage.gameWindow.onEvent(ResumeEvent) { view.presenter.onResumeEvent() }
         .also { view.closeables.add(it) }
     myLog("GameView${view.id} initialized")
-    view.block()
+    view
 }
 
 suspend fun waitForGameLoading() {
@@ -121,7 +121,8 @@ class ViewData(
         closedRef.value = true
         this.close()
         korgeCoroutineScope.launch {
-            viewData(gameStage, animateViews, handler)
+            viewData(gameStage, animateViews)
+            handler()
         }
     }
 

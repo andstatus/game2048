@@ -462,15 +462,13 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     private fun afterStop(action: suspend () -> Unit) {
-        val startCount = clickCounter.incrementAndGet()
-        multithreadedScope.launch {
+        view.korgeCoroutineScope.launch {
+            val startCount = clickCounter.incrementAndGet()
             while (gameMode.autoPlaying && startCount == clickCounter.value) {
                 delay(100)
             }
-            withContext(view.korgeCoroutineContext) {
-                delayWhilePresenting()
-                action()
-            }
+            delayWhilePresenting()
+            action()
         }
     }
 

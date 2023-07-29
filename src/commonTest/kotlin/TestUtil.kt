@@ -38,13 +38,9 @@ fun ViewsForTesting.myViewsTest(testObject: Any, block: suspend ViewData.() -> U
     runBlockingNoJs {
         myLog("Test $testObject started")
         viewsTest2(timeout = TimeSpan(60000.0)) {
-            viewData(stage, animateViews = false) {
+            viewData(stage, animateViews = false).run {
                 myLog("Initialized in test")
-                waitFor("Main view shown 1") {
-                    presenter.mainViewShown.value.also {
-                        myLog("isMainViewShown: $it")
-                    }
-                }
+                waitForMainViewShown(false)
                 block()
                 testWasExecuted.value = true
                 myLog("initializeViewDataInTest after 'viewData' function ended")
@@ -131,12 +127,14 @@ suspend fun ViewData.waitForNextPresented(action: suspend () -> Any? = { null })
     action()
     waitFor("Next presented after $counter1") {
         counter1 < presenter.presentedCounter.value &&
-        presenter.mainViewShown.value && !presenter.isPresenting.value && !gameIsLoading.value
+            presenter.mainViewShown.value && !presenter.isPresenting.value && !gameIsLoading.value
     }
 }
 
-suspend fun ViewData.waitForMainViewShown(action: suspend () -> Any? = { null }) {
-    presenter.mainViewShown.value = false
+suspend fun ViewData.waitForMainViewShown(reset: Boolean = true, action: suspend () -> Any? = {}) {
+    if (reset) {
+        presenter.mainViewShown.value = false
+    }
     action()
     waitFor("Main view shown") {
         presenter.mainViewShown.value && !presenter.isPresenting.value && !gameIsLoading.value
