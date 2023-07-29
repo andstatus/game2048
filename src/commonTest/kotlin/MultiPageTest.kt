@@ -24,7 +24,7 @@ class MultiPageTest : ViewsForTesting(log = true) {
             generateGame(expectedPliesCount + 4)
         }
         presenter.model.history.recentGames.first { it.id != game1.id }.let { shortRecord ->
-            waitForMainViewShown {
+            waitForNextPresented {
                 presenter.onHistoryItemClick(shortRecord.id)
             }
         }
@@ -33,7 +33,7 @@ class MultiPageTest : ViewsForTesting(log = true) {
             ?.parseJsonArray()
         assertEquals(expectedPages, headerJson?.size, "Generated game pages $game1")
 
-        waitForMainViewShown {
+        waitForNextPresented {
             presenter.onHistoryItemClick(game1.id)
         }
         waitFor("Game ${game1.shortRecord} opened") {

@@ -59,6 +59,7 @@ class Presenter(val view: ViewData, history: History) {
     val aiPlayer = AiPlayer(history.settings)
     val mainViewShown = korAtomic(false)
     val isPresenting = korAtomic(false)
+    val presentedCounter = korAtomic(0L)
     val score get() = model.score
     val bestScore get() = model.bestScore
     val retries get() = model.gamePosition.retries
@@ -496,11 +497,15 @@ class Presenter(val view: ViewData, history: History) {
     private fun presentAnd(block: () -> List<Ply>, next: () -> Unit) = present(next, block)
 
     private fun present(next: () -> Unit = {}, block: () -> List<Ply>) {
-        if (isPresenting.compareAndSet(expect = false, update = true)) with(block()) {
+        if (isPresenting.compareAndSet(expect = false, update = true)) with(
+            presentedCounter.incrementAndGet().let {
+                myLogInTest { "present ${presentedCounter.value} started" }
+                block()
+            }
+        ) {
             view.korgeCoroutineScope.launch {
                 present2()
                 showMainView()
-                isPresenting.value = false
                 if (model.noMoreMoves()) {
                     boardViews = boardViews
                         .hideGameOver()
@@ -510,8 +515,12 @@ class Presenter(val view: ViewData, history: History) {
                             pauseGame()
                         }
                 }
+                myLogInTest { "present ${presentedCounter.value} ended" }
+                isPresenting.value = false
                 next()
             }
+        } else {
+            myLog { "present ${presentedCounter.value} is in progress, skipped" }
         }
     }
 
@@ -670,12 +679,20 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     private fun presentReversed(block: () -> List<Ply>) {
-        if (isPresenting.compareAndSet(expect = false, update = true)) with(block()) {
+        if (isPresenting.compareAndSet(expect = false, update = true)) with(
+            presentedCounter.incrementAndGet().let {
+                myLogInTest { "presentReversed ${presentedCounter.value} started" }
+                block()
+            }
+        ) {
             view.korgeCoroutineScope.launch {
                 presentReversed2()
                 showMainView()
+                myLogInTest { "presentReversed ${presentedCounter.value} ended" }
                 isPresenting.value = false
             }
+        } else {
+            myLog { "presentReversed ${presentedCounter.value} is in progress, skipped" }
         }
     }
 

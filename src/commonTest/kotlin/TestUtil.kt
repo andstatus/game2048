@@ -97,7 +97,7 @@ fun ViewsForTesting.viewsTest2(
     withTimeout(timeout ?: TimeSpan.NIL) {
         while (!completed) {
             delayFrame() //simulateFrame() is private
-            delay(50)
+            delay(20)
             dispatcher.executePending(availableTime = 1.seconds)
         }
         if (completedException != null) throw completedException!!
@@ -126,6 +126,15 @@ fun ViewData.historyString(): String = with(presenter.model.history) {
     "History: index:$redoPlyPointer, moves:${currentGame.gamePlies.size}"
 }
 
+suspend fun ViewData.waitForNextPresented(action: suspend () -> Any? = { null }) {
+    val counter1 = presenter.presentedCounter.value
+    action()
+    waitFor("Next presented after $counter1") {
+        counter1 < presenter.presentedCounter.value &&
+        presenter.mainViewShown.value && !presenter.isPresenting.value && !gameIsLoading.value
+    }
+}
+
 suspend fun ViewData.waitForMainViewShown(action: suspend () -> Any? = { null }) {
     presenter.mainViewShown.value = false
     action()
@@ -135,15 +144,18 @@ suspend fun ViewData.waitForMainViewShown(action: suspend () -> Any? = { null })
 }
 
 suspend fun waitFor(message: String = "???", condition: () -> Boolean) {
-    myLog("Waiting for: $message")
     val stopWatch = Stopwatch().start()
+    var nextLoggingAt = 1.0
     while (stopWatch.elapsed.seconds < 300) {
-        delay(50)  // TODO: Why lower delay causes e.g. HistoryTest failure?
+        if (nextLoggingAt < stopWatch.elapsed.seconds) {
+            myLog("Waiting for: $message")
+            nextLoggingAt = stopWatch.elapsed.seconds + 1
+        }
+        delay(20)
         if (condition()) {
             myLog("Success waiting for: $message")
             return
         }
-        myLog("Waiting for: $message")
     }
     throw AssertionError("Condition wasn't met after timeout: $message")
 }
@@ -157,7 +169,7 @@ fun newGameRecord(
     }
 
 suspend fun ViewData.generateGame(expectedPliesCount: Int, bookmarkOnPly: Int? = null): GameRecord {
-    waitForMainViewShown {
+    waitForNextPresented {
         presenter.onRestartClick()
     }
 
@@ -176,7 +188,7 @@ suspend fun ViewData.generateGame(expectedPliesCount: Int, bookmarkOnPly: Int? =
         allowedRandomPly(presenter.model.gamePosition).let { plyAndPosition ->
             plyAndPosition.ply.plyEnum.swipeDirection?.let {
                 myLog("Iteration $iteration of $expectedPliesCount, $it")
-                waitForMainViewShown {
+                waitForNextPresented {
                     presenter.onSwipe(it)
                 }
             } ?: {

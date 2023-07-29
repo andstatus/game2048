@@ -4,6 +4,7 @@ import korlibs.korge.tests.ViewsForTesting
 import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.PlacedPiece
+import org.andstatus.game2048.myLog
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -21,14 +22,14 @@ class MovesTest : ViewsForTesting(log = true) {
         waitForMainViewShown {
             presenter.onWatchClick()
         }
-        waitForMainViewShown {
+        waitForNextPresented {
             presenter.composerMove(GamePosition(board))
         }
         assertEquals(0, presenter.boardViews.blocks.size, "Empty position. " + modelAndViews())
 
         val square1 = board.toSquare(1, 1)
         val piece1 = PlacedPiece(Piece.N2, square1)
-        waitForMainViewShown {
+        waitForNextPresented {
             presenter.computerMove(piece1)
         }
         assertEquals(listOf(Piece.N2), this.blocksAt(square1), modelAndViews())
@@ -36,7 +37,7 @@ class MovesTest : ViewsForTesting(log = true) {
         val square2 = board.toSquare(3, 2)
         val piece2 = PlacedPiece(Piece.N2, square2)
         presenter.model.nextComputerPlacedPeace.value = piece2
-        waitForMainViewShown {
+        waitForNextPresented {
             presenter.onSwipe(SwipeDirection.RIGHT)
         }
         assertEquals(listOf(Piece.N2), this.blocksAt(board.toSquare(3, 1)), modelAndViews())
@@ -56,7 +57,7 @@ class MovesTest : ViewsForTesting(log = true) {
             modelAndViews()
         )
 
-        waitForMainViewShown {
+        waitForNextPresented {
             presenter.onSwipe(SwipeDirection.BOTTOM)
         }
         assertEquals(listOf(Piece.N4), this.blocksAt(board.toSquare(3, 3)), modelAndViews())
@@ -67,7 +68,7 @@ class MovesTest : ViewsForTesting(log = true) {
         assertEquals(position2.pieces.asList(), piecesOnBoardViews2, modelAndViews())
         assertTrue(presenter.canUndo(), this.historyString())
 
-        waitForMainViewShown {
+        waitForNextPresented {
             presenter.onUndoClick()
         }
         val position3 = presenter.model.gamePosition.copy()
@@ -77,7 +78,7 @@ class MovesTest : ViewsForTesting(log = true) {
         assertEquals(position3.pieces.asList(), piecesOnBoardViews3, "Board views after undo")
         assertTrue(presenter.canRedo(), this.historyString())
 
-        waitForMainViewShown {
+        waitForNextPresented {
             presenter.onRedoClick()
         }
         val position4 = presenter.model.gamePosition.copy()
@@ -86,7 +87,10 @@ class MovesTest : ViewsForTesting(log = true) {
         val piecesOnBoardViews4 = this.presentedPieces()
         assertEquals(position4.pieces.asList(), piecesOnBoardViews4, "Board views after redo")
         assertFalse(presenter.canRedo(), this.historyString())
-        presenter.onSwipe(SwipeDirection.TOP)
+
+        waitForNextPresented {
+            presenter.onSwipe(SwipeDirection.TOP)
+        }
         assertTrue(presenter.canUndo(), this.historyString())
         assertFalse(presenter.canRedo(), this.historyString())
         assertEquals(
@@ -95,7 +99,9 @@ class MovesTest : ViewsForTesting(log = true) {
             modelAndViews()
         )
         assertEquals(1, presenter.model.history.currentGame.shortRecord.bookmarks.size, modelAndViews())
-        waitForMainViewShown {
+
+        myLog("Second undo")
+        waitForNextPresented {
             presenter.onUndoClick()
         }
         val position5 = presenter.model.gamePosition.copy()
@@ -104,6 +110,7 @@ class MovesTest : ViewsForTesting(log = true) {
         assertEquals(position5.pieces.asList(), piecesOnBoardViews5, "Board views second after undo")
         assertTrue(presenter.canRedo(), this.historyString())
         assertTrue(presenter.canUndo(), this.historyString())
+        myLog("Second undo checked")
 
         with(presenter.model.gameClock) {
             assertFalse(started, "GameClock should be stopped now: $playedSeconds")

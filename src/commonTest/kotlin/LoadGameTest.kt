@@ -11,12 +11,8 @@ class LoadGameTest : ViewsForTesting(log = true) {
             presenter.boardViews.blocks.isNotEmpty()
         }
 
-        waitForMainViewShown {
+        waitForNextPresented {
             presenter.onLoadClick()
-        }
-
-        waitFor("Game is loaded") {
-            !gameIsLoading.value
         }
 
         val game = presenter.model.history.currentGame

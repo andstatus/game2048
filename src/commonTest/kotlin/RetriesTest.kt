@@ -11,23 +11,23 @@ class RetriesTest : ViewsForTesting(log = true) {
         val game1 = generateGame(7, 3)
         assertEquals(1, game1.shortRecord.bookmarks.size, currentGameString())
 
-        waitForMainViewShown {
+        waitForNextPresented {
             presenter.onUndoClick()
         }
-        waitForMainViewShown {
+        waitForNextPresented {
             presenter.onUndoClick()
         }
         val positionAfterUndos = presenter.model.gamePosition.copy()
 
         allowedRandomPly(presenter.model.gamePosition).ply.plyEnum.swipeDirection?.let {
-            waitForMainViewShown {
+            waitForNextPresented {
                 delay(2000)
                 presenter.onSwipe(it)
             }
         }
         assertEquals(1, presenter.model.gamePosition.retries, currentGameString())
 
-        waitForMainViewShown {
+        waitForNextPresented {
             presenter.onUndoClick()
         }
         presenter.model.history.currentGame.gamePlies.get(presenter.model.history.redoPlyPointer).let { redoPly ->
@@ -38,12 +38,12 @@ class RetriesTest : ViewsForTesting(log = true) {
         }
         assertEquals(0, presenter.model.gamePosition.retries, currentGameString())
 
-        waitForMainViewShown {
+        waitForNextPresented {
             presenter.onRedoClick()
         }
         assertEquals(1, presenter.model.gamePosition.retries, currentGameString())
 
-        waitForMainViewShown {
+        waitForNextPresented {
             presenter.onUndoClick()
         }
         assertEquals(0, presenter.model.gamePosition.retries, currentGameString())

@@ -8,17 +8,17 @@ class RestartTest : ViewsForTesting(log = true) {
 
     @Test
     fun restartTest() = myViewsTest(this) {
-        waitForMainViewShown {
+        waitForNextPresented {
             presenter.computerMove()
         }
-        waitForMainViewShown {
+        waitForNextPresented {
             presenter.computerMove()
         }
         assertTrue(presenter.boardViews.blocks.size > 1, modelAndViews())
         assertEquals(presenter.model.history.currentGame.gamePlies[1].player, PlayerEnum.COMPUTER, currentGameString())
         assertTrue(presenter.model.history.currentGame.gamePlies.size > 1, currentGameString())
 
-        waitForMainViewShown {
+        waitForNextPresented {
             presenter.onRestartClick()
         }
         assertEquals(1, presenter.boardViews.blocks.size, "Should be one block ${modelAndViews()}")
@@ -27,7 +27,7 @@ class RestartTest : ViewsForTesting(log = true) {
         assertEquals( 1, presenter.model.gamePosition.pieces.count { it != null }, modelAndViews())
         assertEquals(1, presenter.model.history.currentGame.gamePlies.size, currentGameString())
 
-        waitForMainViewShown {
+        waitForNextPresented {
             presenter.computerMove()
         }
         assertEquals(2, presenter.model.gamePosition.pieces.count { it != null }, modelAndViews())
