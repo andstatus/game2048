@@ -7,7 +7,8 @@ import org.andstatus.game2048.Settings
 /** @author yvolk@yurivolkov.com */
 class Model(val history: History) {
     val settings: Settings = history.settings
-    var gamePosition = GamePosition(settings.defaultBoard)
+    private val gamePositionRef = korAtomic(GamePosition(settings.defaultBoard))
+    val gamePosition get() = gamePositionRef.value
 
     val moveNumber: Int get() = gamePosition.moveNumber
     val isBookmarked
@@ -104,7 +105,10 @@ class Model(val history: History) {
         if (!isRedo) {
             history.add(this)
         }
-        gamePosition = this.position
+        if (gameMode.isPlaying) {
+            gameClock.start()
+        }
+        gamePositionRef.value = this.position
         return listOf(ply)
     }
 

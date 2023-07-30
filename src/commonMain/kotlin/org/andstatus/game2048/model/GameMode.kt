@@ -24,6 +24,9 @@ class GameMode() {
             modeEnum == GameModeEnum.FORWARD ||
             modeEnum == GameModeEnum.AI_PLAY
 
+    val isPlaying get() = modeEnum == GameModeEnum.PLAY ||
+        modeEnum == GameModeEnum.AI_PLAY
+
     var modeEnum : GameModeEnum
         get() = data.value.modeEnum
         set(value) {

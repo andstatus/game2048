@@ -147,7 +147,6 @@ class GamePosition(
         val ply = Ply.userPly(plyEnum, gameClock.playedSeconds, plyRetries, pieceMoves)
         retries += ply.retries
         if (ply.isValid(board)) {
-            gameClock.start()
             PlyAndPosition(ply, this)
         } else board.emptyPosition
     }
