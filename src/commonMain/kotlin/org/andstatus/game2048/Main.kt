@@ -49,6 +49,6 @@ suspend fun main() {
         gameId = "org.andstatus.game2048"
     ) {
         myLog("Stage is ready")
-        viewData(this, true)
+        viewData(this)
     }
 }

@@ -1,8 +1,8 @@
 package org.andstatus.game2048.view
 
-import korlibs.korge.view.Stage
 import korlibs.io.concurrent.atomic.incrementAndGet
 import korlibs.io.concurrent.atomic.korAtomic
+import korlibs.korge.view.Stage
 import org.andstatus.game2048.defaultPortraitGameWindowSize
 import org.andstatus.game2048.defaultPortraitRatio
 import org.andstatus.game2048.defaultPortraitTextSize
@@ -12,7 +12,6 @@ import org.andstatus.game2048.myLog
 /** @author yvolk@yurivolkov.com */
 interface ViewDataBase {
     val gameStage: Stage
-    val animateViews: Boolean
     val id: Int
     val duplicateKeyPressFilter: DuplicateKeyPressFilter
     val isPortrait: Boolean
@@ -25,7 +24,7 @@ interface ViewDataBase {
     val buttonMargin: Float
     val cellMargin: Float
     val buttonRadius: Float
-    val buttonSize : Float
+    val buttonSize: Float
     val boardLeft: Float
     val buttonXs: List<Float>
     val buttonYs: List<Float>
@@ -35,11 +34,11 @@ interface ViewDataBase {
 }
 
 /** The object is initialized instantly */
-class ViewDataQuick(override val gameStage: Stage, override val animateViews: Boolean = true) : ViewDataBase {
+class ViewDataQuick(override val gameStage: Stage) : ViewDataBase {
     override val id: Int = nextId()
     override val duplicateKeyPressFilter = DuplicateKeyPressFilter()
 
-    override val isPortrait: Boolean
+    override val isPortrait: Boolean = gameStage.views.virtualWidth < gameStage.views.virtualHeight
     override val gameViewLeft: Int
     override val gameViewTop: Int
     override val gameViewWidth: Int
@@ -50,7 +49,7 @@ class ViewDataQuick(override val gameStage: Stage, override val animateViews: Bo
     override val buttonMargin: Float
     override val cellMargin: Float
     override val buttonRadius: Float
-    override val buttonSize : Float
+    override val buttonSize: Float
     override val boardLeft: Float
     override val buttonXs: List<Float>
     override val buttonYs: List<Float>
@@ -59,9 +58,8 @@ class ViewDataQuick(override val gameStage: Stage, override val animateViews: Bo
     override val statusBarTop: Float
 
     init {
-        isPortrait = gameStage.views.virtualWidth < gameStage.views.virtualHeight
         if (isPortrait) {
-            val windowRatio = gameStage.views.virtualWidth.toFloat() /  gameStage.views.virtualHeight
+            val windowRatio = gameStage.views.virtualWidth.toFloat() / gameStage.views.virtualHeight
             if (windowRatio >= defaultPortraitRatio) {
                 gameViewHeight = gameStage.views.virtualHeight
                 gameViewWidth = (gameViewHeight * defaultPortraitRatio).toInt()
@@ -78,7 +76,7 @@ class ViewDataQuick(override val gameStage: Stage, override val animateViews: Bo
             defaultTextSize = if (gameViewHeight == defaultPortraitGameWindowSize.height) defaultPortraitTextSize
             else defaultPortraitTextSize * gameViewHeight / defaultPortraitGameWindowSize.height
         } else {
-            val windowRatio = gameStage.views.virtualHeight.toFloat() /  gameStage.views.virtualWidth
+            val windowRatio = gameStage.views.virtualHeight.toFloat() / gameStage.views.virtualWidth
             if (windowRatio >= defaultPortraitRatio) {
                 gameViewWidth = gameStage.views.virtualWidth
                 gameViewHeight = (gameViewWidth * defaultPortraitRatio).toInt()
@@ -111,11 +109,11 @@ class ViewDataQuick(override val gameStage: Stage, override val animateViews: Bo
         }
         statusBarLeft = gameViewLeft + buttonMargin
 
-        buttonXs = (0 .. if (isPortrait) 4 else 9).fold(emptyList()) { acc, i ->
+        buttonXs = (0..if (isPortrait) 4 else 9).fold(emptyList()) { acc, i ->
             acc + (statusBarLeft + i * (buttonSize + buttonMargin) +
-                    if (!isPortrait && (i > 4)) buttonMargin else 0.0f)
+                if (!isPortrait && (i > 4)) buttonMargin else 0.0f)
         }
-        buttonYs = (0 .. if (isPortrait) 9 else 4).fold(emptyList()) { acc, i ->
+        buttonYs = (0..if (isPortrait) 9 else 4).fold(emptyList()) { acc, i ->
             acc + (gameViewTop + buttonMargin + i * (buttonSize + buttonMargin))
         }
 
@@ -129,8 +127,8 @@ class ViewDataQuick(override val gameStage: Stage, override val animateViews: Bo
 
         myLog(
             "Window:${gameStage.coroutineContext.gameWindowSize.width}x${gameStage.coroutineContext.gameWindowSize.height}" +
-                    " -> Virtual:${gameStage.views.virtualWidth}x${gameStage.views.virtualHeight}" +
-                    " -> Game:${gameViewWidth}x$gameViewHeight, top:$gameViewTop, left:$gameViewLeft"
+                " -> Virtual:${gameStage.views.virtualWidth}x${gameStage.views.virtualHeight}" +
+                " -> Game:${gameViewWidth}x$gameViewHeight, top:$gameViewTop, left:$gameViewLeft"
         )
     }
 

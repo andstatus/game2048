@@ -31,14 +31,16 @@ import org.andstatus.game2048.view.viewData
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-private val isTestRunSet = isTestRun.compareAndSet(false, true)
-
 fun ViewsForTesting.myViewsTest(testObject: Any, block: suspend ViewData.() -> Unit = {}) {
+    if (isTestRun.compareAndSet(false, true)) {
+        myLog("isTestRun was set")
+    }
+
     val testWasExecuted = korAtomic(false)
     runBlockingNoJs {
         myLog("Test $testObject started")
         viewsTest2(timeout = TimeSpan(60000.0)) {
-            viewData(stage, animateViews = false).run {
+            viewData(stage).run {
                 myLog("Initialized in test")
                 waitForMainViewShown(false)
                 block()

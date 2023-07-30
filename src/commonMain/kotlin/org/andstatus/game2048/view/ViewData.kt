@@ -37,22 +37,23 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.properties.Delegates
 
 /** @author yvolk@yurivolkov.com */
-suspend fun viewData(stage: Stage, animateViews: Boolean): ViewData = coroutineScope {
+suspend fun viewData(stage: Stage): ViewData = coroutineScope {
     stage.removeChildren()
-    val quick = ViewDataQuick(stage, animateViews)
+    val quick = ViewDataQuick(stage)
     val splashDefault = stage.splashScreen(quick, ColorThemeEnum.deviceDefault(stage))
     waitForGameLoading()
     val strings = async { StringResources.load(defaultLanguage) }
     val font = async { loadFont(strings.await()) }
-    val settings = async { Settings.load(stage) }
-    val history = async { History.load(settings.await()) }
-    launch {
-        history.await().loadRecentGames()
+    val settings = myMeasured("Loading settings") { Settings.load(stage) }
+    val history = async {
+        History.load(settings).also {
+            it.loadRecentGames()
+        }
     }
-    val gameColors = async { ColorTheme.load(stage, settings.await()) }
+    val gameColors = async { ColorTheme.load(stage, settings) }
 
-    val splashThemed = if (settings.await().colorThemeEnum == ColorThemeEnum.deviceDefault(stage))
-        splashDefault else stage.splashScreen(quick, settings.await().colorThemeEnum)
+    val splashThemed = if (settings.colorThemeEnum == ColorThemeEnum.deviceDefault(stage))
+        splashDefault else stage.splashScreen(quick, settings.colorThemeEnum)
     stage.solidRect(
         stage.views.virtualWidth, stage.views.virtualHeight,
         color = gameColors.await().stageBackground
@@ -67,14 +68,14 @@ suspend fun viewData(stage: Stage, animateViews: Boolean): ViewData = coroutineS
         // We set window title in Android via AndroidManifest.xml
         stage.gameWindow.title = strings.await().text("app_name")
     }
-    val historyLoaded: History = history.await().apply {
-        if (currentGame.shortRecord.board.width != this.settings.boardWidth) {
-            this.settings.boardWidth = currentGame.shortRecord.board.width
-            this.settings.save()
+    val historyLoaded: History = history.await().also {
+        if (it.currentGame.shortRecord.board.width != settings.boardWidth) {
+            settings.boardWidth = it.currentGame.shortRecord.board.width
+            settings.save()
         }
     }
 
-    val view = ViewData(quick, historyLoaded.settings, font.await(), strings.await(), gameColors.await())
+    val view = ViewData(quick, settings, font.await(), strings.await(), gameColors.await())
     view.presenter = myMeasured("Presenter${view.id} created") { Presenter(view, historyLoaded) }
     view.mainView = myMeasured("MainView${view.id} created") { view.setupMainView(this) }
 
@@ -127,7 +128,7 @@ class ViewData(
         closedRef.value = true
         this.close()
         korgeCoroutineScope.launch {
-            viewData(gameStage, animateViews)
+            viewData(gameStage)
             handler()
         }
     }

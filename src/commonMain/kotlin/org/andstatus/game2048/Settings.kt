@@ -48,7 +48,7 @@ class Settings(private val stage: Stage) {
     val boardHeight get() =  boardWidth
     var colorThemeEnum: ColorThemeEnum = ColorThemeEnum.load(storage.getOrNull(keyColorTheme))
     var aiAlgorithm: AiAlgorithm = AiAlgorithm.load(storage.getOrNull(keyAiAlgorithm))
-    var defaultBoard = Board(this)
+    val defaultBoard get() = Board(this)
     var pliesPageSize = 1000
 
     val gameIdsRange = 1 until stubGameId

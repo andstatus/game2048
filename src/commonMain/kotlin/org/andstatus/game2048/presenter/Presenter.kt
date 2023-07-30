@@ -359,7 +359,7 @@ class Presenter(val view: ViewData, history: History) {
                 }
             }
         } else {
-            myLog("Reinitializing as board size changed ${model.settings.boardWidth} -> $newBoardWidth")
+            myLog("Reinitializing: board width changed ${model.settings.boardWidth} -> $newBoardWidth")
             view.reInitialize()
         }
     }
@@ -683,14 +683,14 @@ class Presenter(val view: ViewData, history: History) {
                                 boardViews.addBlock(move.merged)
                             }
                             sequenceLazy {
-                                if (view.animateViews) boardViews[move.merged]
+                                boardViews[move.merged]
                                     ?.let { animateResultingBlock(this, it) }
                             }
                         }
                     }
 
                     is PieceMoveDelay -> with(view) {
-                        if (animateViews) boardViews.blocks.lastOrNull()?.also {
+                        boardViews.blocks.lastOrNull()?.also {
                             moveTo(it.block, it.square, gameMode.delayMs.milliseconds, Easing.LINEAR)
                         }
                     }
@@ -746,7 +746,7 @@ class Presenter(val view: ViewData, history: History) {
                         val effectiveBlock = boardViews[move.merged]
                         sequence {
                             sequenceLazy {
-                                if (view.animateViews) effectiveBlock?.let { animateResultingBlock(this, it) }
+                                effectiveBlock?.let { animateResultingBlock(this, it) }
                             }
                             block {
                                 effectiveBlock?.remove()
@@ -763,7 +763,7 @@ class Presenter(val view: ViewData, history: History) {
                     }
 
                     is PieceMoveDelay -> with(view) {
-                        if (animateViews) boardViews.blocks.lastOrNull()?.also {
+                        boardViews.blocks.lastOrNull()?.also {
                             moveTo(it.block, it.square, gameMode.delayMs.milliseconds, Easing.LINEAR)
                         }
                     }
@@ -774,7 +774,7 @@ class Presenter(val view: ViewData, history: History) {
 
     private fun Block.move(animator: Animator, to: Square) {
         with(view) {
-            if (animateViews) animator.moveTo(this@move, to, gameMode.moveMs.milliseconds, Easing.LINEAR)
+            animator.moveTo(this@move, to, gameMode.moveMs.milliseconds, Easing.LINEAR)
         }
         boardViews.move(PlacedPiece(piece, to), this)
     }
