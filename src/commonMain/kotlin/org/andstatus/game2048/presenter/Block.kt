@@ -18,7 +18,7 @@ class Block(val piece: Piece, val viewData: ViewData, blockSize: Float = viewDat
                 roundRect(0f, 0f, blockSize, blockSize, viewData.buttonRadius, viewData.buttonRadius)
             }
             val textSize: Float = when (piece.text.length) {
-                1, 2, 3 -> blockSize / 2
+                1, 2, 3 -> if (viewData.settings.boardWidth < 5 ) blockSize / 2 else blockSize * 0.7f
                 else -> blockSize * 1.8f / piece.text.length
             }
             text(

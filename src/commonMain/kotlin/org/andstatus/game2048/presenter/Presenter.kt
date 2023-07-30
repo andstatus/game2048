@@ -301,6 +301,7 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     private fun hideMainView() {
+        view.mainView.hideStatusBar()
         view.mainView.removeFromParent()
     }
 
