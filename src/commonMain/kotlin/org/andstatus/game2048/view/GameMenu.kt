@@ -36,7 +36,9 @@ fun ViewData.showGameMenu(aiEnabled: Boolean, numberOfRecentGames: Int) = myWind
     button(GameMenuButtonsEnum.RECENT, presenter::onRecentClick)
     button(GameMenuButtonsEnum.TRY_AGAIN, presenter::onTryAgainClick)
     button(GameMenuButtonsEnum.SHARE, presenter::onShareClick)
-    button(GameMenuButtonsEnum.LOAD, presenter::onLoadClick)
+    if (aiEnabled && !isPortrait) {
+        button(GameMenuButtonsEnum.LOAD, presenter::onLoadClick)
+    }
     button(GameMenuButtonsEnum.SELECT_THEME) { selectTheme(settings) }
     button(GameMenuButtonsEnum.SELECT_BOARD_SIZE) { selectBoardSize(settings) }
     button(GameMenuButtonsEnum.EXIT, presenter::onExitAppClick)
