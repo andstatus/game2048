@@ -19,7 +19,7 @@ import org.andstatus.game2048.view.StringResources
 private const val keyAllowResultingTileToMerge = "allowResultingTileToMerge"
 private const val keyAllowUsersMoveWithoutBlockMoves = "allowUsersMoveWithoutBlockMoves"
 private const val keyAllowUndo = "allowUndo"
-private const val keyFullscreen = "fullscreen"
+const val keyFullscreen = "fullscreen"
 private const val keyMaxMovesToStore = "maxMovesToStore"
 private const val keyBoardSize = "boardSize"
 const val keyCurrentGameId = "current"
