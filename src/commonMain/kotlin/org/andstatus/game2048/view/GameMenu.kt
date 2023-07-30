@@ -36,7 +36,7 @@ fun ViewData.showGameMenu(aiEnabled: Boolean, numberOfRecentGames: Int) = myWind
     button(GameMenuButtonsEnum.RECENT, presenter::onRecentClick)
     button(GameMenuButtonsEnum.TRY_AGAIN, presenter::onTryAgainClick)
     button(GameMenuButtonsEnum.SHARE, presenter::onShareClick)
-    if (aiEnabled && !isPortrait) {
+    if (!aiEnabled || isPortrait) {
         button(GameMenuButtonsEnum.LOAD, presenter::onLoadClick)
     }
     button(GameMenuButtonsEnum.SELECT_THEME) { selectTheme(settings) }
