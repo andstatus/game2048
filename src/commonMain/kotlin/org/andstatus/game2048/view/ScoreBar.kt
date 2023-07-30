@@ -1,6 +1,7 @@
 package org.andstatus.game2048.view
 
 import korlibs.image.text.TextAlignment
+import korlibs.korge.input.onClick
 import korlibs.korge.view.Container
 import korlibs.korge.view.Text
 import korlibs.korge.view.addTo
@@ -80,6 +81,9 @@ class ScoreBar(val viewData: ViewData): Container() {
             posX += scoreButtonWidth + buttonMargin
             val bgMove = roundRect(Size(scoreButtonWidth, buttonSize), RectCorners(buttonRadius), fill = gameColors.buttonBackground) {
                 position(posX, buttonYs[barTopInd + 1])
+                onClick {
+                    presenter.onMoveButtonClick()
+                }
             }
             text(stringResources.text("move_upper"), scoreLabelSize, gameColors.buttonLabelText, font,
                 TextAlignment.MIDDLE_CENTER

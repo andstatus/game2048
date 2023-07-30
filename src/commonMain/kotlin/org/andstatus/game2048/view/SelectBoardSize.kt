@@ -9,11 +9,11 @@ import korlibs.io.async.launch
 import org.andstatus.game2048.Settings
 
 fun ViewData.selectBoardSize(settings: Settings) = myWindow("select_board_size") {
-    var selected = settings.boardWidth
+    var selected = BoardSizeEnum.load( settings.boardWidth)
     var buttons: List<Container> = emptyList()
 
     suspend fun button(buttonEnum: BoardSizeEnum, yInd: Int, handler: (BoardSizeEnum) -> Unit): Container =
-        wideButton(if (buttonEnum.size == selected) "radio_button_checked" else "radio_button_unchecked", buttonEnum.labelKey) {
+        wideButton(if (buttonEnum == selected) "radio_button_checked" else "radio_button_unchecked", buttonEnum.labelKey) {
             handler(buttonEnum)
         }.apply {
             position(buttonXs[0], buttonYs[yInd])
@@ -35,7 +35,7 @@ fun ViewData.selectBoardSize(settings: Settings) = myWindow("select_board_size")
     }
 
     fun onSelected(boardSizeEnum: BoardSizeEnum) {
-        selected = boardSizeEnum.size
+        selected = boardSizeEnum
         korgeCoroutineScope.launch {
             showOptions {}
             delay(100.milliseconds)

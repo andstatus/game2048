@@ -48,7 +48,7 @@ fun CoroutineScope.aiPlayLoop(presenter: Presenter, startCount: Int) = launch {
         }
         if (gameMode.modeEnum == GameModeEnum.AI_PLAY) {
             withContext(view.korgeCoroutineContext) {
-                onAiStopClicked()
+                onAiStopClick()
             }
         }
     }

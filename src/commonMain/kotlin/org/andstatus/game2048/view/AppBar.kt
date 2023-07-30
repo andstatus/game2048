@@ -72,8 +72,8 @@ class AppBar private constructor(val viewData: ViewData, private val appBarButto
 
             val buttons: List<EButton> = listOf(
                 rotatingLogo(this, buttonSize),
-                AI_OFF.button(presenter::onNoMagicClicked),
-                AI_ON.button(presenter::onMagicClicked),
+                AI_OFF.button(presenter::onNoMagicClick),
+                AI_ON.button(presenter::onMagicClick),
 
                 TRY_AGAIN.button(presenter::onTryAgainClick),
                 GAME_MENU.button(presenter::onGameMenuClick),
@@ -83,9 +83,9 @@ class AppBar private constructor(val viewData: ViewData, private val appBarButto
                 BOOKMARKED.button(presenter::onBookmarkedClick),
                 BOOKMARK_PLACEHOLDER.button(),
                 PAUSE.button(presenter::onPauseClick),
-                AI_STOP.button(presenter::onAiStopClicked),
-                AI_START.button(presenter::onAiStartClicked),
-                AI_FORWARD.button(presenter::onAiForwardClicked),
+                AI_STOP.button(presenter::onAiStopClick),
+                AI_START.button(presenter::onAiStartClick),
+                AI_FORWARD.button(presenter::onAiForwardClick),
                 UNDO.button(presenter::onUndoClick),
                 REDO.button(presenter::onRedoClick),
                 REDO_PLACEHOLDER.button(),

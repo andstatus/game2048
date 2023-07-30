@@ -12,7 +12,7 @@ import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.model.Board
 import org.andstatus.game2048.model.PliesPageData
 import org.andstatus.game2048.view.BoardSizeEnum.Companion.BOARD_SIZE_DEFAULT
-import org.andstatus.game2048.view.BoardSizeEnum.Companion.fixBoardSize
+import org.andstatus.game2048.view.BoardSizeEnum.Companion.fixBoardWidth
 import org.andstatus.game2048.view.ColorThemeEnum
 import org.andstatus.game2048.view.StringResources
 
@@ -43,7 +43,7 @@ class Settings(private val stage: Stage) {
     var allowResultingTileToMerge = storage.getBoolean(keyAllowResultingTileToMerge, false)
     var allowUsersMoveWithoutBlockMoves = storage.getBoolean(keyAllowUsersMoveWithoutBlockMoves, false)
     var allowUndo = storage.getBoolean(keyAllowUndo, true)
-    var boardWidth = storage.getInt(keyBoardSize, BOARD_SIZE_DEFAULT.size).let(::fixBoardSize)
+    var boardWidth = storage.getInt(keyBoardSize, BOARD_SIZE_DEFAULT.width).let(::fixBoardWidth)
 
     val boardHeight get() =  boardWidth
     var colorThemeEnum: ColorThemeEnum = ColorThemeEnum.load(storage.getOrNull(keyColorTheme))

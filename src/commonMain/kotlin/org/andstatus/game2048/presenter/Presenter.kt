@@ -45,6 +45,7 @@ import org.andstatus.game2048.myLogInTest
 import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.shareText
 import org.andstatus.game2048.view.AppBarButtonsEnum
+import org.andstatus.game2048.view.BoardSizeEnum
 import org.andstatus.game2048.view.ColorThemeEnum
 import org.andstatus.game2048.view.ViewData
 import org.andstatus.game2048.view.showBookmarks
@@ -98,13 +99,13 @@ class Presenter(val view: ViewData, history: History) {
         }
     }
 
-    fun onNoMagicClicked() {
+    fun onNoMagicClick() {
         logClick("NoMagic")
         gameMode.aiEnabled = true
         asyncShowMainView()
     }
 
-    fun onMagicClicked() {
+    fun onMagicClick() {
         logClick("Magic")
         gameMode.aiEnabled = false
         if (gameMode.modeEnum == GameModeEnum.AI_PLAY) {
@@ -114,20 +115,24 @@ class Presenter(val view: ViewData, history: History) {
         asyncShowMainView()
     }
 
-    fun onAiStartClicked() {
+    fun onAiStartClick() {
         logClick("AiStart")
         gameMode.aiEnabled = true
         startAiPlay()
     }
 
-    fun onAiStopClicked() {
+    fun onAiStopClick() {
         logClick("AiStop")
         gameMode.modeEnum = GameModeEnum.PLAY
         pauseGame()
         asyncShowMainView()
     }
 
-    fun onAiForwardClicked() {
+    fun onMoveButtonClick() {
+        gameMode.incrementSpeed()
+    }
+
+    fun onAiForwardClick() {
         gameMode.incrementSpeed()
     }
 
@@ -207,7 +212,7 @@ class Presenter(val view: ViewData, history: History) {
                     }
 
                     else -> {
-                        onAiStopClicked()
+                        onAiStopClick()
                     }
                 }
             }
@@ -420,7 +425,7 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     fun onSelectColorTheme(colorThemeEnum: ColorThemeEnum) {
-        logClick("onSelectColorTheme $colorThemeEnum")
+        logClick("onSelectColorTheme-$colorThemeEnum")
         if (colorThemeEnum == view.settings.colorThemeEnum) return
 
         view.settings.colorThemeEnum = colorThemeEnum
@@ -429,11 +434,11 @@ class Presenter(val view: ViewData, history: History) {
         view.reInitialize()
     }
 
-    fun onSelectBoardSize(boardSize: Int) {
-        logClick("onSelectBoardSize $boardSize")
-        if (boardSize == view.settings.boardWidth) return
+    fun onSelectBoardSize(boardSize: BoardSizeEnum) {
+        logClick("onSelectBoardSize-${boardSize}x${boardSize}")
+        if (boardSize.width == view.settings.boardWidth) return
 
-        view.settings.boardWidth = boardSize
+        view.settings.boardWidth = boardSize.width
         model.tryAgain()
         view.settings.save()
         pauseGame()

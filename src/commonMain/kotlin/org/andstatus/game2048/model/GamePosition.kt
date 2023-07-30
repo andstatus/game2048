@@ -1,14 +1,13 @@
 package org.andstatus.game2048.model
 
-import korlibs.math.squared
 import korlibs.memory.isOdd
 import korlibs.time.DateFormat
 import korlibs.time.DateTime
 import korlibs.time.DateTimeTz
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.model.PlyEnum.Companion.UserPlies
-import org.andstatus.game2048.view.BoardSizeEnum.Companion.isValidBoardSize
-import org.andstatus.game2048.view.BoardSizeEnum.Companion.squaredToSize
+import org.andstatus.game2048.view.BoardSizeEnum.Companion.isValidBoardWidth
+import org.andstatus.game2048.view.BoardSizeEnum.Companion.sizeToWidth
 import kotlin.random.Random
 
 private const val keyPlyNumber = "plyNumber"
@@ -47,8 +46,8 @@ class GamePosition(
             val pieces: Array<Piece?> = aMap[keyPieces]?.parseJsonArray()
                 ?.map { Piece.fromId(it as Int) }?.toTypedArray()
                 ?: return null
-            val boardWidth = squaredToSize(pieces.size).also {
-                if (!isValidBoardSize(it)) return null
+            val boardWidth = sizeToWidth(pieces.size).also {
+                if (!isValidBoardWidth(it)) return null
             }
             val board = boardIn?.also { if (it.width != boardWidth) return null }
                 ?: settings?.let { Board(settings, boardWidth) }

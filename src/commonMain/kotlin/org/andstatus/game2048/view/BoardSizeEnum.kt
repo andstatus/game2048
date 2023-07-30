@@ -2,7 +2,7 @@ package org.andstatus.game2048.view
 
 import korlibs.math.squared
 
-enum class BoardSizeEnum(val labelKey: String, val size: Int, val sizeSquared: Int = size.squared()) {
+enum class BoardSizeEnum(val labelKey: String, val width: Int, val size: Int = width.squared()) {
     SIZE3("3x3", 3),
     SIZE4("4x4", 4),
     SIZE5("5x5", 5),
@@ -12,27 +12,27 @@ enum class BoardSizeEnum(val labelKey: String, val size: Int, val sizeSquared: I
 
     companion object {
         val BOARD_SIZE_DEFAULT = SIZE4
-        private val minSize = values()[0].size
-        private val maxSize = values()[values().size - 1].size
+        private val minWidth = values()[0].width
+        private val maxWidth = values()[values().size - 1].width
 
-        fun load(value: Int?): BoardSizeEnum = values().firstOrNull { it.size == value } ?: BOARD_SIZE_DEFAULT
+        fun load(value: Int?): BoardSizeEnum = values().firstOrNull { it.width == value } ?: BOARD_SIZE_DEFAULT
 
-        fun fixBoardSize(size: Int?): Int {
-            return size?.let {
-                if (it < minSize) minSize
+        fun fixBoardWidth(width: Int?): Int {
+            return width?.let {
+                if (it < minWidth) minWidth
                 else {
-                    if (it > maxSize) maxSize
+                    if (it > maxWidth) maxWidth
                     else it
                 }
-            } ?: BOARD_SIZE_DEFAULT.size
+            } ?: BOARD_SIZE_DEFAULT.width
         }
 
 
         /** To avoid Square root calculation */
-        fun squaredToSize(sq: Int): Int = values().firstOrNull { it.sizeSquared == sq }
-            ?.size
+        fun sizeToWidth(sq: Int): Int = values().firstOrNull { it.size == sq }
+            ?.width
             ?: 0
 
-        fun isValidBoardSize(size: Int) = size >= minSize && size <= maxSize
+        fun isValidBoardWidth(width: Int) = width >= minWidth && width <= maxWidth
     }
 }
