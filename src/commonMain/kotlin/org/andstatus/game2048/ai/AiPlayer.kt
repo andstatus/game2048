@@ -1,5 +1,6 @@
 package org.andstatus.game2048.ai
 
+import korlibs.io.concurrent.atomic.KorAtomicRef
 import korlibs.time.Stopwatch
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.meanBy
@@ -11,27 +12,35 @@ import org.andstatus.game2048.model.PlyAndPosition.Companion.allowedRandomPly
 import org.andstatus.game2048.model.PlyEnum
 import org.andstatus.game2048.model.PlyEnum.Companion.UserPlies
 import org.andstatus.game2048.myLog
-import org.andstatus.game2048.timeIsUp
 import kotlin.math.pow
 
 /** @author yvolk@yurivolkov.com */
 class AiPlayer(val settings: Settings) {
+    private val stopwatch: Stopwatch = Stopwatch()
+    val maxSeconds: Int = when (settings.aiAlgorithm) {
+        AiAlgorithm.RANDOM -> 5
+        AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> 5
+        AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> 5
+        AiAlgorithm.MAX_SCORE_OF_N_MOVES -> 5
+        AiAlgorithm.LONGEST_RANDOM_PLAY -> 10
+    }
+    val timeIsUp get() = stopwatch.elapsed.seconds >= maxSeconds
 
     private class FirstMove(val plyEnum: PlyEnum, val positions: List<GamePosition>) {
         fun randomComputerPly() = FirstMove(plyEnum, positions.map { it.randomComputerPly().position })
-        inline fun mapPliesAndPositions(action: (List<GamePosition>) -> List<GamePosition>) =
+        inline fun mapPliesAndPositions(action: (List<GamePosition>) -> List<GamePosition>): FirstMove =
             FirstMove(plyEnum, action(this.positions))
 
         override fun toString(): String = "$plyEnum, positions:${positions.size}"
     }
 
-    fun nextPly(position: GamePosition): AiResult = Stopwatch().start().let { stopWatch ->
+    fun nextPly(position: GamePosition): AiResult = stopwatch.start().let { stopWatch ->
         when (settings.aiAlgorithm) {
             AiAlgorithm.RANDOM -> AiResult(allowedRandomPly(position))
             AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> moveWithMaxScore(position)
-            AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(position, 12, 5)
-            AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(position, 12, 5)
-            AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(position, 3, 10)
+            AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(position, 12)
+            AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(position, 12)
+            AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(position, 3)
         }.withContext(position, stopWatch.elapsed.millisecondsInt)
             .also { myLog(it) }
     }
@@ -43,8 +52,8 @@ class AiPlayer(val settings: Settings) {
         ?.let(::AiResult)
         ?: AiResult.empty(position)
 
-    private fun maxEmptyBlocksNMoves(position: GamePosition, nMoves: Int, maxSeconds: Int): AiResult =
-        playNMoves(position, nMoves, timeIsUp(maxSeconds))
+    private fun maxEmptyBlocksNMoves(position: GamePosition, nMoves: Int): AiResult =
+        playNMoves(position, nMoves)
             .maxByOrNull {
                 it.positions.meanBy { it.freeCount() }
             }
@@ -58,8 +67,8 @@ class AiPlayer(val settings: Settings) {
             }
             ?: AiResult.empty(position)
 
-    private fun maxScoreNMoves(position: GamePosition, nMoves: Int, maxSeconds: Int): AiResult =
-        playNMoves(position, nMoves, timeIsUp(maxSeconds))
+    private fun maxScoreNMoves(position: GamePosition, nMoves: Int): AiResult =
+        playNMoves(position, nMoves)
             .map {
                 AiResult(it.plyEnum,
                     it.positions.mean() ?: position,
@@ -70,27 +79,26 @@ class AiPlayer(val settings: Settings) {
             }
             .maxByOrNull { it.referencePosition.score } ?: AiResult.empty(position)
 
-    private fun playNMoves(position: GamePosition, nMoves: Int, timeIsUp: () -> Boolean): List<FirstMove> {
+    private fun playNMoves(position: GamePosition, nMoves: Int): List<FirstMove> {
         var allMoves: List<FirstMove> = emptyList()
         for (i in 1..nMoves) {
             allMoves = if (allMoves.isEmpty()) {
                 playUserPlies(position).map { it.randomComputerPly() }
             } else allMoves.map {
-                it.mapPliesAndPositions { positions: List<GamePosition> -> positions
-                    .flatMap {
-                        if (timeIsUp()) return allMoves
+                it.mapPliesAndPositions { positions: List<GamePosition> ->
+                    positions.flatMap {
+                        if (timeIsUp) return allMoves
                         playUserPlies(it)
                     }
-                    .map { it.randomComputerPly() }
-                    .flatMap { it.positions }
+                        .map { it.randomComputerPly() }
+                        .flatMap { it.positions }
                 }
             }
         }
         return allMoves
     }
 
-    private fun longestRandomPlayAdaptive(position: GamePosition, powerInitial: Int, maxSeconds: Int): AiResult {
-        val timeIsUp = timeIsUp(maxSeconds)
+    private fun longestRandomPlayAdaptive(position: GamePosition, powerInitial: Int): AiResult {
         var attemptsPowerOf2: Int = powerInitial + when (position.freeCount()) {
             in 0..1 -> 4
             in 2..5 -> 3
@@ -101,11 +109,11 @@ class AiPlayer(val settings: Settings) {
         var additionalAttempts = 0
         var prevMoves: List<FirstMove> = emptyList()
         do {
-            prevMoves = longestRandomPlay(prevMoves, position, attemptsPowerOf2, timeIsUp)
+            prevMoves = longestRandomPlay(prevMoves, position, attemptsPowerOf2)
             val bestMove: FirstMove? = prevMoves.maxByOrNull { it.positions.meanBy(GamePosition::score) }
             val referencePosition = bestMove?.positions?.mean() ?: position
             val maxPosition = bestMove?.positions?.maxByOrNull { it.score } ?: position
-            if (maxPosition.moveNumber - position.moveNumber > 50 || additionalAttempts > 13 || timeIsUp())
+            if (maxPosition.moveNumber - position.moveNumber > 50 || additionalAttempts > 13 || timeIsUp)
                 return bestMove?.let { firstMove ->
                     AiResult(
                         firstMove.plyEnum,
@@ -132,7 +140,7 @@ class AiPlayer(val settings: Settings) {
 
     private fun longestRandomPlay(
         prevResult: List<FirstMove>, position: GamePosition,
-        attemptsPower: Int, timeIsUp: () -> Boolean
+        attemptsPower: Int
     ): List<FirstMove> {
         var allMoves: List<FirstMove> = prevResult
         val firstMoves: List<FirstMove> = playUserPlies(position)
@@ -143,9 +151,8 @@ class AiPlayer(val settings: Settings) {
                 val nextMove = firstMove.randomComputerPly()
                     .mapPliesAndPositions {
                         it.map { pos ->
-                            if (timeIsUp() && allMoves.isNotEmpty()) return allMoves
-
-                            playRandomTillEnd(firstMove.plyEnum, pos)
+                            if (timeIsUp) pos
+                            else playRandomTillEnd(firstMove.plyEnum, pos)
                         }
                     }
 
@@ -160,7 +167,7 @@ class AiPlayer(val settings: Settings) {
     }
 
     private fun playRandomTillEnd(plyEnum: PlyEnum, positionIn: GamePosition): GamePosition {
-        var position = PlyAndPosition(Ply(PlayerEnum.USER,plyEnum,0, 0, emptyList()), positionIn)
+        var position = PlyAndPosition(Ply(PlayerEnum.USER, plyEnum, 0, 0, emptyList()), positionIn)
         do {
             var nextPosition = allowedRandomPly(position.position)
             if (nextPosition.ply.isNotEmpty()) {
@@ -169,7 +176,7 @@ class AiPlayer(val settings: Settings) {
             if (nextPosition.ply.isNotEmpty()) {
                 position = nextPosition
             }
-        } while (nextPosition.ply.isNotEmpty())
+        } while (nextPosition.ply.isNotEmpty() && !timeIsUp)
         return position.position
     }
 
@@ -179,4 +186,8 @@ class AiPlayer(val settings: Settings) {
                 .takeIf { it.ply.isNotEmpty() }
                 ?.let { FirstMove(plyEnum, listOf(it.position)) }
         }
+
+    companion object {
+        val aiLaunched: KorAtomicRef<AiPlayer?> = KorAtomicRef(null)
+    }
 }

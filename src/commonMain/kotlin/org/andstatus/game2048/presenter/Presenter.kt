@@ -19,7 +19,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.andstatus.game2048.ai.AiAlgorithm
-import org.andstatus.game2048.ai.AiPlayer
 import org.andstatus.game2048.exitApp
 import org.andstatus.game2048.gameIsLoading
 import org.andstatus.game2048.gameStopWatch
@@ -57,7 +56,6 @@ import org.andstatus.game2048.view.showRecentGames
 class Presenter(val view: ViewData, history: History) {
     val model = Model(history)
     private val multithreadedScope: CoroutineScope get() = model.history.settings.multithreadedScope
-    val aiPlayer = AiPlayer(history.settings)
     val mainViewShown = korAtomic(false)
     val isPresenting = korAtomic(false)
     val presentedCounter = korAtomic(0L)
@@ -298,7 +296,7 @@ class Presenter(val view: ViewData, history: History) {
     fun onGameMenuClick() = afterStop {
         logClick("GameMenu")
         hideMainView()
-        view.showGameMenu(model.gameMode.aiEnabled)
+        view.showGameMenu(model.gameMode.aiEnabled, model.history.recentGames.size)
         pauseGame()
     }
 
@@ -566,7 +564,7 @@ class Presenter(val view: ViewData, history: History) {
         }
     }
 
-    val showMainViewStarted = korAtomic(false)
+    private val showMainViewStarted = korAtomic(false)
     private fun showMainView() {
         if (showMainViewStarted.compareAndSet(false, true)) {
             try {
