@@ -30,9 +30,10 @@ class ScoreBar(val viewData: ViewData): Container() {
         with(viewData) {
             val scoreButtonWidth = (viewData.boardWidth - 2 * buttonMargin) / 3
             val barTopInd = 1
-            val textYPadding = 28 * gameScale
-            val scoreLabelSize = cellSize * 0.30f
-            val scoreTextSize = cellSize * 0.5f
+            val textYLabelPadding = 28 * gameScale
+            val textYPadding = textYLabelPadding * 0.6
+            val scoreLabelSize = buttonSize * 0.53f
+            val scoreTextSize = buttonSize * 0.66f
 
             var posX = statusBarLeft
             val bgScore = roundRect(Size(scoreButtonWidth, buttonSize), RectCorners(buttonRadius), fill = gameColors.buttonBackground) {
@@ -42,7 +43,7 @@ class ScoreBar(val viewData: ViewData): Container() {
                 TextAlignment.MIDDLE_CENTER
             ) {
                 positionX(bgScore.pos.x + scoreButtonWidth / 2)
-                positionY(buttonYs[barTopInd + 1] + textYPadding)
+                positionY(buttonYs[barTopInd + 1] + textYLabelPadding)
             }
             score = text("", scoreTextSize, gameColors.buttonText, font, TextAlignment.MIDDLE_CENTER) {
                 centerXOn(bgScore)
@@ -56,7 +57,7 @@ class ScoreBar(val viewData: ViewData): Container() {
                 TextAlignment.MIDDLE_CENTER
             ) {
                 positionX(bgRetries.pos.x + scoreButtonWidth / 2)
-                positionY(buttonYs[barTopInd + 2] + textYPadding)
+                positionY(buttonYs[barTopInd + 2] + textYLabelPadding)
             }
             retries = text("", scoreTextSize, gameColors.buttonText, font, TextAlignment.MIDDLE_CENTER) {
                 centerXOn(bgRetries)
@@ -71,7 +72,7 @@ class ScoreBar(val viewData: ViewData): Container() {
                 TextAlignment.MIDDLE_CENTER
             ) {
                 positionX(bgBest.pos.x + scoreButtonWidth / 2)
-                positionY(buttonYs[barTopInd + 1] + textYPadding)
+                positionY(buttonYs[barTopInd + 1] + textYLabelPadding)
             }
             bestScore = text("", scoreTextSize, gameColors.buttonText, font, TextAlignment.MIDDLE_CENTER) {
                 centerXOn(bgBest)
@@ -89,7 +90,7 @@ class ScoreBar(val viewData: ViewData): Container() {
                 TextAlignment.MIDDLE_CENTER
             ) {
                 positionX(bgMove.pos.x + scoreButtonWidth / 2)
-                positionY(buttonYs[barTopInd + 1] + textYPadding)
+                positionY(buttonYs[barTopInd + 1] + textYLabelPadding)
             }
             moveNumber = text("", scoreTextSize, gameColors.buttonText, font, TextAlignment.MIDDLE_CENTER) {
                 centerXOn(bgMove)
@@ -103,7 +104,7 @@ class ScoreBar(val viewData: ViewData): Container() {
                 TextAlignment.MIDDLE_CENTER
             ) {
                 positionX(bgTime.pos.x + scoreButtonWidth / 2)
-                positionY(buttonYs[barTopInd + 2] + textYPadding)
+                positionY(buttonYs[barTopInd + 2] + textYLabelPadding)
             }
             gameTime = text("00:00:00", scoreLabelSize, gameColors.buttonText, font, TextAlignment.MIDDLE_CENTER) {
                 centerXOn(bgTime)
