@@ -324,10 +324,14 @@ class Presenter(val view: ViewData, history: History) {
 
     fun onDeleteGameClick() = afterStop {
         logClick("DeleteGame")
-        showMainView()
         model.history.deleteCurrent()
-        present {
-            model.tryAgain()
+        showMainView()
+        if (model.history.currentGame.isEmpty) {
+            present {
+                model.tryAgain()
+            }
+        } else {
+            openGame(model.history.currentGame.id)
         }
     }
 
@@ -353,7 +357,10 @@ class Presenter(val view: ViewData, history: History) {
     fun onHistoryItemClick(id: Int) = afterStop {
         logClick("History$id")
         showMainView()
+        openGame(id)
+    }
 
+    private fun openGame(id: Int) {
         val openGamePlies = model.openGame(id)
         val newBoardWidth = model.history.currentGame.shortRecord.board.width
         if (newBoardWidth == model.settings.boardWidth) {

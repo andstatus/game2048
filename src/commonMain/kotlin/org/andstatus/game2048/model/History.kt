@@ -155,11 +155,11 @@ class History(
     fun deleteCurrent() = deleteGame(currentGame.id)
 
     private fun deleteGame(id: Int) {
-        GameRecord.delete(settings, id)
         recentGamesRef.value = recentGames.filterNot { it.id == id }
         if (currentGame.id == id) {
             currentGameRef.value = latestOtherGame(id) ?: stubGame
         }
+        GameRecord.delete(settings, id)
     }
 
     private fun latestOtherGame(notTheId: Int): GameRecord? = recentGames
