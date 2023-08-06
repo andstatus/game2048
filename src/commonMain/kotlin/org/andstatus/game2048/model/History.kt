@@ -1,9 +1,9 @@
 package org.andstatus.game2048.model
 
-import korlibs.time.DateTimeTz
-import korlibs.time.weeks
 import korlibs.io.concurrent.atomic.KorAtomicRef
 import korlibs.io.concurrent.atomic.korAtomic
+import korlibs.time.DateTimeTz
+import korlibs.time.weeks
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -32,7 +32,7 @@ class History(
     val currentGame: GameRecord get() = currentGameRef.value
 
     // 1. Info on previous games
-    var bestScore: Int = settings.storage.getOrNull(keyBest)?.toInt() ?: 0
+    var bestScore: Int = settings.storage.getInt(keyBest, 0)
 
     // 2. This game, see for the inspiration https://en.wikipedia.org/wiki/Portable_Game_Notation
     /** 0 means that the pointer is turned off */
@@ -93,6 +93,7 @@ class History(
             }
             currentGameRef.value = it
             settings.storage[keyCurrentGameId] = it.id
+            updateBestScore()
             gameMode.modeEnum = if (it.isEmpty) GameModeEnum.PLAY else GameModeEnum.STOP
         }
         ?: run {
@@ -122,7 +123,7 @@ class History(
         (currentGame.score).let { score ->
             if (bestScore < score) {
                 bestScore = score
-                settings.storage[keyBest] = score.toString()
+                settings.storage[keyBest] = score
             }
         }
     }
@@ -183,9 +184,11 @@ class History(
                     redoPlyPointer < 1 -> {
                         game.shortRecord.bookmarks
                     }
+
                     redoPlyPointer == 1 -> {
                         emptyList()
                     }
+
                     else -> {
                         game.shortRecord.bookmarks.filterNot { it.plyNumber >= redoPlyPointer }
                     }
@@ -194,15 +197,20 @@ class History(
                     redoPlyPointer < 1 -> {
                         game.gamePlies
                     }
+
                     redoPlyPointer == 1 -> {
                         GamePlies(game.shortRecord, emptySequenceLineReader)
                     }
+
                     else -> {
                         game.gamePlies.take(redoPlyPointer - 1)
                     }
                 } + position.ply
                 with(game.shortRecord) {
-                    GameRecord(ShortRecord(settings, board, note, id, start, position.position, bookmarksNew), gamePliesNew)
+                    GameRecord(
+                        ShortRecord(settings, board, note, id, start, position.position, bookmarksNew),
+                        gamePliesNew
+                    )
                 }
             }
         }

@@ -1,4 +1,1 @@
-v.1.12.0. * Now we can Share and load huge game histories.
-* Keep the game screen on during inactivity.
-* "Exit app" button added to the "Game actions" menu.
-* Fixed "How to play" screen overlays with main screen or "Game actions" opens after closing the "How to play" screen.
+v.1.13.2. * Select board size from 3x3 up to 8x8, and not 4x4 default classic size only.

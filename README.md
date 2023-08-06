@@ -41,8 +41,9 @@ see [User experience](doc/User-Experience.md).
 * Turn on AI (Artificial Intelligence) mode and let the AI play for you.
   Increase or decrease AI player speed. Stop it and continue playing yourself.
   Choose one of several AI algorithms, see how they play and compare them.
+* Select board size from 3x3 up to 8x8, and not 4x4 default classic size only.  
 * Bookmarks at the interesting game positions. Return to a bookmark and play again from that place.
-* Move number and game duration shown. The time starts when you make a move.
+* Move number and game duration are shown. The time starts when you make a move.
   It stops when you tap Undo or Pause button.
 * "Watch" mode. Auto replay current game forward and backwards at any speed,
   stop at any position.
@@ -57,13 +58,13 @@ see [User experience](doc/User-Experience.md).
 * The app is multilingual. Please add new translations [2048 Open Fun Game at Crowdin](https://crowdin.com/project/2048-open-fun-game)
 
 <p>
-<img title="Main screen of Game2048 app. Play mode. You see Bookmark and Pause buttons" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/1.png" height="400" />
+<img title="Main screen of Game2048 app. Play mode ('Game pad' button in the top left corner). You see Bookmark and Pause buttons" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/1.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
 <img title="Dark Theme. Play mode in Landscape orientation. You see Bookmark button. Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/2.png" width="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Dark Theme. Watch mode. Now watching the game movements backwards. To the left: 'Game pad' button to switch to Play mode. Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/3.png" height="400" />
+<img title="6x6 board. Light theme. Watch mode ('Movie' button in the top left corner). Now watching the game movements backwards. Press the 'Movie' button to switch to Play mode. Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/3.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Game actions menu of Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/4.png" height="400" />
+<img title="Game actions menu of Game2048 app. 'Delete game' option is shown when AI is turned off (and its 'Select AI algorithm' menu item frees a space)" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/4.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
 <img title="Open recent game, then watch or play it. Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/5.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
@@ -103,6 +104,10 @@ in order to ease understanding of implementation logic.
 <a id="changelog"/>
 
 ## Changelog
+
+### 2023-08-06 v.1.13.2 (37) Different board sizes.
+* Previously we had only 4x4 classic game board. Now "Select board size" menu item 
+added allowing to select boards from 3x3 to 8x8. [#9](https://github.com/andstatus/game2048/issues/9)
 
 ### 2022-03-20 v.1.12.0 (34) Share and Load huge game histories.
 * Now we can Share and Load huge game histories. Successfully tested with
@@ -148,9 +153,13 @@ Below are the compiling and running instructions taken from the template.
 
 You can open this project in IntelliJ IDEA by opening the folder or the build.gradle.kts file.
 
+You can find this template at GitHub: <https://github.com/korlibs/korge-hello-world>
+
 For Windows, change all the `./gradlew` for `gradlew.bat`.
 
 You should use Gradle 5.5 or greater and Java 8 or greater.
+
+Tasks related to specific targets, might not be available if the target is not enabled, make sure that the required targets are enabled/not commented out in the `korge {}` section inside `build.gradle.kts`.
 
 ## Compiling for the JVM (Desktop)
 
@@ -271,8 +280,8 @@ won't include Swift's runtime.
 
 ```bash
 ./gradlew iosBuildSimulatorDebug          # Creates an APP file
-./gradlew iosInstallSimulatorDebug        # Installs an APP file in the simulator
-./gradlew iosRunSimulatorDebug            # Runs the APP in the simulator
+./gradlew installIosSimulatorDebug        # Installs an APP file in the simulator
+./gradlew runIosSimulatorDebug            # Runs the APP in the simulator
 
 ```
 
@@ -282,10 +291,9 @@ with XCode and do additional tasks there.
 It uses [XCodeGen](https://github.com/yonaskolb/XcodeGen) for the project generation
 and [ios-deploy](https://github.com/ios-control/ios-deploy) for deploying to real devices.
 
-### Apache Cordova (JS)
-
-```bash
-./gradlew compileCordovaIos               # Just compiles cordova from iOS
-./gradlew runCordovaIos                   # Runs the application (dce'd, minimized and webpacked) in an iOS device
-./gradlew runCordovaIosNoMinimized        # Runs the application in iOS without minimizing (so you can use Safari on macOS to debug the application easier)
-```
+## JS-game deployment to GitHub Pages
+- Go to [settings page](../../settings) and enable GitHub Pages
+- Choose branch `github-pages` and select folder `/ (root)`
+- After that you can use link:  
+  [link to JS-game](../../deployments/activity_log?environment=github-pages), click "View Deployment"
+- When you push to main or master branch, - deployment process will start again with GitHub Actions.  

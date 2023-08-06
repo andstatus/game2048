@@ -296,7 +296,7 @@ class Presenter(val view: ViewData, history: History) {
     fun onGameMenuClick() = afterStop {
         logClick("GameMenu")
         hideMainView()
-        view.showGameMenu(model.gameMode.aiEnabled, model.history.recentGames.size)
+        view.showGameMenu(model.gameMode, model.history.recentGames.size)
         pauseGame()
     }
 
@@ -579,7 +579,7 @@ class Presenter(val view: ViewData, history: History) {
                 myLogInTest { "showMainView started" }
                 if (!view.closed) {
                     view.mainView.show(buttonsToShow(), gameMode.speed)
-                    if (gameMode.aiEnabled && gameMode.speed == 0) {
+                    if (gameMode.isPlaying && gameMode.aiEnabled && gameMode.speed == 0) {
                         multithreadedScope.showAiTip(this@Presenter)
                         myLog("After AI Launch")
                     }
@@ -635,9 +635,6 @@ class Presenter(val view: ViewData, history: History) {
 
             else -> {
                 list.add(AppBarButtonsEnum.WATCH)
-                list.add(
-                    if (gameMode.aiEnabled) AppBarButtonsEnum.AI_ON else AppBarButtonsEnum.AI_OFF
-                )
                 if (model.moveNumber > 1 && model.isBookmarked) {
                     list.add(AppBarButtonsEnum.BOOKMARKED)
                 } else {

@@ -2,8 +2,9 @@ package org.andstatus.game2048.view
 
 import korlibs.korge.view.addTo
 import korlibs.korge.view.position
+import org.andstatus.game2048.model.GameMode
 
-fun ViewData.showGameMenu(aiEnabled: Boolean, numberOfRecentGames: Int) = myWindow("game_actions") {
+fun ViewData.showGameMenu(gameMode: GameMode, numberOfRecentGames: Int) = myWindow("game_actions") {
     var xInd = 0
     var yInd = 0
 
@@ -29,14 +30,15 @@ fun ViewData.showGameMenu(aiEnabled: Boolean, numberOfRecentGames: Int) = myWind
         }
     }
 
-    if (aiEnabled) {
+    val aiShown = gameMode.isPlaying && gameMode.aiEnabled
+    if (aiShown) {
         button(GameMenuButtonsEnum.SELECT_AI_ALGORITHM) { selectAiAlgorithm(settings) }
     }
     button(GameMenuButtonsEnum.BOOKMARKS, presenter::onBookmarksClick)
     button(GameMenuButtonsEnum.RECENT, presenter::onRecentClick)
     button(GameMenuButtonsEnum.TRY_AGAIN, presenter::onTryAgainClick)
     button(GameMenuButtonsEnum.SHARE, presenter::onShareClick)
-    if (!aiEnabled || isPortrait) {
+    if (!aiShown || isPortrait) {
         button(GameMenuButtonsEnum.LOAD, presenter::onLoadClick)
     }
     button(GameMenuButtonsEnum.SELECT_THEME) { selectTheme(settings) }
