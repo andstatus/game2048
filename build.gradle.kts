@@ -38,8 +38,8 @@ korge {
     androidCompileSdk = 30
     androidTargetSdk = 31
 
-    versionCode = 37
-    version = "1.13.2"
+    versionCode = 38
+    version = "1.14.0"
 
     targetJvm()
     targetJs()

@@ -24,45 +24,43 @@ enum class Gravity {
 }
 
 inline fun Container.wrappableText(
-        text: String,
-        wrapWidth: Float,
-        textSize: Float = 16.0f,
-        color: RGBA = Colors.WHITE,
-        font: Resourceable<out Font> = DefaultTtfFont,
-        gravity: Gravity = Gravity.CENTER,
-        callback: @ViewDslMarker WrappableText.() -> Unit = {}
+    text: String,
+    wrapWidth: Double,
+    textSize: Double = 16.0,
+    color: RGBA = Colors.WHITE,
+    font: Resourceable<out Font> = DefaultTtfFont,
+    gravity: Gravity = Gravity.CENTER,
+    callback: @ViewDslMarker WrappableText.() -> Unit = {}
 ) = WrappableText(
-        text,
-        textSize = textSize,
-        color = color,
-        font = font,
-        wrapWidth = wrapWidth,
-        renderer = WrappableTextRenderer(wrapWidth, gravity)
+    text,
+    textSize = textSize,
+    color = color,
+    font = font,
+    wrapWidth = wrapWidth,
+    renderer = WrappableTextRenderer(wrapWidth, gravity)
 ).addTo(this, callback)
 
 class WrappableText(
-        text: String, textSize: Float = DEFAULT_TEXT_SIZE,
-        color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
-        alignment: TextAlignment = TextAlignment.TOP_LEFT,
-        wrapWidth: Float,
-        renderer: TextRenderer<String>,
-        autoScaling: Boolean = true
+    text: String, textSize: Double = DEFAULT_TEXT_SIZE,
+    color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
+    alignment: TextAlignment = TextAlignment.TOP_LEFT,
+    wrapWidth: Double,
+    renderer: TextRenderer<String>,
+    autoScaling: Boolean = true
 ) : Text(text, textSize, color, font, alignment, renderer, autoScaling) {
     init {
         val f = this.font.getOrNull()
 
         if (f is Font) {
             val metrics: TextMetrics = f.getTextBounds(textSize, text, renderer = renderer)
-            Rectangle( 0.0f,0.0f, wrapWidth, metrics.bounds.height).let {
-                setTextBounds(it)
-            }
+            setTextBounds(Rectangle(0.0, 0.0, wrapWidth, metrics.bounds.height))
         }
     }
 }
 
-class WrappableTextRenderer(val wrapWidth: Float, val gravity: Gravity) : TextRenderer<String> {
+class WrappableTextRenderer(private val wrapWidth: Double, private val gravity: Gravity) : TextRenderer<String> {
 
-    override fun ITextRendererActions.run(text: String, size: Float, defaultFont: Font) {
+    override fun ITextRendererActions.run(text: String, size: Double, defaultFont: Font) {
         myLog("To wrap at $wrapWidth: $text")
         val reader = WStringReader(text)
 
@@ -73,9 +71,9 @@ class WrappableTextRenderer(val wrapWidth: Float, val gravity: Gravity) : TextRe
         val spaceWidth = getGlyphMetrics(reader, ' '.code).xadvance + getKerning(' '.code, 'A'.code)
 
         for (wrapped in text.split('\n')) {
-            var curX = 0.0f
+            var curX = 0.0
             for (word in wrapped.split(' ')) {
-                var wordWidth = 0.0f
+                var wordWidth = 0.0
                 var curWord = ""
                 for (n in word.indices) {
                     val c = word[n].code
@@ -93,8 +91,8 @@ class WrappableTextRenderer(val wrapWidth: Float, val gravity: Gravity) : TextRe
                         } else {
                             lines.add(Line(mutableListOf(word1)))
                         }
-                        curX = 0.0f
-                        wordWidth = 0.0f
+                        curX = 0.0
+                        wordWidth = 0.0
                         curWord = ""
                         lines.add(Line())
                     }
@@ -118,12 +116,12 @@ class WrappableTextRenderer(val wrapWidth: Float, val gravity: Gravity) : TextRe
         for (line in lines) {
             myLog("Line ${line.calculateWidth(spaceWidth)}: $line")
             // TODO: Figure out how to use "gravity" and if this is still needed...
-            var start: Float =
-                    when (gravity) {
-                        Gravity.LEFT -> 0.0f
-                        Gravity.CENTER -> (wrapWidth - line.calculateWidth(spaceWidth)) / 2
-                        Gravity.RIGHT -> wrapWidth - line.calculateWidth(spaceWidth)
-                    }
+            var start: Double =
+                when (gravity) {
+                    Gravity.LEFT -> 0.0
+                    Gravity.CENTER -> (wrapWidth - line.calculateWidth(spaceWidth)) / 2
+                    Gravity.RIGHT -> wrapWidth - line.calculateWidth(spaceWidth)
+                }
 
             for (word in line.words) {
                 // No "x" anymore
@@ -154,12 +152,12 @@ class WrappableTextRenderer(val wrapWidth: Float, val gravity: Gravity) : TextRe
     }
 
     private data class Line(
-            val words: MutableList<Word> = mutableListOf()
+        val words: MutableList<Word> = mutableListOf()
     ) {
-        fun calculateWidth(spaceWidth: Float): Float {
-            return words.sumOf{ it.width.toDouble() }.toFloat() + (words.size - 1) * spaceWidth
+        fun calculateWidth(spaceWidth: Double): Double {
+            return words.sumOf { it.width } + (words.size - 1) * spaceWidth
         }
     }
 
-    private data class Word(val text: String, val width: Float)
+    private data class Word(val text: String, val width: Double)
 }

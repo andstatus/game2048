@@ -15,9 +15,10 @@ import korlibs.korge.view.addTo
 import korlibs.korge.view.position
 import korlibs.korge.view.solidRect
 import korlibs.math.interpolation.Easing
-import korlibs.memory.Platform
+import korlibs.platform.Platform
 import korlibs.time.Stopwatch
 import korlibs.time.TimeSpan
+import korlibs.time.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope

@@ -2,6 +2,8 @@ package org.andstatus.game2048.ai
 
 import korlibs.io.concurrent.atomic.KorAtomicRef
 import korlibs.time.Stopwatch
+import korlibs.time.millisecondsInt
+import korlibs.time.seconds
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.meanBy
 import org.andstatus.game2048.model.GamePosition

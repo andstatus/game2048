@@ -1,7 +1,7 @@
 package org.andstatus.game2048.view
 
-import korlibs.io.async.delay
 import korlibs.io.async.launch
+import korlibs.korge.time.delay
 import korlibs.korge.view.Container
 import korlibs.korge.view.addTo
 import korlibs.korge.view.position

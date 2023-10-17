@@ -1,6 +1,7 @@
 package org.andstatus.game2048.presenter
 
 import korlibs.time.Stopwatch
+import korlibs.time.millisecondsLong
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

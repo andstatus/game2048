@@ -1,7 +1,8 @@
 package org.andstatus.game2048.model
 
 import korlibs.time.DateTimeTz
-import korlibs.io.lang.format
+import korlibs.time.seconds
+import korlibs.util.format
 import org.andstatus.game2048.compareAndSetFixed
 import org.andstatus.game2048.initAtomicReference
 
@@ -51,7 +52,7 @@ class GameClock(initialSeconds: Int = 0) {
 
     val playedSecondsString: String
         get() {
-            fun Int.format() = "%02d".format(this)
+            fun Int.format(): String = "%02d".format(this)
 
             val seconds = playedSeconds
             val secOnly: Int = seconds.rem(60)

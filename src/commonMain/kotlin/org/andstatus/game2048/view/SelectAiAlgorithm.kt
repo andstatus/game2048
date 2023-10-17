@@ -1,11 +1,11 @@
 package org.andstatus.game2048.view
 
-import korlibs.time.milliseconds
+import korlibs.io.async.launch
+import korlibs.korge.time.delay
 import korlibs.korge.view.Container
 import korlibs.korge.view.addTo
 import korlibs.korge.view.position
-import korlibs.io.async.delay
-import korlibs.io.async.launch
+import korlibs.time.milliseconds
 import org.andstatus.game2048.Settings
 import org.andstatus.game2048.ai.AiAlgorithm
 
@@ -28,7 +28,10 @@ fun ViewData.selectAiAlgorithm(settings: Settings) = myWindow("select_ai_algorit
             if (yInd > 4) return Container()
         }
 
-        return wideButton(if (buttonEnum == selected) "radio_button_checked" else "radio_button_unchecked", buttonEnum.labelKey) {
+        return wideButton(
+            if (buttonEnum == selected) "radio_button_checked" else "radio_button_unchecked",
+            buttonEnum.labelKey
+        ) {
             handler(buttonEnum)
         }.apply {
             position(buttonXs[xInd], buttonYs[yInd])
@@ -37,7 +40,7 @@ fun ViewData.selectAiAlgorithm(settings: Settings) = myWindow("select_ai_algorit
     }
 
 
-    suspend fun showOptions( handler: (AiAlgorithm) -> Unit) {
+    suspend fun showOptions(handler: (AiAlgorithm) -> Unit) {
         val oldButtons = buttons
         buttons = listOf(
             button(AiAlgorithm.RANDOM, handler),
@@ -46,7 +49,7 @@ fun ViewData.selectAiAlgorithm(settings: Settings) = myWindow("select_ai_algorit
             button(AiAlgorithm.MAX_SCORE_OF_N_MOVES, handler),
             button(AiAlgorithm.LONGEST_RANDOM_PLAY, handler),
         )
-        oldButtons.forEach{ b -> b.removeFromParent() }
+        oldButtons.forEach { b -> b.removeFromParent() }
     }
 
     fun onSelected(algorithm: AiAlgorithm) {

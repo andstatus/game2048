@@ -1,9 +1,10 @@
 package org.andstatus.game2048
 
-import korlibs.time.Stopwatch
-import korlibs.logger.Console
 import korlibs.io.concurrent.atomic.KorAtomicRef
 import korlibs.io.lang.substr
+import korlibs.logger.Console
+import korlibs.time.Stopwatch
+import korlibs.time.seconds
 import org.andstatus.game2048.presenter.Presenter
 
 private const val platformSourceFolder = "jvmMain"

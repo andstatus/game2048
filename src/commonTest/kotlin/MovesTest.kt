@@ -1,6 +1,7 @@
-import korlibs.time.Stopwatch
 import korlibs.korge.input.SwipeDirection
 import korlibs.korge.tests.ViewsForTesting
+import korlibs.time.Stopwatch
+import korlibs.time.seconds
 import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.PlacedPiece
@@ -72,8 +73,10 @@ class MovesTest : ViewsForTesting(log = true) {
             presenter.onUndoClick()
         }
         val position3 = presenter.model.gamePosition.copy()
-        assertEquals(position1.pieces.asList(), position3.pieces.asList(), "Board after undo\n" +
-            "Previous :" + position2.pieces.asList())
+        assertEquals(
+            position1.pieces.asList(), position3.pieces.asList(), "Board after undo\n" +
+                "Previous :" + position2.pieces.asList()
+        )
         val piecesOnBoardViews3 = this.presentedPieces()
         assertEquals(position3.pieces.asList(), piecesOnBoardViews3, "Board views after undo")
         assertTrue(presenter.canRedo(), this.historyString())
@@ -82,8 +85,10 @@ class MovesTest : ViewsForTesting(log = true) {
             presenter.onRedoClick()
         }
         val position4 = presenter.model.gamePosition.copy()
-        assertEquals(position2.pieces.asList(), position4.pieces.asList(), "Board after redo\n" +
-                "Previous :" + position3.pieces.asList())
+        assertEquals(
+            position2.pieces.asList(), position4.pieces.asList(), "Board after redo\n" +
+                "Previous :" + position3.pieces.asList()
+        )
         val piecesOnBoardViews4 = this.presentedPieces()
         assertEquals(position4.pieces.asList(), piecesOnBoardViews4, "Board views after redo")
         assertFalse(presenter.canRedo(), this.historyString())

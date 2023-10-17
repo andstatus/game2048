@@ -1,11 +1,11 @@
 package org.andstatus.game2048.view
 
-import korlibs.time.milliseconds
+import korlibs.io.async.launch
+import korlibs.korge.time.delay
 import korlibs.korge.view.Container
 import korlibs.korge.view.addTo
 import korlibs.korge.view.position
-import korlibs.io.async.delay
-import korlibs.io.async.launch
+import korlibs.time.milliseconds
 import org.andstatus.game2048.Settings
 
 fun ViewData.selectTheme(settings: Settings) = myWindow("select_theme") {
@@ -13,7 +13,10 @@ fun ViewData.selectTheme(settings: Settings) = myWindow("select_theme") {
     var buttons: List<Container> = emptyList()
 
     suspend fun button(buttonEnum: ColorThemeEnum, yInd: Int, handler: (ColorThemeEnum) -> Unit): Container =
-        wideButton(if (buttonEnum == selected) "radio_button_checked" else "radio_button_unchecked", buttonEnum.labelKey) {
+        wideButton(
+            if (buttonEnum == selected) "radio_button_checked" else "radio_button_unchecked",
+            buttonEnum.labelKey
+        ) {
             handler(buttonEnum)
         }.apply {
             position(buttonXs[0], buttonYs[yInd])
@@ -21,14 +24,14 @@ fun ViewData.selectTheme(settings: Settings) = myWindow("select_theme") {
         }
 
 
-    suspend fun showOptions( handler: (ColorThemeEnum) -> Unit) {
+    suspend fun showOptions(handler: (ColorThemeEnum) -> Unit) {
         val oldButtons = buttons
         buttons = listOf(
             button(ColorThemeEnum.DEVICE_DEFAULT, 1, handler),
             button(ColorThemeEnum.DARK, 2, handler),
             button(ColorThemeEnum.LIGHT, 3, handler)
         )
-        oldButtons.forEach{ b -> b.removeFromParent() }
+        oldButtons.forEach { b -> b.removeFromParent() }
     }
 
     fun onSelected(colorTheme: ColorThemeEnum) {

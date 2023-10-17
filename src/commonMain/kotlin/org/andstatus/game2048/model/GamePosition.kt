@@ -1,6 +1,6 @@
 package org.andstatus.game2048.model
 
-import korlibs.memory.isOdd
+import korlibs.math.isOdd
 import korlibs.time.DateFormat
 import korlibs.time.DateTime
 import korlibs.time.DateTimeTz

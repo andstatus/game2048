@@ -11,7 +11,6 @@ import korlibs.korge.input.SwipeDirection
 import korlibs.korge.tween.get
 import korlibs.korge.view.Text
 import korlibs.korge.view.onNextFrame
-import korlibs.math.geom.Scale
 import korlibs.math.interpolation.Easing
 import korlibs.time.milliseconds
 import kotlinx.coroutines.CoroutineScope
@@ -794,13 +793,13 @@ class Presenter(val view: ViewData, history: History) {
     private fun animateResultingBlock(animator: Animator, block: Block) {
         val x = block.x
         val y = block.y
-        val scale = block.scale
+        val scale: Double = block.scale
         val scaleChange = 0.1f
         val shift = block.scaledWidth * scaleChange / 2
         animator.tween(
             block::x[x - shift],
             block::y[y - shift],
-            block::scale[Scale(scale.scaleX + scaleChange, scale.scaleY + scaleChange)],
+            block::scale[scale + scaleChange],
             time = gameMode.resultingBlockMs.milliseconds,
             easing = Easing.LINEAR
         )

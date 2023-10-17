@@ -3,6 +3,7 @@ package org.andstatus.game2048
 import korlibs.io.concurrent.atomic.korAtomic
 import korlibs.io.lang.currentThreadId
 import korlibs.time.Stopwatch
+import korlibs.time.milliseconds
 
 val isTestRun = korAtomic(false)
 val gameStopWatch = Stopwatch().start()

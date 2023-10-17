@@ -2,14 +2,15 @@ import korlibs.io.async.AsyncEntryPointResult
 import korlibs.io.async.DEFAULT_SUSPEND_TEST_TIMEOUT
 import korlibs.io.async.runBlockingNoJs
 import korlibs.io.async.suspendTest
-import korlibs.io.async.withTimeout
+import korlibs.io.async.withTimeoutNullable
 import korlibs.io.concurrent.atomic.korAtomic
 import korlibs.korge.KorgeConfig
 import korlibs.korge.KorgeRunner
 import korlibs.korge.internal.KorgeInternal
 import korlibs.korge.tests.ViewsForTesting
 import korlibs.korge.view.Stage
-import korlibs.memory.Platform
+import korlibs.platform.Platform
+import korlibs.time.NIL
 import korlibs.time.Stopwatch
 import korlibs.time.TimeSpan
 import korlibs.time.seconds
@@ -92,7 +93,7 @@ fun ViewsForTesting.viewsTest2(
         }
     }
 
-    withTimeout(timeout ?: TimeSpan.NIL) {
+    withTimeoutNullable(timeout ?: TimeSpan.NIL) {
         while (!completed) {
             delayFrame() //simulateFrame() is private
             delay(20)

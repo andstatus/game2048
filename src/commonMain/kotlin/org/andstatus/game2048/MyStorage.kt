@@ -6,7 +6,7 @@ import korlibs.korge.service.storage.get
 import korlibs.korge.view.Stage
 import korlibs.korge.view.Views
 import korlibs.io.lang.parseInt
-import korlibs.memory.Platform
+import korlibs.platform.Platform
 
 private val keyOpened = "opened"
 
