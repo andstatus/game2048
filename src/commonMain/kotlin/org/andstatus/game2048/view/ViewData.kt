@@ -1,7 +1,6 @@
 package org.andstatus.game2048.view
 
 import korlibs.event.PauseEvent
-import korlibs.event.ResumeEvent
 import korlibs.image.font.Font
 import korlibs.io.concurrent.atomic.korAtomic
 import korlibs.io.lang.Closeable
@@ -83,8 +82,6 @@ suspend fun viewData(stage: Stage): ViewData = coroutineScope {
     splashThemed.removeFromParent()
     view.presenter.onAppEntry()
     view.gameStage.gameWindow.onEvent(PauseEvent) { view.presenter.onPauseEvent() }
-        .also { view.closeables.add(it) }
-    view.gameStage.gameWindow.onEvent(ResumeEvent) { view.presenter.onResumeEvent() }
         .also { view.closeables.add(it) }
     myLog("GameView${view.id} initialized")
     view

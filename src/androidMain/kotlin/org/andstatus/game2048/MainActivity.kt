@@ -11,6 +11,7 @@ class MainActivity : KorgwActivity() {
     private val REQUEST_CODE_OPEN_JSON_GAME = 1
     private var gameRecordConsumer: ((Sequence<String>) -> Unit)? = null
     private var orientation: Int = Configuration.ORIENTATION_UNDEFINED
+    private var paused: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         myLog("onCreate MainActivity")
@@ -23,7 +24,7 @@ class MainActivity : KorgwActivity() {
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         if (orientation != Configuration.ORIENTATION_UNDEFINED && newConfig.orientation != orientation) {
-            this.recreate()
+            recreate()
         }
     }
 
@@ -32,6 +33,19 @@ class MainActivity : KorgwActivity() {
         orientation = resources.configuration.orientation
         main()
         myLog("activityMain ended")
+    }
+
+    override fun onPause() {
+        paused = true
+        super.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (paused) {
+            paused = false
+            recreate()
+        }
     }
 
     override fun finish() {

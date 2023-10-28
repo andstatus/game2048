@@ -812,15 +812,6 @@ class Presenter(val view: ViewData, history: History) {
         )
     }
 
-    fun onResumeEvent() {
-        if (view.closed) {
-            logClick("onResumeEvent view closed")
-        } else {
-            logClick("onResumeEvent reinitializing...")
-            view.reInitialize()
-        }
-    }
-
     suspend fun delayWhilePresenting() {
         while (isPresenting.value) delay(20)
     }
