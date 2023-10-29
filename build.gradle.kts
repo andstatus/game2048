@@ -38,8 +38,16 @@ korge {
     androidCompileSdk = 30
     androidTargetSdk = 31
 
-    versionCode = 39
-    version = "1.14.1"
+    versionCode = 40
+    version = "1.14.2"
+
+    androidManifestApplicationChunk(
+        """
+        <provider android:name="org.andstatus.game2048.data.FileProvider"
+            android:authorities="org.andstatus.game2048.data.FileProvider"
+            android:exported="true" />
+        """.trimIndent()
+    )
 
     targetJvm()
     targetJs()

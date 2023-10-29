@@ -5,10 +5,10 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.util.DisplayMetrics
 import android.view.WindowManager
-import korlibs.korge.view.Stage
 import korlibs.io.android.AndroidCoroutineContext
 import korlibs.io.concurrent.atomic.KorAtomicRef
 import korlibs.io.concurrent.atomic.korAtomic
+import korlibs.korge.view.Stage
 import korlibs.math.geom.SizeInt
 import org.andstatus.game2048.data.FileProvider
 import org.andstatus.game2048.presenter.Presenter
@@ -21,24 +21,28 @@ import kotlin.coroutines.CoroutineContext
 
 private const val platformSourceFolder = "androidMain"
 
-actual val CoroutineContext.gameWindowSize: SizeInt get() =
-    mainActivity?.let { context ->
-        val metrics = DisplayMetrics()
-        (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getRealMetrics(metrics)
-        return SizeInt(metrics.widthPixels, metrics.heightPixels)
-    } ?: defaultPortraitGameWindowSize
+actual val CoroutineContext.gameWindowSize: SizeInt
+    get() =
+        mainActivity?.let { context ->
+            val metrics = DisplayMetrics()
+            (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getRealMetrics(metrics)
+            return SizeInt(metrics.widthPixels, metrics.heightPixels)
+        } ?: defaultPortraitGameWindowSize
 
-private val Stage.mainActivity: MainActivity? get()=
-    coroutineContext.mainActivity
+private val Stage.mainActivity: MainActivity?
+    get() =
+        coroutineContext.mainActivity
 
-private val CoroutineContext.mainActivity: MainActivity? get()=
-    get(AndroidCoroutineContext.Key)?.context as MainActivity?
+private val CoroutineContext.mainActivity: MainActivity?
+    get() =
+        get(AndroidCoroutineContext.Key)?.context as MainActivity?
 
-actual val CoroutineContext.isDarkThemeOn: Boolean get() = mainActivity?.let { context ->
-    val configuration = context.applicationContext.resources.configuration
-    val currentNightMode = configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-    return currentNightMode == Configuration.UI_MODE_NIGHT_YES
-} ?: false
+actual val CoroutineContext.isDarkThemeOn: Boolean
+    get() = mainActivity?.let { context ->
+        val configuration = context.applicationContext.resources.configuration
+        val currentNightMode = configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        return currentNightMode == Configuration.UI_MODE_NIGHT_YES
+    } ?: false
 
 actual val defaultLanguage: String get() = java.util.Locale.getDefault().language
 
@@ -67,7 +71,7 @@ actual fun Presenter.shareText(actionTitle: String, fileName: String, value: Seq
         }
 
         Intent(Intent.ACTION_SEND).apply {
-            type = "*/*"
+            type = if (file.extension.startsWith("json")) "application/json" else "text/plain"
             putExtra(Intent.EXTRA_SUBJECT, fileName)
             putExtra(Intent.EXTRA_STREAM, FileProvider.cachedFilenameToUri(fileName))
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
