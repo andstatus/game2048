@@ -46,6 +46,27 @@ korge {
         <provider android:name="org.andstatus.game2048.data.FileProvider"
             android:authorities="org.andstatus.game2048.data.FileProvider"
             android:exported="true" />
+		<activity android:name=".MyMainActivity"
+			android:banner="@drawable/app_banner"
+			android:icon="@drawable/app_icon"
+			android:label="2048 Open Fun Game"
+			android:logo="@drawable/app_icon"
+			android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+			android:screenOrientation="sensor"
+			android:exported="true"
+		>
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN"/>
+				<category android:name="android.intent.category.LAUNCHER"/>
+			</intent-filter>
+		</activity>
+        <!-- comment out auto-generated activity   
+        """.trimIndent()
+    )
+    androidManifestChunk(
+        """
+        -->    
+	</application>
         """.trimIndent()
     )
 

@@ -5,9 +5,12 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.WindowManager
+import korlibs.render.GameWindowCreationConfig
 import korlibs.render.KorgwActivity
 
-class MainActivity : KorgwActivity() {
+/** It's inconvenient to customize KorGe-generated [MainActivity],
+ * so we replace it with our own "main activity" */
+class MyMainActivity : KorgwActivity(config = GameWindowCreationConfig(msaa = 1, fullscreen = null)) {
     private val REQUEST_CODE_OPEN_JSON_GAME = 1
     private var gameRecordConsumer: ((Sequence<String>) -> Unit)? = null
     private var orientation: Int = Configuration.ORIENTATION_UNDEFINED

@@ -29,13 +29,13 @@ actual val CoroutineContext.gameWindowSize: SizeInt
             return SizeInt(metrics.widthPixels, metrics.heightPixels)
         } ?: defaultPortraitGameWindowSize
 
-private val Stage.mainActivity: MainActivity?
+private val Stage.mainActivity: MyMainActivity?
     get() =
         coroutineContext.mainActivity
 
-private val CoroutineContext.mainActivity: MainActivity?
+private val CoroutineContext.mainActivity: MyMainActivity?
     get() =
-        get(AndroidCoroutineContext.Key)?.context as MainActivity?
+        get(AndroidCoroutineContext.Key)?.context as MyMainActivity?
 
 actual val CoroutineContext.isDarkThemeOn: Boolean
     get() = mainActivity?.let { context ->
