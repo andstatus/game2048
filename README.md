@@ -9,8 +9,8 @@ This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatfo
 
 **Android**.  The latest Beta Android build is available [here](https://github.com/andstatus/game2048/issues/1).
 
-[<img src="doc/images/5x5.png" width="10">](#)
 [<img src="doc/images/get-it-on-rustore.png" alt="Get 2048 Open Fun Game on RuStore" height="60" />](https://apps.rustore.ru/app/org.andstatus.game2048)
+[<img src="doc/images/5x5.png" width="10">](#)
 [<img src="doc/images/get-it-on-google-play.png" alt="Get 2048 Open Fun Game on Google Play" height="60" />](https://play.google.com/store/apps/details?id=org.andstatus.game2048)
 [<img src="doc/images/5x5.png" width="10">](#)
 [<img src="doc/images/get-it-on-fdroid.png" alt="Get it on F-Droid" height="60">](https://f-droid.org/repository/browse/?fdid=org.andstatus.game2048)
