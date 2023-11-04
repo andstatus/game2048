@@ -35,11 +35,11 @@ korge {
     jvmMainClassName = "org.andstatus.game2048.MainKt"
 
     androidMinSdk = 24
-    androidCompileSdk = 30
-    androidTargetSdk = 31
+    androidCompileSdk = 33
+    androidTargetSdk = 33
 
-    versionCode = 40
-    version = "1.14.2"
+    versionCode = 41
+    version = "1.14.3"
 
     androidManifestApplicationChunk(
         """

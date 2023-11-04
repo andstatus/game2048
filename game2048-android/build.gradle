@@ -61,13 +61,13 @@ android {
             ]
         }
     }
-    compileSdkVersion 30
+    compileSdkVersion 33
     defaultConfig {
         applicationId 'org.andstatus.game2048'
         minSdkVersion 24
-        targetSdkVersion 31
-        versionCode 40
-        versionName '1.14.2'
+        targetSdkVersion 33
+        versionCode 41
+        versionName '1.14.3'
 
         archivesBaseName = "game2048-android-$versionName"
     }
