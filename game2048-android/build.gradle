@@ -4,13 +4,13 @@ buildscript {
 		mavenCentral()
 	}
     dependencies {
-		classpath 'com.android.tools.build:gradle:7.4.2'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.10' }
+		classpath 'com.android.tools.build:gradle:8.1.2'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.20' }
 
 }
 
 plugins {
-  id 'com.github.triplet.play' version '2.7.5'
+  id 'com.github.triplet.play' version '3.8.4'
 }
 
 repositories {
@@ -23,6 +23,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
+    namespace "org.andstatus.game2048"
 	compileOptions {
 		sourceCompatibility JavaVersion.VERSION_1_8
 		targetCompatibility JavaVersion.VERSION_1_8
@@ -65,8 +66,8 @@ android {
         applicationId 'org.andstatus.game2048'
         minSdkVersion 24
         targetSdkVersion 31
-        versionCode 34
-        versionName '1.12.0'
+        versionCode 40
+        versionName '1.14.2'
 
         archivesBaseName = "game2048-android-$versionName"
     }
@@ -80,9 +81,8 @@ android {
     }
     sourceSets {
         main {
-            manifest.srcFile '../src/main/AndroidManifest.xml'
+            manifest.srcFile '../src/androidMain/AndroidManifest.xml'
             java.srcDirs += [
-                    "../src/main/java",
                     "../src/commonMain/kotlin",
                     "../src/androidMain/kotlin"]
             assets.srcDirs += [
@@ -104,20 +104,10 @@ if (project.hasProperty("andstatus.google-play-publisher")
 }
 
 dependencies {
-    def korgeVersion = '2.6.3'
+    def korgeVersion = '5.0.6'
 
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10'
-    implementation "com.soywiz.korlibs.klock:klock-android:$korgeVersion"
-    implementation "com.soywiz.korlibs.kmem:kmem-android:$korgeVersion"
-    implementation "com.soywiz.korlibs.kds:kds-android:$korgeVersion"
-    implementation "com.soywiz.korlibs.krypto:krypto-android:$korgeVersion"
-    implementation "com.soywiz.korlibs.korge2:korge-android:$korgeVersion"
-    implementation "com.soywiz.korlibs.korma:korma-android:$korgeVersion"
-    implementation "com.soywiz.korlibs.korio:korio-android:$korgeVersion"
-    implementation "com.soywiz.korlibs.korim:korim-android:$korgeVersion"
-    implementation "com.soywiz.korlibs.korau:korau-android:$korgeVersion"
-    implementation "com.soywiz.korlibs.korgw:korgw-android:$korgeVersion"
-    implementation "com.soywiz.korlibs.korinject:korinject-android:$korgeVersion"
-    implementation "com.soywiz.korlibs.klogger:klogger-android:$korgeVersion"
-    implementation "com.soywiz.korlibs.korte:korte-android:$korgeVersion"
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20'
+    implementation "com.soywiz.korge:korge-android:$korgeVersion"
+    implementation "com.soywiz.korge:korge-core-android:$korgeVersion"
+    implementation "com.soywiz.korge:korge-foundation-android:$korgeVersion"
 }
