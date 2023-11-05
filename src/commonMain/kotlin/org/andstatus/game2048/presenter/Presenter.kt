@@ -528,40 +528,41 @@ class Presenter(val view: ViewData, history: History) {
     private fun presentAnd(block: () -> List<Ply>, next: () -> Unit) = present(next, block)
 
     private fun present(next: () -> Unit = {}, block: () -> List<Ply>) {
-        if (isPresenting.compareAndSet(expect = false, update = true)) with(
+        if (isPresenting.compareAndSet(expect = false, update = true)) {
             presentedCounter.incrementAndGet().let {
                 myLogInTest { "present ${presentedCounter.value} started" }
                 block()
-            }
-        ) {
-            view.korgeCoroutineScope.launch {
-                present2()
-                showMainView()
-                if (model.noMoreMoves()) {
-                    boardViews = boardViews
-                        .hideGameOver()
-                        .copy()
-                        .apply {
-                            view.mainView.boardView.showGameOver()
-                            pauseGame()
-                        }
+            }.let { plies ->
+                view.korgeCoroutineScope.launch {
+                    presentFrom(plies, 0)
+                    if (gameMode.modeEnum != GameModeEnum.AI_PLAY || gameMode.speed !in 1..3) {
+                        // TODO: This is to hide AI tip. Invent explicit way for that
+                        view.mainView.hideStatusBar()
+                    }
+                    showMainView()
+                    if (model.noMoreMoves()) {
+                        boardViews = boardViews
+                            .hideGameOver()
+                            .copy()
+                            .apply {
+                                view.mainView.boardView.showGameOver()
+                                pauseGame()
+                            }
+                    }
+                    myLogInTest { "present ${presentedCounter.value} ended" }
+                    isPresenting.value = false
+                    next()
                 }
-                myLogInTest { "present ${presentedCounter.value} ended" }
-                isPresenting.value = false
-                next()
             }
         } else {
             myLog { "present ${presentedCounter.value} is in progress, skipped" }
         }
     }
 
-    private suspend fun List<Ply>.present2(index: Int = 0) {
-        if (gameMode.modeEnum != GameModeEnum.AI_PLAY || gameMode.speed !in 1..3) {
-            view.mainView.hideStatusBar()
-        }
-        if (index < size) {
-            present3(this[index])
-            present2(index + 1)
+    private suspend fun presentFrom(plies: List<Ply>, from: Int) {
+        if (from < plies.size) {
+            presentPly(plies[from])
+            presentFrom(plies, from + 1)
         }
     }
 
@@ -669,7 +670,7 @@ class Presenter(val view: ViewData, history: History) {
         return list
     }
 
-    private suspend fun present3(ply: Ply) = view.gameStage.animate {
+    private suspend fun presentPly(ply: Ply) = view.gameStage.animate {
         parallel {
             ply.pieceMoves.forEach { move ->
                 when (move) {
@@ -691,7 +692,7 @@ class Presenter(val view: ViewData, history: History) {
                             }
                             sequenceLazy {
                                 boardViews[move.merged]
-                                    ?.let { animateResultingBlock(this, it) }
+                                    ?.let { animateBlock(this, it) }
                             }
                         }
                     }
@@ -707,38 +708,43 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     private fun presentReversed(block: () -> List<Ply>) {
-        if (isPresenting.compareAndSet(expect = false, update = true)) with(
+        if (isPresenting.compareAndSet(expect = false, update = true)) {
             presentedCounter.incrementAndGet().let {
                 myLogInTest { "presentReversed ${presentedCounter.value} started" }
                 block()
-            }
-        ) {
-            view.korgeCoroutineScope.launch {
-                presentReversed2()
-                showMainView()
-                myLogInTest { "presentReversed ${presentedCounter.value} ended" }
-                isPresenting.value = false
+            }.let { plies ->
+                view.korgeCoroutineScope.launch {
+                    presentFromReversed(plies, 0)
+                    showMainView()
+                    myLogInTest { "presentReversed ${presentedCounter.value} ended" }
+                    isPresenting.value = false
+                }
             }
         } else {
             myLog { "presentReversed ${presentedCounter.value} is in progress, skipped" }
         }
     }
 
-    private suspend fun List<Ply>.presentReversed2(index: Int = 0) {
-        if (index < size) {
-            presentReversed3(this[index])
-            presentReversed2(index + 1)
+    private suspend fun presentFromReversed(plies: List<Ply>, from: Int) {
+        if (from < plies.size) {
+            presentPlyReversed(plies[from])
+            presentFromReversed(plies, from + 1)
         }
     }
 
-    private suspend fun presentReversed3(ply: Ply) = view.gameStage.animate {
+    private suspend fun presentPlyReversed(ply: Ply) = view.gameStage.animate {
         parallel {
             ply.pieceMoves.asReversed().forEach { move ->
                 when (move) {
                     is PieceMovePlace -> boardViews[move.first]
-                        ?.also { b ->
-                            sequenceLazy {
-                                b.remove()
+                        ?.also { block ->
+                            sequence {
+                                sequenceLazy {
+                                    animateBlock(this, block)
+                                }
+                                block {
+                                    block.remove()
+                                }
                             }
                         }
                         ?: myLog("No Block at destination during undo: $move")
@@ -753,7 +759,9 @@ class Presenter(val view: ViewData, history: History) {
                         val effectiveBlock = boardViews[move.merged]
                         sequence {
                             sequenceLazy {
-                                effectiveBlock?.let { animateResultingBlock(this, it) }
+                                effectiveBlock?.let {
+                                    animateBlock(this, it)
+                                }
                             }
                             block {
                                 effectiveBlock?.remove()
@@ -790,7 +798,7 @@ class Presenter(val view: ViewData, history: History) {
         boardViews.removeBlock(this)
     }
 
-    private fun animateResultingBlock(animator: Animator, block: Block) {
+    private fun animateBlock(animator: Animator, block: Block) {
         val x = block.x
         val y = block.y
         val scale: Double = block.scale
