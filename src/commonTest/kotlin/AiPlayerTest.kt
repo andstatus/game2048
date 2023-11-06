@@ -15,8 +15,12 @@ class AiPlayerTest : ViewsForTesting(log = true) {
 
         val position1 = presenter.model.gamePosition.copy()
         val aiPlayer = AiPlayer(settings)
-        val result1 = aiPlayer.nextPly(position1)
-        assertTrue(result1.maxPosition.score > 100, result1.maxPosition.toString())
+        val result1 = aiPlayer.calcNextPly(position1)
+        assertTrue(result1.isSuccess, result1.toString())
+        result1.onSuccess {aiResult ->
+            assertTrue(aiResult.maxPosition.score > 100, aiResult.toString() +
+                ", maxPosition: " + aiResult.maxPosition.toString())
+        }
 
         presenter.model.settings.aiAlgorithm = storedAiAlgorithm
     }

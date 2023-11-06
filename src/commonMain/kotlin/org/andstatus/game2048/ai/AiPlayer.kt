@@ -1,5 +1,6 @@
 package org.andstatus.game2048.ai
 
+import korlibs.io.concurrent.atomic.KorAtomicBoolean
 import korlibs.io.concurrent.atomic.KorAtomicRef
 import korlibs.time.Stopwatch
 import korlibs.time.millisecondsInt
@@ -18,15 +19,23 @@ import kotlin.math.pow
 
 /** @author yvolk@yurivolkov.com */
 class AiPlayer(val settings: Settings) {
-    private val stopwatch: Stopwatch = Stopwatch()
-    val maxSeconds: Int = when (settings.aiAlgorithm) {
+    val FAILURE_IS_WORKING = Result.failure<AiResult>(Exception("AiPlayer is working"))
+    private val stopWatchRef: KorAtomicRef<Stopwatch?> = KorAtomicRef(null)
+    private val doStop = KorAtomicBoolean(true)
+    private val maxSeconds: Int = when (settings.aiAlgorithm) {
         AiAlgorithm.RANDOM -> 5
         AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> 5
         AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> 5
         AiAlgorithm.MAX_SCORE_OF_N_MOVES -> 5
         AiAlgorithm.LONGEST_RANDOM_PLAY -> 10
     }
-    val timeIsUp get() = stopwatch.elapsed.seconds >= maxSeconds
+    val timeIsUp: Boolean get() = doStop.value ||
+        (stopWatchRef.value?.let { it.elapsed.seconds >= maxSeconds } ?: true)
+
+    fun stop(): Boolean {
+        doStop.value = true
+        return timeIsUp
+    }
 
     private class FirstMove(val plyEnum: PlyEnum, val positions: List<GamePosition>) {
         fun randomComputerPly() = FirstMove(plyEnum, positions.map { it.randomComputerPly().position })
@@ -36,16 +45,25 @@ class AiPlayer(val settings: Settings) {
         override fun toString(): String = "$plyEnum, positions:${positions.size}"
     }
 
-    fun nextPly(position: GamePosition): AiResult = stopwatch.start().let { stopWatch ->
-        when (settings.aiAlgorithm) {
-            AiAlgorithm.RANDOM -> AiResult(allowedRandomPly(position))
-            AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> moveWithMaxScore(position)
-            AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(position, 12)
-            AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(position, 12)
-            AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(position, 3)
-        }.withContext(position, stopWatch.elapsed.millisecondsInt)
-            .also { myLog(it) }
-    }
+    fun calcNextPly(position: GamePosition): Result<AiResult> = if (
+        timeIsUp && stopWatchRef.compareAndSet(null, Stopwatch())
+    ) {
+        doStop.value = false
+        val stopWatch = stopWatchRef.value?.start() ?: throw IllegalStateException("Stopwatch is null")
+        try {
+            when (settings.aiAlgorithm) {
+                AiAlgorithm.RANDOM -> AiResult(allowedRandomPly(position))
+                AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> moveWithMaxScore(position)
+                AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(position, 12)
+                AiAlgorithm.MAX_SCORE_OF_N_MOVES -> maxScoreNMoves(position, 12)
+                AiAlgorithm.LONGEST_RANDOM_PLAY -> longestRandomPlayAdaptive(position, 3)
+            }.withContext(position, stopWatch.elapsed.millisecondsInt)
+                .also { myLog(it) }
+                .let { Result.success(it) }
+        } finally {
+            stopWatchRef.compareAndSet(stopWatch, null)
+        }
+    } else FAILURE_IS_WORKING
 
     private fun moveWithMaxScore(position: GamePosition): AiResult = UserPlies
         .map(position::userPly)
@@ -188,8 +206,4 @@ class AiPlayer(val settings: Settings) {
                 .takeIf { it.ply.isNotEmpty() }
                 ?.let { FirstMove(plyEnum, listOf(it.position)) }
         }
-
-    companion object {
-        val aiLaunched: KorAtomicRef<AiPlayer?> = KorAtomicRef(null)
-    }
 }

@@ -96,7 +96,7 @@ fun ViewsForTesting.viewsTest2(
     withTimeoutNullable(timeout ?: TimeSpan.NIL) {
         while (!completed) {
             delayFrame() //simulateFrame() is private
-            delay(20)
+            delay(10)
             dispatcher.executePending(availableTime = 1.seconds)
         }
         if (completedException != null) throw completedException!!

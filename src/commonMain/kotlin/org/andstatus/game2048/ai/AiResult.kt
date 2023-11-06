@@ -45,7 +45,7 @@ class AiResult(
     val moreMovesMax get() = maxPosition.moveNumber - initialPosition.moveNumber
 
     override fun toString(): String {
-        return "AiResult ${initialPosition.moveNumber}, ${plyEnum.id}," +
+        return "AiResult ${initialPosition.moveNumber}, $plyEnum," +
                 " score +$moreScore-$moreScoreMax, " +
                 " $takenMillis ms, moves +$moreMoves-$moreMovesMax, $note"
     }

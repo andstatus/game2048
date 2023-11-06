@@ -18,6 +18,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.andstatus.game2048.ai.AiAlgorithm
+import org.andstatus.game2048.ai.AiPlayer
 import org.andstatus.game2048.exitApp
 import org.andstatus.game2048.gameIsLoading
 import org.andstatus.game2048.gameStopWatch
@@ -54,7 +55,8 @@ import org.andstatus.game2048.view.showRecentGames
 /** @author yvolk@yurivolkov.com */
 class Presenter(val view: ViewData, history: History) {
     val model = Model(history)
-    private val multithreadedScope: CoroutineScope get() = model.history.settings.multithreadedScope
+    val aiPlayer: AiPlayer = AiPlayer(model.settings)
+    private val multithreadedScope: CoroutineScope get() = model.settings.multithreadedScope
     val mainViewShown = korAtomic(false)
     val isPresenting = korAtomic(false)
     val presentedCounter = korAtomic(0L)
@@ -535,7 +537,7 @@ class Presenter(val view: ViewData, history: History) {
             }.let { plies ->
                 view.korgeCoroutineScope.launch {
                     presentFrom(plies, 0)
-                    if (gameMode.modeEnum != GameModeEnum.AI_PLAY || gameMode.speed !in 1..3) {
+                    if (gameMode.modeEnum != GameModeEnum.AI_PLAY || gameMode.speed == 0) {
                         // TODO: This is to hide AI tip. Invent explicit way for that
                         view.mainView.hideStatusBar()
                     }
@@ -581,7 +583,6 @@ class Presenter(val view: ViewData, history: History) {
                     view.mainView.show(buttonsToShow(), gameMode.speed)
                     if (gameMode.isPlaying && gameMode.aiEnabled && gameMode.speed == 0) {
                         multithreadedScope.showAiTip(this@Presenter)
-                        myLog("After AI Launch")
                     }
                 }
                 mainViewShown.value = true
