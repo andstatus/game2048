@@ -66,8 +66,8 @@ android {
         applicationId 'org.andstatus.game2048'
         minSdkVersion 24
         targetSdkVersion 33
-        versionCode 41
-        versionName '1.14.3'
+        versionCode 42
+        versionName '1.14.4'
 
         archivesBaseName = "game2048-android-$versionName"
     }
@@ -86,8 +86,7 @@ android {
                     "../src/commonMain/kotlin",
                     "../src/androidMain/kotlin"]
             assets.srcDirs += [
-                    "../src/commonMain/resources",
-                    "../build/korgeProcessedResources/metadata/main"]
+                    "../src/commonMain/resources"]
             res.srcDirs  += [
                     "../src/commonMain/resources/res"]
         }
@@ -109,5 +108,5 @@ dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20'
     implementation "com.soywiz.korge:korge-android:$korgeVersion"
     implementation "com.soywiz.korge:korge-core-android:$korgeVersion"
-    implementation "com.soywiz.korge:korge-foundation-android:$korgeVersion"
+//    implementation "com.soywiz.korge:korge-foundation-android:$korgeVersion"
 }

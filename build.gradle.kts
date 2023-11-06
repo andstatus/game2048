@@ -1,4 +1,5 @@
 import korlibs.korge.gradle.korge
+import java.util.*
 
 plugins {
     alias(libs.plugins.korge)
@@ -38,8 +39,22 @@ korge {
     androidCompileSdk = 33
     androidTargetSdk = 33
 
-    versionCode = 41
-    version = "1.14.3"
+    versionCode = 42
+    version = "1.14.4"
+
+    // Optionally use Android default debug.keystore file
+    Result.runCatching {
+        Properties().apply {
+            load(rootProject.file("local.properties").reader())
+        }
+    }.map { properties ->
+        properties["androidDebugKeystoreFile"]?.let {
+            androidReleaseSignStoreFile = it.toString()
+            androidReleaseSignStorePassword = "android"
+            androidReleaseSignKeyAlias = "androiddebugkey"
+            androidReleaseSignKeyPassword = "android"
+        }
+    }
 
     androidManifestApplicationChunk(
         """
