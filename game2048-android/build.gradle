@@ -1,16 +1,12 @@
 buildscript {
     repositories {
-		google();
 		mavenCentral()
-	}
+        google();
+    }
     dependencies {
-		classpath 'com.android.tools.build:gradle:8.1.2'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.20' }
+		classpath 'com.android.tools.build:gradle:8.7.3'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.23' }
 
-}
-
-plugins {
-  id 'com.github.triplet.play' version '3.8.4'
 }
 
 repositories {
@@ -61,13 +57,13 @@ android {
             ]
         }
     }
-    compileSdkVersion 33
+    compileSdk 35
     defaultConfig {
         applicationId 'org.andstatus.game2048'
         minSdkVersion 24
-        targetSdkVersion 33
-        versionCode 42
-        versionName '1.14.4'
+        targetSdkVersion 35
+        versionCode 43
+        versionName '1.15.0'
 
         archivesBaseName = "game2048-android-$versionName"
     }
@@ -93,20 +89,10 @@ android {
     }
 }
 
-if (project.hasProperty("andstatus.google-play-publisher")
-        && new File(project.property("andstatus.google-play-publisher").toString() + ".gradle").exists()) {
-    apply from: project.property("andstatus.google-play-publisher") + ".gradle";
-} else {
-    play {
-        enabled = false
-    }
-}
-
 dependencies {
-    def korgeVersion = '5.0.6'
+    def korgeVersion = '5.4.0'
 
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.23'
     implementation "com.soywiz.korge:korge-android:$korgeVersion"
     implementation "com.soywiz.korge:korge-core-android:$korgeVersion"
-//    implementation "com.soywiz.korge:korge-foundation-android:$korgeVersion"
 }
