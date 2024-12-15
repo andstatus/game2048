@@ -36,11 +36,11 @@ korge {
     jvmMainClassName = "org.andstatus.game2048.MainKt"
 
     androidMinSdk = 24
-    androidCompileSdk = 33
-    androidTargetSdk = 33
+    androidCompileSdk = 35
+    androidTargetSdk = 35
 
-    versionCode = 42
-    version = "1.14.4"
+    versionCode = 43
+    version = "1.15.0"
 
     // Optionally use Android default debug.keystore file
     Result.runCatching {
