@@ -20,11 +20,11 @@ import org.andstatus.game2048.view.AppBarButtonsEnum.PAUSE
 import org.andstatus.game2048.view.AppBarButtonsEnum.PLAY
 import org.andstatus.game2048.view.AppBarButtonsEnum.REDO
 import org.andstatus.game2048.view.AppBarButtonsEnum.REDO_PLACEHOLDER
-import org.andstatus.game2048.view.AppBarButtonsEnum.TRY_AGAIN
 import org.andstatus.game2048.view.AppBarButtonsEnum.STOP
 import org.andstatus.game2048.view.AppBarButtonsEnum.STOP_PLACEHOLDER
 import org.andstatus.game2048.view.AppBarButtonsEnum.TO_CURRENT
 import org.andstatus.game2048.view.AppBarButtonsEnum.TO_START
+import org.andstatus.game2048.view.AppBarButtonsEnum.TRY_AGAIN
 import org.andstatus.game2048.view.AppBarButtonsEnum.UNDO
 import org.andstatus.game2048.view.AppBarButtonsEnum.WATCH
 
@@ -36,7 +36,7 @@ class AppBar private constructor(val viewData: ViewData, private val appBarButto
         val (toShowAll, toRemove) = appBarButtons.partition { appBarButtonsToShow.contains(it.enum) }
         toRemove.forEach { it.container.removeFromParent() }
 
-        (0 .. 1).forEach { row ->
+        (0..1).forEach { row ->
             val toShow = toShowAll.filter { eButton -> eButton.enum.row == row }
             val remainingPos = viewData.buttonXs.take(5).toMutableList()
 
@@ -47,7 +47,7 @@ class AppBar private constructor(val viewData: ViewData, private val appBarButto
                     remainingPos.firstOrNull()?.let {
                         eb.container.positionX(it)
                             .addTo(parent)
-                        remainingPos.removeFirst()
+                        remainingPos.removeAt(0)
                     }
                 }
             // Others are Right-aligned
@@ -57,7 +57,7 @@ class AppBar private constructor(val viewData: ViewData, private val appBarButto
                     remainingPos.lastOrNull()?.let {
                         eb.container.positionX(it)
                             .addTo(parent)
-                        remainingPos.removeLast()
+                        remainingPos.removeAt(remainingPos.size - 1)
                     }
                 }
         }
@@ -68,6 +68,7 @@ class AppBar private constructor(val viewData: ViewData, private val appBarButto
 
             suspend fun AppBarButtonsEnum.button(handler: () -> Unit): EButton =
                 EButton(this, this@setupAppBar.barButton(this.icon, handler))
+
             fun AppBarButtonsEnum.button(): EButton = EButton(this)
 
             val buttons: List<EButton> = listOf(
