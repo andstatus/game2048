@@ -7,7 +7,7 @@ import org.andstatus.game2048.MyContext
 /** @author yvolk@yurivolkov.com */
 class Model(val history: History) {
     val myContext: MyContext = history.myContext
-    private val gamePositionRef = korAtomic(GamePosition(myContext.defaultBoard))
+    private val gamePositionRef = korAtomic(GamePosition(myContext.settings.defaultBoard))
     val gamePosition get() = gamePositionRef.value
 
     val moveNumber: Int get() = gamePosition.moveNumber

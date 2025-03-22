@@ -22,7 +22,7 @@ class AiPlayer(val myContext: MyContext) {
     val FAILURE_IS_WORKING = Result.failure<AiResult>(Exception("AiPlayer is working"))
     private val stopWatchRef: KorAtomicRef<Stopwatch?> = KorAtomicRef(null)
     private val doStop = KorAtomicBoolean(true)
-    private val maxSeconds: Int = when (myContext.aiAlgorithm) {
+    private val maxSeconds: Int = when (myContext.settings.aiAlgorithm) {
         AiAlgorithm.RANDOM -> 5
         AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> 5
         AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> 5
@@ -52,7 +52,7 @@ class AiPlayer(val myContext: MyContext) {
         doStop.value = false
         val stopWatch = stopWatchRef.value?.start() ?: throw IllegalStateException("Stopwatch is null")
         try {
-            when (myContext.aiAlgorithm) {
+            when (myContext.settings.aiAlgorithm) {
                 AiAlgorithm.RANDOM -> AiResult(allowedRandomPly(position))
                 AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> moveWithMaxScore(position)
                 AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(position, 12)

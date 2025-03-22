@@ -10,7 +10,7 @@ import org.andstatus.game2048.MyContext
 import org.andstatus.game2048.ai.AiAlgorithm
 
 fun ViewData.selectAiAlgorithm(myContext: MyContext) = myWindow("select_ai_algorithm") {
-    var selected = myContext.aiAlgorithm
+    var selected = myContext.settings.aiAlgorithm
     var buttons: List<Container> = emptyList()
     var xInd = 0
     var yInd = 0

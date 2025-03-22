@@ -7,11 +7,13 @@ class MultiPageTest : ViewsForTesting(log = true) {
 
     @Test
     fun multiPageTest() = myViewsTest(this) {
-        val storedPliesPageSize = presenter.model.myContext.pliesPageSize
+        val storedPliesPageSize = presenter.model.myContext.settings.pliesPageSize
         val pliesPerPage = 6
         val expectedPages = 3
         val expectedPliesCount = pliesPerPage * expectedPages - 3
-        presenter.model.myContext.pliesPageSize = pliesPerPage
+        presenter.model.myContext.update {
+            it.copy(pliesPageSize = pliesPerPage)
+        }
         generateGame(expectedPliesCount)
 
         val game1 = presenter.model.history.currentGame
@@ -45,6 +47,8 @@ class MultiPageTest : ViewsForTesting(log = true) {
             "Restored from id ${currentGameString()}"
         )
 
-        presenter.model.myContext.pliesPageSize = storedPliesPageSize
+        presenter.model.myContext.update {
+            it.copy(pliesPageSize = storedPliesPageSize)
+        }
     }
 }

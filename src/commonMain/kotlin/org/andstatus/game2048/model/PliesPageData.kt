@@ -31,7 +31,7 @@ class PliesPageData(val myContext: MyContext) {
                 ?.let { SequenceLineReader(sequenceOf(it)) } ?: emptySequenceLineReader
         } else readerIn
         reader.readNext { strReader ->
-            while (strReader.hasMore && (readAll || list.size < myContext.pliesPageSize)) {
+            while (strReader.hasMore && (readAll || list.size < myContext.settings.pliesPageSize)) {
                 Json.parse(strReader)
                     ?.let { Ply.fromJson(shortRecord.board, it) }
                     ?.let { list.add(it) }

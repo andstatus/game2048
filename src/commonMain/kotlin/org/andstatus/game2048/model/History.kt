@@ -66,7 +66,7 @@ class History(
 
     fun loadRecentGames(): History {
         myMeasuredIt("Recent games loaded") {
-            recentGamesRef.value = myContext.gameIdsRange.fold(emptyList()) { acc, ind ->
+            recentGamesRef.value = myContext.settings.gameIdsRange.fold(emptyList()) { acc, ind ->
                 ShortRecord.fromId(myContext, ind)
                     ?.let { acc + it } ?: acc
             }
@@ -139,19 +139,19 @@ class History(
             myLog("idForNewGame: $it")
         }
 
-    private fun idToDelete() = if (recentGames.size > myContext.maxOlderGames) {
+    private fun idToDelete() = if (recentGames.size > myContext.settings.maxOlderGames) {
         val keepAfter = DateTimeTz.nowLocal().minus(1.weeks)
         val olderGames = recentGames.filterNot {
             it.finalPosition.startingDateTime >= keepAfter || it.id == currentGame.id
         }
         when {
             olderGames.size > 20 -> olderGames.minByOrNull { it.finalPosition.score }?.id
-            recentGames.size >= myContext.gameIdsRange.last -> recentGames.minByOrNull { it.finalPosition.score }?.id
+            recentGames.size >= myContext.settings.gameIdsRange.last -> recentGames.minByOrNull { it.finalPosition.score }?.id
             else -> null
         }
     } else null
 
-    private fun unusedGameId() = myContext.gameIdsRange.filterNot { it == currentGame.id }
+    private fun unusedGameId() = myContext.settings.gameIdsRange.filterNot { it == currentGame.id }
         .find { id -> recentGames.none { it.id == id } }
         ?: recentGames.filterNot { it.id == currentGame.id }
             .minByOrNull { it.finalPosition.startingDateTime }?.id
@@ -246,7 +246,7 @@ class History(
     }
 
     fun canUndo(): Boolean = currentGame.let { game ->
-        myContext.allowUndo &&
+        myContext.settings.allowUndo &&
             redoPlyPointer != 1 && redoPlyPointer != 2 &&
             game.gamePlies.size > 1 &&
             (redoPlyPointer > 2 || game.gamePlies.lastOrNull()?.player == PlayerEnum.COMPUTER)

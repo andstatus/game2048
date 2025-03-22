@@ -1,10 +1,10 @@
 package org.andstatus.game2048.model
 
-import org.andstatus.game2048.MyContext
+import org.andstatus.game2048.Settings
 
-class Board(myContext: MyContext, boardWidth: Int = myContext.boardWidth) {
-    val allowUsersMoveWithoutBlockMoves = myContext.allowUsersMoveWithoutBlockMoves
-    val allowResultingTileToMerge = myContext.allowResultingTileToMerge
+class Board(settings: Settings, boardWidth: Int = settings.boardWidth) {
+    val allowUsersMoveWithoutBlockMoves = settings.allowUsersMoveWithoutBlockMoves
+    val allowResultingTileToMerge = settings.allowResultingTileToMerge
     val width = boardWidth
     val height = boardWidth
     val size = width * height

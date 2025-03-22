@@ -136,8 +136,9 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     fun onAiAlgorithmSelect(selected: AiAlgorithm) {
-        model.myContext.aiAlgorithm = selected
-        view.myContext.save()
+        model.myContext.update {
+            it.copy(aiAlgorithm = selected)
+        }
         asyncShowMainView()
     }
 
@@ -433,10 +434,11 @@ class Presenter(val view: ViewData, history: History) {
 
     fun onSelectColorTheme(colorThemeEnum: ColorThemeEnum) {
         logClick("onSelectColorTheme-$colorThemeEnum")
-        if (colorThemeEnum == view.myContext.colorThemeEnum) return
+        if (colorThemeEnum == view.myContext.settings.colorThemeEnum) return
 
-        view.myContext.colorThemeEnum = colorThemeEnum
-        view.myContext.save()
+        view.myContext.update {
+            it.copy(colorThemeEnum = colorThemeEnum)
+        }
         pauseGame()
         view.reInitialize()
     }

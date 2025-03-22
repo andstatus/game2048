@@ -52,7 +52,7 @@ sealed class ColorTheme {
     }
 
     companion object {
-        fun load(stage: Stage, myContext: MyContext): ColorTheme = when (myContext.colorThemeEnum) {
+        fun load(stage: Stage, myContext: MyContext): ColorTheme = when (myContext.settings.colorThemeEnum) {
             ColorThemeEnum.DEVICE_DEFAULT -> if (deviceDefault(stage) == ColorThemeEnum.DARK)
                 DarkTheme() else LightTheme()
 

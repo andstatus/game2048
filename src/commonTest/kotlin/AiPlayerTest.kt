@@ -8,8 +8,10 @@ class AiPlayerTest : ViewsForTesting(log = true) {
 
     @Test
     fun aiPlayerTest() = myViewsTest(this) {
-        val storedAiAlgorithm = presenter.model.myContext.aiAlgorithm
-        presenter.model.myContext.aiAlgorithm = AiAlgorithm.LONGEST_RANDOM_PLAY
+        val storedAiAlgorithm = presenter.model.myContext.settings.aiAlgorithm
+        presenter.model.myContext.update {
+            it.copy(aiAlgorithm = AiAlgorithm.LONGEST_RANDOM_PLAY)
+        }
         val expectedPliesCount = 15
         generateGame(expectedPliesCount)
 
@@ -24,6 +26,8 @@ class AiPlayerTest : ViewsForTesting(log = true) {
             )
         }
 
-        presenter.model.myContext.aiAlgorithm = storedAiAlgorithm
+        presenter.model.myContext.update {
+            it.copy(aiAlgorithm = storedAiAlgorithm)
+        }
     }
 }

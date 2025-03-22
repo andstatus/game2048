@@ -52,8 +52,8 @@ suspend fun viewData(stage: Stage): ViewData = coroutineScope {
     }
     val gameColors = async { ColorTheme.load(stage, myContext) }
 
-    val splashThemed = if (myContext.colorThemeEnum == ColorThemeEnum.deviceDefault(stage))
-        splashDefault else stage.splashScreen(quick, myContext.colorThemeEnum)
+    val splashThemed = if (myContext.settings.colorThemeEnum == ColorThemeEnum.deviceDefault(stage))
+        splashDefault else stage.splashScreen(quick, myContext.settings.colorThemeEnum)
     stage.solidRect(
         stage.views.virtualWidth, stage.views.virtualHeight,
         color = gameColors.await().stageBackground

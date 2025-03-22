@@ -75,7 +75,7 @@ class ShortRecord(
                 ?.let { GamePosition.fromJson(json = it, myContext = myContext) }
                 ?: return null
 
-            val board = Board(myContext, finalPosition.board.width)
+            val board = Board(myContext.settings, finalPosition.board.width)
             val bookmarks: List<GamePosition> = aMap[keyBookmarks]?.parseJsonArray()
                 ?.mapNotNull { GamePosition.fromJson(json = it, myContext = myContext) }
                 ?: emptyList()

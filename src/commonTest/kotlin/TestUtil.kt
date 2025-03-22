@@ -176,7 +176,7 @@ suspend fun ViewData.generateGame(expectedPliesCount: Int, bookmarkOnPly: Int? =
 
     var iteration = 0
     while (iteration < expectedPliesCount) {
-        myLog("Iteration $iteration, current ply number: ${presenter.model.gamePosition.plyNumber}")
+        myLog("Iteration $iteration, current ply number: ${presenter.model.gamePosition.plyNumber}, pliesPageSize: ${presenter.view.myContext.settings.pliesPageSize}")
         if (presenter.model.gamePosition.plyNumber >= expectedPliesCount) break
 
         bookmarkOnPly?.let { plyNumber ->

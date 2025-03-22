@@ -9,7 +9,7 @@ import korlibs.time.milliseconds
 import org.andstatus.game2048.MyContext
 
 fun ViewData.selectTheme(myContext: MyContext) = myWindow("select_theme") {
-    var selected = myContext.colorThemeEnum
+    var selected = myContext.settings.colorThemeEnum
     var buttons: List<Container> = emptyList()
 
     suspend fun button(buttonEnum: ColorThemeEnum, yInd: Int, handler: (ColorThemeEnum) -> Unit): Container =

@@ -50,7 +50,7 @@ class GamePosition(
                 if (!isValidBoardWidth(it)) return null
             }
             val board = boardIn?.also { if (it.width != boardWidth) return null }
-                ?: myContext?.let { Board(myContext, boardWidth) }
+                ?: myContext?.let { Board(myContext.settings, boardWidth) }
                 ?: throw IllegalArgumentException("No Board or Settings provided")
             val score: Int = aMap[keyScore] as Int? ?: return null
             val dateTime: DateTimeTz = aMap[keyDateTime]?.let { DateTime.parse(it as String) } ?: return null

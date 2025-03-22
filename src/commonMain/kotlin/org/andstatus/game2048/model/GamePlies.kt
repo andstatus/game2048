@@ -67,7 +67,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: Sequen
 
     operator fun plus(ply: Ply): GamePlies {
         with(lastPage) {
-            val pagesNew = if (plies.size < shortRecord.myContext.pliesPageSize) {
+            val pagesNew = if (plies.size < shortRecord.myContext.settings.pliesPageSize) {
                 pages.take(pages.size - 1) + plus(ply)
             } else {
                 pages + PliesPage(shortRecord, pageNumber + 1, nextPageFirstPlyNumber, 1, listOf(ply))
@@ -139,7 +139,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: Sequen
             var firstPlyNumber = 1
             while (index < plies.size) {
                 when {
-                    plies.size - index <= shortRecord.myContext.pliesPageSize -> {
+                    plies.size - index <= shortRecord.myContext.settings.pliesPageSize -> {
                         PliesPage(
                             shortRecord, pages.size + 1, firstPlyNumber,
                             plies.size - index, plies.drop(index)
@@ -151,8 +151,8 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: Sequen
                             shortRecord,
                             pages.size + 1,
                             firstPlyNumber,
-                            shortRecord.myContext.pliesPageSize,
-                            plies.drop(index).take(shortRecord.myContext.pliesPageSize)
+                            shortRecord.myContext.settings.pliesPageSize,
+                            plies.drop(index).take(shortRecord.myContext.settings.pliesPageSize)
                         )
                     }
                 }.also {

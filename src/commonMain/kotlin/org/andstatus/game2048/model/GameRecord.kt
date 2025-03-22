@@ -41,8 +41,8 @@ class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
 
     companion object {
         fun newEmpty(myContext: MyContext, id: Int) = ShortRecord(
-            myContext, myContext.defaultBoard, "", id,
-            DateTimeTz.nowLocal(), GamePosition(myContext.defaultBoard), emptyList()
+            myContext, myContext.settings.defaultBoard, "", id,
+            DateTimeTz.nowLocal(), GamePosition(myContext.settings.defaultBoard), emptyList()
         )
             .let { GameRecord(it, GamePlies.fromPlies(it, emptyList())) }
 

@@ -28,7 +28,7 @@ class BoardView(val viewData: ViewData) : Container() {
             graphics {
                 fill(gameColors.cellBackground) {
                     for (x in 0 until myContext.boardWidth) {
-                        for (y in 0 until myContext.boardHeight) {
+                        for (y in 0 until myContext.settings.boardHeight) {
                             roundRect(
                                 cellMargin + (cellMargin + cellSize) * x, cellMargin + (cellMargin + cellSize) * y,
                                 cellSize, cellSize, buttonRadius
