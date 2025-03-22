@@ -23,7 +23,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.andstatus.game2048.Settings
+import org.andstatus.game2048.MyContext
 import org.andstatus.game2048.defaultLanguage
 import org.andstatus.game2048.gameIsLoading
 import org.andstatus.game2048.loadFont
@@ -44,16 +44,16 @@ suspend fun viewData(stage: Stage): ViewData = coroutineScope {
     waitForGameLoading()
     val strings = async { StringResources.load(defaultLanguage) }
     val font = async { loadFont(strings.await()) }
-    val settings = myMeasured("Loading settings") { Settings.load(stage) }
+    val myContext = myMeasured("Loading settings") { MyContext.load(stage) }
     val history = async {
-        History.load(settings).also {
+        History.load(myContext).also {
             it.loadRecentGames()
         }
     }
-    val gameColors = async { ColorTheme.load(stage, settings) }
+    val gameColors = async { ColorTheme.load(stage, myContext) }
 
-    val splashThemed = if (settings.colorThemeEnum == ColorThemeEnum.deviceDefault(stage))
-        splashDefault else stage.splashScreen(quick, settings.colorThemeEnum)
+    val splashThemed = if (myContext.colorThemeEnum == ColorThemeEnum.deviceDefault(stage))
+        splashDefault else stage.splashScreen(quick, myContext.colorThemeEnum)
     stage.solidRect(
         stage.views.virtualWidth, stage.views.virtualHeight,
         color = gameColors.await().stageBackground
@@ -69,13 +69,13 @@ suspend fun viewData(stage: Stage): ViewData = coroutineScope {
         stage.gameWindow.title = strings.await().text("app_name")
     }
     val historyLoaded: History = history.await().also {
-        if (it.currentGame.shortRecord.board.width != settings.boardWidth) {
-            settings.boardWidth = it.currentGame.shortRecord.board.width
-            settings.save()
+        if (it.currentGame.shortRecord.board.width != myContext.boardWidth) {
+            myContext.boardWidth = it.currentGame.shortRecord.board.width
+            myContext.save()
         }
     }
 
-    val view = ViewData(quick, settings, font.await(), strings.await(), gameColors.await())
+    val view = ViewData(quick, myContext, font.await(), strings.await(), gameColors.await())
     view.presenter = myMeasured("Presenter${view.id} created") { Presenter(view, historyLoaded) }
     view.mainView = myMeasured("MainView${view.id} created") { view.setupMainView(this) }
 
@@ -102,7 +102,7 @@ suspend fun waitForGameLoading() {
 
 class ViewData(
     viewDataQuick: ViewDataQuick,
-    val settings: Settings,
+    val myContext: MyContext,
     val font: Font,
     val stringResources: StringResources,
     val gameColors: ColorTheme
@@ -112,8 +112,8 @@ class ViewData(
 
     val cellSize: Float = (
         (if (isPortrait) gameViewWidth else gameViewWidth / 2) -
-            cellMargin * (settings.boardWidth + 1) - 2 * buttonMargin) / settings.boardWidth
-    val boardWidth: Float = cellSize * settings.boardWidth + cellMargin * (settings.boardWidth + 1)
+            cellMargin * (myContext.boardWidth + 1) - 2 * buttonMargin) / myContext.boardWidth
+    val boardWidth: Float = cellSize * myContext.boardWidth + cellMargin * (myContext.boardWidth + 1)
 
     var presenter: Presenter by Delegates.notNull()
     var mainView: MainView by Delegates.notNull()

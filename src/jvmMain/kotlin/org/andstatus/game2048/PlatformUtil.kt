@@ -55,7 +55,7 @@ fun saveToFile(file: File, value: Sequence<String>) {
     }
 }
 
-actual fun Stage.loadJsonGameRecord(settings: Settings, sharedJsonHandler: (Sequence<String>) -> Unit) {
+actual fun Stage.loadJsonGameRecord(myContext: MyContext, sharedJsonHandler: (Sequence<String>) -> Unit) {
     val fileName = if (isTestRun.value) {
         "./src/commonTest/resources/sharedGames/game1.json"
     } else findSharedGameToLoad()

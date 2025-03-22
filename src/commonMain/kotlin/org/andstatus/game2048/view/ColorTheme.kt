@@ -1,9 +1,9 @@
 package org.andstatus.game2048.view
 
-import korlibs.korge.view.Stage
 import korlibs.image.color.Colors
 import korlibs.image.color.RGBA
-import org.andstatus.game2048.Settings
+import korlibs.korge.view.Stage
+import org.andstatus.game2048.MyContext
 import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.view.ColorThemeEnum.Companion.deviceDefault
 
@@ -52,18 +52,19 @@ sealed class ColorTheme {
     }
 
     companion object {
-        fun load(stage: Stage, settings: Settings): ColorTheme = when(settings.colorThemeEnum) {
+        fun load(stage: Stage, myContext: MyContext): ColorTheme = when (myContext.colorThemeEnum) {
             ColorThemeEnum.DEVICE_DEFAULT -> if (deviceDefault(stage) == ColorThemeEnum.DARK)
                 DarkTheme() else LightTheme()
+
             ColorThemeEnum.DARK -> DarkTheme()
             ColorThemeEnum.LIGHT -> LightTheme()
         }
     }
 }
 
-class LightTheme: ColorTheme()
+class LightTheme : ColorTheme()
 
-class DarkTheme: ColorTheme() {
+class DarkTheme : ColorTheme() {
     override val stageBackground = Colors.BLACK
     override val buttonBackground = Colors["#212121"]
     override val buttonLabelText = Colors["#efe2d2"]
@@ -103,6 +104,7 @@ class DarkTheme: ColorTheme() {
     override fun pieceText(piece: Piece) = when (piece) {
         Piece.N2, Piece.N4, Piece.N32, Piece.N64, Piece.N512, Piece.N1024,
         Piece.N8192, Piece.N16384 -> Colors.BLACK
+
         else -> Colors.WHITE
     }
 }

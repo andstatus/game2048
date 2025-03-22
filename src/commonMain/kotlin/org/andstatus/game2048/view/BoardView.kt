@@ -1,6 +1,7 @@
 package org.andstatus.game2048.view
 
 import korlibs.event.Key
+import korlibs.image.text.TextAlignment
 import korlibs.korge.input.SwipeDirection
 import korlibs.korge.input.onSwipe
 import korlibs.korge.view.Container
@@ -12,11 +13,10 @@ import korlibs.korge.view.position
 import korlibs.korge.view.roundRect
 import korlibs.korge.view.solidRect
 import korlibs.korge.view.text
-import korlibs.image.text.TextAlignment
 import korlibs.math.geom.RectCorners
 import korlibs.math.geom.Size
 
-class BoardView(val viewData: ViewData): Container() {
+class BoardView(val viewData: ViewData) : Container() {
     private val controlsArea: SolidRect
     private val gameOver: Container
 
@@ -27,8 +27,8 @@ class BoardView(val viewData: ViewData): Container() {
             roundRect(Size(boardWidth, boardWidth), RectCorners(buttonRadius), fill = gameColors.buttonBackground)
             graphics {
                 fill(gameColors.cellBackground) {
-                    for (x in 0 until settings.boardWidth) {
-                        for (y in 0 until settings.boardHeight) {
+                    for (x in 0 until myContext.boardWidth) {
+                        for (y in 0 until myContext.boardHeight) {
                             roundRect(
                                 cellMargin + (cellMargin + cellSize) * x, cellMargin + (cellMargin + cellSize) * y,
                                 cellSize, cellSize, buttonRadius
@@ -38,11 +38,13 @@ class BoardView(val viewData: ViewData): Container() {
                 }
             }
 
-            controlsArea = solidRect(boardWidth, boardWidth + buttonSize + buttonMargin,
-                gameColors.transparent)
+            controlsArea = solidRect(
+                boardWidth, boardWidth + buttonSize + buttonMargin,
+                gameColors.transparent
+            )
 
             controlsArea.onSwipe(80.0) {
-                    presenter.onSwipe(it.direction)
+                presenter.onSwipe(it.direction)
             }
 
             controlsArea.addUpdater {
@@ -92,13 +94,15 @@ class BoardView(val viewData: ViewData): Container() {
                     roundRect(0.0f, 0.0f, boardWidth, boardWidth, buttonRadius, buttonRadius)
                 }
             }
-            text(stringResources.text("game_over"),
+            text(
+                stringResources.text("game_over"),
                 defaultTextSize, gameColors.labelText, font,
                 TextAlignment.MIDDLE_CENTER
             ) {
                 position(boardWidth / 2, (boardWidth - textSize) / 2)
             }
-            text(stringResources.text("try_again"),
+            text(
+                stringResources.text("try_again"),
                 defaultTextSize, gameColors.labelText, font,
                 TextAlignment.MIDDLE_CENTER
             ) {

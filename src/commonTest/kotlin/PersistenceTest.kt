@@ -38,7 +38,7 @@ class PersistenceTest : ViewsForTesting(log = true) {
         }
 
         val gameRecord = newGameRecord(
-            settings,
+            myContext,
             GamePosition(board, plyNumber = nPlies),  // Final board is incorrect here - it is empty.
             presenter.model.history.idForNewGame(),
             emptyList(),

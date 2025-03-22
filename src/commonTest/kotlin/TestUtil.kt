@@ -16,7 +16,7 @@ import korlibs.time.TimeSpan
 import korlibs.time.seconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.andstatus.game2048.Settings
+import org.andstatus.game2048.MyContext
 import org.andstatus.game2048.gameIsLoading
 import org.andstatus.game2048.isTestRun
 import org.andstatus.game2048.model.GamePlies
@@ -162,9 +162,9 @@ suspend fun waitFor(message: String = "???", condition: () -> Boolean) {
 }
 
 fun newGameRecord(
-    settings: Settings, position: GamePosition, id: Int, bookmarks: List<GamePosition>,
+    myContext: MyContext, position: GamePosition, id: Int, bookmarks: List<GamePosition>,
     plies: List<Ply>
-) = ShortRecord(settings, position.board, "", id, position.startingDateTime, position, bookmarks)
+) = ShortRecord(myContext, position.board, "", id, position.startingDateTime, position, bookmarks)
     .let {
         GameRecord(it, GamePlies.fromPlies(it, plies))
     }

@@ -17,7 +17,7 @@ class PliesPage(
     init {
         iPlies?.let {
             if (!isFirstEmpty) {
-                shortRecord.settings.pliesPageData.update(shortRecord, pageNumber, it)
+                shortRecord.myContext.pliesPageData.update(shortRecord, pageNumber, it)
             }
         }
     }
@@ -32,7 +32,7 @@ class PliesPage(
 
     fun load(): PliesPage {
         if (!isFirstEmpty && !loaded) {
-            shortRecord.settings.pliesPageData.readPlies(shortRecord, pageNumber, emptySequenceLineReader, true)
+            shortRecord.myContext.pliesPageData.readPlies(shortRecord, pageNumber, emptySequenceLineReader, true)
             savedRef.value = true
         }
         return this
@@ -57,7 +57,7 @@ class PliesPage(
 
     fun save(): PliesPage {
         if (loaded && savedRef.compareAndSet(false, true)) {
-            shortRecord.settings.pliesPageData.save(shortRecord, pageNumber)
+            shortRecord.myContext.pliesPageData.save(shortRecord, pageNumber)
         }
         return this
     }
@@ -71,8 +71,13 @@ class PliesPage(
     fun toJson(): String = PliesPageData.toJson(PliesPageData.getPlies(shortRecord.id, pageNumber))
 
     companion object {
-        fun fromSharedJson(shortRecord: ShortRecord, pageNumber: Int, plyNumber: Int, reader: SequenceLineReader): PliesPage =
-            shortRecord.settings.pliesPageData.readPlies(shortRecord, pageNumber, reader, false).let {
+        fun fromSharedJson(
+            shortRecord: ShortRecord,
+            pageNumber: Int,
+            plyNumber: Int,
+            reader: SequenceLineReader
+        ): PliesPage =
+            shortRecord.myContext.pliesPageData.readPlies(shortRecord, pageNumber, reader, false).let {
                 PliesPage(shortRecord, pageNumber, plyNumber, it.size, it)
             }
 

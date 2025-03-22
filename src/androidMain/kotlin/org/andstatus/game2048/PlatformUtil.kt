@@ -81,7 +81,7 @@ actual fun Presenter.shareText(actionTitle: String, fileName: String, value: Seq
     }
 }
 
-actual fun Stage.loadJsonGameRecord(settings: Settings, sharedJsonHandler: (Sequence<String>) -> Unit) {
+actual fun Stage.loadJsonGameRecord(myContext: MyContext, sharedJsonHandler: (Sequence<String>) -> Unit) {
     myLog("$platformSourceFolder, loadJsonGameRecord")
     mainActivity?.openJsonGameRecord(sharedJsonHandler)
 }

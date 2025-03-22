@@ -5,7 +5,7 @@ import korlibs.io.concurrent.atomic.KorAtomicRef
 import korlibs.time.Stopwatch
 import korlibs.time.millisecondsInt
 import korlibs.time.seconds
-import org.andstatus.game2048.Settings
+import org.andstatus.game2048.MyContext
 import org.andstatus.game2048.meanBy
 import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.PlayerEnum
@@ -18,19 +18,20 @@ import org.andstatus.game2048.myLog
 import kotlin.math.pow
 
 /** @author yvolk@yurivolkov.com */
-class AiPlayer(val settings: Settings) {
+class AiPlayer(val myContext: MyContext) {
     val FAILURE_IS_WORKING = Result.failure<AiResult>(Exception("AiPlayer is working"))
     private val stopWatchRef: KorAtomicRef<Stopwatch?> = KorAtomicRef(null)
     private val doStop = KorAtomicBoolean(true)
-    private val maxSeconds: Int = when (settings.aiAlgorithm) {
+    private val maxSeconds: Int = when (myContext.aiAlgorithm) {
         AiAlgorithm.RANDOM -> 5
         AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> 5
         AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> 5
         AiAlgorithm.MAX_SCORE_OF_N_MOVES -> 5
         AiAlgorithm.LONGEST_RANDOM_PLAY -> 10
     }
-    val timeIsUp: Boolean get() = doStop.value ||
-        (stopWatchRef.value?.let { it.elapsed.seconds >= maxSeconds } ?: true)
+    val timeIsUp: Boolean
+        get() = doStop.value ||
+            (stopWatchRef.value?.let { it.elapsed.seconds >= maxSeconds } ?: true)
 
     fun stop(): Boolean {
         doStop.value = true
@@ -51,7 +52,7 @@ class AiPlayer(val settings: Settings) {
         doStop.value = false
         val stopWatch = stopWatchRef.value?.start() ?: throw IllegalStateException("Stopwatch is null")
         try {
-            when (settings.aiAlgorithm) {
+            when (myContext.aiAlgorithm) {
                 AiAlgorithm.RANDOM -> AiResult(allowedRandomPly(position))
                 AiAlgorithm.MAX_SCORE_OF_ONE_MOVE -> moveWithMaxScore(position)
                 AiAlgorithm.MAX_EMPTY_BLOCKS_OF_N_MOVES -> maxEmptyBlocksNMoves(position, 12)
@@ -78,7 +79,8 @@ class AiPlayer(val settings: Settings) {
                 it.positions.meanBy { it.freeCount() }
             }
             ?.let { entry ->
-                AiResult(entry.plyEnum,
+                AiResult(
+                    entry.plyEnum,
                     entry.positions.mean() ?: position,
                     entry.positions.maxByOrNull { it.score } ?: position,
                     "N$nMoves",
@@ -90,7 +92,8 @@ class AiPlayer(val settings: Settings) {
     private fun maxScoreNMoves(position: GamePosition, nMoves: Int): AiResult =
         playNMoves(position, nMoves)
             .map {
-                AiResult(it.plyEnum,
+                AiResult(
+                    it.plyEnum,
                     it.positions.mean() ?: position,
                     it.positions.maxByOrNull { it.score } ?: position,
                     "N$nMoves",

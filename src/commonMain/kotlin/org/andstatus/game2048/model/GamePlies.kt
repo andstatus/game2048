@@ -2,7 +2,7 @@ package org.andstatus.game2048.model
 
 import korlibs.io.concurrent.atomic.KorAtomicRef
 import korlibs.io.serialization.json.Json
-import org.andstatus.game2048.Settings
+import org.andstatus.game2048.MyContext
 import org.andstatus.game2048.initAtomicReference
 import org.andstatus.game2048.myLog
 
@@ -67,7 +67,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: Sequen
 
     operator fun plus(ply: Ply): GamePlies {
         with(lastPage) {
-            val pagesNew = if (plies.size < shortRecord.settings.pliesPageSize) {
+            val pagesNew = if (plies.size < shortRecord.myContext.pliesPageSize) {
                 pages.take(pages.size - 1) + plus(ply)
             } else {
                 pages + PliesPage(shortRecord, pageNumber + 1, nextPageFirstPlyNumber, 1, listOf(ply))
@@ -84,7 +84,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: Sequen
             } else acc
         }
     }.also { newGamePlies ->
-        deletePagesStartingWith(shortRecord.settings, shortRecord.id, newGamePlies.pages.size + 1)
+        deletePagesStartingWith(shortRecord.myContext, shortRecord.id, newGamePlies.pages.size + 1)
     }
 
     fun lastOrNull(): Ply? = lastPage.load().plies.lastOrNull()
@@ -94,7 +94,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: Sequen
     fun save() {
         if (shortRecord.isStub) return
 
-        shortRecord.settings.storage[keyHead(shortRecord.id)] =
+        shortRecord.myContext.storage[keyHead(shortRecord.id)] =
             pages.map { it.toHeaderMap() }.let(Json::stringify)
         pages.forEach { it.save() }
     }
@@ -118,7 +118,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: Sequen
     companion object {
 
         fun fromId(shortRecord: ShortRecord): GamePlies = (
-            shortRecord.settings.storage
+            shortRecord.myContext.storage
                 .getOrNull(keyHead(shortRecord.id))
                 ?.parseJsonArray()
                 ?.mapIndexed { index, header -> PliesPage.fromId(shortRecord, index + 1, header) }
@@ -126,7 +126,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: Sequen
                     if (it.isEmpty() || it[0].count == 0) emptyList() else it
                 }
                 ?.let { GamePlies(shortRecord, it) }
-                ?: shortRecord.settings.storage.getOrNull(shortRecord.keyGameRecord)
+                ?: shortRecord.myContext.storage.getOrNull(shortRecord.keyGameRecord)
                     ?.let { pliesInHeader ->
                         fromSharedJson(shortRecord, SequenceLineReader(sequenceOf(pliesInHeader)))
                     }
@@ -139,7 +139,7 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: Sequen
             var firstPlyNumber = 1
             while (index < plies.size) {
                 when {
-                    plies.size - index <= shortRecord.settings.pliesPageSize -> {
+                    plies.size - index <= shortRecord.myContext.pliesPageSize -> {
                         PliesPage(
                             shortRecord, pages.size + 1, firstPlyNumber,
                             plies.size - index, plies.drop(index)
@@ -151,8 +151,8 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: Sequen
                             shortRecord,
                             pages.size + 1,
                             firstPlyNumber,
-                            shortRecord.settings.pliesPageSize,
-                            plies.drop(index).take(shortRecord.settings.pliesPageSize)
+                            shortRecord.myContext.pliesPageSize,
+                            plies.drop(index).take(shortRecord.myContext.pliesPageSize)
                         )
                     }
                 }.also {
@@ -194,14 +194,14 @@ class GamePlies(private val shortRecord: ShortRecord, private val reader: Sequen
             }
         }
 
-        fun delete(settings: Settings, id: Int) {
-            settings.storage.remove(keyHead(id))
-            deletePagesStartingWith(settings, id, 1)
+        fun delete(myContext: MyContext, id: Int) {
+            myContext.storage.remove(keyHead(id))
+            deletePagesStartingWith(myContext, id, 1)
         }
 
-        private fun deletePagesStartingWith(settings: Settings, gameId: Int, pageNumber: Int) {
+        private fun deletePagesStartingWith(myContext: MyContext, gameId: Int, pageNumber: Int) {
             var pageNumber1 = pageNumber
-            while (settings.pliesPageData.remove(gameId, pageNumber1)) {
+            while (myContext.pliesPageData.remove(gameId, pageNumber1)) {
                 pageNumber1 += 1
             }
         }

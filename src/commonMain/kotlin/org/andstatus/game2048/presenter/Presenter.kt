@@ -55,8 +55,8 @@ import org.andstatus.game2048.view.showRecentGames
 /** @author yvolk@yurivolkov.com */
 class Presenter(val view: ViewData, history: History) {
     val model = Model(history)
-    val aiPlayer: AiPlayer = AiPlayer(model.settings)
-    private val multithreadedScope: CoroutineScope get() = model.settings.multithreadedScope
+    val aiPlayer: AiPlayer = AiPlayer(model.myContext)
+    private val multithreadedScope: CoroutineScope get() = model.myContext.multithreadedScope
     val mainViewShown = korAtomic(false)
     val isPresenting = korAtomic(false)
     val presentedCounter = korAtomic(0L)
@@ -136,8 +136,8 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     fun onAiAlgorithmSelect(selected: AiAlgorithm) {
-        model.settings.aiAlgorithm = selected
-        view.settings.save()
+        model.myContext.aiAlgorithm = selected
+        view.myContext.save()
         asyncShowMainView()
     }
 
@@ -364,14 +364,14 @@ class Presenter(val view: ViewData, history: History) {
     private fun openGame(id: Int) {
         val openGamePlies = model.openGame(id)
         val newBoardWidth = model.history.currentGame.shortRecord.board.width
-        if (newBoardWidth == model.settings.boardWidth) {
+        if (newBoardWidth == model.myContext.boardWidth) {
             present {
                 openGamePlies.also {
                     loadPlies()
                 }
             }
         } else {
-            myLog("Reinitializing: board width changed ${model.settings.boardWidth} -> $newBoardWidth")
+            myLog("Reinitializing: board width changed ${model.myContext.boardWidth} -> $newBoardWidth")
             view.reInitialize()
         }
     }
@@ -401,7 +401,7 @@ class Presenter(val view: ViewData, history: History) {
         logClick("Load")
         presentAnd({ model.tryAgain() }) {
             gameIsLoading.value = true
-            view.gameStage.loadJsonGameRecord(model.history.settings) { sequence ->
+            view.gameStage.loadJsonGameRecord(model.history.myContext) { sequence ->
                 loadSharedJson(sequence)
             }
         }
@@ -410,7 +410,7 @@ class Presenter(val view: ViewData, history: History) {
     fun loadSharedJson(json: Sequence<String>) {
         gameIsLoading.value = true
         SequenceLineReader(json).use { reader ->
-            GameRecord.fromSharedJson(model.history.settings, reader, model.history.idForNewGame())
+            GameRecord.fromSharedJson(model.history.myContext, reader, model.history.idForNewGame())
                 ?.also {
                     it.load().save()
                     model.history.loadRecentGames()
@@ -433,21 +433,21 @@ class Presenter(val view: ViewData, history: History) {
 
     fun onSelectColorTheme(colorThemeEnum: ColorThemeEnum) {
         logClick("onSelectColorTheme-$colorThemeEnum")
-        if (colorThemeEnum == view.settings.colorThemeEnum) return
+        if (colorThemeEnum == view.myContext.colorThemeEnum) return
 
-        view.settings.colorThemeEnum = colorThemeEnum
-        view.settings.save()
+        view.myContext.colorThemeEnum = colorThemeEnum
+        view.myContext.save()
         pauseGame()
         view.reInitialize()
     }
 
     fun onSelectBoardSize(boardSize: BoardSizeEnum) {
         logClick("onSelectBoardSize-${boardSize}x${boardSize}")
-        if (boardSize.width == view.settings.boardWidth) return
+        if (boardSize.width == view.myContext.boardWidth) return
 
-        view.settings.boardWidth = boardSize.width
+        view.myContext.boardWidth = boardSize.width
         model.tryAgain()
-        view.settings.save()
+        view.myContext.save()
         pauseGame()
         view.reInitialize()
     }

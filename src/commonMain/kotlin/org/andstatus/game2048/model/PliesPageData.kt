@@ -3,7 +3,7 @@ package org.andstatus.game2048.model
 import korlibs.io.concurrent.atomic.KorAtomicRef
 import korlibs.io.serialization.json.Json
 import korlibs.io.serialization.json.toJson
-import org.andstatus.game2048.Settings
+import org.andstatus.game2048.MyContext
 import org.andstatus.game2048.initAtomicReference
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.update
@@ -11,7 +11,7 @@ import kotlin.math.abs
 
 private const val keyPlies = "plies"
 
-class PliesPageData(val settings: Settings) {
+class PliesPageData(val myContext: MyContext) {
     init {
         pliesMapRef.value = emptyMap()
     }
@@ -27,11 +27,11 @@ class PliesPageData(val settings: Settings) {
         val list: MutableList<Ply> = ArrayList()
         val storageKey = storageKey(shortRecord.id, pageNumber)
         val reader: SequenceLineReader = if (readerIn.isEmpty) {
-            settings.storage.getOrNull(storageKey)
+            myContext.storage.getOrNull(storageKey)
                 ?.let { SequenceLineReader(sequenceOf(it)) } ?: emptySequenceLineReader
         } else readerIn
         reader.readNext { strReader ->
-            while (strReader.hasMore && (readAll || list.size < settings.pliesPageSize)) {
+            while (strReader.hasMore && (readAll || list.size < myContext.pliesPageSize)) {
                 Json.parse(strReader)
                     ?.let { Ply.fromJson(shortRecord.board, it) }
                     ?.let { list.add(it) }
@@ -73,9 +73,9 @@ class PliesPageData(val settings: Settings) {
         if (isLoaded(shortRecord.id, pageNumber)) {
             val plies = getPlies(shortRecord.id, pageNumber)
             if (plies.isEmpty()) {
-                shortRecord.settings.storage.remove(storageKey(shortRecord.id, pageNumber))
+                shortRecord.myContext.storage.remove(storageKey(shortRecord.id, pageNumber))
             } else {
-                shortRecord.settings.storage[storageKey(shortRecord.id, pageNumber)] = toJson(plies)
+                shortRecord.myContext.storage[storageKey(shortRecord.id, pageNumber)] = toJson(plies)
             }
         }
     }
@@ -90,8 +90,8 @@ class PliesPageData(val settings: Settings) {
             map
         }
         val storageKey = storageKey(gameId, pageNumber)
-        return settings.storage.remove(storageKey).also {
-            val old = settings.storage.getOrNull(storageKey)
+        return myContext.storage.remove(storageKey).also {
+            val old = myContext.storage.getOrNull(storageKey)
             if (old != null) {
                 myLog("Still stored after removal $storageKey: $old")
             }

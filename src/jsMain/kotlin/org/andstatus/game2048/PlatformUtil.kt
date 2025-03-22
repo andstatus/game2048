@@ -1,9 +1,9 @@
 package org.andstatus.game2048
 
-import korlibs.logger.Console
-import korlibs.korge.view.Stage
 import korlibs.io.concurrent.atomic.KorAtomicRef
 import korlibs.io.concurrent.atomic.korAtomic
+import korlibs.korge.view.Stage
+import korlibs.logger.Console
 import korlibs.math.geom.SizeInt
 import org.andstatus.game2048.presenter.Presenter
 import kotlin.coroutines.CoroutineContext
@@ -19,7 +19,7 @@ actual val defaultLanguage: String get() = ""
 actual fun Presenter.shareText(actionTitle: String, fileName: String, value: Sequence<String>) =
     shareTextCommon(actionTitle, fileName, value)
 
-actual fun Stage.loadJsonGameRecord(settings: Settings, sharedJsonHandler: (Sequence<String>) -> Unit) {
+actual fun Stage.loadJsonGameRecord(myContext: MyContext, sharedJsonHandler: (Sequence<String>) -> Unit) {
     Console.log("$platformSourceFolder, loadJsonGameRecord")
     sharedJsonHandler(emptySequence())
 }

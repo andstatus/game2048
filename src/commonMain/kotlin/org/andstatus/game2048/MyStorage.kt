@@ -1,12 +1,12 @@
 package org.andstatus.game2048
 
-import korlibs.time.DateTime
+import korlibs.io.lang.parseInt
 import korlibs.korge.service.storage.NativeStorage
 import korlibs.korge.service.storage.get
 import korlibs.korge.view.Stage
 import korlibs.korge.view.Views
-import korlibs.io.lang.parseInt
 import korlibs.platform.Platform
+import korlibs.time.DateTime
 
 private val keyOpened = "opened"
 
@@ -17,9 +17,7 @@ class MyStorage(views: Views) {
     operator fun set(key: String, value: String) = native.set(key, value)
     fun getOrNull(key: String): String? = native.getOrNull(key)
 
-    fun getBoolean(key: String, default: Boolean): Boolean = native.getOrNull(key)?.let {
-        it.toBoolean()
-    } ?: default
+    fun getBoolean(key: String, default: Boolean): Boolean = native.getOrNull(key)?.toBoolean() ?: default
     operator fun set(key: String, value: Boolean) = native.set(key, value.toString())
 
     fun getInt(key: String, default: Int): Int = try {
@@ -27,6 +25,7 @@ class MyStorage(views: Views) {
     } catch (e: Exception) {
         default
     }
+
     operator fun set(key: String, value: Int) = native.set(key, value.toString())
 
     fun remove(key: String): Boolean = (native.keys().contains(key))
@@ -37,7 +36,7 @@ class MyStorage(views: Views) {
 
     override fun toString(): String =
         "Storage " + (native.getOrNull(keyOpened)?.let { "last opened: $it" } ?: "is new") +
-                "; Storage keys: ${native.keys().sorted()}; Platform:${Platform.rawPlatformName}"
+            "; Storage keys: ${native.keys().sorted()}; Platform:${Platform.rawPlatformName}"
 
     companion object {
         fun load(stage: Stage): MyStorage = myMeasuredIt("NativeStorage") {

@@ -2,12 +2,12 @@ package org.andstatus.game2048.model
 
 import korlibs.io.concurrent.atomic.KorAtomicRef
 import korlibs.io.concurrent.atomic.korAtomic
-import org.andstatus.game2048.Settings
+import org.andstatus.game2048.MyContext
 
 /** @author yvolk@yurivolkov.com */
 class Model(val history: History) {
-    val settings: Settings = history.settings
-    private val gamePositionRef = korAtomic(GamePosition(settings.defaultBoard))
+    val myContext: MyContext = history.myContext
+    private val gamePositionRef = korAtomic(GamePosition(myContext.defaultBoard))
     val gamePosition get() = gamePositionRef.value
 
     val moveNumber: Int get() = gamePosition.moveNumber
@@ -62,7 +62,7 @@ class Model(val history: History) {
         saveCurrent()
     }
 
-    private fun saveCurrent() = history.saveCurrent(history.settings.multithreadedScope)
+    private fun saveCurrent() = history.saveCurrent(history.myContext.multithreadedScope)
 
     fun canUndo(): Boolean {
         return history.canUndo()

@@ -4,7 +4,7 @@ import korlibs.math.isOdd
 import korlibs.time.DateFormat
 import korlibs.time.DateTime
 import korlibs.time.DateTimeTz
-import org.andstatus.game2048.Settings
+import org.andstatus.game2048.MyContext
 import org.andstatus.game2048.model.PlyEnum.Companion.UserPlies
 import org.andstatus.game2048.view.BoardSizeEnum.Companion.isValidBoardWidth
 import org.andstatus.game2048.view.BoardSizeEnum.Companion.sizeToWidth
@@ -41,7 +41,7 @@ class GamePosition(
 
     companion object {
 
-        fun fromJson(boardIn: Board? = null, json: Any, settings: Settings? = null): GamePosition? {
+        fun fromJson(boardIn: Board? = null, json: Any, myContext: MyContext? = null): GamePosition? {
             val aMap: Map<String, Any> = json.parseJsonMap()
             val pieces: Array<Piece?> = aMap[keyPieces]?.parseJsonArray()
                 ?.map { Piece.fromId(it as Int) }?.toTypedArray()
@@ -50,7 +50,7 @@ class GamePosition(
                 if (!isValidBoardWidth(it)) return null
             }
             val board = boardIn?.also { if (it.width != boardWidth) return null }
-                ?: settings?.let { Board(settings, boardWidth) }
+                ?: myContext?.let { Board(myContext, boardWidth) }
                 ?: throw IllegalArgumentException("No Board or Settings provided")
             val score: Int = aMap[keyScore] as Int? ?: return null
             val dateTime: DateTimeTz = aMap[keyDateTime]?.let { DateTime.parse(it as String) } ?: return null

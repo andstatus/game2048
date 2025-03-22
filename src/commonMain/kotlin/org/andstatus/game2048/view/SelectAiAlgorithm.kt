@@ -6,11 +6,11 @@ import korlibs.korge.view.Container
 import korlibs.korge.view.addTo
 import korlibs.korge.view.position
 import korlibs.time.milliseconds
-import org.andstatus.game2048.Settings
+import org.andstatus.game2048.MyContext
 import org.andstatus.game2048.ai.AiAlgorithm
 
-fun ViewData.selectAiAlgorithm(settings: Settings) = myWindow("select_ai_algorithm") {
-    var selected = settings.aiAlgorithm
+fun ViewData.selectAiAlgorithm(myContext: MyContext) = myWindow("select_ai_algorithm") {
+    var selected = myContext.aiAlgorithm
     var buttons: List<Container> = emptyList()
     var xInd = 0
     var yInd = 0

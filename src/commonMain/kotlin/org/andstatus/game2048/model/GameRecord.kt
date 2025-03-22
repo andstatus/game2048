@@ -1,7 +1,7 @@
 package org.andstatus.game2048.model
 
 import korlibs.time.DateTimeTz
-import org.andstatus.game2048.Settings
+import org.andstatus.game2048.MyContext
 import org.andstatus.game2048.myLog
 
 class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
@@ -16,8 +16,8 @@ class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
     }
 
     fun toSharedJsonSequence(): Sequence<String> = sequence {
-       yield(load().shortRecord.toSharedJson())
-       yieldAll(gamePlies.toSharedJsonSequence())
+        yield(load().shortRecord.toSharedJson())
+        yieldAll(gamePlies.toSharedJsonSequence())
     }
 
     var id: Int by shortRecord::id
@@ -40,27 +40,29 @@ class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
             }
 
     companion object {
-        fun newEmpty(settings: Settings, id: Int) = ShortRecord(settings, settings.defaultBoard, "", id,
-            DateTimeTz.nowLocal(), GamePosition(settings.defaultBoard), emptyList())
+        fun newEmpty(myContext: MyContext, id: Int) = ShortRecord(
+            myContext, myContext.defaultBoard, "", id,
+            DateTimeTz.nowLocal(), GamePosition(myContext.defaultBoard), emptyList()
+        )
             .let { GameRecord(it, GamePlies.fromPlies(it, emptyList())) }
 
-        fun fromId(settings: Settings, id: Int): GameRecord? = ShortRecord.fromId(settings, id)?.makeGameRecord()
+        fun fromId(myContext: MyContext, id: Int): GameRecord? = ShortRecord.fromId(myContext, id)?.makeGameRecord()
 
         fun ShortRecord.makeGameRecord(): GameRecord {
             val gamePlies: GamePlies = GamePlies.fromId(this)
             return GameRecord(this, gamePlies)
         }
 
-        fun fromSharedJson(settings: Settings, reader: SequenceLineReader, newId: Int): GameRecord? {
+        fun fromSharedJson(myContext: MyContext, reader: SequenceLineReader, newId: Int): GameRecord? {
             myLog("Game fromSharedJson newId:$newId...")
-            return ShortRecord.fromSharedJson(settings, reader, newId)?.let { shortRecord ->
+            return ShortRecord.fromSharedJson(myContext, reader, newId)?.let { shortRecord ->
                 GameRecord(shortRecord, GamePlies.fromSharedJson(shortRecord, reader.unRead()))
             }
         }
 
-        fun delete(settings: Settings, id: Int): Boolean {
-            GamePlies.delete(settings, id)
-            return ShortRecord.delete(settings, id)
+        fun delete(myContext: MyContext, id: Int): Boolean {
+            GamePlies.delete(myContext, id)
+            return ShortRecord.delete(myContext, id)
         }
     }
 

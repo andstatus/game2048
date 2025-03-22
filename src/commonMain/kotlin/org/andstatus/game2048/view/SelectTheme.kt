@@ -6,10 +6,10 @@ import korlibs.korge.view.Container
 import korlibs.korge.view.addTo
 import korlibs.korge.view.position
 import korlibs.time.milliseconds
-import org.andstatus.game2048.Settings
+import org.andstatus.game2048.MyContext
 
-fun ViewData.selectTheme(settings: Settings) = myWindow("select_theme") {
-    var selected = settings.colorThemeEnum
+fun ViewData.selectTheme(myContext: MyContext) = myWindow("select_theme") {
+    var selected = myContext.colorThemeEnum
     var buttons: List<Container> = emptyList()
 
     suspend fun button(buttonEnum: ColorThemeEnum, yInd: Int, handler: (ColorThemeEnum) -> Unit): Container =

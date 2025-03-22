@@ -1,5 +1,6 @@
 package org.andstatus.game2048
 
+import korlibs.image.font.BitmapFont
 import korlibs.image.font.readBitmapFont
 import korlibs.io.file.std.resourcesVfs
 import korlibs.io.lang.parseInt
@@ -29,7 +30,7 @@ const val stubGameId = 61
 see https://en.wikipedia.org/wiki/2048_(video_game)
 and for the game in browser: https://play2048.co/
 For now you can modify settings in the "game.storage" file. */
-class Settings(private val stage: Stage) {
+class MyContext(private val stage: Stage) {
     val multithreadedScope: CoroutineScope
         get() = CoroutineScope(
             stage.coroutineContext + Job()
@@ -45,7 +46,7 @@ class Settings(private val stage: Stage) {
     var allowUndo = storage.getBoolean(keyAllowUndo, true)
     var boardWidth = storage.getInt(keyBoardSize, BOARD_SIZE_DEFAULT.width).let(::fixBoardWidth)
 
-    val boardHeight get() =  boardWidth
+    val boardHeight get() = boardWidth
     var colorThemeEnum: ColorThemeEnum = ColorThemeEnum.load(storage.getOrNull(keyColorTheme))
     var aiAlgorithm: AiAlgorithm = AiAlgorithm.load(storage.getOrNull(keyAiAlgorithm))
     val defaultBoard get() = Board(this)
@@ -56,7 +57,7 @@ class Settings(private val stage: Stage) {
     val pliesPageData = PliesPageData(this)
 
     companion object {
-        fun load(stage: Stage): Settings = myMeasured("Settings loaded") { Settings(stage) }
+        fun load(stage: Stage): MyContext = myMeasured("Settings loaded") { MyContext(stage) }
     }
 
     fun save() {
@@ -85,7 +86,7 @@ class Settings(private val stage: Stage) {
         get() = storage.getOrNull(keyCurrentGameId)?.parseInt()
 }
 
-suspend fun loadFont(strings: StringResources) = myMeasured("Font loaded") {
+suspend fun loadFont(strings: StringResources): BitmapFont = myMeasured("Font loaded") {
     val fontFolder = when (strings.lang) {
         "zh" -> "noto_sans_sc"
         "si" -> "abhaya_libre"

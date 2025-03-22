@@ -32,7 +32,7 @@ fun ViewData.showGameMenu(gameMode: GameMode, numberOfRecentGames: Int) = myWind
 
     val aiShown = gameMode.isPlaying && gameMode.aiEnabled
     if (aiShown) {
-        button(GameMenuButtonsEnum.SELECT_AI_ALGORITHM) { selectAiAlgorithm(settings) }
+        button(GameMenuButtonsEnum.SELECT_AI_ALGORITHM) { selectAiAlgorithm(myContext) }
     }
     button(GameMenuButtonsEnum.BOOKMARKS, presenter::onBookmarksClick)
     button(GameMenuButtonsEnum.RECENT, presenter::onRecentClick)
@@ -41,8 +41,8 @@ fun ViewData.showGameMenu(gameMode: GameMode, numberOfRecentGames: Int) = myWind
     if (!aiShown || isPortrait) {
         button(GameMenuButtonsEnum.LOAD, presenter::onLoadClick)
     }
-    button(GameMenuButtonsEnum.SELECT_THEME) { selectTheme(settings) }
-    button(GameMenuButtonsEnum.SELECT_BOARD_SIZE) { selectBoardSize(settings) }
+    button(GameMenuButtonsEnum.SELECT_THEME) { selectTheme(myContext) }
+    button(GameMenuButtonsEnum.SELECT_BOARD_SIZE) { selectBoardSize(myContext) }
     button(GameMenuButtonsEnum.EXIT, presenter::onExitAppClick)
     if (numberOfRecentGames > 5) {
         button(GameMenuButtonsEnum.DELETE, presenter::onDeleteGameClick)

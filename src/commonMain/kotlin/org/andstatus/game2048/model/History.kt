@@ -8,7 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import org.andstatus.game2048.Settings
+import org.andstatus.game2048.MyContext
 import org.andstatus.game2048.gameIsLoading
 import org.andstatus.game2048.keyCurrentGameId
 import org.andstatus.game2048.model.GameRecord.Companion.makeGameRecord
@@ -20,25 +20,29 @@ const val keyGameMode = "gameMode"
 
 /** @author yvolk@yurivolkov.com */
 class History(
-    val settings: Settings,
+    val myContext: MyContext,
     currentGameIn: GameRecord?,
     recentGamesIn: List<ShortRecord> = emptyList()
 ) {
-    private val keyBest = "best"
-    private val stubGame: GameRecord = GameRecord.newEmpty(settings, stubGameId).load()
+    private val keyBest
+        get() = when (myContext.boardWidth) {
+            4 -> "best"
+            else -> "best${myContext.boardWidth}"
+        }
+    private val stubGame: GameRecord = GameRecord.newEmpty(myContext, stubGameId).load()
     private val recentGamesRef: KorAtomicRef<List<ShortRecord>> = korAtomic(recentGamesIn)
     val recentGames get() = recentGamesRef.value
     private val currentGameRef: KorAtomicRef<GameRecord> = korAtomic(currentGameIn ?: stubGame)
     val currentGame: GameRecord get() = currentGameRef.value
 
     // 1. Info on previous games
-    var bestScore: Int = settings.storage.getInt(keyBest, 0)
+    var bestScore: Int = myContext.storage.getInt(keyBest, 0)
 
     // 2. This game, see for the inspiration https://en.wikipedia.org/wiki/Portable_Game_Notation
     /** 0 means that the pointer is turned off */
     var redoPlyPointer: Int = 0
     val gameMode: GameMode = GameMode().apply {
-        modeEnum = GameModeEnum.fromId(settings.storage.getOrNull(keyGameMode) ?: "").let {
+        modeEnum = GameModeEnum.fromId(myContext.storage.getOrNull(keyGameMode) ?: "").let {
             when (it) {
                 GameModeEnum.AI_PLAY, GameModeEnum.PLAY -> GameModeEnum.PLAY
                 else -> GameModeEnum.STOP
@@ -47,14 +51,14 @@ class History(
     }
 
     companion object {
-        suspend fun load(settings: Settings): History = coroutineScope {
+        suspend fun load(myContext: MyContext): History = coroutineScope {
             val dCurrentGame = async {
                 myMeasuredIt("Current game loaded") {
-                    settings.currentGameId
-                        ?.let { GameRecord.fromId(settings, it) }
+                    myContext.currentGameId
+                        ?.let { GameRecord.fromId(myContext, it) }
                 }
             }
-            History(settings, dCurrentGame.await())
+            History(myContext, dCurrentGame.await())
         }
     }
 
@@ -62,8 +66,8 @@ class History(
 
     fun loadRecentGames(): History {
         myMeasuredIt("Recent games loaded") {
-            recentGamesRef.value = settings.gameIdsRange.fold(emptyList()) { acc, ind ->
-                ShortRecord.fromId(settings, ind)
+            recentGamesRef.value = myContext.gameIdsRange.fold(emptyList()) { acc, ind ->
+                ShortRecord.fromId(myContext, ind)
                     ?.let { acc + it } ?: acc
             }
             "${recentGames.size} records"
@@ -71,7 +75,7 @@ class History(
         return this
     }
 
-    fun openNewGame(): GameRecord = GameRecord.newEmpty(settings, idForNewGame()).load().let {
+    fun openNewGame(): GameRecord = GameRecord.newEmpty(myContext, idForNewGame()).load().let {
         openGame(it, it.id) ?: throw IllegalStateException("Failed to open new game")
     }
 
@@ -80,7 +84,7 @@ class History(
             if (it.id == id) return it
             else null
         }
-            ?: GameRecord.fromId(settings, id)
+            ?: GameRecord.fromId(myContext, id)
                 ?.also { openGame(it, id) }
 
     fun openGame(game: GameRecord?, id: Int): GameRecord? = game
@@ -92,7 +96,7 @@ class History(
                 it.id = id
             }
             currentGameRef.value = it
-            settings.storage[keyCurrentGameId] = it.id
+            myContext.storage[keyCurrentGameId] = it.id
             updateBestScore()
             gameMode.modeEnum = if (it.isEmpty) GameModeEnum.PLAY else GameModeEnum.STOP
         }
@@ -102,9 +106,9 @@ class History(
         }
 
     fun saveCurrent(coroutineScope: CoroutineScope): History {
-        settings.storage[keyGameMode] = gameMode.modeEnum.id
+        myContext.storage[keyGameMode] = gameMode.modeEnum.id
         currentGame.let { game ->
-            settings.storage[keyCurrentGameId] = game.id
+            myContext.storage[keyCurrentGameId] = game.id
 
             coroutineScope.launch {
                 myMeasuredIt("Game saved") {
@@ -123,7 +127,7 @@ class History(
         (currentGame.score).let { score ->
             if (bestScore < score) {
                 bestScore = score
-                settings.storage[keyBest] = score
+                myContext.storage[keyBest] = score
             }
         }
     }
@@ -135,19 +139,19 @@ class History(
             myLog("idForNewGame: $it")
         }
 
-    private fun idToDelete() = if (recentGames.size > settings.maxOlderGames) {
+    private fun idToDelete() = if (recentGames.size > myContext.maxOlderGames) {
         val keepAfter = DateTimeTz.nowLocal().minus(1.weeks)
         val olderGames = recentGames.filterNot {
             it.finalPosition.startingDateTime >= keepAfter || it.id == currentGame.id
         }
         when {
             olderGames.size > 20 -> olderGames.minByOrNull { it.finalPosition.score }?.id
-            recentGames.size >= settings.gameIdsRange.last -> recentGames.minByOrNull { it.finalPosition.score }?.id
+            recentGames.size >= myContext.gameIdsRange.last -> recentGames.minByOrNull { it.finalPosition.score }?.id
             else -> null
         }
     } else null
 
-    private fun unusedGameId() = settings.gameIdsRange.filterNot { it == currentGame.id }
+    private fun unusedGameId() = myContext.gameIdsRange.filterNot { it == currentGame.id }
         .find { id -> recentGames.none { it.id == id } }
         ?: recentGames.filterNot { it.id == currentGame.id }
             .minByOrNull { it.finalPosition.startingDateTime }?.id
@@ -160,7 +164,7 @@ class History(
         if (currentGame.id == id) {
             currentGameRef.value = latestOtherGame(id) ?: stubGame
         }
-        GameRecord.delete(settings, id)
+        GameRecord.delete(myContext, id)
     }
 
     private fun latestOtherGame(notTheId: Int): GameRecord? = recentGames
@@ -208,7 +212,7 @@ class History(
                 } + position.ply
                 with(game.shortRecord) {
                     GameRecord(
-                        ShortRecord(settings, board, note, id, start, position.position, bookmarksNew),
+                        ShortRecord(myContext, board, note, id, start, position.position, bookmarksNew),
                         gamePliesNew
                     )
                 }
@@ -221,7 +225,8 @@ class History(
     fun createBookmark(gamePosition: GamePosition) = currentGame.let { game ->
         currentGameRef.value = with(game.shortRecord) {
             GameRecord(
-                ShortRecord(settings, board, note, id, start, finalPosition,
+                ShortRecord(
+                    myContext, board, note, id, start, finalPosition,
                     bookmarks.filter { it.plyNumber != gamePosition.plyNumber } +
                         gamePosition.copy()),
                 game.gamePlies
@@ -232,15 +237,16 @@ class History(
     fun deleteBookmark(gamePosition: GamePosition) = currentGame.let { game ->
         currentGameRef.value = with(game.shortRecord) {
             GameRecord(
-                ShortRecord(settings, board, note, id, start, finalPosition, bookmarks
-                    .filterNot { it.plyNumber == gamePosition.plyNumber }),
+                ShortRecord(
+                    myContext, board, note, id, start, finalPosition, bookmarks
+                        .filterNot { it.plyNumber == gamePosition.plyNumber }),
                 game.gamePlies
             )
         }
     }
 
     fun canUndo(): Boolean = currentGame.let { game ->
-        settings.allowUndo &&
+        myContext.allowUndo &&
             redoPlyPointer != 1 && redoPlyPointer != 2 &&
             game.gamePlies.size > 1 &&
             (redoPlyPointer > 2 || game.gamePlies.lastOrNull()?.player == PlayerEnum.COMPUTER)
