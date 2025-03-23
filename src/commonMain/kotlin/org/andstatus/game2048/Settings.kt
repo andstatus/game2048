@@ -3,8 +3,8 @@ package org.andstatus.game2048
 import korlibs.korge.service.storage.NativeStorage
 import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.model.Board
+import org.andstatus.game2048.view.BoardSizeEnum
 import org.andstatus.game2048.view.BoardSizeEnum.Companion.BOARD_SIZE_DEFAULT
-import org.andstatus.game2048.view.BoardSizeEnum.Companion.fixBoardWidth
 import org.andstatus.game2048.view.ColorThemeEnum
 
 const val keyFullscreen = "fullscreen"
@@ -26,14 +26,12 @@ data class Settings(
     val allowResultingTileToMerge: Boolean,
     val allowUsersMoveWithoutBlockMoves: Boolean,
     val allowUndo: Boolean,
-    val boardWidth: Int,
+    val boardSize: BoardSizeEnum,
     val colorThemeEnum: ColorThemeEnum,
     val aiAlgorithm: AiAlgorithm,
     val pliesPageSize: Int = 1000,
 ) {
-    val boardHeight get() = boardWidth
-
-    val defaultBoard get() = Board(this)
+    val defaultBoard get() = Board(this, this.boardSize)
     val gameIdsRange = 1 until stubGameId
     val maxOlderGames = 30
 
@@ -41,7 +39,7 @@ data class Settings(
         storage.native.setBoolean(keyAllowResultingTileToMerge, allowResultingTileToMerge)
             .setBoolean(keyAllowUsersMoveWithoutBlockMoves, allowUsersMoveWithoutBlockMoves)
             .setBoolean(keyAllowUndo, allowUndo)
-            .setInt(keyBoardSize, boardWidth)
+            .setInt(keyBoardSize, boardSize.width)
             // TODO: Separate screen needed
             //  .setBoolean(keyFullscreen, colorThemeEnum == ColorThemeEnum.DEVICE_DEFAULT)
             .set(keyColorTheme, colorThemeEnum.labelKey)
@@ -55,7 +53,7 @@ data class Settings(
                 allowResultingTileToMerge = storage.getBoolean(keyAllowResultingTileToMerge, false),
                 allowUsersMoveWithoutBlockMoves = storage.getBoolean(keyAllowUsersMoveWithoutBlockMoves, false),
                 allowUndo = storage.getBoolean(keyAllowUndo, true),
-                boardWidth = storage.getInt(keyBoardSize, BOARD_SIZE_DEFAULT.width).let(::fixBoardWidth),
+                boardSize = BoardSizeEnum.fromIntWidth(storage.getInt(keyBoardSize, BOARD_SIZE_DEFAULT.width)),
                 colorThemeEnum = ColorThemeEnum.load(storage.getOrNull(keyColorTheme)),
                 aiAlgorithm = AiAlgorithm.load(storage.getOrNull(keyAiAlgorithm)),
             )

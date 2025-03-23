@@ -364,15 +364,18 @@ class Presenter(val view: ViewData, history: History) {
 
     private fun openGame(id: Int) {
         val openGamePlies = model.openGame(id)
-        val newBoardWidth = model.history.currentGame.shortRecord.board.width
-        if (newBoardWidth == model.myContext.boardWidth) {
+        val newBoardSize = model.history.currentGame.boardSize
+        if (newBoardSize == view.boardSize) {
             present {
                 openGamePlies.also {
                     loadPlies()
                 }
             }
         } else {
-            myLog("Reinitializing: board width changed ${model.myContext.boardWidth} -> $newBoardWidth")
+            model.myContext.update {
+                it.copy(boardSize = newBoardSize)
+            }
+            myLog("Reinitializing: board size changed ${view.boardSize} -> $newBoardSize")
             view.reInitialize()
         }
     }
@@ -444,12 +447,13 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     fun onSelectBoardSize(boardSize: BoardSizeEnum) {
-        logClick("onSelectBoardSize-${boardSize}x${boardSize}")
-        if (boardSize.width == view.myContext.boardWidth) return
+        logClick("onSelectBoardSize-$boardSize")
+        if (boardSize == view.boardSize) return
 
-        view.myContext.boardWidth = boardSize.width
+        view.myContext.update {
+            it.copy(boardSize = boardSize)
+        }
         model.tryAgain()
-        view.myContext.save()
         pauseGame()
         view.reInitialize()
     }

@@ -24,8 +24,6 @@ class MyContext(private val stage: Stage) {
     )
     val settings: Settings get() = settingsRef.value
 
-    var boardWidth = settings.boardWidth
-
     val pliesPageData = PliesPageData(this)
 
     fun update(updater: (Settings) -> Settings): Unit {

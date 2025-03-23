@@ -6,11 +6,10 @@ import korlibs.korge.view.Container
 import korlibs.korge.view.addTo
 import korlibs.korge.view.position
 import korlibs.time.milliseconds
-import org.andstatus.game2048.MyContext
 
-fun ViewData.selectBoardSize(myContext: MyContext) = myWindow("select_board_size") {
+fun ViewData.selectBoardSize() = myWindow("select_board_size") {
     var buttons: List<Container?> = emptyList()
-    var selected = BoardSizeEnum.load(myContext.boardWidth)
+    var selected = boardSize
     var xInd = 0
     var yInd = 0
 

@@ -19,6 +19,7 @@ import korlibs.time.Stopwatch
 import korlibs.time.TimeSpan
 import korlibs.time.minutes
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -45,7 +46,7 @@ suspend fun viewData(stage: Stage): ViewData = coroutineScope {
     val strings = async { StringResources.load(defaultLanguage) }
     val font = async { loadFont(strings.await()) }
     val myContext = myMeasured("Loading settings") { MyContext.load(stage) }
-    val history = async {
+    val history: Deferred<History> = async {
         History.load(myContext).also {
             it.loadRecentGames()
         }
@@ -68,10 +69,11 @@ suspend fun viewData(stage: Stage): ViewData = coroutineScope {
         // We set window title in Android via AndroidManifest.xml
         stage.gameWindow.title = strings.await().text("app_name")
     }
-    val historyLoaded: History = history.await().also {
-        if (it.currentGame.shortRecord.board.width != myContext.boardWidth) {
-            myContext.boardWidth = it.currentGame.shortRecord.board.width
-            myContext.save()
+    val historyLoaded: History = history.await().also { history1 ->
+        if (history1.currentGame.shortRecord.board.boardSize != myContext.settings.boardSize) {
+            myContext.update {
+                it.copy(boardSize = history1.currentGame.shortRecord.board.boardSize)
+            }
         }
     }
 
@@ -110,10 +112,11 @@ class ViewData(
     val korgeCoroutineScope: CoroutineScope get() = gameStage.views
     val korgeCoroutineContext: CoroutineContext get() = gameStage.views.coroutineContext
 
+    val boardSize: BoardSizeEnum get() = myContext.settings.boardSize
     val cellSize: Float = (
         (if (isPortrait) gameViewWidth else gameViewWidth / 2) -
-            cellMargin * (myContext.boardWidth + 1) - 2 * buttonMargin) / myContext.boardWidth
-    val boardWidth: Float = cellSize * myContext.boardWidth + cellMargin * (myContext.boardWidth + 1)
+            cellMargin * (boardSize.width + 1) - 2 * buttonMargin) / boardSize.width
+    val boardWidth: Float = cellSize * boardSize.width + cellMargin * (boardSize.width + 1)
 
     var presenter: Presenter by Delegates.notNull()
     var mainView: MainView by Delegates.notNull()

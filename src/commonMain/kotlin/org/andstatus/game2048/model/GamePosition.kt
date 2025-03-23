@@ -6,8 +6,8 @@ import korlibs.time.DateTime
 import korlibs.time.DateTimeTz
 import org.andstatus.game2048.MyContext
 import org.andstatus.game2048.model.PlyEnum.Companion.UserPlies
-import org.andstatus.game2048.view.BoardSizeEnum.Companion.isValidBoardWidth
-import org.andstatus.game2048.view.BoardSizeEnum.Companion.sizeToWidth
+import org.andstatus.game2048.view.BoardSizeEnum
+import org.andstatus.game2048.view.BoardSizeEnum.Companion.fromIntSizeOrNull
 import kotlin.random.Random
 
 private const val keyPlyNumber = "plyNumber"
@@ -46,11 +46,9 @@ class GamePosition(
             val pieces: Array<Piece?> = aMap[keyPieces]?.parseJsonArray()
                 ?.map { Piece.fromId(it as Int) }?.toTypedArray()
                 ?: return null
-            val boardWidth = sizeToWidth(pieces.size).also {
-                if (!isValidBoardWidth(it)) return null
-            }
-            val board = boardIn?.also { if (it.width != boardWidth) return null }
-                ?: myContext?.let { Board(myContext.settings, boardWidth) }
+            val boardSize: BoardSizeEnum = fromIntSizeOrNull(pieces.size) ?: return null
+            val board = boardIn?.also { if (it.boardSize != boardSize) return null }
+                ?: myContext?.let { Board(myContext.settings, boardSize) }
                 ?: throw IllegalArgumentException("No Board or Settings provided")
             val score: Int = aMap[keyScore] as Int? ?: return null
             val dateTime: DateTimeTz = aMap[keyDateTime]?.let { DateTime.parse(it as String) } ?: return null

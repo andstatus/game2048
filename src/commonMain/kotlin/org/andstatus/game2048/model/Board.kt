@@ -1,13 +1,14 @@
 package org.andstatus.game2048.model
 
 import org.andstatus.game2048.Settings
+import org.andstatus.game2048.view.BoardSizeEnum
 
-class Board(settings: Settings, boardWidth: Int = settings.boardWidth) {
+class Board(settings: Settings, val boardSize: BoardSizeEnum) {
     val allowUsersMoveWithoutBlockMoves = settings.allowUsersMoveWithoutBlockMoves
     val allowResultingTileToMerge = settings.allowResultingTileToMerge
-    val width = boardWidth
-    val height = boardWidth
-    val size = width * height
+    val width get() = boardSize.width
+    val height get() = boardSize.height
+    val size get() = boardSize.size
     val array: Array<Square> = Array(size) { ind ->
         Square(ind % width, (ind - ind % width) / width)
     }

@@ -24,11 +24,6 @@ class History(
     currentGameIn: GameRecord?,
     recentGamesIn: List<ShortRecord> = emptyList()
 ) {
-    private val keyBest
-        get() = when (myContext.boardWidth) {
-            4 -> "best"
-            else -> "best${myContext.boardWidth}"
-        }
     private val stubGame: GameRecord = GameRecord.newEmpty(myContext, stubGameId).load()
     private val recentGamesRef: KorAtomicRef<List<ShortRecord>> = korAtomic(recentGamesIn)
     val recentGames get() = recentGamesRef.value
@@ -36,7 +31,7 @@ class History(
     val currentGame: GameRecord get() = currentGameRef.value
 
     // 1. Info on previous games
-    var bestScore: Int = myContext.storage.getInt(keyBest, 0)
+    var bestScore: Int = myContext.storage.getInt(currentGame.boardSize.keyBest, 0)
 
     // 2. This game, see for the inspiration https://en.wikipedia.org/wiki/Portable_Game_Notation
     /** 0 means that the pointer is turned off */
@@ -127,7 +122,7 @@ class History(
         (currentGame.score).let { score ->
             if (bestScore < score) {
                 bestScore = score
-                myContext.storage[keyBest] = score
+                myContext.storage[currentGame.boardSize.keyBest] = score
             }
         }
     }

@@ -3,8 +3,10 @@ package org.andstatus.game2048.model
 import korlibs.time.DateTimeTz
 import org.andstatus.game2048.MyContext
 import org.andstatus.game2048.myLog
+import org.andstatus.game2048.view.BoardSizeEnum
 
 class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
+    val boardSize: BoardSizeEnum get() = shortRecord.board.boardSize
 
     fun save() {
         if (shortRecord.isStub) return

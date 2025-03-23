@@ -42,7 +42,7 @@ fun ViewData.showGameMenu(gameMode: GameMode, numberOfRecentGames: Int) = myWind
         button(GameMenuButtonsEnum.LOAD, presenter::onLoadClick)
     }
     button(GameMenuButtonsEnum.SELECT_THEME) { selectTheme(myContext) }
-    button(GameMenuButtonsEnum.SELECT_BOARD_SIZE) { selectBoardSize(myContext) }
+    button(GameMenuButtonsEnum.SELECT_BOARD_SIZE) { selectBoardSize() }
     button(GameMenuButtonsEnum.EXIT, presenter::onExitAppClick)
     if (numberOfRecentGames > 5) {
         button(GameMenuButtonsEnum.DELETE, presenter::onDeleteGameClick)
