@@ -1,11 +1,11 @@
 package org.andstatus.game2048.model
 
+import korlibs.io.concurrent.atomic.KorAtomicInt
 import korlibs.io.concurrent.atomic.KorAtomicRef
 import korlibs.io.concurrent.atomic.korAtomic
 import korlibs.time.DateTimeTz
 import korlibs.time.weeks
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.andstatus.game2048.MyContext
@@ -15,23 +15,23 @@ import org.andstatus.game2048.model.GameRecord.Companion.makeGameRecord
 import org.andstatus.game2048.myLog
 import org.andstatus.game2048.myMeasuredIt
 import org.andstatus.game2048.stubGameId
+import kotlin.math.max
 
 const val keyGameMode = "gameMode"
 
 /** @author yvolk@yurivolkov.com */
 class History(
-    val myContext: MyContext,
-    currentGameIn: GameRecord?,
-    recentGamesIn: List<ShortRecord> = emptyList()
+    val myContext: MyContext
 ) {
     private val stubGame: GameRecord = GameRecord.newEmpty(myContext, stubGameId).load()
-    private val recentGamesRef: KorAtomicRef<List<ShortRecord>> = korAtomic(recentGamesIn)
+    private val recentGamesRef: KorAtomicRef<List<ShortRecord>> = korAtomic(emptyList())
     val recentGames get() = recentGamesRef.value
-    private val currentGameRef: KorAtomicRef<GameRecord> = korAtomic(currentGameIn ?: stubGame)
+    private val currentGameRef: KorAtomicRef<GameRecord> = korAtomic(stubGame)
     val currentGame: GameRecord get() = currentGameRef.value
 
     // 1. Info on previous games
-    var bestScore: Int = myContext.storage.getInt(currentGame.boardSize.keyBest, 0)
+    private val bestScoreStoredRef: KorAtomicInt = korAtomic(0)
+    val bestScore: Int get() = max(currentGame.score, bestScoreStoredRef.value)
 
     // 2. This game, see for the inspiration https://en.wikipedia.org/wiki/Portable_Game_Notation
     /** 0 means that the pointer is turned off */
@@ -47,13 +47,13 @@ class History(
 
     companion object {
         suspend fun load(myContext: MyContext): History = coroutineScope {
-            val dCurrentGame = async {
-                myMeasuredIt("Current game loaded") {
-                    myContext.currentGameId
-                        ?.let { GameRecord.fromId(myContext, it) }
+            History(myContext).also { history ->
+                myContext.currentGameId?.let { gameId ->
+                    myMeasuredIt("Current game loaded") {
+                        history.openGame(gameId)
+                    }
                 }
             }
-            History(myContext, dCurrentGame.await())
         }
     }
 
@@ -82,18 +82,19 @@ class History(
             ?: GameRecord.fromId(myContext, id)
                 ?.also { openGame(it, id) }
 
-    fun openGame(game: GameRecord?, id: Int): GameRecord? = game
-        ?.also {
-            if (it.id == id) {
-                myLog("Opened game $it")
+    fun openGame(gameIn: GameRecord?, id: Int): GameRecord? = gameIn
+        ?.also { game ->
+            if (game.id == id) {
+                myLog("Opened game $game")
             } else {
-                myLog("Fixed id $id while opening game $it")
-                it.id = id
+                myLog("Fixed id $id while opening game $game")
+                game.id = id
             }
-            currentGameRef.value = it
-            myContext.storage[keyCurrentGameId] = it.id
-            updateBestScore()
-            gameMode.modeEnum = if (it.isEmpty) GameModeEnum.PLAY else GameModeEnum.STOP
+            currentGameRef.value = game
+            myContext.storage[keyCurrentGameId] = game.id
+            bestScoreStoredRef.value = myContext.storage.getInt(game.boardSize.keyBest, 0)
+            saveBestScore(game)
+            gameMode.modeEnum = if (game.isEmpty) GameModeEnum.PLAY else GameModeEnum.STOP
         }
         ?: run {
             myLog("Failed to open game $id")
@@ -107,7 +108,7 @@ class History(
 
             coroutineScope.launch {
                 myMeasuredIt("Game saved") {
-                    updateBestScore()
+                    saveBestScore(game)
                     game.save()
                     gameIsLoading.compareAndSet(expect = true, update = false)
                     game
@@ -118,11 +119,11 @@ class History(
         return this
     }
 
-    private fun updateBestScore() {
-        (currentGame.score).let { score ->
-            if (bestScore < score) {
-                bestScore = score
-                myContext.storage[currentGame.boardSize.keyBest] = score
+    private fun saveBestScore(game: GameRecord) {
+        (game.score).let { score ->
+            if (bestScoreStoredRef.value < score) {
+                myContext.storage[game.boardSize.keyBest] = score
+                bestScoreStoredRef.value = score
             }
         }
     }
@@ -213,7 +214,6 @@ class History(
                 }
             }
         }
-        updateBestScore()
         redoPlyPointer = 0
     }
 
