@@ -1,13 +1,13 @@
 # 2048 Open Fun Game
 
 2048 game with AI, Bookmarks, Auto Replay, History and other fun features,
-Open Source, no ads
+Open Source, no ads.
 
 This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatform implementation
  in [Kotlin](https://kotlinlang.org/) programming language
  and [KorGe game engine](https://korge.org/).
 
-**Android**.  The latest Beta Android build is available [here](https://github.com/andstatus/game2048/issues/1).
+**Android**.  The latest beta Android build is available [here](https://github.com/andstatus/game2048/issues/1).
 
 [<img src="doc/images/get-it-on-rustore.png" alt="Get 2048 Open Fun Game on RuStore" height="60" />](https://apps.rustore.ru/app/org.andstatus.game2048)
 [<img src="doc/images/5x5.png" width="10">](#)
@@ -15,7 +15,7 @@ This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatfo
 [<img src="doc/images/5x5.png" width="10">](#)
 [<img src="doc/images/get-it-on-fdroid.png" alt="Get it on F-Droid" height="60">](https://f-droid.org/repository/browse/?fdid=org.andstatus.game2048)
 
-**Windows X64** zipped executable is [here](https://github.com/andstatus/game2048/issues/2). 
+**Windows x64** zipped executable is [here](https://github.com/andstatus/game2048/issues/2). 
 
 <a id="features"/>
 
@@ -32,7 +32,7 @@ see [User experience](doc/User-Experience.md).
 
 ### Features of "2048 Open Fun Game" that are not present in the original game
 
-* Unlimited and animated Undo and Redo.
+* Unlimited and animated undo and redo.
 * Retries counter. When you make a move after Undo (no matter if it is the same move as before or another move),
   number of Retries increases. The counter shows total number of retries done during the game
   and allows comparing different results more fairly.
@@ -40,13 +40,13 @@ see [User experience](doc/User-Experience.md).
   Dark theme for Android 9+ is turned on by default when system-wide "Dark theme" is turned on in device settings.
 * Different portrait and landscape screen layouts. Portrait layout is more or less classic for the 2048 game, 
   and landscape layout allows using screen space better and have larger board.
-* Turn on AI (Artificial Intelligence) mode and let the AI play for you.
+* Turn on AI (artificial intelligence) mode and let the AI play for you.
   Increase or decrease AI player speed. Stop it and continue playing yourself.
   Choose one of several AI algorithms, see how they play and compare them.
 * Select board size from 3x3 up to 8x8, and not 4x4 default classic size only.  
 * Bookmarks at the interesting game positions. Return to a bookmark and play again from that place.
 * Move number and game duration are shown. The time starts when you make a move.
-  It stops when you tap Undo or Pause button.
+  It stops when you tap undo or pause button.
 * "Watch" mode. Auto replay current game forward and backwards at any speed,
   stop at any position.
   Switch to "Play" mode from that place and continue playing, overriding history.
@@ -57,24 +57,24 @@ see [User experience](doc/User-Experience.md).
 * When you tap "Try again" button or open recent game, current game is automatically saved to the history,
   so you can review or continue to play it later.
 * Share a game as a file, so it can be loaded, watched and even played on any other device.
-* The app is multilingual. Please add new translations [2048 Open Fun Game at Crowdin](https://crowdin.com/project/2048-open-fun-game)
+* The app is multilingual. You can help by adding new translations on Crowdin: (https://crowdin.com/project/2048-open-fun-game)
 
 <p>
-<img title="Main screen of Game2048 app. Play mode ('Game pad' button in the top left corner). You see Bookmark and Pause buttons" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/1.png" height="400" />
+<img title="Main screen of Game2048 app." src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/1.png" height="400" /
 <img src="doc/images/5x5.png" width="5" />
-<img title="Dark Theme. Play mode in Landscape orientation. You see Bookmark button. Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/2.png" width="400" />
+<img title="Dark theme" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/2.png" width="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="6x6 board. Light theme. Watch mode ('Movie' button in the top left corner). Now watching the game movements backwards. Press the 'Movie' button to switch to Play mode. Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/3.png" height="400" />
+<img title="Light theme" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/3.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Game actions menu of Game2048 app. 'Delete game' option is shown when AI is turned off (and its 'Select AI algorithm' menu item frees a space)" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/4.png" height="400" />
+<img title="Game actions menu" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/4.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Open recent game, then watch or play it. Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/5.png" height="400" />
+<img title="Open recent game" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/5.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Game Over in Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/6.png" height="400" />
+<img title="Game over" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/6.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="Theme selection in Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/7.png" height="400" />
+<img title="Theme selection" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/7.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
-<img title="AI algorithm selection in Game2048 app" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/8.png" height="400" />
+<img title="AI algorithm selection" src="game2048-android/src/main/play/listings/en-US/graphics/phone-screenshots/8.png" height="400" />
 </p>
 
 Privacy policy is [here](doc/Privacy-Policy.md).
@@ -95,7 +95,7 @@ in order to ease understanding of implementation logic.
 * Add lots of new [features](#features).
 * Add automated tests.
 * Structure and clean code.
-* Created Game exchange text format (JSON based) to allow users share and load shared games with all moves and bookmarks.
+* Created game exchange text format (JSON based) to allow users share and load shared games with all moves and bookmarks.
 
 ## Contribution
 
@@ -103,53 +103,7 @@ in order to ease understanding of implementation logic.
 * The app is multilingual. Please help to translate the app into your language:
 [2048 Open Fun Game at Crowdin](https://crowdin.com/project/2048-open-fun-game).
 
-<a id="changelog"/>
-
-## Changelog
-
-### 2023-08-06 v.1.13.2 (37) Different board sizes.
-* Previously we had only 4x4 classic game board. Now "Select board size" menu item 
-added allowing to select boards from 3x3 to 8x8. [#9](https://github.com/andstatus/game2048/issues/9)
-
-### 2022-03-20 v.1.12.0 (34) Share and Load huge game histories.
-* Now we can Share and Load huge game histories. Successfully tested with
-  a game having 120 thousand moves.
-  [#8](https://github.com/andstatus/game2048/issues/8)
-* Keep the game screen on during inactivity.
-* "Exit app" button added to the "Game actions" menu.
-  [#6](https://github.com/andstatus/game2048/issues/6)
-* Fixed "How to play" screen overlays with main screen or "Game actions" opens after closing the "How to play" screen.
-* Share and Load game for JVM platform. Files are saved to and loaded from the root project folder.
-  Convenient for the developer's testing.
-
-### 2021-12-21 v.1.11.0 (33) Retries counter and Landscape layout.
-* Retries counter added. When you make a move after Undo (no matter if it is the same move as before or another move),
-  number of Retries increases. The counter shows total number of retries done during the game
-  and allows comparing different results more fairly.
-* Landscape screen layout added. Portrait layout is more or less classic for the 2048 game,
-  and landscape layout allows using screen space better and have larger board.
-* Optimized to allow games with more than 50 thousand moves.
-
-# How to run the project
-
-## Android-specific project
-This multiplatform project has additional Android-specific project that is customized to have
-richer User experience on Android platform.
-The project is in the *game2048-android* subfolder and can be opened and run using Android Studio.  
-It consists of build configuration files, and it reuses common source code.
-
-## JVM target
-Use "jvmRun" Gradle task to start the game as a Java application (i.e. no need for Android device or emulator).
-
-Additional arguments:
-
- Argument | Description
-----------|-------------
--Duser.color.theme=dark             | switch to the Dark Theme
--Duser.language=ru                  | switch to Russian locale ("zh" - to Chinese Simplified)
--Duser.screen.orientation=landscape | landscape screen orientation ("tall" - taller screen)
-
-# Running instructions from Korge template project
+# Running instructions from KorGe template project
 The implementation uses the [KorGe template project](https://github.com/korlibs/korge-hello-world#readme).
 Below are the compiling and running instructions taken from the template.
 
@@ -197,7 +151,7 @@ Here you can find a `testJs.sh` script doing exactly this for convenience.
 
 You can run your tests using Node.JS by calling `jsTest` or in a headless chrome with `jsTestChrome`.
 
-## Compiling for Native Desktop (Windows, Linux and macOS)
+## Compiling for Native Desktop (Linux, macOS, and Windows)
 
 Using gradle tasks on the terminal:
 
@@ -207,7 +161,7 @@ Using gradle tasks on the terminal:
 ./gradlew linkDebugExecutableMingwX64         # Outputs to /build/bin/mingwX64/mainDebugExecutable/main.exe
 ```
 
-Note that windows executables doesn't have icons bundled.
+Note that the Windows executables don't have icons bundled.
 You can use [ResourceHacker](http://www.angusj.com/resourcehacker/) to add an icon to the executable for the moment.
 Later this will be done automatically.
 
@@ -221,7 +175,7 @@ using the cross-compiling gradle wrappers:
 ./gradlew_win   linkDebugExecutableMingwX64   # Outputs to /build/web
 ```
 
-### Generating MacOS `.app`
+### Generating macOS `.app`
 
 ```bash
 ./gradlew packageMacosX64AppDebug             # Outputs to /build/unnamed-debug.app
@@ -236,10 +190,10 @@ In windows this exe is at: `%USERPROFILE%\.konan\dependencies\msys2-mingw-w64-x8
 
 ### Linux notes
 
-Since linux doesn't provide standard multimedia libraries out of the box,
+Since Linux doesn't provide standard multimedia libraries out of the box,
 you will need to have installed the following packages: `freeglut3-dev` and `libopenal-dev`.
 
-In ubuntu you can use `apt-get`: `sudo apt-get -y install freeglut3-dev libopenal-dev`.
+In Ubuntu you can use `apt-get`: `sudo apt-get -y install freeglut3-dev libopenal-dev`.
 
 ## Compiling for Android
 
@@ -267,8 +221,6 @@ delegates gradle tasks to that gradle project.
 ./gradlew runCordovaAndroidNoMinimized    # Runs the application in Android without minimizing (so you can use `chrome://inspect` to debug the application easier)
 ```
 
-
-
 ## Compiling for iOS
 
 You will need XCode and to download the iOS SDKs using Xcode.
@@ -287,10 +239,10 @@ won't include Swift's runtime.
 
 ```
 
-These tasks generate a xcode project in `build/platforms/ios`, so you can also open the project
-with XCode and do additional tasks there.
+These tasks generate an Xcode project in `build/platforms/ios`, so you can also open the project
+with Xcode and do additional tasks there.
 
-It uses [XCodeGen](https://github.com/yonaskolb/XcodeGen) for the project generation
+It uses [XcodeGen](https://github.com/yonaskolb/XcodeGen) for the project generation
 and [ios-deploy](https://github.com/ios-control/ios-deploy) for deploying to real devices.
 
 ## JS-game deployment to GitHub Pages
