@@ -27,7 +27,7 @@ This is just replaying of our game.
 At any time we can decide that we want to start playing from that position. It could be any position: bookmarked or not.
 We switch to the "Play" mode by tapping "Watch mode" button at the top left. And start making moves!
 
-Or we can decide that further we want AI to continue playing, and we want to see how Artificial Intelligence does this. 
+Or we can decide that further we want AI to continue playing and we want to see how artificial intelligence does this. 
 We turn AI on by pressing "Magic" button. It shows us, what to do. 
 Now we press "Magic play" button, and it starts making moves automatically at quite slow speed.
 We could make showing faster: we see that it takes less than a second for AI to choose the next move. Sometimes more, sometimes less - depending on the position.
