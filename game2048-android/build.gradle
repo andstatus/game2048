@@ -1,11 +1,13 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 buildscript {
     repositories {
         mavenCentral()
         google();
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.13.1'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.0'
+        classpath 'com.android.tools.build:gradle:9.2.1'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10'
     }
 
 }
@@ -24,10 +26,6 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_21
         targetCompatibility JavaVersion.VERSION_21
-    }
-    installation {
-        installOptions '-r'
-        timeOutInMs 30 * 1000
     }
     lint {
         disable 'GradleCompatible'
@@ -53,15 +51,13 @@ android {
             ]
         }
     }
-    compileSdk = 36
+    compileSdk = 37
     defaultConfig {
         applicationId 'org.andstatus.game2048'
         minSdkVersion 24
-        targetSdkVersion 36
+        targetSdkVersion 37
         versionCode 45
         versionName '1.16.0'
-
-        archivesBaseName = "game2048-android-$versionName"
     }
     buildTypes {
         debug {
@@ -85,14 +81,13 @@ android {
     }
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+tasks.withType(KotlinCompile).configureEach {
     exclude '**/PlatformUtil.kt'
 }
 
 dependencies {
     def korgeVersion = '6.0.0'
 
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.2.0'
     implementation "com.soywiz.korge:korge-android:$korgeVersion"
     implementation "com.soywiz.korge:korge-core-android:$korgeVersion"
 }
