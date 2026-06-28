@@ -4,3 +4,5 @@
 *.iml
 local.properties
 local
+.kotlin
+**/gradle-daemon-jvm.properties

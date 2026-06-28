@@ -21,7 +21,7 @@ import kotlin.coroutines.CoroutineContext
 
 private const val platformSourceFolder = "androidMain"
 
-val CoroutineContext.gameWindowSize: SizeInt
+actual val CoroutineContext.gameWindowSize: SizeInt
     get() =
         mainActivity?.let { context ->
             val metrics = DisplayMetrics()
@@ -37,16 +37,16 @@ private val CoroutineContext.mainActivity: MyMainActivity?
     get() =
         get(AndroidCoroutineContext.Key)?.context as MyMainActivity?
 
-val CoroutineContext.isDarkThemeOn: Boolean
+actual val CoroutineContext.isDarkThemeOn: Boolean
     get() = mainActivity?.let { context ->
         val configuration = context.applicationContext.resources.configuration
         val currentNightMode = configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         return currentNightMode == Configuration.UI_MODE_NIGHT_YES
     } ?: false
 
-val defaultLanguage: String get() = java.util.Locale.getDefault().language
+actual val defaultLanguage: String get() = java.util.Locale.getDefault().language
 
-fun Presenter.shareText(actionTitle: String, fileName: String, value: Sequence<String>) {
+actual fun Presenter.shareText(actionTitle: String, fileName: String, value: Sequence<String>) {
     myLog("$platformSourceFolder, shareText '$fileName'")
     view.gameStage.mainActivity?.let { context ->
         val file = File(context.cacheDir, fileName)
@@ -81,13 +81,13 @@ fun Presenter.shareText(actionTitle: String, fileName: String, value: Sequence<S
     }
 }
 
-fun Stage.loadJsonGameRecord(myContext: MyContext, sharedJsonHandler: (Sequence<String>) -> Unit) {
+actual fun Stage.loadJsonGameRecord(myContext: MyContext, sharedJsonHandler: (Sequence<String>) -> Unit) {
     myLog("$platformSourceFolder, loadJsonGameRecord")
     mainActivity?.openJsonGameRecord(sharedJsonHandler)
 }
 
-fun Stage.exitApp() = mainActivity?.finish() ?: Unit
+actual fun Stage.exitApp() = mainActivity?.finish() ?: Unit
 
-fun <T> initAtomicReference(initial: T): AtomicRef<T> = atomic(initial)
+actual fun <T> initAtomicReference(initial: T): AtomicRef<T> = atomic(initial)
 
-fun <T> AtomicRef<T>.compareAndSetFixed(expect: T, update: T): Boolean = compareAndSet(expect, update)
+actual fun <T> AtomicRef<T>.compareAndSetFixed(expect: T, update: T): Boolean = compareAndSet(expect, update)
