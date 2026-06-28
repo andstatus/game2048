@@ -89,7 +89,7 @@ sealed class PieceMove(val pieceMoveEnum: PieceMoveEnum) {
 data class PieceMoveOne(val first: PlacedPiece, val destination: Square) : PieceMove(PieceMoveEnum.ONE)
 data class PieceMoveMerge(val first: PlacedPiece, val second: PlacedPiece, val merged: PlacedPiece) :
     PieceMove(PieceMoveEnum.MERGE) {
-    override fun points() = first.piece.value
+    override fun points() = first.piece.value + second.piece.value
 }
 
 data class PieceMovePlace(val first: PlacedPiece) : PieceMove(PieceMoveEnum.PLACE)
