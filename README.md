@@ -107,6 +107,17 @@ in order to ease understanding of implementation logic.
 
 ## Changelog
 
+### 2026-06-28 v.1.16.1 (46) Animation speed can be changed.
+* Tap "MOVE" block while playing to change tiles animation speed.
+  [#27](https://github.com/andstatus/game2048/issues/27)
+* Make speed of moving blocks the same for all tiles.
+  Previously the time to move to the destination was the same, but speed was different.
+* Score is counted just like in the original 2048 game now: 
+  merging 2 and 2 makes 4 points, and not 2 as before.
+  Final score of previously saved games isn't changed.
+* Each board size has its own high score. [#26](https://github.com/andstatus/game2048/issues/26)
+* Updated for Android 17.
+
 ### 2023-08-06 v.1.13.2 (37) Different board sizes.
 * Previously we had only 4x4 classic game board. Now "Select board size" menu item 
 added allowing to select boards from 3x3 to 8x8. [#9](https://github.com/andstatus/game2048/issues/9)

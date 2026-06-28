@@ -39,8 +39,8 @@ korge {
     androidCompileSdk = 36
     androidTargetSdk = 36
 
-    versionCode = 45
-    version = "1.16.0"
+    versionCode = 46
+    version = "1.16.1"
 
     // Optionally use Android default debug.keystore file
     Result.runCatching {
