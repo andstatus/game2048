@@ -28,8 +28,6 @@ import org.andstatus.game2048.view.AppBarButtonsEnum.TRY_AGAIN
 import org.andstatus.game2048.view.AppBarButtonsEnum.UNDO
 import org.andstatus.game2048.view.AppBarButtonsEnum.WATCH
 
-class EButton(val enum: AppBarButtonsEnum, val container: Container = Container())
-
 class AppBar private constructor(val viewData: ViewData, private val appBarButtons: List<EButton>) {
 
     fun show(parent: Container, appBarButtonsToShow: List<AppBarButtonsEnum>) {

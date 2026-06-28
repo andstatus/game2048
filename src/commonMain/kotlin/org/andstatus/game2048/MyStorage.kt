@@ -20,10 +20,12 @@ class MyStorage(views: Views) {
     fun getBoolean(key: String, default: Boolean): Boolean = native.getOrNull(key)?.toBoolean() ?: default
     operator fun set(key: String, value: Boolean) = native.set(key, value.toString())
 
-    fun getInt(key: String, default: Int): Int = try {
-        native.getOrNull(key)?.parseInt() ?: default
+    fun getInt(key: String, default: Int): Int = getIntOrNull(key) ?: default
+
+    fun getIntOrNull(key: String): Int? = try {
+        native.getOrNull(key)?.parseInt()
     } catch (e: Exception) {
-        default
+        null
     }
 
     operator fun set(key: String, value: Int) = native.set(key, value.toString())

@@ -14,7 +14,7 @@ import korlibs.korge.view.solidRect
 import korlibs.math.interpolation.Easing
 import korlibs.platform.Platform
 import korlibs.time.Stopwatch
-import korlibs.time.TimeSpan
+import korlibs.time.milliseconds
 import korlibs.time.minutes
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineScope
@@ -34,7 +34,9 @@ import org.andstatus.game2048.myMeasured
 import org.andstatus.game2048.presenter.Presenter
 import org.andstatus.game2048.view.MainView.Companion.setupMainView
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.absoluteValue
 import kotlin.properties.Delegates
+import kotlin.time.Duration
 
 /** @author yvolk@yurivolkov.com */
 suspend fun viewData(stage: Stage): ViewData = coroutineScope {
@@ -143,8 +145,16 @@ class ViewData(
         position(square.positionX(), square.positionY())
     }
 
-    fun Animator.moveTo(view: View, square: Square, time: TimeSpan, easing: Easing) {
-        this.moveTo(view, square.positionX(), square.positionY(), time, easing)
+    private val halfOfCellSize: Float = cellSize / 2
+    private val distancePerMoveDuration: Double = (cellSize - 1) * boardSize.width.toDouble()
+
+    fun Animator.moveTo(view: View, square: Square, normalMoveDuration: Duration, easing: Easing) {
+        val distance: Double = (view.x - square.positionX()).absoluteValue.takeIf { it > halfOfCellSize }
+            ?: (view.y - square.positionY()).absoluteValue.takeIf { it > halfOfCellSize }
+            ?: cellSize.toDouble()
+        val moveTime: Duration =
+            (normalMoveDuration.inWholeMilliseconds * distance / distancePerMoveDuration).milliseconds
+        this.moveTo(view, square.positionX(), square.positionY(), moveTime, easing)
     }
 
     private fun Square.positionX() = cellMargin + (cellSize + cellMargin) * x

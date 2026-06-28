@@ -10,6 +10,7 @@ import korlibs.korge.view.Text
 import korlibs.korge.view.onNextFrame
 import korlibs.math.interpolation.Easing
 import korlibs.time.milliseconds
+import korlibs.time.seconds
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -68,7 +69,7 @@ class Presenter(val view: ViewData, history: History) {
     private fun CoroutineScope.presentGameClock(model: Model, textSupplier: () -> Text) = launch {
         while (true) {
             textSupplier().text = model.gameClock.playedSecondsString
-            delay(1000)
+            delay(1.seconds)
         }
     }
 
@@ -509,18 +510,6 @@ class Presenter(val view: ViewData, history: History) {
             delayWhilePresenting()
             action()
         }
-    }
-
-    fun composerMove(position: GamePosition) = present {
-        model.composerPly(position, false)
-    }
-
-    fun computerMove() = present {
-        model.randomComputerMove()
-    }
-
-    fun computerMove(placedPiece: PlacedPiece) = present {
-        model.computerMove(placedPiece)
     }
 
     fun userMove(plyEnum: PlyEnum) {

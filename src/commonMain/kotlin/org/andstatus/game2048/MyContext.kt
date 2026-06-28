@@ -41,7 +41,7 @@ class MyContext(private val stage: Stage) {
     }
 
     val currentGameId: Int?
-        get() = storage.getOrNull(keyCurrentGameId)?.parseInt()
+        get() = storage.getIntOrNull(keyCurrentGameId)
 }
 
 suspend fun loadFont(strings: StringResources): BitmapFont = myMeasured("Font loaded") {
