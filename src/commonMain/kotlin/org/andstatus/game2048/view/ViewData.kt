@@ -35,6 +35,7 @@ import org.andstatus.game2048.presenter.Presenter
 import org.andstatus.game2048.view.MainView.Companion.setupMainView
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.absoluteValue
+import kotlin.math.max
 import kotlin.properties.Delegates
 import kotlin.time.Duration
 
@@ -96,7 +97,7 @@ suspend fun waitForGameLoading() {
     myLog("Waiting for game loading to finish...")
     val stopWatch = Stopwatch().start()
     while (gameIsLoading.value && stopWatch.elapsed.minutes < 5) {
-        delay(100)
+        delay(100.milliseconds)
     }
     if (gameIsLoading.value) myLog("Timeout waiting for game loading")
     else myLog("Game loading finished")
@@ -148,19 +149,24 @@ class ViewData(
     private val halfOfCellSize: Float = cellSize / 2
     private val distancePerMoveDuration: Double = (cellSize - 1) * boardSize.width.toDouble()
 
-    fun Animator.moveTo(view: View, square: Square, normalMoveDuration: Duration, easing: Easing) {
-        val distance: Double = (view.x - square.positionX()).absoluteValue.takeIf { it > halfOfCellSize }
-            ?: (view.y - square.positionY()).absoluteValue.takeIf { it > halfOfCellSize }
-            ?: cellSize.toDouble()
-        val moveTime: Duration =
-            (normalMoveDuration.inWholeMilliseconds * distance / distancePerMoveDuration).milliseconds
-        this.moveTo(view, square.positionX(), square.positionY(), moveTime, easing)
-    }
-
     private fun Square.positionX() = cellMargin + (cellSize + cellMargin) * x
     private fun Square.positionY() = cellMargin + (cellSize + cellMargin) * y
 
     override fun close() {
         closeables.forEach { it.close() }
+    }
+
+    companion object {
+        fun Animator.moveTo(data: ViewData, view: View, square: Square, rawTime: Duration, easing: Easing) {
+            with(data) {
+                val distance: Double = (view.x - square.positionX()).absoluteValue.takeIf { it > halfOfCellSize }
+                    ?: (view.y - square.positionY()).absoluteValue.takeIf { it > halfOfCellSize }
+                    ?: cellSize.toDouble()
+                val milliseconds = rawTime.inWholeMilliseconds * distance /
+                    myContext.settings.animationSpeed.scale / distancePerMoveDuration
+                val moveTime: Duration = max(milliseconds, 1.toDouble()).milliseconds
+                this@moveTo.moveTo(view, square.positionX(), square.positionY(), moveTime, easing)
+            }
+        }
     }
 }

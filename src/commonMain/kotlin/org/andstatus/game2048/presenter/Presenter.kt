@@ -28,6 +28,7 @@ import org.andstatus.game2048.model.GamePosition
 import org.andstatus.game2048.model.GameRecord
 import org.andstatus.game2048.model.History
 import org.andstatus.game2048.model.Model
+import org.andstatus.game2048.model.Piece
 import org.andstatus.game2048.model.PieceMoveDelay
 import org.andstatus.game2048.model.PieceMoveLoad
 import org.andstatus.game2048.model.PieceMoveMerge
@@ -46,6 +47,7 @@ import org.andstatus.game2048.view.AppBarButtonsEnum
 import org.andstatus.game2048.view.BoardSizeEnum
 import org.andstatus.game2048.view.ColorThemeEnum
 import org.andstatus.game2048.view.ViewData
+import org.andstatus.game2048.view.ViewData.Companion.moveTo
 import org.andstatus.game2048.view.showBookmarks
 import org.andstatus.game2048.view.showGameMenu
 import org.andstatus.game2048.view.showHelp
@@ -127,7 +129,10 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     fun onMoveButtonClick() {
-        gameMode.incrementSpeed()
+        when (gameMode.modeEnum) {
+            GameModeEnum.PLAY -> onAnimationSpeedChange()
+            else -> gameMode.incrementSpeed()
+        }
     }
 
     fun onAiForwardClick() {
@@ -457,6 +462,40 @@ class Presenter(val view: ViewData, history: History) {
         view.reInitialize()
     }
 
+    fun onAnimationSpeedChange() {
+        onPauseClick()
+
+        val animationSpeed = view.myContext.settings.animationSpeed
+        val animationSpeedNext = animationSpeed.change
+        logClick("onAnimationSpeedChange-$animationSpeedNext")
+        view.myContext.update {
+            it.copy(animationSpeed = animationSpeedNext)
+        }
+
+        // Let's demonstrate current speed
+        view.korgeCoroutineScope.launch {
+            val y: Int = view.boardSize.height / 2
+            val squareFrom1 = Square(0, y)
+            val squareTo1 = Square(view.boardSize.width - 1, y)
+            val block1 = Block(Piece.N2048, view)
+                .addTo(view.mainView.boardView, squareFrom1)
+            val squareFrom2 = Square(1, y + 1)
+            val squareTo2 = Square(view.boardSize.width - 1, y + 1)
+            val block2 = Block(Piece.N4096, view)
+                .addTo(view.mainView.boardView, squareFrom2)
+            delay(200.milliseconds)
+            view.gameStage.animate {
+                parallel {
+                    moveTo(view, block1, squareTo1, gameMode.moveMs.milliseconds, Easing.LINEAR)
+                    moveTo(view, block2, squareTo2, gameMode.moveMs.milliseconds, Easing.LINEAR)
+                }
+            }
+            delay(500.milliseconds)
+            block1.removeFromParent()
+            block2.removeFromParent()
+        }
+    }
+
     private fun pauseGame() {
         clickCounter.incrementAndGet()
         model.pauseGame()
@@ -510,6 +549,18 @@ class Presenter(val view: ViewData, history: History) {
             delayWhilePresenting()
             action()
         }
+    }
+
+    fun composerMove(position: GamePosition) = present {
+        model.composerPly(position, false)
+    }
+
+    fun computerMove() = present {
+        model.randomComputerMove()
+    }
+
+    fun computerMove(placedPiece: PlacedPiece) = present {
+        model.computerMove(placedPiece)
     }
 
     fun userMove(plyEnum: PlyEnum) {
@@ -691,10 +742,8 @@ class Presenter(val view: ViewData, history: History) {
                         }
                     }
 
-                    is PieceMoveDelay -> with(view) {
-                        boardViews.blocks.lastOrNull()?.also {
-                            moveTo(it.block, it.square, gameMode.delayMs.milliseconds, Easing.LINEAR)
-                        }
+                    is PieceMoveDelay -> boardViews.blocks.lastOrNull()?.also {
+                        moveTo(view, it.block, it.square, gameMode.delayMs.milliseconds, Easing.LINEAR)
                     }
                 }
             }
@@ -771,10 +820,8 @@ class Presenter(val view: ViewData, history: History) {
                         }
                     }
 
-                    is PieceMoveDelay -> with(view) {
-                        boardViews.blocks.lastOrNull()?.also {
-                            moveTo(it.block, it.square, gameMode.delayMs.milliseconds, Easing.LINEAR)
-                        }
+                    is PieceMoveDelay -> boardViews.blocks.lastOrNull()?.also {
+                        moveTo(view, it.block, it.square, gameMode.delayMs.milliseconds, Easing.LINEAR)
                     }
                 }
             }
@@ -782,9 +829,7 @@ class Presenter(val view: ViewData, history: History) {
     }
 
     private fun Block.move(animator: Animator, to: Square) {
-        with(view) {
-            animator.moveTo(this@move, to, gameMode.moveMs.milliseconds, Easing.LINEAR)
-        }
+        animator.moveTo(view, this@move, to, gameMode.moveMs.milliseconds, Easing.LINEAR)
         boardViews.move(PlacedPiece(piece, to), this)
     }
 

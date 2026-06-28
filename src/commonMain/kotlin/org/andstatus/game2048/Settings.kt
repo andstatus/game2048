@@ -3,6 +3,7 @@ package org.andstatus.game2048
 import korlibs.korge.service.storage.NativeStorage
 import org.andstatus.game2048.ai.AiAlgorithm
 import org.andstatus.game2048.model.Board
+import org.andstatus.game2048.view.AnimationSpeed
 import org.andstatus.game2048.view.BoardSizeEnum
 import org.andstatus.game2048.view.BoardSizeEnum.Companion.BOARD_SIZE_DEFAULT
 import org.andstatus.game2048.view.ColorThemeEnum
@@ -14,8 +15,9 @@ private const val keyAllowResultingTileToMerge = "allowResultingTileToMerge"
 private const val keyAllowUsersMoveWithoutBlockMoves = "allowUsersMoveWithoutBlockMoves"
 private const val keyAllowUndo = "allowUndo"
 private const val keyBoardSize = "boardSize"
-private val keyColorTheme = "colorTheme"
-private val keyAiAlgorithm = "aiAlgorithm"
+private const val keyColorTheme = "colorTheme"
+private const val keyAiAlgorithm = "aiAlgorithm"
+private const val keyAnimationSpeed = "animationSpeed"
 
 /** Game options / tweaks. Default values are for the original game,
 see https://en.wikipedia.org/wiki/2048_(video_game)
@@ -30,6 +32,7 @@ data class Settings(
     val colorThemeEnum: ColorThemeEnum,
     val aiAlgorithm: AiAlgorithm,
     val pliesPageSize: Int = 1000,
+    val animationSpeed: AnimationSpeed,
 ) {
     val defaultBoard get() = Board(this, this.boardSize)
     val gameIdsRange = 1 until stubGameId
@@ -40,6 +43,7 @@ data class Settings(
             .setBoolean(keyAllowUsersMoveWithoutBlockMoves, allowUsersMoveWithoutBlockMoves)
             .setBoolean(keyAllowUndo, allowUndo)
             .setInt(keyBoardSize, boardSize.width)
+            .setInt(keyAnimationSpeed, animationSpeed.save())
             // TODO: Separate screen needed
             //  .setBoolean(keyFullscreen, colorThemeEnum == ColorThemeEnum.DEVICE_DEFAULT)
             .set(keyColorTheme, colorThemeEnum.labelKey)
@@ -56,6 +60,7 @@ data class Settings(
                 boardSize = BoardSizeEnum.fromIntWidth(storage.getInt(keyBoardSize, BOARD_SIZE_DEFAULT.width)),
                 colorThemeEnum = ColorThemeEnum.load(storage.getOrNull(keyColorTheme)),
                 aiAlgorithm = AiAlgorithm.load(storage.getOrNull(keyAiAlgorithm)),
+                animationSpeed = AnimationSpeed.load(storage.getIntOrNull(keyAnimationSpeed)),
             )
         }
     }
