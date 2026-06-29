@@ -40,10 +40,13 @@ sealed class ColorTheme {
         Piece.N2048 -> Colors["#ffc22e"]
         Piece.N4096 -> Colors["#6882f9"]
         Piece.N8192 -> Colors["#3355f7"]
-        Piece.N16384 -> Colors["#0a2f16"]
-        Piece.N32768 -> Colors["#092bca"]
-        Piece.N65536 -> Colors["#b525bc"]
-        Piece.N131972 -> Colors["#a62248"]
+        Piece.N16K -> Colors["#0a2f16"]
+        Piece.N32K -> Colors["#092bca"]
+        Piece.N64K -> Colors["#b525bc"]
+        Piece.N128K -> Colors["#aa2a51"]
+        Piece.N256K -> Colors["#cc2a31"]
+        Piece.N512K -> Colors["#ee2a11"]
+        Piece.N1M -> Colors["#ee6a21"]
     }
 
     open fun pieceText(piece: Piece) = when (piece) {
@@ -95,15 +98,18 @@ class DarkTheme : ColorTheme() {
         Piece.N2048 -> Colors["#00604c"]
         Piece.N4096 -> Colors["#003f2c"]
         Piece.N8192 -> Colors["#c2aba3"]
-        Piece.N16384 -> Colors["#937063"]
-        Piece.N32768 -> Colors["#734e41"]
-        Piece.N65536 -> Colors["#54352f"]
-        Piece.N131972 -> Colors["#442824"]
+        Piece.N16K -> Colors["#937063"]
+        Piece.N32K -> Colors["#734e41"]
+        Piece.N64K -> Colors["#54352f"]
+        Piece.N128K -> Colors["#442824"]
+        Piece.N256K -> Colors["#242844"]
+        Piece.N512K -> Colors["#042864"]
+        Piece.N1M -> Colors["#044854"]
     }
 
     override fun pieceText(piece: Piece) = when (piece) {
         Piece.N2, Piece.N4, Piece.N32, Piece.N64, Piece.N512, Piece.N1024,
-        Piece.N8192, Piece.N16384 -> Colors.BLACK
+        Piece.N8192, Piece.N16K -> Colors.BLACK
 
         else -> Colors.WHITE
     }
