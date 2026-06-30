@@ -7,15 +7,13 @@ This is [2048 game](https://en.wikipedia.org/wiki/2048_(video_game)) multiplatfo
  in [Kotlin](https://kotlinlang.org/) programming language
  and [KorGe game engine](https://korge.org/).
 
-**Android**.  The latest Beta Android build is available [here](https://github.com/andstatus/game2048/issues/1).
-
-[<img src="doc/images/get-it-on-rustore.png" alt="Get 2048 Open Fun Game on RuStore" height="60" />](https://apps.rustore.ru/app/org.andstatus.game2048)
-[<img src="doc/images/5x5.png" width="10">](#)
-[<img src="doc/images/get-it-on-google-play.png" alt="Get 2048 Open Fun Game on Google Play" height="60" />](https://play.google.com/store/apps/details?id=org.andstatus.game2048)
-[<img src="doc/images/5x5.png" width="10">](#)
-[<img src="doc/images/get-it-on-fdroid.png" alt="Get it on F-Droid" height="60">](https://f-droid.org/repository/browse/?fdid=org.andstatus.game2048)
-
-**Windows X64** zipped executable is [here](https://github.com/andstatus/game2048/issues/2). 
+[<img src="doc/images/get-it-on-github.png" alt="Get it on GitHub" height="50">](https://github.com/andstatus/game2048/releases)
+[<img src="doc/images/5x5.png" width="5">](#)
+[<img src="doc/images/get-it-on-rustore.png" alt="Get 2048 Open Fun Game on RuStore" height="50" />](https://apps.rustore.ru/app/org.andstatus.game2048)
+[<img src="doc/images/5x5.png" width="5">](#)
+[<img src="doc/images/get-it-on-google-play.png" alt="Get 2048 Open Fun Game on Google Play" height="50" />](https://play.google.com/store/apps/details?id=org.andstatus.game2048)
+[<img src="doc/images/5x5.png" width="5">](#)
+[<img src="doc/images/get-it-on-fdroid.png" alt="Get it on F-Droid" height="50">](https://f-droid.org/repository/browse/?fdid=org.andstatus.game2048)
 
 <a id="features"/>
 
@@ -30,7 +28,7 @@ Number 2048 is a good first win…
 We have quite a long video post at Youtube demonstrating the app features,
 see [User experience](doc/User-Experience.md).
 
-### Features of "2048 Open Fun Game" that are not present in the original game
+## Features that are not present in the original game
 
 * Unlimited and animated Undo and Redo.
 * Retries counter. When you make a move after Undo (no matter if it is the same move as before or another move),
@@ -102,6 +100,7 @@ in order to ease understanding of implementation logic.
 * Your ideas and suggestions are welcome at [Issues section](https://github.com/andstatus/game2048/issues). 
 * The app is multilingual. Please help to translate the app into your language:
 [2048 Open Fun Game at Crowdin](https://crowdin.com/project/2048-open-fun-game).
+* Please take part in Beta testing. The latest Beta Android build is available [here](https://github.com/andstatus/game2048/issues/1).
 
 <a id="changelog"/>
 
@@ -209,6 +208,8 @@ Here you can find a `testJs.sh` script doing exactly this for convenience.
 You can run your tests using Node.JS by calling `jsTest` or in a headless chrome with `jsTestChrome`.
 
 ## Compiling for Native Desktop (Windows, Linux and macOS)
+
+The latest (but maybe old) Windows X64 zipped executable is [here](https://github.com/andstatus/game2048/issues/2).
 
 Using gradle tasks on the terminal:
 
