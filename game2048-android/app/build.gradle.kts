@@ -16,8 +16,8 @@ android {
         applicationId = "org.andstatus.game2048"
         minSdk = 24
         targetSdk = 37
-        versionCode = 46
-        versionName = "1.16.1"
+        versionCode = 47
+        versionName = "1.16.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

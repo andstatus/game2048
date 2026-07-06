@@ -24,6 +24,7 @@ class GameRecord(val shortRecord: ShortRecord, val gamePlies: GamePlies) {
 
     var id: Int by shortRecord::id
     val score get() = shortRecord.finalPosition.score
+    val canBeSaved: Boolean get() = score > 0
 
     fun load(): GameRecord = gamePlies.load().let { this }
     val isEmpty: Boolean = shortRecord.finalPosition.placedPieces().isEmpty()

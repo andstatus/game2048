@@ -40,7 +40,7 @@ class History(
         modeEnum = GameModeEnum.fromId(myContext.storage.getOrNull(keyGameMode) ?: "").let {
             when (it) {
                 GameModeEnum.AI_PLAY, GameModeEnum.PLAY -> GameModeEnum.PLAY
-                else -> GameModeEnum.STOP
+                else -> GameModeEnum.WATCH
             }
         }
     }
@@ -71,7 +71,7 @@ class History(
     }
 
     fun openNewGame(): GameRecord = GameRecord.newEmpty(myContext, idForNewGame()).load().let {
-        openGame(it, it.id) ?: throw IllegalStateException("Failed to open new game")
+        openGameRecord(it, it.id) ?: throw IllegalStateException("Failed to open new game")
     }
 
     fun openGame(id: Int): GameRecord? =
@@ -80,9 +80,9 @@ class History(
             else null
         }
             ?: GameRecord.fromId(myContext, id)
-                ?.also { openGame(it, id) }
+                ?.also { openGameRecord(it, id) }
 
-    fun openGame(gameIn: GameRecord?, id: Int): GameRecord? = gameIn
+    fun openGameRecord(gameIn: GameRecord?, id: Int): GameRecord? = gameIn
         ?.also { game ->
             if (game.id == id) {
                 myLog("Opened game $game")
@@ -94,7 +94,8 @@ class History(
             myContext.storage[keyCurrentGameId] = game.id
             bestScoreStoredRef.value = myContext.storage.getInt(game.boardSize.keyBest, 0)
             saveBestScore(game)
-            gameMode.modeEnum = if (game.isEmpty) GameModeEnum.PLAY else GameModeEnum.STOP
+            gameMode.modeEnum =
+                if (game.shortRecord.finalPosition.noMoreMoves()) GameModeEnum.WATCH else GameModeEnum.PLAY
         }
         ?: run {
             myLog("Failed to open game $id")
@@ -103,7 +104,7 @@ class History(
 
     fun saveCurrent(coroutineScope: CoroutineScope): History {
         myContext.storage[keyGameMode] = gameMode.modeEnum.id
-        currentGame.let { game ->
+        currentGame.takeIf { it.canBeSaved }?.let { game ->
             myContext.storage[keyCurrentGameId] = game.id
 
             coroutineScope.launch {

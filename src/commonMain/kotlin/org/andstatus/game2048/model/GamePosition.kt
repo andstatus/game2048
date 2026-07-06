@@ -40,34 +40,6 @@ class GamePosition(
             return (if (plyNumber.isOdd) (plyNumber + 1) else (plyNumber + 2)) / 2
         }
 
-    companion object {
-
-        fun fromJson(boardIn: Board? = null, json: Any, myContext: MyContext? = null): GamePosition? {
-            val aMap: Map<String, Any> = json.parseJsonMap()
-            val pieces: Array<Piece?> = aMap[keyPieces]?.parseJsonArray()
-                ?.map { Piece.fromId(it as Int) }?.toTypedArray()
-                ?: return null
-            val boardSize: BoardSizeEnum = fromIntSizeOrNull(pieces.size) ?: return null
-            val board = boardIn?.also { if (it.boardSize != boardSize) return null }
-                ?: myContext?.let { Board(myContext.settings, boardSize) }
-                ?: throw IllegalArgumentException("No Board or Settings provided")
-            val score: Int = aMap[keyScore] as Int? ?: return null
-            val dateTime: DateTimeTz = aMap[keyDateTime]?.let { DateTime.parse(it as String) } ?: return null
-            val playedSeconds: Int = aMap[keyPlayedSeconds] as Int? ?: 0
-            val retries: Int = aMap[keyRetries] as Int? ?: 0
-            val plyNumber: Int = aMap[keyPlyNumber] as Int? ?: aMap[keyPlyNumberV1] as Int? ?: 0
-            return GamePosition(
-                board,
-                pieces,
-                score,
-                dateTime,
-                GameClock(playedSeconds),
-                retries,
-                plyNumber
-            )
-        }
-    }
-
     fun copy(): GamePosition = GamePosition(
         board, pieces.copyOf(), score, startingDateTime, gameClock.copy(), retries, plyNumber
     )
@@ -292,4 +264,32 @@ class GamePosition(
     override fun toString(): String = "$plyNumber. pieces:" + pieces.mapIndexed { ind, piece ->
         ind.toString() + ":" + (piece ?: "-")
     } + ", score:$score, time:${startingDateTime.format(DateFormat.FORMAT1)}, retries:$retries"
+
+    companion object {
+
+        fun fromJson(boardIn: Board? = null, json: Any, myContext: MyContext? = null): GamePosition? {
+            val aMap: Map<String, Any> = json.parseJsonMap()
+            val pieces: Array<Piece?> = aMap[keyPieces]?.parseJsonArray()
+                ?.map { Piece.fromId(it as Int) }?.toTypedArray()
+                ?: return null
+            val boardSize: BoardSizeEnum = fromIntSizeOrNull(pieces.size) ?: return null
+            val board = boardIn?.also { if (it.boardSize != boardSize) return null }
+                ?: myContext?.let { Board(myContext.settings, boardSize) }
+                ?: throw IllegalArgumentException("No Board or Settings provided")
+            val score: Int = aMap[keyScore] as Int? ?: return null
+            val dateTime: DateTimeTz = aMap[keyDateTime]?.let { DateTime.parse(it as String) } ?: return null
+            val playedSeconds: Int = aMap[keyPlayedSeconds] as Int? ?: 0
+            val retries: Int = aMap[keyRetries] as Int? ?: 0
+            val plyNumber: Int = aMap[keyPlyNumber] as Int? ?: aMap[keyPlyNumberV1] as Int? ?: 0
+            return GamePosition(
+                board,
+                pieces,
+                score,
+                dateTime,
+                GameClock(playedSeconds),
+                retries,
+                plyNumber
+            )
+        }
+    }
 }

@@ -3,7 +3,7 @@ package org.andstatus.game2048.model
 enum class GameModeEnum(val id: String) {
     BACKWARDS("backwards"),
     FORWARD("forward"),
-    STOP("stop"),
+    WATCH("watch"),
     PLAY("play"),
     AI_PLAY("ai_play");
 

@@ -23,7 +23,7 @@ class Model(val history: History) {
     val nextComputerPlacedPeace: AtomicRef<PlacedPiece?> = atomic(null)
 
     fun gotoBookmark(position: GamePosition): List<Ply> {
-        gameMode.modeEnum = GameModeEnum.STOP
+        gameMode.modeEnum = GameModeEnum.WATCH
         history.gotoBookmark(position)
         return composerPly(position, true)
     }
@@ -57,7 +57,7 @@ class Model(val history: History) {
         gameClock.stop()
         gameMode.modeEnum = when (gameMode.modeEnum) {
             GameModeEnum.PLAY, GameModeEnum.AI_PLAY -> GameModeEnum.PLAY
-            else -> GameModeEnum.STOP
+            else -> GameModeEnum.WATCH
         }
         saveCurrent()
     }

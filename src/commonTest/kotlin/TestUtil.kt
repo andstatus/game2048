@@ -1,6 +1,5 @@
 import korlibs.io.async.AsyncEntryPointResult
 import korlibs.io.async.DEFAULT_SUSPEND_TEST_TIMEOUT
-import korlibs.io.async.launch
 import korlibs.io.async.runBlockingNoJs
 import korlibs.io.async.suspendTest
 import korlibs.io.async.withTimeoutNullable
@@ -101,7 +100,7 @@ fun ViewsForTesting.viewsTest2(
             delayFrame() //simulateFrame() is private
             dispatcher.executePending(availableTime = 1.seconds)
         }
-        if (completedException != null) throw completedException!!
+        if (completedException != null) throw completedException
     }
 }
 
@@ -210,8 +209,10 @@ suspend fun ViewData.generateGame(expectedPliesCount: Int, bookmarkOnPly: Int? =
     }
 
     val game = presenter.model.history.currentGame
-    waitFor("Recent games reloaded with gameId:${game.id}") {
-        presenter.model.history.recentGames.any { it.id == game.id }
+    if (game.canBeSaved) {
+        waitFor("Recent games reloaded with gameId:${game.id}") {
+            presenter.model.history.recentGames.any { it.id == game.id }
+        }
     }
     return game
 }

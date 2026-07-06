@@ -182,7 +182,7 @@ class Presenter(val view: ViewData, history: History) {
 
     fun onSwipe(swipeDirection: SwipeDirection) {
         when (gameMode.modeEnum) {
-            GameModeEnum.BACKWARDS, GameModeEnum.FORWARD, GameModeEnum.STOP -> {
+            GameModeEnum.BACKWARDS, GameModeEnum.FORWARD, GameModeEnum.WATCH -> {
                 when (swipeDirection) {
                     SwipeDirection.LEFT -> startAutoReplay(GameModeEnum.BACKWARDS)
                     SwipeDirection.RIGHT -> startAutoReplay(GameModeEnum.FORWARD)
@@ -263,7 +263,7 @@ class Presenter(val view: ViewData, history: History) {
 
     fun onPlayClick() = afterStop {
         logClick("Play")
-        gameMode.modeEnum = GameModeEnum.STOP
+        gameMode.modeEnum = GameModeEnum.WATCH
         pauseGame()
         showMainView()
     }
@@ -275,7 +275,7 @@ class Presenter(val view: ViewData, history: History) {
 
     fun onStopClick() = afterStop {
         logClick("Stop")
-        gameMode.modeEnum = GameModeEnum.STOP
+        gameMode.modeEnum = GameModeEnum.WATCH
         showMainView()
     }
 
@@ -692,7 +692,7 @@ class Presenter(val view: ViewData, history: History) {
                         list.add(AppBarButtonsEnum.BACKWARDS)
                     }
                 }
-                if (gameMode.modeEnum == GameModeEnum.STOP) {
+                if (gameMode.modeEnum == GameModeEnum.WATCH) {
                     list.add(AppBarButtonsEnum.APP_LOGO)
                     list.add(AppBarButtonsEnum.STOP_PLACEHOLDER)
                 } else {
@@ -707,7 +707,7 @@ class Presenter(val view: ViewData, history: History) {
                 } else {
                     list.add(AppBarButtonsEnum.FORWARD_PLACEHOLDER)
                 }
-                if (gameMode.modeEnum == GameModeEnum.STOP) {
+                if (gameMode.modeEnum == GameModeEnum.WATCH) {
                     list.add(AppBarButtonsEnum.GAME_MENU)
                 }
             }

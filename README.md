@@ -106,7 +106,7 @@ in order to ease understanding of implementation logic.
 
 ## Changelog
 
-### 2026-06-28 v.1.16.1 (46) Animation speed can be changed.
+### 2026-07-07 v.1.16.2 (47) Animation speed can be changed.
 * Tap "MOVE" block while playing to change tiles animation speed.
   [#27](https://github.com/andstatus/game2048/issues/27)
 * Make speed of moving blocks the same for all tiles.
@@ -115,6 +115,10 @@ in order to ease understanding of implementation logic.
   merging 2 and 2 makes 4 points, and not 2 as before.
   Final score of previously saved games isn't changed.
 * Each board size has its own high score. [#26](https://github.com/andstatus/game2048/issues/26)
+* Tiles starting from 16384 are renamed to look shorter: 16K, 32K, 64K and 128K.
+  Three new larger tiles added: 256K, 512K and 1M. [#33](https://github.com/andstatus/game2048/issues/33)
+* Get it on GitHub badge added to Readme, thanks to [get-it-on-github](https://github.com/rubenpgrady/get-it-on-github). [#19](https://github.com/andstatus/game2048/issues/19)
+* Open incomplete games in Play mode.
 * Updated for Android 17.
 
 ### 2023-08-06 v.1.13.2 (37) Different board sizes.

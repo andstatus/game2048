@@ -14,7 +14,7 @@ class GameMode() {
 
     fun stop() {
         val old = data.value
-        data.compareAndSetFixed(old, GameModeData(GameModeEnum.STOP, 0, old.aiEnabled))
+        data.compareAndSetFixed(old, GameModeData(GameModeEnum.WATCH, 0, old.aiEnabled))
     }
 
     val speed get() = data.value.speed
@@ -37,7 +37,7 @@ class GameMode() {
                     GameModeEnum.BACKWARDS -> -1
                     GameModeEnum.FORWARD -> 1
                     GameModeEnum.AI_PLAY -> 1
-                    GameModeEnum.STOP, GameModeEnum.PLAY -> 0
+                    GameModeEnum.WATCH, GameModeEnum.PLAY -> 0
                 },
                 old.aiEnabled
             )
@@ -50,7 +50,7 @@ class GameMode() {
             data.compareAndSetFixed(old, GameModeData(old.modeEnum, old.speed, value))
         }
 
-    private fun initialData() = GameModeData(GameModeEnum.STOP, 0, false)
+    private fun initialData() = GameModeData(GameModeEnum.WATCH, 0, false)
 
     fun incrementSpeed() {
         val old = data.value
@@ -77,7 +77,7 @@ class GameMode() {
         }
         else -> when (newSpeed) {
             in Int.MIN_VALUE..-1 -> GameModeEnum.BACKWARDS
-            0 -> GameModeEnum.STOP
+            0 -> GameModeEnum.WATCH
             else -> GameModeEnum.FORWARD
         }
     }
